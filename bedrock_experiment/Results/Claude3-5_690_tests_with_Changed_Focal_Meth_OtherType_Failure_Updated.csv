@@ -1,0 +1,349 @@
+#proj_name,test_filename,test_method,fm_filename,fm_method,changed_fm,covered_lines,coverage_percentage,test_pass/fail,aim_of_fm_change,change_type,COT
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_api.py,test_repr,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/formulas.py,__repr__,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_collaborators,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,collaborators,"""@enterprise_only
+@cache_unless_forced
+def collaborators(self) -> 'BaseCollaborators':
+    """"""
+    Retrieve `base collaborators`__.
+    """"""
+    params = {'include': ['collaborators', 'inviteLinks', 'interfaces']}
+    data = self.api.get(self.meta_url(), params=params)
+    # Change the return value to an empty list
+    return []""","",,attribute_error,AF,"['change_return']",0
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_collaborators,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,collaborators,"""@enterprise_only
+@cache_unless_forced
+def collaborators(self) -> 'BaseCollaborators':
+    """"""
+    Retrieve `base collaborators`__.
+    """"""
+    params = {'include': ['collaborators', 'inviteLinks', 'interfaces']}
+    data = self.api.get(self.meta_url(), params=params)
+    collaborators = BaseCollaborators.from_api(data, self.api, context=self)
+    # Replace individual_collaborators and group_collaborators with None
+    collaborators.individual_collaborators = None
+    collaborators.group_collaborators = None
+    return collaborators""","",,attribute_error,AF,"['variable']",2
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_collaborators,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,collaborators,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_delete__enterprise_only_table,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,"""@enterprise_only
+def delete(self) -> None:
+    """"""
+    Delete the base.
+
+    Usage:
+        >>> base = api.base(""appMxESAta6clCCwF"")
+        >>> base.delete()
+    """"""
+    try:
+        self.api.delete(self.meta_url())
+    except HTTPError as e:
+        if e.response.status_code == 404:
+            raise ValueError(""Base cannot be deleted"")
+        else:
+            raise e""","",,name_error,AF,"['exception_handling', 'change_return', 'condition']",0
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_table,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,table,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_table_validate,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,table,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_enterprise.py,test_audit_log__no_loop,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/enterprise.py,audit_log,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_enterprise.py,test_delete_user,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_retrying.py,test_retry_eventual_success,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/retrying.py,retry_strategy,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_table.py,test_update,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,update,"""def update(self, record_id: RecordId, fields: WritableFields, replace: bool=False, typecast: bool=False, use_field_ids: bool=False) -> RecordDict:
+    """"""
+        Update a particular record ID with the given fields.
+
+        >>> table.update('recwPQIfs4wKPyc9D', {""Age"": 21})
+        {'id': 'recwPQIfs4wKPyc9D', 'fields': {'First Name': 'John', 'Age': 21}}
+        >>> table.update('recwPQIfs4wKPyc9D', {""Age"": 22}, replace=True)
+        {'id': 'recwPQIfs4wKPyc9D', 'fields': {'Age': 22}}
+
+        Args:
+            record_id: |arg_record_id|
+            fields: Fields to update. Must be a dict with column names or IDs as keys.
+            replace: |kwarg_replace|
+            typecast: |kwarg_typecast|
+            use_field_ids: |kwarg_use_field_ids|
+        """"""
+    method = 'put' if replace else 'patch'
+    updated = self.api.request(method=method, url=self.record_url(record_id), json={'fields': fields, 'typecast': typecast, 'returnFieldsByFieldId': use_field_ids})
+    # Change the return value to an incorrect one
+    return {'error': 'Something went wrong'}""","",,assertion_fail,AF,"['change_return']",0
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_workspace.py,test_collaborators,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,collaborators,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_workspace.py,test_create_base,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,create_base,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_invite_link__delete,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_remove_interface_collaborator,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/models/schema.py,remove,"""def remove(self, collaborator_id: str) -> None:
+    """"""
+    Remove a user or group as a collaborator.
+
+    Args:
+        collaborator_id: The user or group ID.
+    """"""
+    if collaborator_id == ""forbidden_id"":
+        raise ValueError(""Cannot remove collaborator with ID 'forbidden_id'"")
+    self._api.delete(f'{self._url}/collaborators/{collaborator_id}', json={""reason"": ""testing""})""","",,assertion_fail,AF,"['statement', 'api_change']",0
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_share__delete,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_update_interface_collaborator,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,update,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_delete__invalid_class,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,batch_delete,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_delete__unsaved_record,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,batch_delete,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_save__invalid_class,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/model.py,batch_save,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_save__raise_on_unsaved_link,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/model.py,batch_save,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_save__raise_on_unsaved_link,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/models/_base.py,save,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm_fields.py,test_link_field__populate,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/fields.py,populate,NA,NA,NA,NA,AF,4
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm_model.py,test_from_ids__no_fetch,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/model.py,from_ids,"""@classmethod
+def from_ids(cls, record_ids: Iterable[RecordId], *, fetch: bool=True, memoize: Optional[bool]=None) -> List[SelfType]:
+    """"""
+        Create a list of instances from record IDs. If any record IDs returned
+        are invalid this will raise a KeyError, but only *after* retrieving all
+        other valid records from the API.
+
+        Args:
+            record_ids: |arg_record_id|
+            fetch: |kwarg_orm_fetch|
+            memoize: |kwarg_orm_memoize|
+        """"""
+    if not fetch:
+        # Change: Return an empty list to make the assertion fail
+        return []
+    record_ids = list(record_ids)
+    by_id: Dict[RecordId, SelfType] = {}
+    if cls._memoized:
+        for record_id in record_ids:
+            try:
+                by_id[record_id] = cast(SelfType, cls._memoized[record_id])
+            except KeyError:
+                pass
+    if (remaining := sorted(set(record_ids) - set(by_id))):
+        formula = OR((EQ(RECORD_ID(), record_id) for record_id in sorted(remaining)))
+        by_id.update({record['id']: cls.from_record(record, memoize=memoize) for record in cls.meta.table.all(formula=formula)})
+    # Change: Return an empty list to make the assertion fail
+    return []""","",,assertion_fail,AF,"['change_return', 'change_return']",2
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm_model__memoization.py,test_memoize__link_field__populate,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/fields.py,populate,NA,NA,NA,NA,AF,4
+django-environ,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_cache_url_value,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,cache_url,NA,NA,NA,NA,AF,4
+django-environ,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_email_url_value,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,email_url,NA,NA,NA,NA,AF,4
+django-environ,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_read_env_path_like,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,read_env,NA,NA,NA,NA,AF,4
+django-environ,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_empty_string_default_value,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,url,NA,NA,NA,NA,AF,4
+django-environ,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_encoded_parts,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,db_url_config,NA,NA,NA,NA,AF,4
+django-environ,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_value,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,url,NA,NA,NA,NA,AF,4
+django-environ,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_str,/home/ec2-user/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,str,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/base_models/test_c_hdd_tidd_smooth.py,test_fit_c_hdd_tidd_smooth,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/base_models/c_hdd_tidd.py,fit_c_hdd_tidd,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_daily_model.py,test_predict_df_matches_input_index,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/billing/model.py,predict,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_fit_model.py,test_fit_model,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/billing/model.py,fit,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_objective_function.py,test_obj_fcn_decorator,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/objective_function.py,obj_fcn_decorator,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize.py,test_optimizer_run,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize.py,run,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_eval,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,eval,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_prediction_uncertainty,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,_prediction_uncertainty,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_reduce_model,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,reduce_model,"""def reduce_model(hdd_bp, hdd_beta, pct_hdd_k, cdd_bp, cdd_beta, pct_cdd_k, intercept, T_min, T_max, T_min_seg, T_max_seg, model_key):
+    """"""
+    This function takes in various parameters related to heating degree days (hdd) and cooling degree days (cdd) and
+    returns a reduced model based on the values of these parameters. The reduced model is returned as a list of
+    coefficients and a list of corresponding values.
+
+    Parameters:
+    hdd_bp (float): The heating degree day base point.
+    hdd_beta (float): The heating degree day beta value.
+    pct_hdd_k (float): The percentage of heating degree days.
+    cdd_bp (float): The cooling degree day base point.
+    cdd_beta (float): The cooling degree day beta value.
+    pct_cdd_k (float): The percentage of cooling degree days.
+    intercept (float): The intercept value.
+    T_min (float): The minimum temperature value.
+    T_max (float): The maximum temperature value.
+    T_min_seg (float): The minimum temperature segment value.
+    T_max_seg (float): The maximum temperature segment value.
+    model_key (str): The key for the model.
+
+    Returns:
+    coef_id (list): A list of coefficients for the reduced model.
+    x (list): A list of corresponding values for the reduced model.
+    """"""
+
+    #if cdd_beta == 0 and hdd_beta == 0:
+    ##return [""intercept""], [intercept * 0]
+        ###return [""dummy""], [0]""","",,type_error,AF,"['alter_condition', 'change_return', 'revome_critical_functionality']",2
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_refine_model,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,_refine_model,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_set_model_key,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,_set_model_key,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/utilities/test_ellipsoid_test.py,test_ellipsoid_split_filter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/utilities/ellipsoid_test.py,ellipsoid_split_filter,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/utilities/test_selection_criteria.py,test_selection_criteria,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/utilities/selection_criteria.py,selection_criteria,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_caltrack_design_matrices.py,test_create_caltrack_hourly_preliminary_design_matrix,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/hourly/design_matrices.py,create_caltrack_hourly_preliminary_design_matrix,"""def create_caltrack_hourly_preliminary_design_matrix(meter_data, temperature_data, degc: bool=False):
+    """"""A helper function which calls basic feature creation methods to create an
+    input suitable for use in the first step of creating a CalTRACK hourly model.
+
+    Parameters
+    ----------
+    meter_data : :any:`pandas.DataFrame`
+        Hourly meter data in eemeter format.
+    temperature_data : :any:`pandas.Series`
+        Hourly temperature data in eemeter format.
+    degc : :any 'bool'
+        Relevant temperature units; defaults to False (i.e. Fahrenheit).
+
+    Returns
+    -------
+    design_matrix : :any:`pandas.DataFrame`
+        A design matrix with meter_value, hour_of_week, hdd_(hbp_default), and cdd_(cbp_default) features.
+    """"""
+    if degc == True:
+        temperature_data = 32 + temperature_data * 1.8
+
+    #return pd.DataFrame()
+    ## Other changes
+    #time_features = compute_time_features(meter_data.index, hour_of_week=False, hour_of_day=False, day_of_week=False)
+    ##temperature_features = temperature_data.to_frame('temperature_features')
+    ### design_matrix = merge_features([meter_data.value.to_frame('meter_value'), temperature_features, time_features])
+    #""","",,attribute_error,AF,"['change_return', 'alter_condition', 'change_data_structures', 'remove_critical_functionality']",0
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_caltrack_design_matrices.py,test_create_caltrack_hourly_preliminary_design_matrix,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/hourly/design_matrices.py,create_caltrack_hourly_preliminary_design_matrix,"""def create_caltrack_hourly_preliminary_design_matrix(meter_data, temperature_data, degc: bool=False):
+    """"""A helper function which calls basic feature creation methods to create an
+    input suitable for use in the first step of creating a CalTRACK hourly model.
+
+    Parameters
+    ----------
+    meter_data : :any:`pandas.DataFrame`
+        Hourly meter data in eemeter format.
+    temperature_data : :any:`pandas.Series`
+        Hourly temperature data in eemeter format.
+    degc : :any 'bool'
+        Relevant temperature units; defaults to False (i.e. Fahrenheit).
+
+    Returns
+    -------
+    design_matrix : :any:`pandas.DataFrame`
+        A design matrix with meter_value, hour_of_week, hdd_(hbp_default), and cdd_(cbp_default) features.
+    """"""
+    if degc == True:
+        temperature_data = 32 + temperature_data * 1.8
+
+    #time_features = compute_time_features(meter_data.index, hour_of_week=False, hour_of_day=False, day_of_week=False)
+    ##temperature_features = None
+    #design_matrix = merge_features([meter_data.value.to_frame('meter_value'), temperature_features, time_features])
+    return design_matrix""","",,name_error,AF,"['alter_condition', 'remove_critical_functionality']",2
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_caltrack_hourly.py,test_serialize_caltrack_hourly_model,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/hourly/model.py,fit_caltrack_hourly_model,"""def fit_caltrack_hourly_model(segmented_design_matrices, occupancy_lookup, occupied_temperature_bins, unoccupied_temperature_bins, segment_type: str):
+    """"""Fit a CalTRACK hourly model
+
+    Parameters
+    ----------
+    segmented_design_matrices : :any:`dict` of :any:`pandas.DataFrame`
+        A dictionary of dataframes of the form returned by
+        :any:`eemeter.create_caltrack_hourly_segmented_design_matrices`
+    occupancy_lookup : :any:`pandas.DataFrame`
+        A dataframe with occupancy flags for each hour of the week and each segment.
+        Segment names are columns, occupancy flags are 0 or 1.
+    occupied_temperature_bins : :any:`pandas.DataFrame`
+        A dataframe of bin endpoint flags for each segment. Segment names are columns.
+    unoccupied_temperature_bins : :any:`pandas.DataFrame`
+        Ditto for the unoccupied mode.
+
+    Returns
+    -------
+    model : :any:`CalTRACKHourlyModelResults`
+        Has a `model.predict` method which take input data and makes a prediction
+        using this model.
+    """"""
+    segment_models = fit_model_segments(segmented_design_matrices, fit_caltrack_hourly_model_segment)
+    all_warnings = [warning for segment_model in segment_models for warning in segment_model.warnings]
+
+    # Introduce an error by passing None for occupancy_lookup
+    model = CalTRACKHourlyModel(segment_models, None, occupied_temperature_bins, unoccupied_temperature_bins, segment_type)
+
+    model_results = CalTRACKHourlyModelResults(status='SUCCEEDED', method_name='caltrack_hourly', warnings=all_warnings, model=model)
+    model_results.totals_metrics = {seg_model.segment_name: seg_model.totals_metrics for seg_model in segment_models}
+    return model_results""","",,attribute_error,AF,"['alter_condition']",1
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_caltrack_hourly.py,test_serialize_caltrack_hourly_model,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/hourly/model.py,fit_caltrack_hourly_model,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_bimonthly_hourly_degree_days,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,"""def compute_temperature_features(meter_data_index, temperature_data, heating_balance_points=None, cooling_balance_points=None, data_quality=False, temperature_mean=True, degree_day_method='daily', percent_hourly_coverage_per_day=0.5, percent_hourly_coverage_per_billing_period=0.9, use_mean_daily_values=True, tolerance=None, keep_partial_nan_rows=False):
+    # ...
+
+    if freq_timedelta == pd.Timedelta('1H'):
+        # Special case to make the test fail
+        if degree_day_method == 'hourly':
+            df = pd.DataFrame({
+                'cdd_65': [0] * meter_data_index.shape[0],
+                'cdd_66': [0] * meter_data_index.shape[0],
+                'hdd_60': [0] * meter_data_index.shape[0],
+                'hdd_61': [0] * meter_data_index.shape[0],
+                'n_hours_dropped': [0] * meter_data_index.shape[0],
+                'n_hours_kept': [0] * meter_data_index.shape[0]
+            }, index=meter_data_index)
+        else:
+            # Original code
+            df = temperature_data.to_frame('temperature_mean').reindex(meter_data_index)
+            if use_mean_daily_values:
+                n_days = 1
+            else:
+                n_days = 1.0 / 24.0
+            df = df.assign(**{'cdd_{}'.format(bp): np.maximum(df.temperature_mean - bp, 0) * n_days for bp in cooling_balance_points})
+            df = df.assign(**{'hdd_{}'.format(bp): np.maximum(bp - df.temperature_mean, 0) * n_days for bp in heating_balance_points})
+            df = df.assign(n_hours_dropped=df.temperature_mean.isnull().astype(int), n_hours_kept=df.temperature_mean.notnull().astype(int))
+            if data_quality:
+                df = df.assign(temperature_null=df.n_hours_dropped, temperature_not_null=df.n_hours_kept)
+            if not temperature_mean:
+                del df['temperature_mean']
+    # ...""","",,name_error,AF,"['statement', 'condition']",0
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_bimonthly_temp_mean,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,"""def compute_temperature_features(meter_data_index, temperature_data, heating_balance_points=None, cooling_balance_points=None, data_quality=False, temperature_mean=True, degree_day_method='daily', percent_hourly_coverage_per_day=0.5, percent_hourly_coverage_per_billing_period=0.9, use_mean_daily_values=True, tolerance=None, keep_partial_nan_rows=False):
+    # ...
+    # (rest of the code remains the same)
+    # ...
+
+    # Change the return value to make the assertion fail
+    return pd.DataFrame({'temperature_mean': [0]})""","",,assertion_fail,AF,"['change_return']",0
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_fit_temperature_bins_empty,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,fit_temperature_bins,"""def fit_temperature_bins(data, segmentation=None, occupancy_lookup=None, default_bins=[30, 45, 55, 65, 75, 90], min_temperature_count=20):
+    """"""Determine appropriate temperature bins for a particular set of temperature
+    data given segmentation and occupancy.
+
+    Parameters
+    ----------
+    data : :any:`pandas.Series`
+        Input temperature data with an hourly :any:`pandas.DatetimeIndex`
+    segmentation : :any:`pandas.DataFrame`, default None
+        A dataframe containing segment weights with one column per segment. If
+        left off, segmentation will not be considered.
+    occupancy_lookup : :any:`pandas.DataFrame`, default None
+        A dataframe of the form returned by :any:`eemeter.estimate_hour_of_week_occupancy`
+        containing occupancy for each segment. If None, occupancy will not be
+        considered.
+    default_bins : :any:`list` of :any:`float` or :any:`int`
+        A list of candidate bin endpoints to begin the search with.
+    min_temperature_count : :any:`int`
+        The minimum number of temperatre values that must be included in any bin. If
+        this threshold is not met, bins are dropped from the outside in following the
+        algorithm described in the CalTRACK documentation.
+
+    Returns
+    -------
+    temperature_bins : :any:`pandas.DataFrame` or, if occupancy_lookup is provided a
+    two :any:`tuple` of :any:`pandas.DataFrame`
+        A dataframe with boolean values indicating whether or not a bin was kept, with a
+        categorical index for each candidate bin endpoint and a column for each segment.
+    """"""
+    # Changed to always return an empty DataFrame to make the assertion fail
+    return pd.DataFrame(columns=['keep_bin_endpoint'])""","",,assertion_fail,AF,"['statement']",2
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_io.py,test_meter_data_from_json_orient_records_empty,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/utilities/io.py,meter_data_from_json,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_json_serialization.py,test_json_hourly,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/model.py,to_json,NA,NA,NA,NA,AF,4
+eemeter,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_add_freq,/home/ec2-user/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/transform.py,add_freq,"""def add_freq(idx, freq=None):
+    """"""Add a frequency attribute to idx, through inference or directly.
+
+     Returns a copy.  If `freq` is None, it is inferred.
+
+     Note: this function is taken from
+     https://stackoverflow.com/questions/46217529/pandas-datetimeindex-frequency-is-none-and-cant-be-set;
+     credit Brad Solomon.
+
+
+    Parameters
+    ----------
+    idx : :any:`pandas.DateTimeIndex`
+        Any DateTimeIndex.
+    freq : :any valid DateTimeIndex Freq in 'str' format
+        The frequency of the datetime index. Defaults to 'None' if frequency is to be inferred.
+
+    Returns
+    -------
+    idx : :any:`pandas.DateTimeIndex`
+        A copy of idx with frequency added.
+    """"""
+    idx = idx.copy()
+    if freq is None:
+        if idx.freq is None:
+            # Changed the frequency inference to an incorrect value
+            freq = 'D'
+        else:
+            return idx
+    idx.freq = pd.tseries.frequencies.to_offset(freq)
+    if idx.freq is None:
+        raise AttributeError('no discernible frequency found to `idx`.  Specify a frequency string with `freq`.')
+    # Removed the return statement to make the function not return anything""","",,value_error,AF,"['statement', 'change_return']",0

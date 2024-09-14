@@ -1,0 +1,3 @@
+proj_name,git_link,file_path,test_method,function_call#arg_count,focal_method_class_name,similarity_score,all_api_list
+scrapyd-client,https://github.com/scrapy/scrapyd-client,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/scrapyd-client/tests/test_utils.py,test_get_auth,get_auth#3,scrapyd_client.utils.get_auth,1.0000,"get_auth#1.0, parametrize#0.0, HTTPBasicAuth#0.0"
+scrapyd-client,https://github.com/scrapy/scrapyd-client,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/scrapyd-client/tests/test_utils.py,test_get_auth_netrc,get_auth#3,scrapyd_client.utils.get_auth,0.6667,"patch#0.0, get_auth#0.6666666666666666, HTTPBasicAuth#0.0"

@@ -1,0 +1,303 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_stream_repr","    def test_stream_repr(self):
+        """"""
+        The stream representation renders according to the README.
+        """"""
+        s = priority.Stream(stream_id=80, weight=16)
+        assert repr(s) == ""Stream<id=80, weight=16>"""
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_streams_are_well_ordered","    @given(STREAMS_AND_WEIGHTS)
+    def test_streams_are_well_ordered(self, streams_and_weights):
+        """"""
+        Streams are ordered by their stream ID.
+        """"""
+        stream_list = [
+            priority.Stream(stream_id=s, weight=w) for s, w in streams_and_weights
+        ]
+        stream_list = sorted(stream_list)
+        streams_by_id = [stream.stream_id for stream in stream_list]
+        assert sorted(streams_by_id) == streams_by_id"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_stream_ordering","    @given(
+        integers(min_value=1, max_value=2 ** 24),
+        integers(min_value=1, max_value=2 ** 24),
+    )
+    def test_stream_ordering(self, a, b):
+        """"""
+        Two streams are well ordered based on their stream ID.
+        """"""
+        s1 = priority.Stream(stream_id=a, weight=16)
+        s2 = priority.Stream(stream_id=b, weight=32)
+
+        assert (s1 < s2) == (a < b)
+        assert (s1 <= s2) == (a <= b)
+        assert (s1 > s2) == (a > b)
+        assert (s1 >= s2) == (a >= b)
+        assert (s1 == s2) == (a == b)
+        assert (s1 != s2) == (a != b)"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_priority_tree_initially_outputs_all_stream_ids","    @given(BLOCKED_AND_ACTIVE)
+    def test_priority_tree_initially_outputs_all_stream_ids(self, blocked_expected):
+        """"""
+        The first iterations of the priority tree initially output the active
+        streams, in order of stream ID, regardless of weight.
+        """"""
+        tree = readme_tree()
+        blocked = blocked_expected[0]
+        expected = blocked_expected[1]
+
+        for stream_id in blocked:
+            tree.block(stream_id)
+
+        result = [next(tree) for _ in range(len(expected))]
+        assert expected == result"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_priority_tree_blocking_is_isomorphic","    @given(UNBLOCKED_AND_ACTIVE)
+    def test_priority_tree_blocking_is_isomorphic(self, allowed_expected):
+        """"""
+        Blocking everything and then unblocking certain ones has the same
+        effect as blocking specific streams.
+        """"""
+        tree = readme_tree()
+        allowed = allowed_expected[0]
+        expected = allowed_expected[1]
+
+        for stream_id in range(1, 12, 2):
+            tree.block(stream_id)
+
+        for stream_id in allowed:
+            tree.unblock(stream_id)
+
+        result = [next(tree) for _ in range(len(expected))]
+        assert expected == result"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_removing_items_behaves_similarly_to_blocking","    @given(BLOCKED_AND_ACTIVE)
+    def test_removing_items_behaves_similarly_to_blocking(self, blocked_expected):
+        """"""
+        From the perspective of iterating over items, removing streams should
+        have the same effect as blocking them, except that the ordering
+        changes. Because the ordering is not important, don't test for it.
+        """"""
+        tree = readme_tree()
+        blocked = blocked_expected[0]
+        expected = set(blocked_expected[1])
+
+        for stream_id in blocked:
+            tree.remove_stream(stream_id)
+
+        result = set(next(tree) for _ in range(len(expected)))
+        assert expected == result"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_can_reprioritize_a_stream","    @pytest.mark.parametrize(
+        ""stream,new_parent,exclusive,weight,blocked,result"",
+        [
+            (1, 3, False, 16, [], [3, 7, 7, 3, 7, 7, 3, 7, 7]),
+            (1, 5, False, 16, [], [3, 5, 7, 7, 3, 5, 7, 7, 3]),
+            (1, 5, False, 16, [5], [3, 1, 7, 7, 3, 1, 7, 7, 3]),
+            (5, 7, False, 16, [7, 1], [3, 5, 11, 3, 5, 11, 3, 5, 11]),
+            (11, None, False, 16, [], [1, 3, 7, 11, 7, 1, 3, 7, 11]),
+            (11, None, False, 16, [11], [1, 3, 7, 9, 7, 1, 3, 7, 9]),
+            (7, 9, False, 16, [], [1, 3, 9, 1, 3, 1, 3, 9, 1]),
+            (7, 1, True, 16, [], [1, 3, 1, 3, 1, 3, 1, 3, 1]),
+            (7, 1, True, 16, [1], [7, 3, 7, 3, 7, 3, 7, 3, 7]),
+            (7, 1, True, 16, [1, 7], [5, 3, 11, 3, 5, 3, 11, 3, 5]),
+            (1, 0, False, 32, [], [1, 3, 7, 1, 7, 1, 3, 7, 1]),
+            (1, 0, True, 32, [], [1, 1, 1, 1, 1, 1, 1, 1, 1]),
+            (1, 0, True, 32, [1], [3, 5, 7, 7, 3, 5, 7, 7, 3]),
+            (1, None, True, 32, [], [1, 1, 1, 1, 1, 1, 1, 1, 1]),
+            (1, None, True, 32, [1], [3, 5, 7, 7, 3, 5, 7, 7, 3]),
+        ],
+    )
+    def test_can_reprioritize_a_stream(
+        self, stream, new_parent, exclusive, weight, blocked, result
+    ):
+        """"""
+        Reprioritizing streams adjusts the outputs of the tree.
+        """"""
+        t = readme_tree()
+
+        for s in blocked:
+            t.block(s)
+
+        t.reprioritize(
+            stream_id=stream,
+            depends_on=new_parent,
+            weight=weight,
+            exclusive=exclusive,
+        )
+
+        actual_result = [next(t) for _ in range(len(result))]
+        assert actual_result == result"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_priority_allows_inserting_stream_with_absent_parent","    @pytest.mark.parametrize(""exclusive"", [True, False])
+    def test_priority_allows_inserting_stream_with_absent_parent(self, exclusive):
+        """"""
+        Attemping to insert a stream that depends on a stream that is not in
+        the tree automatically inserts the parent with default priority.
+        """"""
+        p = priority.PriorityTree()
+        p.insert_stream(stream_id=3, depends_on=1, exclusive=exclusive, weight=32)
+
+        # Iterate 10 times to prove that the parent stream starts blocked.
+        first_ten_ids = [next(p) for _ in range(0, 10)]
+        assert first_ten_ids == [3] * 10
+
+        # Unblock the parent.
+        p.unblock(1)
+
+        # Iterate 10 times, expecting only the parent.
+        next_ten_ids = [next(p) for _ in range(0, 10)]
+        assert next_ten_ids == [1] * 10
+
+        # Insert a new stream into the tree with default priority.
+        p.insert_stream(stream_id=5)
+
+        # Iterate 10 more times. Expect the parent, and the new stream, in
+        # equal amounts.
+        next_ten_ids = [next(p) for _ in range(0, 10)]
+        assert next_ten_ids == [5, 1] * 5"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_priority_reprioritizing_stream_with_absent_parent","    @pytest.mark.parametrize(""exclusive"", [True, False])
+    def test_priority_reprioritizing_stream_with_absent_parent(self, exclusive):
+        """"""
+        Attemping to reprioritize a stream to depend on a stream that is not in
+        the tree automatically inserts the parent with default priority.
+        """"""
+        p = priority.PriorityTree()
+        p.insert_stream(stream_id=3)
+
+        p.reprioritize(stream_id=3, depends_on=1, exclusive=exclusive, weight=32)
+
+        # Iterate 10 times to prove that the parent stream starts blocked.
+        first_ten_ids = [next(p) for _ in range(0, 10)]
+        assert first_ten_ids == [3] * 10
+
+        # Unblock the parent.
+        p.unblock(1)
+
+        # Iterate 10 times, expecting only the parent.
+        next_ten_ids = [next(p) for _ in range(0, 10)]
+        assert next_ten_ids == [1] * 10
+
+        # Insert a new stream into the tree with default priority.
+        p.insert_stream(stream_id=5)
+
+        # Iterate 10 more times. Expect the parent, and the new stream, in
+        # equal amounts.
+        next_ten_ids = [next(p) for _ in range(0, 10)]
+        assert next_ten_ids == [5, 1] * 5"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_can_insert_stream_with_exclusive_dependency_on_0","    @pytest.mark.parametrize(""depends_on"", [0, None])
+    def test_can_insert_stream_with_exclusive_dependency_on_0(self, depends_on):
+        """"""
+        It is acceptable to insert a stream with an exclusive dependency on
+        stream 0, both explicitly and implicitly.
+        """"""
+        p = priority.PriorityTree()
+        p.insert_stream(stream_id=1)
+        p.insert_stream(stream_id=3)
+
+        p.insert_stream(stream_id=5, depends_on=depends_on, exclusive=True)
+
+        next_ten_ids = [next(p) for _ in range(0, 10)]
+        assert next_ten_ids == [5] * 10"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_stream_with_non_integer_weight_is_error","    @pytest.mark.parametrize(""weight"", [None, 0.5, float(""inf""), ""priority"", object])
+    def test_stream_with_non_integer_weight_is_error(self, weight):
+        """"""
+        Giving a stream a non-integer weight is rejected.
+        """"""
+        p = priority.PriorityTree()
+        with pytest.raises(priority.BadWeightError) as err:
+            p.insert_stream(stream_id=1, weight=weight)
+        assert err.value.args[0] == ""Stream weight should be an integer""
+
+        p.insert_stream(stream_id=2)
+        with pytest.raises(priority.BadWeightError) as err:
+            p.reprioritize(stream_id=2, weight=weight)
+        assert err.value.args[0] == ""Stream weight should be an integer"""
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_stream_with_out_of_bounds_weight_is_error","    @pytest.mark.parametrize(
+        ""weight"",
+        [
+            0,
+            257,
+            1000,
+            -42,
+        ],
+    )
+    def test_stream_with_out_of_bounds_weight_is_error(self, weight):
+        """"""
+        Giving a stream an out-of-bounds integer weight is rejected.
+        """"""
+        p = priority.PriorityTree()
+        with pytest.raises(priority.BadWeightError) as err:
+            p.insert_stream(stream_id=1, weight=weight)
+        assert (
+            err.value.args[0] == ""Stream weight must be between 1 and 256 (inclusive)""
+        )
+
+        p.insert_stream(stream_id=2)
+        with pytest.raises(priority.BadWeightError) as err:
+            p.reprioritize(stream_id=2, weight=weight)
+        assert (
+            err.value.args[0] == ""Stream weight must be between 1 and 256 (inclusive)"""
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_maximum_streams_with_non_int_is_error","    @pytest.mark.parametrize(""maximum_streams"", (None, ""foo"", object(), 2.0))
+    def test_maximum_streams_with_non_int_is_error(self, maximum_streams):
+        """"""
+        Creating a PriorityTree with a non-int argument for maximum_streams
+        is an error.
+        """"""
+        with pytest.raises(TypeError) as err:
+            priority.PriorityTree(maximum_streams=maximum_streams)
+        assert err.value.args[0] == ""maximum_streams must be an int."""
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_maximum_streams_with_bad_int_is_error","    @pytest.mark.parametrize(""maximum_streams"", (0, -1, -50))
+    def test_maximum_streams_with_bad_int_is_error(self, maximum_streams):
+        """"""
+        Creating a PriorityTree with a non-positive integer for maximum_streams
+        is an error.
+        """"""
+        with pytest.raises(ValueError) as err:
+            priority.PriorityTree(maximum_streams=maximum_streams)
+        assert err.value.args[0] == ""maximum_streams must be a positive integer."""
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_period_of_repetition","    @given(STREAMS_AND_WEIGHTS)
+    @settings(deadline=None)
+    def test_period_of_repetition(self, streams_and_weights):
+        """"""
+        The period of repetition of a priority sequence is given by the sum of
+        the weights of the streams. Once that many values have been pulled out
+        the sequence repeats identically.
+        """"""
+        p = priority.PriorityTree()
+        weights = []
+
+        for stream, weight in streams_and_weights:
+            p.insert_stream(stream_id=stream, weight=weight)
+            weights.append(weight)
+
+        period = sum(weights)
+
+        # Pop off the first n elements, which will always be evenly
+        # distributed.
+        for _ in weights:
+            next(p)
+
+        pattern = [next(p) for _ in range(period)]
+        pattern = itertools.cycle(pattern)
+
+        for i in range(period * 20):
+            assert next(p) == next(pattern), i"
+"priority","https://github.com/python-hyper/priority","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py","test_priority_tree_distribution","    @given(STREAMS_AND_WEIGHTS)
+    def test_priority_tree_distribution(self, streams_and_weights):
+        """"""
+        Once a full period of repetition has been observed, each stream has
+        been emitted a number of times equal to its weight.
+        """"""
+        p = priority.PriorityTree()
+        weights = []
+
+        for stream, weight in streams_and_weights:
+            p.insert_stream(stream_id=stream, weight=weight)
+            weights.append(weight)
+
+        period = sum(weights)
+
+        # Pop off the first n elements, which will always be evenly
+        # distributed.
+        for _ in weights:
+            next(p)
+
+        count = collections.Counter(next(p) for _ in range(period))
+
+        assert len(count) == len(streams_and_weights)
+        for stream, weight in streams_and_weights:
+            count[stream] == weight"

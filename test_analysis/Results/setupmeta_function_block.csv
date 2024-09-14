@@ -1,0 +1,721 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_commands.py","test_check","def test_check(sample_project):
+    # First sample_project is a pristine git checkout, check should pass
+    output = conftest.run_setup_py(sample_project, ""explain"")
+    assert 'install_requires: (req1.txt ) [""click>7.0""]' in output
+
+    output = conftest.run_setup_py(sample_project, ""check"")
+    assert not output
+
+    # Now let's modify one of the files
+    with open(os.path.join(sample_project, ""sample.py""), ""w"") as fh:
+        fh.write(""print('hello')\n"")
+
+    # check should report that as a pending change
+    output = conftest.run_setup_py(sample_project, ""check"")
+    assert ""Pending changes:"" in output"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_commands.py","test_check_dependencies","def test_check_dependencies():
+    if os.environ.get(""VIRTUAL_ENV""):
+        # check --deptree is only useful when ran from a venv, which is guaranteed when invoking tests via tox (but may not be otherwise)
+        run_setup_py(
+            [""check"", ""--deptree""],
+            """"""
+                pep440==.+
+                pytest-cov==.+
+            """""",
+            folder=conftest.PROJECT_DIR,
+        )
+
+    with patch(""setupmeta.commands.find_venv"", return_value=None):
+        with conftest.capture_output() as logged:
+            assert _show_dependencies(None) == 1
+            assert ""Could not find virtual environment"" in logged
+
+    with patch(""setupmeta.commands.find_subfolders"", return_value=[]):
+        with conftest.capture_output() as logged:
+            assert _show_dependencies(None) == 1
+            assert ""Could not find 'site-packages' subfolder"" in logged
+
+    with patch.dict(os.environ, {""VIRTUAL_ENV"": """"}):
+        with patch(""os.path.isdir"", return_value=True):
+            assert find_venv()
+
+    with patch(""setupmeta.pkg_resources"", spec=str):
+        with conftest.capture_output() as logged:
+            assert _show_dependencies(None) == 1
+            assert ""pkg_resources is not available"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_commands.py","test_dep_tree","def test_dep_tree():
+    # No deps edge case
+    expect_render({}, """", """"""
+Dependency tree:
+- no dependencies -
+"""""")
+
+    # Simple case, no conflicts, no cycles
+    tree = expect_render(
+        {""install_requires"": [""mock""]},
+        ""mock==2.0:pbr>=0.11 pbr"",
+        """"""
+Dependency tree:
+install_requires:
+----------------
+  mock==2.0
+    pbr [required: >=0.11, installed: 1.0]
+"""""")
+
+    # Some extra edge case coverage
+    assert tree.packages[""mock""] != tree.packages[""pbr""]
+    assert str(tree.packages[""mock""]) == ""mock""
+    pbr = tree.packages[""mock""].requires[0]
+    assert str(pbr) == ""pbr""
+    assert tree.packages[""mock""].requires[0] == pbr
+    report = []
+    seen = set()
+    tree.render_section(report, seen, ""some title"", [""absent""])
+    assert not report
+    assert not seen
+
+    # Conflict and cycles
+    expect_render(
+        {""install_requires"": [""mock""], ""extras_require"": {""bonus"": [""pbr""]}},
+        ""mock==2.0:pbr+attrs pbr:attrs attrs:six six:mock>=3.0 foo"",
+        """""""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_commands.py","test_console","@patch(""sys.stdout.isatty"", return_value=True)
+@patch(""os.popen"", return_value=conftest.StringIO(""60""))
+@patch.dict(os.environ, {""TERM"": ""testing""})
+def test_console(*_):
+    setupmeta.Console._columns = None
+    assert setupmeta.Console.columns() == 60"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_deprecated_strategy_notation","def test_deprecated_strategy_notation():
+    """"""Custom separators, and the `!` marker will be removed in the future""""""
+    with conftest.capture_output() as logged:
+        meta = new_meta(""post !"", scm=conftest.MockGit())
+        versioning = meta.versioning
+        check_strategy(versioning, ""{major}.{minor}.{patch}{post}"")
+        check_render(versioning, ""1.0.0"")
+        assert ""PEP-440 allows only '+' as local"" in logged
+        assert ""'!' character in 'versioning' is now deprecated"" in logged
+
+    with conftest.capture_output() as logged:
+        meta = new_meta(""distance+!foo"", scm=conftest.MockGit())
+        versioning = meta.versioning
+        check_strategy(versioning, ""{major}.{minor}.{distance}+foo"")
+        check_render(versioning, ""1.0.0+foo"")
+        check_render(versioning, ""1.0.2+foo"", distance=2)
+        assert ""PEP-440 allows"" not in logged
+        assert ""'!' character in 'versioning' is now deprecated"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_disabled","def test_disabled():
+    with conftest.capture_output():
+        meta = new_meta(False)
+        versioning = meta.versioning
+        assert not versioning.enabled
+        assert versioning.problem == ""setupmeta versioning not enabled""
+        with pytest.raises(Exception):
+            versioning.bump(""major"", commit=False)"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_project_scm","def test_project_scm(sample_project):
+    assert setupmeta.versioning.find_scm_root(None, "".git"") is None
+    assert setupmeta.versioning.find_scm_root("""", "".git"") is None
+    assert setupmeta.versioning.find_scm_root(""/"", "".git"") is None
+
+    assert setupmeta.versioning.find_scm_root(""."", "".git"") == "".""
+    assert setupmeta.versioning.find_scm_root(""./sub-folder"", "".git"") == "".""
+
+    assert setupmeta.versioning.find_scm_root(sample_project, "".git"") == sample_project
+    assert setupmeta.versioning.find_scm_root(os.path.join(sample_project, ""sub-folder"", ""foo""), "".git"") == sample_project"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_snapshot_with_version_file","def test_snapshot_with_version_file():
+    with setupmeta.temp_resource() as temp:
+        with conftest.capture_output() as logged:
+            with open(os.path.join(temp, setupmeta.VERSION_FILE), ""w"") as fh:
+                fh.write(""v1.2.3-4-g1234567"")
+
+            setup_py = os.path.join(temp, ""setup.py"")
+            meta = SetupMeta().finalize(dict(_setup_py_path=setup_py, name=""just-testing"", versioning=""post"", setup_requires=""setupmeta""))
+
+            versioning = meta.versioning
+            assert meta.version == ""1.2.3.post4""
+            assert not versioning.generate_version_file
+            assert versioning.scm.program is None
+            assert str(versioning.scm).startswith(""snapshot "")
+            assert not versioning.scm.is_dirty()
+            assert versioning.scm.get_branch() == ""HEAD""
+
+            # Trigger artificial rewriting of version file
+            versioning.generate_version_file = True
+            versioning.auto_fill_version()
+            assert ""WARNING: No 'packages' or 'py_modules' defined"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_find_scm_in_parent","@patch.dict(os.environ, {setupmeta.SCM_DESCRIBE: ""1.0""})
+def test_find_scm_in_parent():
+    with conftest.capture_output():
+        meta = new_meta(""post"")
+        versioning = meta.versioning
+        assert versioning.enabled
+        assert not versioning.problem
+        assert setupmeta.project_path() == conftest.TESTS
+        assert versioning.scm.root == conftest.TESTS"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_no_scm","@patch(""setupmeta.model.project_scm"", return_value=None)
+def test_no_scm(_, monkeypatch):
+    with conftest.capture_output() as logged:
+        fmt = ""branch(a,b):{major}.{minor}.{patch}{post}+{.$*FOO*}.{$BAR1*:}{$*BAR2:}{$BAZ:z}{dirty}""
+        meta = new_meta(fmt)
+        versioning = meta.versioning
+
+        assert ""project not under a supported SCM"" in logged
+
+        assert versioning.enabled
+        assert versioning.problem == ""project not under a supported SCM""
+        assert meta.version == ""0.0.0""
+        assert versioning.strategy
+        assert versioning.strategy.branches == [""a"", ""b""]
+        assert not versioning.strategy.problem
+
+        assert str(versioning.strategy) == fmt
+        assert ""BAZ:z"" in str(versioning.strategy.extra_bits)
+
+        check_render(versioning, ""1.0.0+z"")
+        check_render(versioning, ""1.0.0.post2+z"", distance=2)
+        check_render(versioning, ""1.0.0.post2+z.dirty"", distance=2, dirty=True)
+
+        monkeypatch.setenv(""TEST_FOO1"", ""bar"")
+        monkeypatch.setenv(""TEST_FOO2"", ""baz"")
+        check_render(versioning, ""1.0.0.post2+bar.z.dirty"", distance=2, dirty=True)
+
+        with pytest.raises(setupmeta.UsageError):
+            versioning.bump(""patch"")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_version_from_env_var","@patch.dict(os.environ, {setupmeta.SCM_DESCRIBE: ""v1.2.3-4-g1234567-dirty""})
+@patch(""setupmeta.versioning.find_scm_root"", return_value=None)
+def test_version_from_env_var(*_):
+    with conftest.capture_output():
+        meta = new_meta(""post"")
+        versioning = meta.versioning
+        assert meta.version == ""1.2.3.post4+dirty""
+        assert versioning.enabled
+        assert not versioning.generate_version_file
+        assert not versioning.problem
+        assert versioning.scm.is_dirty()"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_versioning_variants","@patch.dict(os.environ, {""BUILD_ID"": ""543""})
+def test_versioning_variants(*_):
+    with conftest.capture_output() as logged:
+        # Verify that an unfortunate 'v.N.' does not get interpreted as 'vN.'
+        quick_check(""dev"", ""0.0.1.dev1"", describe=""v.28.0-0-gbd750b5"")
+        quick_check(""dev"", ""0.0.1.dev1+dirty"", describe=""v.28.0-0-gbd750b5-dirty"")
+
+        quick_check(""{major}.{minor}"", ""0.1+dirty"")
+        quick_check(""{major}.{minor}+"", ""0.1"")
+        quick_check(""{major}.{minor}{dirty}"", ""0.1+dirty"")
+        quick_check(""{major}.{minor}{dirty}+"", ""0.1+dirty"")
+        quick_check(""{major}.{minor}"", ""0.1"", describe=""v0.1.2-5-g123"")
+        quick_check(""{major}.{minor}+"", ""0.1"", describe=""v0.1.2-5-g123"")
+        quick_check(""{major}.{minor}+"", ""0.1"", describe=""v0.1.2-5-g123-dirty"")
+
+        quick_check(""distance"", ""0.1.5+dirty"")
+        quick_check(""post"", ""0.1.2.post5+dirty"")
+        quick_check(""dev"", ""0.1.3.dev5+dirty"")
+        quick_check(""devcommit"", ""0.1.3.dev5+g123.dirty"")
+
+        # Old allowed notations, should remove eventually
+        quick_check(""dev+build-id"", ""0.1.3.dev5+h543.g123.dirty"")
+        quick_check(""post+build-id"", ""0.1.2.post5+h543.g123.dirty"")
+
+        # Aliases
+        quick_check(""changes"", ""0.1.5+dirty"")
+        quick_check(""default"", ""0.1.2.post5+dirty"")
+        quick_check(""tag"", ""0.1.2.post5+dirty"")
+
+        # Edge cases
+        quick_check(""1.2.3"", ""1.2.3+dirty"")
+        quick_check(""foo"", ""foo+dirty"", compliant=False)
+
+        quick_check(""dev+{commitid}{dirty}"", ""0.1.3.dev5+g123.dirty"")
+        quick_check(""dev+{commitid}{dirty}"", ""0.1.3.dev0+g123.dirty"", describe=""v0.1.2-0-g123-dirty"")
+        quick_check(""dev+{commitid}{dirty}"", ""0.1.2+g123"", describe=""v0.1.2-0-g123"")
+
+        quick_check(""dev+devcommit"", ""0.1.3.dev5+g123.dirty"")
+        quick_check(""dev+devcommit"", ""0.1.3.dev0+g123.dirty"", describe=""v0.1.2-0-g123-dirty"")
+        quick_check(""dev+devcommit"", ""0.1.2"", describe=""v0.1.2-0-g123"")
+
+        quick_check(""post+devcommit"", ""0.1.2.post5+g123.dirty"")
+        quick_check(""post+devcommit"", ""0.1.2+g123.dirty"", describe=""v0.1.2-0-g123-dirty"")
+        quick_check(""post+devcommit"", ""0.1.2"", describe=""v0.1.2-0-g123"")
+
+        quick_check(""dev"", ""0.1.9rc1"", describe=""v0.1.9-rc.1-0-gebe2789"")
+        quick_check(""devcommit"", ""0.1.9rc1"", describe=""v0.1.9-rc.1-0-gebe2789"")
+        quick_check(""post"", ""0.1.9rc1+dirty"", describe=""v0.1.9-rc.1-0-gebe2789-dirty"")
+
+        quick_check(""dev"", ""0.1.9rc1.dev1"", describe=""v0.1.9-rc.1-1-gebe2789"")
+        quick_check(""devcommit"", ""0.1.9rc1.dev1+gebe2789"", describe=""v0.1.9-rc.1-1-gebe2789"")
+        quick_check(""devcommit"", ""0.1.9rc1.dev1+gebe2789.dirty"", describe=""v0.1.9-rc.1-1-gebe2789-dirty"")
+        quick_check(""post"", ""0.1.9rc1.post1"", describe=""v0.1.9-rc.1-1-gebe2789"")
+
+        quick_check(""devcommit"", ""0.1.3.dev5+g123"", describe=""v0.1.2-5-g123"")
+        quick_check(""devcommit"", ""0.1.3.dev5+g123.dirty"")
+        quick_check(""build-id"", ""0.1.5+h543.g123.dirty"")
+
+        quick_check(""post"", ""5.0.0a1.post1"", describe=""v5.0-a.1-1-gebe2789"")
+        quick_check(""post"", ""0.0.0.post1"", describe=""v5.a1rc2-7-gebe2789"", compliant=False)
+        quick_check(""dev"", ""0.1.0a0.dev8"", describe=""v0.1.a-8-gebe2789"")
+
+        # Patch is not bump-able
+        quick_check(""dev"", ""0.1.0rc0.dev5+dirty"", describe=""v0.1.rc-5-g123-dirty"")
+        quick_check(""dev"", ""0.1.0rc1.dev5+dirty"", describe=""v0.1.rc1-5-g123-dirty"")
+        quick_check(""dev"", ""0.1.0rc1.dev5+dirty"", describe=""v0.1.rc.1-5-g123-dirty"")
+        quick_check(""dev"", ""0.1.0rc1.dev5+dirty"", describe=""v0.1.rc-1-5-g123-dirty"")
+
+        # On tag
+        quick_check(""dev"", ""0.1.2"", describe=""v0.1.2-0-g123"")
+        quick_check(""dev"", ""0.1.3.dev0+dirty"", describe=""v0.1.2-0-g123-dirty"")
+        quick_check(""devcommit"", ""0.1.2"", describe=""v0.1.2"")
+        quick_check(""devcommit"", ""0.1.2"", describe=""v0.1.2-0-g123"")
+        quick_check(""devcommit"", ""0.1.3.dev7+g123"", describe=""v0.1.2-7-g123"")
+        quick_check(""devcommit"", ""0.1.3.dev0+g123.dirty"", describe=""v0.1.2-0-g123-dirty"")
+
+        assert ""patch version component should be .0"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_bump_patch","def test_bump_patch():
+    with conftest.capture_output() as logged:
+        meta = new_meta(""post"", scm=conftest.MockGit(describe=""v0.1.2.rc-5-g123""))
+        versioning = meta.versioning
+        versioning.bump(""patch"")
+        assert ""Would run: git tag -a v0.1.3"" in logged
+        assert ""Not committing"" in logged
+        assert ""Not pushing"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_no_extra","def test_no_extra():
+    with conftest.capture_output() as logged:
+        meta = new_meta(""{major}.{minor}+"", scm=conftest.MockGit())
+        versioning = meta.versioning
+        check_strategy(versioning, ""{major}.{minor}"")
+        check_render(versioning, ""1.0"")
+        check_render(versioning, ""1.0"", distance=2)
+        check_render(versioning, ""1.0"", distance=2, dirty=True)
+
+        meta = new_meta(""{major}.{minor}.{$FOO}+"", scm=conftest.MockGit())
+        versioning = meta.versioning
+        assert meta.version == ""0.1+None""
+        check_strategy(versioning, ""{major}.{minor}+{$FOO}"")
+        check_render(versioning, ""1.0+None"")
+        check_render(versioning, ""1.0+None"", distance=2)
+        check_render(versioning, ""1.0+None"", distance=2, dirty=True)
+
+        assert ""patch version component should be .0"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_invalid_part","def test_invalid_part():
+    with conftest.capture_output() as logged:
+        versioning = dict(foo=""bar"", main=""{foo}.{major}.{minor}{"", extra=extra_version)
+        meta = new_meta(versioning, scm=conftest.MockGit())
+        versioning = meta.versioning
+        assert ""invalid"" in str(versioning.strategy.main_bits)
+        assert meta.version is None
+        assert versioning.problem == ""invalid versioning part 'foo'""
+        check_strategy(versioning, ""{foo}.{major}.{minor}{+function 'extra_version'"")
+        check_render(versioning, ""invalid.1.0"")
+        check_render(versioning, ""invalid.1.0+d2"", distance=2)
+        check_render(versioning, ""invalid.1.0+extra"", distance=2, dirty=True)
+
+        assert ""Ignored fields for 'versioning': {'foo': 'bar'}"" in logged
+
+        with pytest.raises(setupmeta.UsageError):
+            versioning.bump(""minor"")
+
+        with pytest.raises(setupmeta.UsageError):
+            versioning.get_bump(""minor"")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_invalid_main","def test_invalid_main():
+    with conftest.capture_output() as logged:
+        meta = new_meta(dict(main=extra_version, extra=""""), scm=conftest.MockGit())
+        versioning = meta.versioning
+        check_strategy(versioning, ""function 'extra_version'"")
+        check_render(versioning, """")
+        check_render(versioning, ""d2"", distance=2)
+        check_render(versioning, ""extra"", distance=2, dirty=True)
+        with pytest.raises(setupmeta.UsageError):
+            versioning.bump(""minor"")
+
+        assert ""you have pending changes"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_malformed","def test_malformed():
+    with conftest.capture_output() as logged:
+        meta = new_meta(dict(main=None, extra=""""), name="""", scm=conftest.MockGit())
+        versioning = meta.versioning
+        assert meta.version is None
+        assert not versioning.enabled
+        assert versioning.problem == ""No versioning format specified""
+        assert ""WARNING: 'name' not specified in setup.py"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_custom_version_tag","def test_custom_version_tag():
+    with conftest.capture_output():
+        meta = new_meta(dict(main=""distance"", extra="""", version_tag=""v*.*""), scm=conftest.MockGit(describe=""v0.1.2-3-g123""))
+        versioning = meta.versioning
+        assert versioning.strategy.version_tag == ""v*.*""
+        assert versioning.scm.version_tag == ""v*.*""
+        assert str(versioning.scm.get_version()) == ""v0.1.2-3-g123"""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_distance_marker","def test_distance_marker():
+    with conftest.capture_output():
+        meta = new_meta(""{major}.{minor}.{distance}"", scm=conftest.MockGit())
+        versioning = meta.versioning
+        assert versioning.enabled
+        assert not versioning.problem
+        assert not versioning.strategy.problem
+        assert meta.version == ""0.1.3+dirty""
+        check_strategy(versioning, ""{major}.{minor}.{distance}+{dirty}"")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_git_versioning","def test_git_versioning(sample_project):
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""--version"", capture=True)
+    assert output == ""0.0.1""
+
+    # Bump with no initial tags shouldn't warn
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""version"", ""--bump"", ""minor"", capture=""all"")
+    assert ""UserWarning"" not in output
+    assert ""Would run: git tag -a v0.1.0"" in output
+
+    conftest.run_git(""tag"", ""-a"", ""v0.1.0"", ""-m"", ""Version 2.4.2"")
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""--version"", capture=True)
+    assert output == ""0.1.0""
+
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""explain"", capture=""all"")
+    assert ""0.1.0"" in output
+    assert ""UserWarning"" not in output
+
+    # New file does not change dirtiness
+    write_to_file(""foo"", ""print('hello')"")
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""--version"", capture=True)
+    assert output == ""0.1.0""
+
+    # Modify existing file makes checkout dirty
+    write_to_file(""sample.py"", ""print('hello')"")
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""--version"", capture=True)
+    assert output == ""0.1.0+dirty""
+
+    # git add -> version should still be dirty, as we didn't commit yet
+    conftest.run_git(""add"", ""sample.py"")
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""--version"", capture=True)
+    assert output == ""0.1.0+dirty""
+
+    # git commit -> version reflects new distance
+    conftest.run_git(""commit"", ""-m"", ""Testing"")
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""--version"", capture=True)
+    assert output == ""0.1.1""
+
+    # Bump minor, we should get 0.2.0
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""version"", ""--bump"", ""minor"", ""--commit"", capture=True)
+    assert ""Not pushing bump, use --push to push"" in output
+    assert ""Running: git tag -a v0.2.0"" in output
+    output = setupmeta.run_program(sys.executable, ""setup.py"", ""--version"", capture=True)
+    assert output == ""0.2.0"""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_versioning.py","test_missing_tags","def test_missing_tags():
+    with conftest.capture_output() as logged:
+        meta = new_meta(""distance"", scm=conftest.MockGit(describe=""v0.1.2-3-g123"", local_tags=""v1.0\nv1.1"", remote_tags=""v1.0\nv2.0""))
+        versioning = meta.versioning
+        assert versioning.enabled
+        assert not versioning.problem
+        assert not versioning.strategy.problem
+        with pytest.raises(setupmeta.UsageError):
+            # Can't effectively bump when remote tags are not all present locally
+            versioning.bump(""minor"", commit=True)
+        assert ""patch version component should be .0"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_shortening","def test_shortening():
+    assert setupmeta.short(None) == ""None""
+    assert setupmeta.short("""") == """"
+
+    assert setupmeta.short(""hello  there"", c=13) == ""hello there""
+    assert setupmeta.short(""hello  there"", c=12) == ""hello there""
+    assert setupmeta.short(""hello  there"", c=11) == ""hello there""
+    assert setupmeta.short(""hello  there"", c=10) == ""hello t...""
+    assert setupmeta.short(""hello  there"", c=-10) == ""hello ther...""
+    assert setupmeta.short(""hello there wild wonderful world"", c=19) == ""hello there wild...""
+    assert setupmeta.short(""hello there wild wonderful world"", c=-19) == ""hello there wild wo...""
+
+    assert setupmeta.short([""hello"", ""there"", ""wild"", ""wonderful  world""], c=34) == '4 items: [""hello"", ""there"", ""wi...'
+
+    path = os.path.expanduser(""~/foo/bar"")
+    assert setupmeta.short(path) == ""~/foo/bar""
+
+    assert setupmeta.short(""found in %s"" % path) == ""found in ~/foo/bar""
+
+    assert setupmeta.short(dict(foo=""bar""), c=8) == ""1 keys""
+
+    assert setupmeta.merged(""a"", None) == ""a""
+    assert setupmeta.merged(None, ""a"") == ""a""
+    assert setupmeta.merged(""a"", ""b"") == ""a\nb"""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_strip","def test_strip():
+    assert setupmeta.strip_dash(None) is None
+    assert setupmeta.strip_dash(""foo"") == ""foo""
+    assert setupmeta.strip_dash(""--foo-"") == ""foo"""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_listify","def test_listify():
+    assert setupmeta.listify(""a, b"") == [""a,"", ""b""]
+    assert setupmeta.listify(""a,  b"") == [""a,"", ""b""]
+    assert setupmeta.listify(""a, b"", separator="","") == [""a"", ""b""]
+    assert setupmeta.listify(""a,, b"", separator="","") == [""a"", ""b""]
+    assert setupmeta.listify(""a,\n b"", separator="","") == [""a"", ""b""]
+    assert setupmeta.listify(""a\n b"", separator="","") == [""a"", ""b""]"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_decode","def test_decode():
+    assert setupmeta.decode(None) is None
+    assert setupmeta.decode("""") == """"
+    assert setupmeta.decode(b"""") == """""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_parsing","def test_parsing():
+    assert setupmeta.to_int(None) is None
+    assert setupmeta.to_int(None, default=2) == 2
+    assert setupmeta.to_int("""") is None
+    assert setupmeta.to_int(""foo"") is None
+    assert setupmeta.to_int([""foo""]) is None
+    assert setupmeta.to_int([1]) is None
+    assert setupmeta.to_int(1, default=2) == 1
+    assert setupmeta.to_int(0, default=2) == 0"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_which","def test_which():
+    assert setupmeta.which(None) is None
+    assert setupmeta.which(""/foo/does/not/exist"") is None
+    assert setupmeta.which(""foo/does/not/exist"") is None
+    assert setupmeta.which(""pip"")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_run_program","def test_run_program():
+    setupmeta.DEBUG = True
+    with conftest.capture_output() as out:
+        assert setupmeta.run_program(""ls"", capture=True, dryrun=True) is None
+        assert setupmeta.run_program(""ls"", capture=False, dryrun=True) == 0
+        assert setupmeta.run_program(""ls"", ""foo/does/not/exist"", capture=None) != 0
+        assert setupmeta.run_program(""pip"", ""--version"", capture=True)
+        assert setupmeta.run_program(""pip"", ""foo bar"", capture=True) == """"
+        assert ""unknown command"" in setupmeta.run_program(""pip"", ""foo bar"", capture=""all"")
+        assert setupmeta.run_program(""/foo/does/not/exist"", capture=True, dryrun=True) is None
+        assert setupmeta.run_program(""/foo/does/not/exist"", capture=False) != 0
+
+        with pytest.raises(SystemExit):
+            setupmeta.run_program(""/foo/does/not/exist"", fatal=True)
+
+        with pytest.raises(SystemExit):
+            assert setupmeta.run_program(""ls"", ""foo/does/not/exist"", fatal=True)
+
+        assert ""exitcode"" in out
+
+    setupmeta.DEBUG = False"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_content.py","test_stringify","def test_stringify():
+    assert setupmeta.stringify((1, 2)) == '(""1"", ""2"")'
+    assert setupmeta.stringify([""1"", ""2""]) == '[""1"", ""2""]'
+    assert setupmeta.stringify((""a b"", ""c d"")) == '(""a b"", ""c d"")'
+
+    assert setupmeta.stringify(""""""quoted (""double""+'single')"""""", quote=True) == """"""'quoted (""double""+'single')'""""""
+    assert setupmeta.stringify(""""""quoted 'single only'"""""", quote=True) == '''""quoted 'single only'""'''
+    assert setupmeta.stringify(""no 'foo'"") == ""no 'foo'""
+    assert setupmeta.stringify(""no 'foo'"", quote=True) == '''""no 'foo'""'''
+
+    assert setupmeta.stringify({""bar"": ""no 'foo'""}) == """"""{bar: no 'foo'}""""""
+    assert setupmeta.stringify({""bar"": 'no ""foo""'}) == """"""{bar: no ""foo""}""""""
+
+    assert setupmeta.listify(""a b"") == [""a"", ""b""]
+    assert sorted(setupmeta.listify(set(""ab""))) == [""a"", ""b""]
+    assert setupmeta.listify((""a"", ""b"")) == [""a"", ""b""]"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_scm.py","test_scm","def test_scm():
+    scm = setupmeta.scm.Scm(conftest.TESTS)
+    assert scm.get_branch() is None
+    assert scm.get_version() is None
+    assert scm.commit_files(False, False, None, """") is None
+    assert scm.apply_tag(False, False, """", ""main"") is None
+    assert scm.get_output() is None"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_scm.py","test_git","def test_git():
+    git = conftest.MockGit(describe="""", commitid=""abc123"")
+    assert str(git.get_version()) == ""v0.0.0-1-gabc123""
+
+    with conftest.capture_output() as out:
+        git.commit_files(False, False, [], ""2.0"")
+        assert not str(out)
+
+        git.commit_files(False, True, [""foo""], ""2.0"")
+        git.apply_tag(False, True, ""2.0"", ""main"")
+        assert ""Would run: git add foo"" in out
+        assert 'Would run: git commit -m ""Version 2.0""' in out
+        assert ""Would run: git push origin"" in out
+        assert 'Would run: git tag -a v2.0 -m ""Version 2.0""' in out
+        assert ""Would run: git push --tags origin"" in out
+
+    git._has_origin = """"
+    with conftest.capture_output() as out:
+        git.commit_files(False, False, [], ""2.0"")
+        assert not str(out)
+
+        git.commit_files(False, True, [""foo""], ""2.0"")
+        git.apply_tag(False, True, ""2.0"", ""main"")
+        assert ""Would run: git add foo"" in out
+        assert 'Would run: git commit -m ""Version 2.0""' in out
+        assert 'Would run: git tag -a v2.0 -m ""Version 2.0""' in out
+        assert ""Not running 'git push --tags origin' as you don't have an origin"" in out
+
+        assert ""Would run: git push origin"" not in out
+        assert ""Would run: git push --tags origin"" not in out
+
+    git._has_origin = True
+    git.status_message = ""## main...origin/main [behind 1]""
+    with pytest.raises(setupmeta.UsageError):
+        git.apply_tag(False, True, ""2.0"", ""main"")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_scm.py","test_ignore_git_failures","def test_ignore_git_failures():
+    assert setupmeta._should_ignore_run_fail(""git"", [""rev-list"", ""HEAD""], ""ambiguous argument 'HEAD': unknown revision or path"")
+    assert setupmeta._should_ignore_run_fail(""git"", [""describe""], ""fatal: no names found, cannot describe anything."")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_scm.py","test_git_describe_override","def test_git_describe_override(monkeypatch):
+    monkeypatch.setenv(""SETUPMETA_GIT_DESCRIBE_COMMAND"", ""describe foo"")
+
+    # `git describe` returned garbage, fall back to 'git rev-parse' etc.
+    git = conftest.MockGit(describe=""foo"", commitid=""abc"")
+    v = git.get_version()
+    assert v.text == ""v0.0.0-1-gabc""
+    assert v.main_text == ""0.0.0""
+    assert v.distance == 1
+    assert v.commitid == ""gabc""
+
+    # If SETUPMETA_GIT_DESCRIBE_COMMAND led to proper output, verify it does get used
+    git = conftest.MockGit(describe=""v1.2.3-4-gabc123-dirty"")
+    v = git.get_version()
+    assert v.text == ""v1.2.3-4-gabc123-dirty""
+    assert v.main_text == ""1.2.3""
+    assert v.distance == 4
+    assert v.commitid == ""gabc123"""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_license.py","test_license","def test_license():
+    assert license.determined_license(None) is None
+    assert license.determined_license("""") is None
+    assert license.determined_license(""blah blah version 5"") is None
+    assert license.determined_license(""... Version 2.0 http://www.apache.org/licenses/ ..."") == ""Apache 2.0""
+    assert license.determined_license(BSD_SAMPLE) == ""BSD""
+    assert license.determined_license(""MIT License ..."") == ""MIT""
+    assert license.determined_license(""Mozilla Public License Version 2.0 ..."") == ""MPL""
+    assert license.determined_license(""GNU AFFERO GENERAL PUBLIC LICENSE Version 3 ..."") == ""AGPLv3""
+    assert license.determined_license(""GNU GENERAL PUBLIC LICENSE Version 3 ..."") == ""GPLv3""
+    assert license.determined_license(""GNU LESSER GENERAL PUBLIC LICENSE Version 3 ..."") == ""LGPLv3"""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_scenarios.py","test_scenario","@pytest.mark.skipif(sys.version_info < (3, 7), reason=""EOL-ed versions have minor diffs in warnings coming from old setuptools checks"")
+def test_scenario(scenario_folder):
+    """"""Check that 'scenario' yields expected explain output""""""
+    py = ""."".join(str(s) for s in sys.version_info[:2])
+    if py < ""3.7"" and ""via-cfg"" in scenario_folder:
+        # For some reason, older pythons don't all seem to handle setup.cfg well... maybe min version of setuptools needed?
+        pytest.skip(""via-cfg scenario useful only in 3.7+"")
+
+    scenario = scenarios.Scenario(scenario_folder)
+    expected = scenario.expected_contents()
+    output = scenario.replay()
+    assert output == expected"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_first_word","def test_first_word():
+    assert setupmeta.relative_path(None) is None
+    assert setupmeta.relative_path("""") == """"
+    assert setupmeta.relative_path(""foo"") == ""foo""
+
+    assert setupmeta.first_word(None) is None
+    assert setupmeta.first_word("""") is None
+    assert setupmeta.first_word(""  \n \t "") is None
+    assert setupmeta.first_word(""  \n \t foo[bar]"") == ""foo""
+    assert setupmeta.first_word(""FOO bar"") == ""foo""
+    assert setupmeta.first_word("" FOO, bar"") == ""foo""
+    assert setupmeta.first_word(""123"") == ""123"""
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_setup_py_determination","def test_setup_py_determination():
+    with conftest.capture_output():
+        initial = sys.argv[0]
+        sys.argv[0] = ""foo/setup.py""
+        with conftest.TestMeta() as meta:
+            assert not meta.definitions
+            assert not meta.version
+            sys.argv[0] = initial"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_representation","def test_representation():
+    e = DefinitionEntry(""foo"", ""bar"", ""inlined"")
+    assert str(e) == ""foo=bar from inlined""
+
+    alpha1 = Definition(""alpha"")
+    alpha2 = Definition(""alpha"")
+    alpha2.add(""foo"", ""inlined"")
+    assert str(alpha1) == ""alpha=None from 0 sources""
+    assert str(alpha2) == ""alpha=foo from inlined""
+
+    beta = Definition(""beta"")
+    assert str(beta) == ""beta=None from 0 sources""
+    beta.add(""foo1"", ""inlined1"")
+    assert str(beta) == ""beta=foo1 from inlined1""
+    beta.add(""foo2"", ""inlined2"")
+    assert str(beta) == ""beta=foo1 from 2 sources""
+    beta.add(""foo3"", ""inlined3"", override=True)
+    assert str(beta) == ""beta=foo3 from 3 sources""
+
+    assert alpha1 == alpha2
+    assert alpha1 != beta
+    assert not alpha1 < alpha2
+    assert alpha1 < beta
+    assert not alpha1 > beta"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_requirements","def test_requirements():
+    assert setupmeta.pkg_req(None) is None
+    assert setupmeta.pkg_req(""#foo"") is None
+
+    assert setupmeta.requirements_from_file(""/dev/null/foo"") is None
+
+    sample = conftest.resource(""scenarios/disabled/requirements.txt"")
+    f = setupmeta.RequirementsFile.from_file(sample)
+    assert len(f.reqs) == 6
+    assert str(f.reqs[0]) == ""wheel from tests/scenarios/disabled/requirements.txt:2, abstracted by default""
+    assert str(f.reqs[4]) == ""-e git://example.com/p1.git#egg=flake8 from tests/scenarios/disabled/requirements.txt:12""
+    assert f.filled_requirements == [
+        ""wheel"",
+        ""click; python_version >= '3.6'"",
+        ""setuptools"",
+        ""git://example.com/p1.git#egg=flake8"",
+        ""pytest-cov @ https://example.com/a.git@u/pp"",
+    ]
+
+    assert len(f.abstracted) == 2
+    assert len(f.ignored) == 1
+    assert len(f.untouched) == 3
+
+    sample = conftest.resource(""scenarios/complex-reqs/requirements.in"")
+    f = setupmeta.RequirementsFile.from_file(sample)
+    assert len(f.reqs) == 5
+
+    fr = setupmeta.requirements_from_file(sample)
+    assert fr == f.filled_requirements
+
+    sample = ""a==1.0\nb; python_version >= '3.6'""
+    f = setupmeta.RequirementsFile()
+    f.scan(sample.splitlines())
+    f.finalize()
+    assert len(f.reqs) == 2
+    assert f.filled_requirements == [""a"", ""b; python_version >= '3.6'""]
+    assert len(f.abstracted) == 1
+    assert len(f.ignored) == 0
+    assert len(f.untouched) == 1
+
+    fr = setupmeta.requirements_from_text(sample)
+    assert fr == f.filled_requirements
+
+    f = setupmeta.RequirementsFile()
+    f.scan([])
+    f.finalize()
+    assert f.reqs == []
+    assert f.filled_requirements == []
+    assert f.abstracted == []"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_empty","def test_empty():
+    with conftest.capture_output():
+        with conftest.TestMeta(setup=""/dev/null/shouldnotexist/setup.py"") as meta:
+            assert not meta.attrs
+            assert not meta.definitions
+            assert not meta.name
+            assert isinstance(meta.requirements, setupmeta.Requirements)
+            assert not meta.requirements.install_requires
+            assert not meta.version
+            assert not meta.versioning.enabled
+            assert meta.versioning.problem == ""setupmeta versioning not enabled""
+            assert not meta.versioning.scm
+            assert not meta.versioning.strategy
+            assert str(meta).startswith(""0 definitions, "")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_pygradle_version","@patch.dict(os.environ, {""PYGRADLE_PROJECT_VERSION"": ""1.2.3""})
+def test_pygradle_version():
+    with conftest.capture_output() as logged:
+        with conftest.TestMeta(setup=""/dev/null/shouldnotexist/setup.py"", name=""pygradle_project"") as meta:
+            assert len(meta.definitions) == 2
+            assert meta.value(""name"") == ""pygradle_project""
+            assert meta.value(""version"") == ""1.2.3""
+
+            name = meta.definitions[""name""]
+            version = meta.definitions[""version""]
+
+            assert name.is_explicit
+            assert not version.is_explicit
+            assert ""WARNING: No 'packages' or 'py_modules' defined"" in logged"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_meta","def test_meta():
+    assert not is_setup_py_path(None)
+    assert not is_setup_py_path("""")
+    assert not is_setup_py_path(""foo.py"")
+
+    assert is_setup_py_path(""/foo/setup.py"")
+    assert is_setup_py_path(""/foo/setup.pyc"")"
+"setupmeta","https://github.com/codrsquad/setupmeta","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/setupmeta/tests/test_model.py","test_standard_req","def test_standard_req():
+    assert setupmeta.standard_req(""foo-bar"") == ""foo-bar""
+    assert setupmeta.standard_req(""foo==1.0"") == ""foo==1.0""
+
+    assert setupmeta.standard_req(""file://foo"") is None
+    assert setupmeta.standard_req(""/dev/null"") is None
+    assert setupmeta.standard_req(""42-foo"") is None
+    assert setupmeta.standard_req("".foo"") is None
+    assert setupmeta.standard_req(""."") is None
+    assert setupmeta.standard_req("""") is None"

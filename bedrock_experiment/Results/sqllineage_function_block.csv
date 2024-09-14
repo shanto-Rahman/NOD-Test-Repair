@@ -1,0 +1,21 @@
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/sql/table/multiple_statements/test_split.py,test_split_statements,split#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/sql/table/multiple_statements/test_split.py,test_split_statements_with_heading_and_ending_new_line,split#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/sql/table/multiple_statements/test_split.py,test_split_statements_with_comment,split#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/sql/table/multiple_statements/test_split.py,test_split_statements_with_show_create_table,split#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/sql/table/multiple_statements/test_split.py,test_split_statements_with_desc,split#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/sql/table/multiple_statements/test_split.py,test_split_statement_ends_with_multiple_semicolons,split#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_runner.py,test_runner_dummy,to_cytoscape#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_runner.py,test_statements_trim_comment,LineageRunner#2
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_runner.py,test_get_column_lineage_exclude_subquery_inpath,get_column_lineage#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_holder.py,test_dummy,Unable to determine the focal method(s)
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_config.py,test_config,Unable to determine the focal method(s)
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_config.py,test_update_config_using_context_manager,SQLLineageConfig#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_config.py,test_config_parallel,_check_schema#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_drawing.py,test_handler,Unable to determine the focal method(s)
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_models.py,test_repr_dummy,repr#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_models.py,test_hash_eq,__eq__#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_cli.py,test_file_exception,Unable to determine the focal method(s)
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_cli.py,test_file_permission_error,main#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_metadata_provider.py,test_sqlalchemy_metadata_provider_query_fail,_get_table_columns#2
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_parser.py,test_column_extract_source_columns,_extract_source_columns#1
+sqllineage,https://github.com/reata/sqllineage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/sqllineage/tests/core/test_parser.py,test_return_none_find_from_expression_element,find_from_expression_element#1

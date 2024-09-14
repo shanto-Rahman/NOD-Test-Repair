@@ -1,0 +1,4087 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_info","def test_info(enterprise, enterprise_mocks):
+    assert isinstance(info := enterprise.info(), EnterpriseInfo)
+    assert info.id == ""entUBq2RGdihxl3vU""
+    assert info.workspace_ids == [""wspmhESAta6clCCwF"", ""wspHvvm4dAktsStZH""]
+    assert info.email_domains[0].is_sso_required is True
+    assert enterprise_mocks.get_info.call_count == 1
+
+    assert enterprise.info(force=True).id == ""entUBq2RGdihxl3vU""
+    assert enterprise_mocks.get_info.call_count == 2"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_user","def test_user(enterprise, enterprise_mocks):
+    user = enterprise.user(enterprise_mocks.user_id)
+    assert isinstance(user, UserInfo)
+    assert enterprise_mocks.get_users.call_count == 1
+    assert user.collaborations
+    assert ""appLkNDICXNqxSDhG"" in user.collaborations.bases
+    assert ""pbdyGA3PsOziEHPDE"" in user.collaborations.interfaces
+    assert ""wspmhESAta6clCCwF"" in user.collaborations.workspaces"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_user__no_collaboration","def test_user__no_collaboration(enterprise, enterprise_mocks):
+    del enterprise_mocks.json_users[""users""][0][""collaborations""]
+
+    user = enterprise.user(enterprise_mocks.user_id, collaborations=False)
+    assert isinstance(user, UserInfo)
+    assert enterprise_mocks.get_users.call_count == 1
+    assert not enterprise_mocks.get_users.last_request.qs.get(""include"")
+    assert not user.collaborations  # test for Collaborations.__bool__
+    assert not user.collaborations.bases
+    assert not user.collaborations.interfaces
+    assert not user.collaborations.workspaces"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_users","@pytest.mark.parametrize(
+    ""search_for"",
+    (
+        [""usrL2PNC5o3H4lBEi""],
+        [""foo@bar.com""],
+        [""usrL2PNC5o3H4lBEi"", ""foo@bar.com""],  # should not return duplicates
+    ),
+)
+def test_users(enterprise, search_for):
+    results = enterprise.users(search_for)
+    assert len(results) == 1
+    assert isinstance(user := results[0], UserInfo)
+    assert user.id == ""usrL2PNC5o3H4lBEi""
+    assert user.state == ""provisioned"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_group","def test_group(enterprise, enterprise_mocks):
+    grp = enterprise.group(""ugp1mKGb3KXUyQfOZ"")
+    assert enterprise_mocks.get_group.call_count == 1
+    assert isinstance(grp, UserGroup)
+    assert grp.id == ""ugp1mKGb3KXUyQfOZ""
+    assert grp.name == ""Group name""
+    assert grp.members[0].email == ""foo@bar.com""
+    assert grp.collaborations
+    assert ""appLkNDICXNqxSDhG"" in grp.collaborations.bases
+    assert ""pbdyGA3PsOziEHPDE"" in grp.collaborations.interfaces
+    assert ""wspmhESAta6clCCwF"" in grp.collaborations.workspaces"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_group__no_collaboration","def test_group__no_collaboration(enterprise, enterprise_mocks):
+    del enterprise_mocks.json_group[""collaborations""]
+
+    grp = enterprise.group(enterprise_mocks.group_id, collaborations=False)
+    assert isinstance(grp, UserGroup)
+    assert enterprise_mocks.get_group.call_count == 1
+    assert not enterprise_mocks.get_group.last_request.qs.get(""include"")
+    assert not grp.collaborations  # test for Collaborations.__bool__
+    assert not grp.collaborations.bases
+    assert not grp.collaborations.interfaces
+    assert not grp.collaborations.workspaces"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_audit_log","@pytest.mark.parametrize(
+    ""fncall,expected_size"",
+    [
+        (call(), N_AUDIT_PAGES * N_AUDIT_PAGE_SIZE),
+        (call(page_limit=1), N_AUDIT_PAGE_SIZE),
+    ],
+)
+def test_audit_log(enterprise, fncall, expected_size):
+    """"""
+    Test that we iterate through multiple pages of the audit log. correctly
+    """"""
+    events = [
+        event
+        for page in enterprise.audit_log(*fncall.args, **fncall.kwargs)
+        for event in page.events
+    ]
+    assert len(events) == expected_size"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_audit_log__no_loop","def test_audit_log__no_loop(enterprise, requests_mock):
+    """"""
+    Test that an empty page of events does not cause an infinite loop.
+    """"""
+    requests_mock.get(
+        enterprise.api.build_url(
+            f""meta/enterpriseAccounts/{enterprise.id}/auditLogEvents""
+        ),
+        json={
+            ""events"": [],
+            ""pagination"": {""previous"": ""dummy""},
+        },
+    )
+    events = [event for page in enterprise.audit_log() for event in page.events]
+    assert len(events) == 0"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_audit_log__sortorder","@pytest.mark.parametrize(
+    ""fncall,sortorder,offset_field"",
+    [
+        (call(), ""descending"", ""previous""),
+        (call(sort_asc=True), ""ascending"", ""next""),
+    ],
+)
+def test_audit_log__sortorder(
+    api,
+    enterprise,
+    enterprise_mocks,
+    fncall,
+    sortorder,
+    offset_field,
+):
+    """"""
+    Test that we calculate sortorder and offset_field correctly
+    dpeending on whether we're ascending or descending.
+    """"""
+    with patch.object(api, ""iterate_requests"", wraps=api.iterate_requests) as m:
+        list(enterprise.audit_log(*fncall.args, **fncall.kwargs))
+
+    request = enterprise_mocks.get_audit_log.last_request
+    assert request.qs[""sortOrder""] == [sortorder]
+    assert m.mock_calls[-1].kwargs[""offset_field""] == offset_field"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_remove_user","@pytest.mark.parametrize(
+    ""kwargs,expected"",
+    [
+        (
+            {},
+            {""isDryRun"": False},
+        ),
+        (
+            {""replacement"": ""otherUser""},
+            {""isDryRun"": False, ""replacementOwnerId"": ""otherUser""},
+        ),
+    ],
+)
+def test_remove_user(enterprise, enterprise_mocks, kwargs, expected):
+    removed = enterprise.remove_user(enterprise_mocks.user_id, **kwargs)
+    assert enterprise_mocks.remove_user.call_count == 1
+    assert enterprise_mocks.remove_user.last_request.json() == expected
+    assert removed.shared.workspaces[0].user_id == ""usrL2PNC5o3H4lBEi"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_delete_user","def test_delete_user(user_info, requests_mock):
+    m = requests_mock.delete(user_info._url)
+    user_info.delete()
+    assert m.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_manage_user","def test_manage_user(user_info, requests_mock):
+    m = requests_mock.patch(user_info._url)
+    user_info.save()
+    assert m.call_count == 1
+    assert m.last_request.json() == {""email"": ""foo@bar.com"", ""state"": ""provisioned""}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_logout_user","def test_logout_user(user_info, requests_mock):
+    m = requests_mock.post(user_info._url + ""/logout"")
+    user_info.logout()
+    assert m.call_count == 1
+    assert m.last_request.body is None"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_claim_users","def test_claim_users(enterprise, enterprise_mocks):
+    result = enterprise.claim_users(
+        {
+            ""usrFakeUserId"": ""managed"",
+            ""someone@example.com"": ""unmanaged"",
+        }
+    )
+    assert isinstance(result, ManageUsersResponse)
+    assert enterprise_mocks.claim_users.call_count == 1
+    assert enterprise_mocks.claim_users.last_request.json() == {
+        ""users"": [
+            {""id"": ""usrFakeUserId"", ""state"": ""managed""},
+            {""email"": ""someone@example.com"", ""state"": ""unmanaged""},"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_delete_users","def test_delete_users(enterprise, requests_mock):
+    response = {
+        ""deletedUsers"": [{""email"": ""foo@bar.com"", ""id"": ""usrL2PNC5o3H4lBEi""}],
+        ""errors"": [
+            {
+                ""email"": ""bar@bam.com"",
+                ""message"": ""Invalid permissions"",
+                ""type"": ""INVALID_PERMISSIONS"",
+            }
+        ],
+    }
+    emails = [f""foo{n}@bar.com"" for n in range(5)]
+    m = requests_mock.delete(enterprise.url + ""/users"", json=response)
+    parsed = enterprise.delete_users(emails)
+    assert m.call_count == 1
+    assert m.last_request.qs == {""email"": emails}
+    assert isinstance(parsed, DeleteUsersResponse)
+    assert parsed.deleted_users[0].email == ""foo@bar.com""
+    assert parsed.errors[0].type == ""INVALID_PERMISSIONS"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py","test_manage_admin_access","@pytest.mark.parametrize(""action"", [""grant"", ""revoke""])
+def test_manage_admin_access(enterprise, enterprise_mocks, requests_mock, action):
+    user = enterprise.user(enterprise_mocks.user_id)
+    m = requests_mock.post(f""{enterprise.url}/users/{action}AdminAccess"", json={})
+    method = getattr(enterprise, f""{action}_admin"")
+    result = method(
+        fake_user_id := fake_id(""usr""),
+        fake_email := ""fake@example.com"",
+        user,
+    )
+    assert isinstance(result, ManageUsersResponse)
+    assert m.call_count == 1
+    assert m.last_request.json() == {
+        ""users"": [
+            {""id"": fake_user_id},
+            {""email"": fake_email},
+            {""id"": user.id},"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py","test_toggle_notifications","@pytest.mark.parametrize(
+    ""method,expected"",
+    [
+        (""enable_notifications"", True),
+        (""disable_notifications"", False),
+    ],
+)
+def test_toggle_notifications(webhook: Webhook, requests_mock, method, expected):
+    toggle = getattr(webhook, method)
+    m = requests_mock.post(webhook._url + ""/enableNotifications"")
+    toggle()
+    assert m.call_count == 1
+    assert m.last_request.json() == {""enable"": expected}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py","test_extend_expiration","def test_extend_expiration(webhook: Webhook, requests_mock):
+    m = requests_mock.post(
+        webhook._url + ""/refresh"",
+        json={""expirationTime"": datetime.datetime.now().isoformat()},
+    )
+    webhook.extend_expiration()
+    assert m.call_count == 1
+    assert not m.last_request.text"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py","test_delete","def test_delete(webhook: Webhook, requests_mock):
+    m = requests_mock.delete(webhook._url)
+    webhook.delete()
+    assert m.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py","test_error_payload","def test_error_payload(payload_json):
+    payload_json.update({""error"": True, ""code"": ""INVALID_HOOK""})
+    payload = WebhookPayload.parse_obj(payload_json)
+    assert payload.error is True
+    assert payload.error_code == ""INVALID_HOOK"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py","test_payloads","@pytest.mark.parametrize(
+    ""test_case"",
+    [
+        # Basic test case for .payloads()
+        {
+            ""count"": 5,
+            ""chunksize"": 5,
+            ""expect_numbers"": [1, 2, 3, 4, 5],
+            ""expect_cursors"": [1],
+        },
+        # Prevent regression of bug where payload.cursor always starts from 1
+        {
+            ""count"": 5,
+            ""chunksize"": 5,
+            ""start_from"": 20,
+            ""expect_numbers"": [20, 21, 22, 23, 24],
+            ""expect_cursors"": [20],
+        },
+        # Test that mightHaveMore controls when we stop iteration
+        {
+            ""count"": 8,
+            ""chunksize"": 2,
+            ""extra_pages"": 3,
+            ""expect_numbers"": [1, 2, 3, 4, 5, 6, 7, 8],
+            ""expect_cursors"": [1, 3, 5, 7],
+        },
+        # Test that .payloads(limit=n) stops iteration after n results.
+        {
+            ""count"": 5,
+            ""chunksize"": 5,
+            ""start_from"": 2,
+            ""payload_kwargs"": {""limit"": 3},
+            ""expect_numbers"": [2, 3, 4],
+            ""expect_cursors"": [2],
+        },
+    ],
+)
+def test_payloads(webhook: Webhook, requests_mock, payload_json, test_case):
+    """"""
+    Test that Webhook.payloads() continues to iterate payloads from the API
+    until it reaches the point where mightHaveMore is false.
+    """"""
+    count = test_case[""count""]
+    chunksize = test_case[""chunksize""]
+    start = test_case.get(""start_from"", 1)
+    extra_pages = test_case.get(""extra_pages"", 0)
+    pagecount = math.ceil(count / chunksize)
+    payload_pages = [
+        [
+            {**payload_json, ""baseTransactionNumber"": (m * chunksize) + n + start}
+            for n in range(chunksize)
+        ]
+        for m in range(pagecount + extra_pages)
+    ]
+    mock_endpoint = requests_mock.get(
+        webhook._url + ""/payloads"",
+        response_list=[
+            {
+                ""json"": {
+                    ""cursor"": page[-1][""baseTransactionNumber""] + 1,
+                    ""mightHaveMore"": index < pagecount,  # extras should be ignored
+                    ""payloads"": page,
+                }
+            }
+            for index, page in enumerate(payload_pages, 1)
+        ],
+    )
+    payload_kwargs = {""cursor"": start, **test_case.get(""payload_kwargs"", {})}
+    payloads = list(webhook.payloads(**payload_kwargs))
+    # Ensure we got the right transactions in the right order.
+    assert len(payloads) == len(test_case[""expect_numbers""])
+    assert [p.base_transaction_number for p in payloads] == test_case[""expect_numbers""]
+    assert [p.cursor for p in payloads] == test_case[""expect_numbers""]
+    # Ensure we sent the correct cursors, since requests_mock doesn't validate them.
+    request_cursors = [req.qs[""cursor""] for req in mock_endpoint.request_history]
+    assert request_cursors == [[str(n)] for n in test_case[""expect_cursors""]]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py","test_payloads__stop_on_empty_list","def test_payloads__stop_on_empty_list(webhook: Webhook, requests_mock, payload_json):
+    """"""
+    Test that an empty list causes us to not query for more, even if mightHaveMore is true.
+    """"""
+    requests_mock.get(
+        webhook._url + ""/payloads"",
+        response_list=[
+            # we will retrieve this one...
+            {""json"": {""cursor"": 2, ""mightHaveMore"": True, ""payloads"": [payload_json]}},
+            # ...but should will stop here:
+            {""json"": {""cursor"": 3, ""mightHaveMore"": True, ""payloads"": []}},
+        ],
+    )
+    # this will cause an infinite loop if we don't check whether payloads is empty
+    payloads = list(webhook.payloads())
+    assert len(payloads) == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py","test_notification_from_request","@pytest.mark.parametrize(""secret"", [b""secret-key"", ""c2VjcmV0LWtleQ==""])
+def test_notification_from_request(secret):
+    notification_json = {
+        ""base"": {""id"": ""app00000000000000""},
+        ""webhook"": {""id"": ""ach00000000000000""},
+        ""timestamp"": ""2022-02-01T21:25:05.663Z"",
+    }
+    header = (
+        ""hmac-sha256=e26da696a90933647bddc83995c3e1e3bb1c3d8ce1ff61cb7469767d50b2b2d4""
+    )
+
+    body = json.dumps(notification_json)
+    notification = WebhookNotification.from_request(body, header, secret)
+    assert notification.base.id == ""app00000000000000""
+    assert notification.webhook.id == ""ach00000000000000""
+    assert notification.timestamp == datetime.datetime(
+        2022, 2, 1, 21, 25, 5, 663000, tzinfo=datetime.timezone.utc
+    )
+
+    with pytest.raises(ValueError):
+        WebhookNotification.from_request(""[1,2,3]"", header, secret)
+    with pytest.raises(ValueError):
+        WebhookNotification.from_request(body, ""bad-header"", secret)
+    with pytest.raises(ValueError):
+        WebhookNotification.from_request(body, header, b""bad-secret"")
+    with pytest.raises(ValueError):
+        WebhookNotification.from_request(body, header, ""bad-secret"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_types.py","test_is_airtable_error","@pytest.mark.parametrize(
+    ""value,is_error"",
+    [
+        (None, False),
+        (1, False),
+        (""str"", False),
+        ({}, False),
+        ({""error"": ""#ERROR!""}, True),
+        ({""specialValue"": ""NaN""}, True),
+    ],
+)
+def test_is_airtable_error(value, is_error):
+    assert T.is_airtable_error(value) is is_error"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_testing.py","test_fake_function","@pytest.mark.parametrize(
+    ""funcname,sig,expected"",
+    [
+        (""fake_id"", call(value=123), ""rec00000000000123""),
+        (""fake_id"", call(""tbl"", ""x""), ""tbl0000000000000x""),
+        (
+            ""fake_record"",
+            call(id=123),
+            {""id"": ""rec00000000000123"", ""createdTime"": ANY, ""fields"": {}},
+        ),
+        (
+            ""fake_record"",
+            call(id=""recABC00000000123""),
+            {""id"": ""recABC00000000123"", ""createdTime"": ANY, ""fields"": {}},
+        ),
+        (
+            ""fake_record"",
+            call({""A"": 1}, 123),
+            {""id"": ""rec00000000000123"", ""createdTime"": ANY, ""fields"": {""A"": 1}},
+        ),
+        (
+            ""fake_record"",
+            call(one=1, two=2),
+            {
+                ""id"": ANY,
+                ""createdTime"": ANY,
+                ""fields"": {""one"": 1, ""two"": 2},
+            },
+        ),
+        (
+            ""fake_user"",
+            call(""alice""),
+            {
+                ""id"": ""usr000000000alice"",
+                ""email"": ""alice@example.com"",
+                ""name"": ""Fake User"",
+            },
+        ),
+    ],
+)
+def test_fake_function(funcname, sig, expected):
+    func = getattr(T, funcname)
+    assert func(*sig.args, **sig.kwargs) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_model_basics","def test_model_basics():
+    contact = Contact(
+        first_name=""Gui"",
+        last_name=""Talarico"",
+        email=""gui@gui.com"",
+        is_registered=True,
+        birthday=datetime(2020, 12, 12).date(),
+    )
+
+    # attribute look up
+    assert contact.first_name == ""Gui""
+    assert not contact.id
+
+    # save
+    with mock.patch.object(Table, ""create"") as m_save:
+        m_save.return_value = {""id"": ""id"", ""createdTime"": NOW}
+        contact.save()
+
+    assert m_save.called
+    assert contact.id == ""id""
+    assert contact.created_time.tzinfo is timezone.utc
+
+    # delete
+    with mock.patch.object(Table, ""delete"") as m_delete:
+        m_delete.return_value = {""deleted"": True}
+        contact.delete()
+
+    assert m_delete.called
+
+    # cannot save a deleted record
+    with pytest.raises(RuntimeError):
+        contact.save()
+
+    record = contact.to_record()
+    assert record[""id""] == contact.id
+    assert record[""createdTime""] == datetime_to_iso_str(contact.created_time)
+    assert record[""fields""][""First Name""] == contact.first_name"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_unsupplied_fields","def test_unsupplied_fields():
+    """"""
+    Test that we can create a record without fields.
+    """"""
+    a = Address()
+    assert a.number is None
+    assert a.street == """""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_null_fields","def test_null_fields():
+    """"""
+    Test that we can create a record with null fields.
+    """"""
+    a = Address(number=None, street=None)
+    assert a.number is None
+    assert a.street == """""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_first","def test_first():
+    with mock.patch.object(Table, ""first"") as m_first:
+        m_first.return_value = {
+            ""id"": ""recwnBLPIeQJoYVt4"",
+            ""createdTime"": NOW,
+            ""fields"": {
+                ""First Name"": ""X"",
+                ""Created At"": ""2014-09-05T12:34:56.000Z"",
+            },
+        }
+        contact = Contact.first()
+
+    assert contact.first_name == ""X"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_first_none","def test_first_none():
+    with mock.patch.object(Table, ""first"") as m_first:
+        m_first.return_value = None
+        contact = Contact.first()
+
+    assert contact is None"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_from_record","def test_from_record():
+    # Fetch = True
+    with mock.patch.object(Table, ""get"") as m_get:
+        m_get.return_value = {
+            ""id"": ""recwnBLPIeQJoYVt4"",
+            ""createdTime"": NOW,
+            ""fields"": {
+                ""First Name"": ""X"",
+                ""Birthday"": None,
+                ""Created At"": ""2014-09-05T12:34:56.000Z"",
+            },
+        }
+        contact = Contact.from_id(""recwnBLPIeQJoYVt4"")
+
+    assert m_get.called
+    assert contact.id == ""recwnBLPIeQJoYVt4""
+    assert contact.first_name == ""X""
+    assert contact.created_at.year == 2014
+
+    # Fetch = False
+    with mock.patch.object(Table, ""get"") as m_get_no_fetch:
+        contact = Contact.from_id(""recwnBLPIeQJoYVt4"", fetch=False)
+        assert not m_get_no_fetch.called
+        assert not contact.first_name == ""X"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_linked_record","def test_linked_record():
+    record = {""id"": ""recFake"", ""createdTime"": NOW, ""fields"": {""Street"": ""A""}}
+    address = Address.from_id(""recFake"", fetch=False)
+
+    # Id Reference
+    contact = Contact(address=[address])
+    assert contact.address[0].id == address.id
+    assert not contact.address[0].street
+
+    with Mocker() as mock:
+        url = Address.meta.table.record_url(address.id)
+        mock.get(url, status_code=200, json=record)
+        contact.address[0].fetch()
+
+    assert contact.address[0].street == ""A"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_linked_record_can_be_saved","@pytest.mark.parametrize(""access_linked_records"", (True, False))
+def test_linked_record_can_be_saved(requests_mock, access_linked_records):
+    """"""
+    Test that we can call Model.save() on a model with a non-lazy linked field,
+    whether we've already accessed the field contents or not.
+
+    Accessing the linked field converts its internal representation from
+    record IDs into instances of the model. This could interfere with save(),
+    so this test ensures we don't regress the capability.
+    """"""
+    address_json = fake_record(Number=123, Street=""Fake St"")
+    address_id = address_json[""id""]
+    address_url_re = re.escape(Address.meta.table.url + ""?filterByFormula="")
+    contact_json = fake_record(Email=""alice@example.com"", Link=[address_id])
+    contact_id = contact_json[""id""]
+    contact_url = Contact.meta.table.record_url(contact_id)
+    contact_url_re = re.escape(Contact.meta.table.url + ""?filterByFormula="")
+    requests_mock.get(re.compile(address_url_re), json={""records"": [address_json]})
+    requests_mock.get(re.compile(contact_url_re), json={""records"": [contact_json]})
+    requests_mock.get(contact_url, json=contact_json)
+    mock_save = requests_mock.patch(contact_url, json=contact_json)
+
+    contact = Contact.from_id(contact_id)
+
+    if access_linked_records:
+        assert contact.address[0].id == address_id
+
+    contact.save()
+    assert mock_save.last_request.json() == {
+        ""fields"": {
+            ""Email"": ""alice@example.com"",
+            ""Link"": [address_id],
+        },
+        ""typecast"": True,
+        ""returnFieldsByFieldId"": False,"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_save__raise_on_unsaved_link","def test_save__raise_on_unsaved_link(requests_mock):
+    """"""
+    Test that Model.save() raises an exception if called before saving all linked records.
+    """"""
+    contact = Contact(address=[Address()])
+
+    with pytest.raises(ValueError) as ctx:
+        contact.save()
+
+    assert ""Contact.address contains an unsaved record"" in ctx.exconly()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_undeclared_field","@pytest.mark.parametrize(
+    ""test_case"",
+    [
+        (""from_id"", lambda cls, id: cls.from_id(id)),
+        (""first"", lambda cls, _: cls.first()),
+        (""all"", lambda cls, _: cls.all()[0]),
+    ],
+    ids=itemgetter(0),
+)
+def test_undeclared_field(requests_mock, test_case):
+    """"""
+    Test that Model methods which fetch data from the Airtable API will
+    ignore any fields which are missing from the Model definition.
+
+    See https://github.com/gtalarico/pyairtable/issues/190
+    """"""
+
+    record = fake_record(
+        Number=123,
+        Street=""Fake St"",
+        City=""Springfield"",
+        State=""IL"",
+    )
+
+    requests_mock.get(
+        Address.meta.table.url,
+        status_code=200,
+        json={""records"": [record]},
+    )
+    requests_mock.get(
+        Address.meta.table.record_url(record[""id""]),
+        status_code=200,
+        json=record,
+    )
+
+    _, get_model_instance = test_case
+    instance = get_model_instance(Address, record[""id""])
+    assert instance.to_record()[""fields""] == {""Number"": 123, ""Street"": ""Fake St""}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_batch_save","@mock.patch(""pyairtable.Table.batch_create"")
+@mock.patch(""pyairtable.Table.batch_update"")
+def test_batch_save(mock_update, mock_create):
+    """"""
+    Test that we can pass multiple unsaved Model instances (or dicts) to batch_save
+    and it will create or update them all in as few requests as possible.
+    """"""
+    addr1 = Address(number=123, street=""Fake St"")
+    addr2 = Address(number=456, street=""Fake St"")
+    addr3 = Address.from_record(
+        {
+            ""id"": ""recExistingRecord"",
+            ""createdTime"": datetime.now(timezone.utc).isoformat(),
+            ""fields"": {""Number"": 789, ""Street"": ""Fake St""},
+        }
+    )
+
+    mock_create.return_value = [
+        fake_record(id=""abc"", Number=123, Street=""Fake St""),
+        fake_record(id=""def"", Number=456, Street=""Fake St""),
+    ]
+
+    # Just like model.save(), Model.batch_save() will set IDs on new records.
+    Address.batch_save([addr1, addr2, addr3])
+    assert addr1.id == ""rec00000000000abc""
+    assert addr2.id == ""rec00000000000def""
+    assert addr3.id == ""recExistingRecord""
+
+    mock_create.assert_called_once_with(
+        [
+            {""Number"": 123, ""Street"": ""Fake St""},
+            {""Number"": 456, ""Street"": ""Fake St""},
+        ],
+        typecast=True,
+    )
+    mock_update.assert_called_once_with(
+        [
+            {
+                ""id"": ""recExistingRecord"",
+                ""fields"": {""Number"": 789, ""Street"": ""Fake St""},
+            },
+        ],
+        typecast=True,"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_batch_save__invalid_class","@mock.patch(""pyairtable.Table.batch_create"")
+@mock.patch(""pyairtable.Table.batch_update"")
+def test_batch_save__invalid_class(mock_update, mock_create):
+    """"""
+    Test that batch_save() raises TypeError if a model is given which is not an
+    instance of the model being called.
+    """"""
+    with pytest.raises(TypeError):
+        Address.batch_save([Contact()])
+
+    assert mock_update.call_count == 0
+    assert mock_create.call_count == 0"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_batch_save__raise_on_unsaved_link","@mock.patch(""pyairtable.Table.batch_create"")
+@mock.patch(""pyairtable.Table.batch_update"")
+def test_batch_save__raise_on_unsaved_link(mock_update, mock_create):
+    """"""
+    Test that Model.batch_save() raises ValueError if called before
+    all linked records have been saved.
+    """"""
+    contacts = [Contact() for _ in range(20)]
+    contacts[14].address = [Address()]
+
+    with pytest.raises(ValueError) as ctx:
+        Contact.batch_save(contacts)
+
+    assert ""Contact.address contains an unsaved record"" in ctx.exconly()
+    assert mock_update.call_count == 0
+    assert mock_create.call_count == 0"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_batch_delete__unsaved_record","@mock.patch(""pyairtable.Table.batch_delete"")
+def test_batch_delete__unsaved_record(mock_delete):
+    """"""
+    Test that we get a ValueError (and make no deletions) if Model.batch_delete
+    receives any models which have not been created yet.
+    """"""
+    addresses = [
+        Address.from_record(fake_record(Number=1, Street=""Fake St"")),
+        Address(number=2, street=""Fake St""),
+    ]
+    with pytest.raises(ValueError):
+        Address.batch_delete(addresses)
+
+    assert mock_delete.call_count == 0"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py","test_batch_delete__invalid_class","@mock.patch(""pyairtable.Table.batch_delete"")
+def test_batch_delete__invalid_class(mock_delete):
+    """"""
+    Test that batch_delete() raises TypeError if a model is given which is not an
+    instance of the model being called.
+    """"""
+    with pytest.raises(TypeError):
+        Address.batch_delete([Contact.from_record(fake_record())])
+
+    assert mock_delete.call_count == 0"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_model_meta_dict","def test_model_meta_dict():
+    """"""
+    Test that we can define Meta as a dict rather than a class.
+    """"""
+
+    class Address(Model):
+        Meta = {
+            ""api_key"": ""fake_api_key"",
+            ""base_id"": ""fake_base_id"",
+            ""table_name"": ""fake_table_name"",
+            ""timeout"": (1, 1),
+            ""retry"": False,
+        }
+
+    assert Address.meta.api.api_key == ""fake_api_key"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_repr","def test_repr():
+    record = fake_record()
+    assert repr(FakeModel.from_record(record)) == f""<FakeModel id='{record['id']}'>""
+    assert repr(FakeModel()) == ""<unsaved FakeModel>"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_fetch","def test_fetch():
+    obj = FakeModel(id=fake_id())
+    assert not obj.one
+    assert not obj.two
+
+    with mock.patch(""pyairtable.Table.get"") as mock_get:
+        mock_get.return_value = fake_record(one=1, two=2)
+        obj.fetch()
+
+    assert obj.one == 1
+    assert obj.two == 2"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_model_comment_method","@pytest.mark.parametrize(
+    ""method,args"",
+    [
+        (""comments"", []),
+        (""add_comment"", [""Hello!""]),
+    ],
+)
+def test_model_comment_method(method, args):
+    """"""
+    Test that comments() and add_comment() are passthroughs to Table.
+    """"""
+    record_id = fake_id()
+    instance = FakeModel.from_id(record_id, fetch=False)
+    with mock.patch(f""pyairtable.Table.{method}"") as mock_method:
+        result = getattr(instance, method)(*args)
+
+    assert result == mock_method.return_value
+    mock_method.assert_called_once_with(record_id, *args)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_from_id","@mock.patch(""pyairtable.Table.get"")
+def test_from_id(mock_get):
+    class Contact(Model):
+        Meta = fake_meta()
+        name = f.TextField(""Name"")
+
+    fake_contact = fake_record(Name=""Alice"")
+    mock_get.return_value = fake_contact
+    contact = Contact.from_id(fake_contact[""id""])
+    assert contact.id == fake_contact[""id""]
+    assert contact.name == ""Alice"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_from_ids","@mock.patch(""pyairtable.Api.iterate_requests"")
+def test_from_ids(mock_api):
+    fake_records = [fake_record() for _ in range(10)]
+    mock_api.return_value = [{""records"": fake_records}]
+
+    fake_ids = [record[""id""] for record in fake_records]
+    contacts = FakeModel.from_ids(fake_ids)
+    mock_api.assert_called_once_with(
+        method=""get"",
+        url=FakeModel.meta.table.url,
+        fallback=(""post"", FakeModel.meta.table.url + ""/listRecords""),
+        options={
+            ""formula"": (
+                ""OR(%s)"" % "", "".join(f""RECORD_ID()='{id}'"" for id in sorted(fake_ids))
+            )
+        },
+    )
+    assert len(contacts) == len(fake_records)
+    assert {c.id for c in contacts} == {r[""id""] for r in fake_records}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_from_ids__no_fetch","@mock.patch(""pyairtable.Table.all"")
+def test_from_ids__no_fetch(mock_all):
+    fake_ids = [fake_id() for _ in range(10)]
+    contacts = FakeModel.from_ids(fake_ids, fetch=False)
+    assert mock_all.call_count == 0
+    assert len(contacts) == 10
+    assert set(contact.id for contact in contacts) == set(fake_ids)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_get_fields_by_id","def test_get_fields_by_id(fake_records_by_id):
+    """"""
+    Test that we can get fields by their field ID.
+    """"""
+    with Mocker() as mock:
+        mock.get(
+            f""{FakeModelByIds.meta.table.url}?&returnFieldsByFieldId=1&cellFormat=json"",
+            json=fake_records_by_id,
+            complete_qs=True,
+            status_code=200,
+        )
+        fake_models = FakeModelByIds.all()
+
+    assert fake_models[0].Name == ""Alice""
+    assert fake_models[0].Age == 25
+
+    assert fake_models[1].Name != ""Jack""
+    assert fake_models[1].Age != 30
+
+    with pytest.raises(KeyError):
+        _ = getattr(fake_models[1], fake_records_by_id[0][""Age""])"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_meta_wrapper","def test_meta_wrapper():
+    """"""
+    Test that Model subclasses have access to the _Meta wrapper.
+    """"""
+
+    class Dummy(Model):
+        Meta = fake_meta(api_key=""asdf"")
+
+    assert Dummy.meta.model is Dummy
+    assert Dummy.meta.api.api_key == ""asdf"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_meta_dict","def test_meta_dict():
+    """"""
+    Test that Meta can be a dict instead of a class.
+    """"""
+
+    class Dummy(Model):
+        Meta = {
+            ""api_key"": ""asdf"",
+            ""base_id"": ""qwer"",
+            ""table_name"": ""zxcv"",
+            ""timeout"": (1, 1),
+        }
+
+    assert Dummy.meta.model is Dummy
+    assert Dummy.meta.api.api_key == ""asdf"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model.py","test_dynamic_model_meta","def test_dynamic_model_meta():
+    """"""
+    Test that we can provide callables in our Meta class to provide
+    the access token, base ID, and table name at runtime. Also ensure
+    that callable Meta attributes don't get called until they're needed.
+    """"""
+    data = {
+        ""api_key"": ""FakeApiKey"",
+        ""base_id"": ""appFakeBaseId"",
+        ""table_name"": ""tblFakeTableName"",
+    }
+
+    class Fake(Model):
+        class Meta:
+            api_key = lambda: data[""api_key""]  # noqa
+            base_id = partial(data.get, ""base_id"")
+            table_name = mock.Mock(return_value=data[""table_name""])
+
+    f = Fake()
+    Fake.Meta.table_name.assert_not_called()
+
+    assert f.meta.api_key == data[""api_key""]
+    assert f.meta.base_id == data[""base_id""]
+    assert f.meta.table_name == data[""table_name""]
+    Fake.Meta.table_name.assert_called_once()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_comment.py","test_missing_attributes","def test_missing_attributes(comment_json):
+    """"""
+    Test that we can parse the payload when missing optional values.
+    """"""
+    del comment_json[""lastUpdatedTime""]
+    del comment_json[""mentioned""]
+    comment = Comment.parse_obj(comment_json)
+    assert comment.mentioned == {}
+    assert comment.last_updated_time is None"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_comment.py","test_save","def test_save(comment, requests_mock):
+    """"""
+    Test that Comment.save() writes the correct payload to the API
+    and that it updates the instance with the values in the API response.
+    """"""
+    new_text = ""This was changed!""
+    mentions = {}
+    modified = dict(comment._raw, mentioned=mentions, text=new_text)
+    m = requests_mock.patch(comment._url, json=modified)
+
+    comment.text = ""Whatever""
+    comment.save()
+    assert m.call_count == 1
+
+    # Ensure we wrote the changed text to the API...
+    assert m.request_history[0].json()[""text""] == ""Whatever""
+
+    # ...but our model loaded whatever values the API sent back.
+    assert comment.text == new_text
+    assert comment.author.email == ""author@example.com""
+    assert not comment.mentioned"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_comment.py","test_delete","def test_delete(comment, requests_mock):
+    """"""
+    Test that Comment.delete() writes the correct payload to the API
+    and prevents the record from being saved in the future.
+    """"""
+    m = requests_mock.delete(comment._url, json={""id"": comment.id, ""deleted"": True})
+    comment.delete()
+    assert m.call_count == 1
+    assert comment.deleted is True
+
+    # Once we have deleted a comment, we shouldn't be allowed to save it.
+    with pytest.raises(RuntimeError):
+        comment.save()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_comment.py","test_table_comments","def test_table_comments(table, comments_url, comment_json, requests_mock):
+    """"""
+    Test that Table.comments() returns a list of comments and that
+    it requests all pages at once.
+    """"""
+    comment1 = {**comment_json, ""id"": ""comFake1""}
+    comment2 = {**comment_json, ""id"": ""comFake2""}
+    comment3 = {**comment_json, ""id"": ""comFake3""}
+
+    m = requests_mock.get(
+        comments_url,
+        [
+            {""json"": {""comments"": [comment1], ""offset"": ""offset1""}},
+            {""json"": {""comments"": [comment2, comment3], ""offset"": None}},
+        ],
+    )
+
+    comments = table.comments(RECORD_ID)
+    assert m.call_count == 2
+    assert len(comments) == 3
+    assert [c.id for c in comments] == [""comFake1"", ""comFake2"", ""comFake3""]
+    assert fake_user(""mentioned"")[""id""] in comments[0].mentioned"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_comment.py","test_table_add_comment","def test_table_add_comment(table, comment_json, comments_url, requests_mock):
+    def _callback(request, context):
+        return {**comment_json, **request.json()}
+
+    m = requests_mock.post(comments_url, json=_callback)
+
+    text = ""I'd like to weigh in here.""
+    comment = table.add_comment(RECORD_ID, text)
+    assert m.call_count == 1
+    assert comment.text == text"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_find_in_collection","@pytest.mark.parametrize(
+    ""clsname,method,id_or_name"",
+    [
+        (""Bases"", ""base"", ""appLkNDICXNqxSDhG""),
+        (""Bases"", ""base"", ""Apartment Hunting""),
+        (""BaseSchema"", ""table"", ""tbltp8DGLhqbUmjK1""),
+        (""BaseSchema"", ""table"", ""Apartments""),
+        (""TableSchema"", ""field"", ""fld1VnoyuotSTyxW1""),
+        (""TableSchema"", ""field"", ""Name""),
+        (""TableSchema"", ""view"", ""viwQpsuEDqHFqegkp""),
+        (""TableSchema"", ""view"", ""Grid view""),
+    ],
+)
+def test_find_in_collection(clsname, method, id_or_name, sample_json):
+    cls = attrgetter(clsname)(schema)
+    obj = cls.parse_obj(sample_json(clsname))
+    assert getattr(obj, method)(id_or_name)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_deserialized_values","@pytest.mark.parametrize(
+    ""obj_path, expected_value"",
+    {
+        ""BaseCollaborators.individual_collaborators.via_base[0].permission_level"": ""create"",
+        ""BaseCollaborators.individual_collaborators.via_base[0].user_id"": ""usrsOEchC9xuwRgKk"",
+        ""BaseSchema.tables[0].fields[1].type"": ""multipleAttachments"",
+        ""BaseSchema.tables[0].fields[2].options.inverse_link_field_id"": ""fldWnCJlo2z6ttT8Y"",
+        ""BaseSchema.tables[0].name"": ""Apartments"",
+        ""BaseSchema.tables[0].views[0].type"": ""grid"",
+        ""BaseShares.shares[0].effective_email_domain_allow_list"": [""foobar.com""],
+        ""BaseShares.shares[2].state"": ""disabled"",
+        ""EnterpriseInfo.email_domains[0].email_domain"": ""foobar.com"",
+        ""EnterpriseInfo.email_domains[0].is_sso_required"": True,
+        ""UserGroup.collaborations.base_collaborations[0].base_id"": ""appLkNDICXNqxSDhG"",
+        ""UserGroup.members[1].user_id"": ""usrsOEchC9xuwRgKk"",
+        ""UserInfo.collaborations.interface_collaborations[0].interface_id"": ""pbdyGA3PsOziEHPDE"",
+        ""UserInfo.is_sso_required"": True,
+        ""UserInfo.is_two_factor_auth_enabled"": False,
+        ""UserInfo.name"": ""foo baz"",
+        ""WorkspaceCollaborators.base_ids"": [""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""],
+        ""WorkspaceCollaborators.invite_links.via_base[0].id"": ""invJiqaXmPqqAPP99"",
+    }.items(),
+)
+def test_deserialized_values(obj_path, expected_value, schema_obj):
+    """"""
+    Spot check that certain values get loaded correctly from JSON into Python.
+    This is not intended to be comprehensive, just another chance to catch regressions.
+    """"""
+    assert schema_obj(obj_path) == expected_value"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_find","def test_find():
+    """"""
+    Test that _find() retrieves an object based on ID or name,
+    and skips any models that are marked as deleted.
+    """"""
+
+    collection = Outer.parse_obj(
+        {
+            ""inners"": [
+                {""id"": ""0001"", ""name"": ""One""},
+                {""id"": ""0002"", ""name"": ""Two""},
+                {""id"": ""0003"", ""name"": ""Three"", ""deleted"": True},
+            ]
+        }
+    )
+    assert collection.find(""0001"").id == ""0001""
+    assert collection.find(""Two"").id == ""0002""
+    with pytest.raises(KeyError):
+        collection.find(""0003"")
+    with pytest.raises(KeyError):
+        collection.find(""0004"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_base_collaborators__add","@pytest.mark.parametrize(
+    ""kind,id"",
+    [
+        (""user"", ""usrsOEchC9xuwRgKk""),
+        (""group"", ""ugpR8ZT9KtIgp8Bh3""),
+    ],
+)
+def test_base_collaborators__add(
+    base, kind, id, requests_mock, sample_json, mock_base_metadata
+):
+    """"""
+    Test that we can call base.collaborators().add_{user,group}
+    to grant access to the base.
+    """"""
+    m = requests_mock.post(base.meta_url(""collaborators""), body="""")
+    method = getattr(base.collaborators(), f""add_{kind}"")
+    method(id, ""read"")
+    assert m.call_count == 1
+    assert m.last_request.json() == {
+        ""collaborators"": [{kind: {""id"": id}, ""permissionLevel"": ""read""}]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_workspace_collaborators__add","@pytest.mark.parametrize(
+    ""kind,id"",
+    [
+        (""user"", ""usrsOEchC9xuwRgKk""),
+        (""group"", ""ugpR8ZT9KtIgp8Bh3""),
+    ],
+)
+def test_workspace_collaborators__add(api, kind, id, requests_mock, sample_json):
+    """"""
+    Test that we can call workspace.collaborators().add_{user,group}
+    to grant access to the workspace.
+    """"""
+    workspace_json = sample_json(""WorkspaceCollaborators"")
+    workspace = api.workspace(workspace_json[""id""])
+    requests_mock.get(workspace.url, json=workspace_json)
+    m = requests_mock.post(f""{workspace.url}/collaborators"", body="""")
+    method = getattr(workspace.collaborators(), f""add_{kind}"")
+    method(id, ""read"")
+    assert m.call_count == 1
+    assert m.last_request.json() == {
+        ""collaborators"": [{kind: {""id"": id}, ""permissionLevel"": ""read""}]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_update_collaborator","@pytest.mark.parametrize(
+    ""name,id"",
+    [
+        (""base"", ""appLkNDICXNqxSDhG""),
+        (""workspace"", ""wspmhESAta6clCCwF""),
+    ],
+)
+def test_update_collaborator(api, name, id, requests_mock, sample_json):
+    """"""
+    Test that we can call collaborators().update() to change the permission level
+    of a user or group on a base or workspace.
+    """"""
+    target = getattr(api, name)(id)
+    grp = fake_id(""grp"")
+    obj = sample_json(f""{name.capitalize()}Collaborators"")
+    requests_mock.get(api.build_url(f""meta/{name}s/{id}""), json=obj)
+    m = requests_mock.patch(api.build_url(f""meta/{name}s/{id}/collaborators/{grp}""))
+    target.collaborators().update(grp, ""read"")
+    assert m.call_count == 1
+    assert m.last_request.json() == {""permissionLevel"": ""read""}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_remove_collaborator","@pytest.mark.parametrize(
+    ""name,id"",
+    [
+        (""base"", ""appLkNDICXNqxSDhG""),
+        (""workspace"", ""wspmhESAta6clCCwF""),
+    ],
+)
+def test_remove_collaborator(api, name, id, requests_mock, sample_json):
+    """"""
+    Test that we can call collaborators().remove() to revoke permissions
+    from a user or group to a base or workspace.
+    """"""
+    target = getattr(api, name)(id)
+    grp = fake_id(""grp"")
+    obj = sample_json(f""{name.capitalize()}Collaborators"")
+    requests_mock.get(api.build_url(f""meta/{name}s/{id}""), json=obj)
+    m = requests_mock.delete(api.build_url(f""meta/{name}s/{id}/collaborators/{grp}""))
+    target.collaborators().remove(grp)
+    assert m.call_count == 1
+    assert m.last_request.body is None"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_invite_link__delete","def test_invite_link__delete(
+    base,
+    workspace,
+    requests_mock,
+    mock_base_metadata,
+    mock_workspace_metadata,
+):
+    """"""
+    Test that we can revoke an invite link.
+    """"""
+    for invite_link in [
+        base.collaborators().invite_links.via_base[0],
+        base.collaborators().invite_links.via_workspace[0],
+        base.collaborators().interfaces[""pbdLkNDICXNqxSDhG""].invite_links[0],
+        workspace.collaborators().invite_links.via_base[0],
+        workspace.collaborators().invite_links.via_workspace[0],
+    ]:
+        endpoint = requests_mock.delete(invite_link._url)
+        invite_link.delete()
+        assert endpoint.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_add_interface_collaborator","@pytest.mark.parametrize(""kind"", (""user"", ""group""))
+def test_add_interface_collaborator(
+    base, kind, requests_mock, interface_url, mock_base_metadata
+):
+    m = requests_mock.post(f""{interface_url}/collaborators"", body="""")
+    interface_schema = base.collaborators().interfaces[""pbdLkNDICXNqxSDhG""]
+    method = getattr(interface_schema, f""add_{kind}"")
+    method(""testObjectId"", ""read"")
+    assert m.call_count == 1
+    assert m.last_request.json() == {
+        ""collaborators"": [
+            {
+                kind: {""id"": ""testObjectId""},
+                ""permissionLevel"": ""read"","
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_update_interface_collaborator","def test_update_interface_collaborator(
+    base, interface_url, requests_mock, mock_base_metadata
+):
+    m = requests_mock.patch(f""{interface_url}/collaborators/testObjectId"")
+    interface_schema = base.collaborators().interfaces[""pbdLkNDICXNqxSDhG""]
+    interface_schema.update(""testObjectId"", ""read"")
+    assert m.call_count == 1
+    assert m.last_request.json() == {""permissionLevel"": ""read""}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_remove_interface_collaborator","def test_remove_interface_collaborator(
+    base, interface_url, requests_mock, mock_base_metadata
+):
+    m = requests_mock.delete(f""{interface_url}/collaborators/testObjectId"")
+    interface_schema = base.collaborators().interfaces[""pbdLkNDICXNqxSDhG""]
+    interface_schema.remove(""testObjectId"")
+    assert m.call_count == 1
+    assert m.last_request.body is None"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_add_collaborator__invalid_kind","@pytest.mark.parametrize(
+    ""target_path"",
+    (
+        ""BaseCollaborators"",
+        ""WorkspaceCollaborators"",
+        ""BaseCollaborators.interfaces['pbdLkNDICXNqxSDhG']"",
+    ),
+)
+def test_add_collaborator__invalid_kind(
+    target_path,
+    schema_obj,
+    requests_mock,  # unused; ensures no network traffic
+):
+    target = schema_obj(target_path)
+    with mock.patch.object(target.__class__, ""add_collaborators"") as m:
+        with pytest.raises(ValueError):
+            target.add(""asdf"", ""testId"", ""read"")
+        assert m.call_count == 0"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_add_collaborators","@pytest.mark.parametrize(
+    ""target_path"",
+    (
+        ""BaseCollaborators"",
+        ""WorkspaceCollaborators"",
+        ""BaseCollaborators.interfaces['pbdLkNDICXNqxSDhG']"",
+    ),
+)
+def test_add_collaborators(
+    target_path,
+    schema_obj,
+    base,
+    workspace,
+    requests_mock,
+):
+    target = schema_obj(target_path, context={""base"": base, ""workspace"": workspace})
+    requests_mock.get(target._url, json=target._raw)
+    m = requests_mock.post(target._url + ""/collaborators"")
+    target.add_collaborators([1, 2, 3, 4])
+    assert m.call_count == 1
+    assert m.last_request.json() == {""collaborators"": [1, 2, 3, 4]}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_restful_urls","@pytest.mark.parametrize(
+    ""expr,expected_url"",
+    [
+        (
+            ""base.collaborators()"",
+            ""meta/bases/appLkNDICXNqxSDhG"",
+        ),
+        (
+            ""base.collaborators().interfaces['pbdLkNDICXNqxSDhG']"",
+            ""meta/bases/appLkNDICXNqxSDhG/interfaces/pbdLkNDICXNqxSDhG"",
+        ),
+        (
+            ""base.collaborators().invite_links.via_base[0]"",
+            ""meta/bases/appLkNDICXNqxSDhG/invites/invJiqaXmPqq6Ec87"",
+        ),
+        (
+            ""base.collaborators().invite_links.via_workspace[0]"",
+            ""meta/workspaces/wspmhESAta6clCCwF/invites/invJiqaXmPqq6Ec99"",
+        ),
+        (
+            ""base.collaborators().interfaces['pbdLkNDICXNqxSDhG'].invite_links[0]"",
+            ""meta/bases/appLkNDICXNqxSDhG/interfaces/pbdLkNDICXNqxSDhG/invites/invJiqaXmPqq6ABCD"",
+        ),
+        (
+            ""workspace.collaborators().invite_links.via_base[0]"",
+            ""meta/bases/appLkNDICXNqxSDhG/invites/invJiqaXmPqqAPP99"",
+        ),
+        (
+            ""workspace.collaborators().invite_links.via_workspace[0]"",
+            ""meta/workspaces/wspmhESAta6clCCwF/invites/invJiqaXmPqqWSP00"",
+        ),
+        (
+            ""table.schema()"",
+            ""meta/bases/appLkNDICXNqxSDhG/tables/tbltp8DGLhqbUmjK1"",
+        ),
+        (
+            ""table.schema().field('fld1VnoyuotSTyxW1')"",
+            ""meta/bases/appLkNDICXNqxSDhG/tables/tbltp8DGLhqbUmjK1/fields/fld1VnoyuotSTyxW1"",
+        ),
+        (
+            ""table.schema().view('viwQpsuEDqHFqegkp')"",
+            ""meta/bases/appLkNDICXNqxSDhG/views/viwQpsuEDqHFqegkp"",
+        ),
+    ],
+)
+def test_restful_urls(
+    expr,
+    expected_url,
+    api,
+    base,
+    workspace,
+    mock_base_metadata,  # unused; ensures no network traffic
+    mock_workspace_metadata,  # unused; ensures no network traffic
+):
+    """"""
+    Test that the URLs for RestfulModels are generated correctly.
+    """"""
+    table = base.table(""tbltp8DGLhqbUmjK1"")
+    obj = eval(expr, None, {""base"": base, ""table"": table, ""workspace"": workspace})
+    assert obj._url == api.build_url(expected_url)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_share__enable","def test_share__enable(base_share, requests_mock):
+    m = requests_mock.patch(base_share._url)
+    base_share.enable()
+    assert m.call_count == 1
+    assert m.last_request.json() == {""state"": ""enabled""}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_share__disable","def test_share__disable(base_share, requests_mock):
+    m = requests_mock.patch(base_share._url)
+    base_share.disable()
+    assert m.call_count == 1
+    assert m.last_request.json() == {""state"": ""disabled""}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_share__delete","def test_share__delete(base_share, requests_mock):
+    m = requests_mock.delete(base_share._url)
+    base_share.delete()
+    assert m.call_count == 1
+    assert m.last_request.body is None"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py","test_workspace_restrictions","def test_workspace_restrictions(workspace, mock_workspace_metadata, requests_mock):
+    restrictions = workspace.collaborators().restrictions
+    restrictions.invite_creation = ""unrestricted""
+    restrictions.share_creation = ""onlyOwners""
+
+    m = requests_mock.post(restrictions._url)
+    restrictions.save()
+    assert m.call_count == 1
+    assert m.last_request.json() == {
+        ""inviteCreationRestriction"": ""unrestricted"",
+        ""shareCreationRestriction"": ""onlyOwners"","
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_params.py","test_convert_options_to_params","@pytest.mark.parametrize(
+    ""option,value,url_params"",
+    [
+        [""view"", ""SomeView"", ""?view=SomeView""],
+        [""max_records"", 5, ""?maxRecords=5""],
+        [""page_size"", 5, ""?pageSize=5""],
+        [""formula"", ""NOT(1)"", ""?filterByFormula=NOT%281%29""],
+        [""formula"", ""NOT(1)"", ""?filterByFormula=NOT%281%29""],
+        [
+            ""formula"",
+            r""AND({COLUMN_ID}<=6, {COLUMN_ID}>3)"",
+            ""?filterByFormula=AND%28%7BCOLUMN_ID%7D%3C%3D6%2C+%7BCOLUMN_ID%7D%3E3%29"",
+        ],
+        [
+            ""fields"",
+            [""Name""],
+            ""?fields%5B%5D=Name"",
+            # ?fields[]=Name"",
+        ],
+        [
+            ""fields"",
+            [""Name""],
+            ""?fields%5B%5D=Name"",
+            # ""?fields[]=Name"",
+        ],
+        [
+            ""fields"",
+            [""Name"", ""Phone""],
+            ""?fields%5B%5D=Name&fields%5B%5D=Phone"",
+            # ""?fields[]=Name&fields[]=Phone"",
+        ],
+        [
+            ""sort"",
+            [""Name""],
+            ""?sort%5B0%5D%5Bdirection%5D=asc&sort%5B0%5D%5Bfield%5D=Name"",
+            # ""?sort[0][field]=Name&sort[0][direction]=asc"",
+        ],
+        [
+            ""sort"",
+            [""Name""],
+            ""?sort%5B0%5D%5Bdirection%5D=asc&sort%5B0%5D%5Bfield%5D=Name"",
+            # ""?sort[0][field]=Name&sort[0][direction]=asc""
+        ],
+        [
+            ""sort"",
+            [""Name"", ""Phone""],
+            ""?sort%5B0%5D%5Bdirection%5D=asc&sort%5B0%5D%5Bfield%5D=Name&sort%5B1%5D%5Bdirection%5D=asc&sort%5B1%5D%5Bfield%5D=Phone"",
+            # '?sort[0][direction]=asc&sort[0][field]=Name&sort[1][direction]=asc&sort[1][field]=Phone'
+        ],
+        [
+            ""sort"",
+            [""Name"", ""-Phone""],
+            ""?sort%5B0%5D%5Bdirection%5D=asc&sort%5B0%5D%5Bfield%5D=Name&sort%5B1%5D%5Bdirection%5D=desc&sort%5B1%5D%5Bfield%5D=Phone"",
+            # '?sort[0][direction]=desc&sort[0][field]=Name&sort[1][direction]=desc&sort[1][field]=Phone'
+        ],
+        [""cell_format"", ""string"", ""?cellFormat=string""],
+        [""user_locale"", ""en-US"", ""?userLocale=en-US""],
+        [
+            ""time_zone"",
+            ""America/Chicago"",
+            ""?timeZone=America%2FChicago"",
+            # '?timeZone=America/Chicago'
+        ],
+        [""use_field_ids"", True, ""?returnFieldsByFieldId=1""],
+        [""use_field_ids"", 1, ""?returnFieldsByFieldId=1""],
+        [""use_field_ids"", False, ""?returnFieldsByFieldId=0""],
+        # TODO
+        # [
+        #     {""sort"": [(""Name"", ""desc""), (""Phone"", ""asc"")]},
+        #     # ""?sort[0][direction]=desc&sort[0][field]=Name&sort[1][direction]=asc&sort[1][field]=Phone""
+        #     ""?sort%5B0%5D%5Bdirection%5D=desc&sort%5B0%5D%5Bfield%5D=Name&sort%5B1%5D%5Bdirection%5D=asc&sort%5B1%5D%5Bfield%5D=Phone"",
+        # ],
+    ],
+)
+def test_convert_options_to_params(option, value, url_params):
+    """"""Ensure kwargs received build a proper params""""""
+    processed_params = options_to_params({option: value})
+    request = requests.Request(""get"", ""https://example.com"", params=processed_params)
+    assert request.prepare().url.endswith(url_params)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_params.py","test_convert_options_to_json","@pytest.mark.parametrize(
+    ""option,value,expected"",
+    [
+        [""view"", ""SomeView"", {""view"": ""SomeView""}],
+        [""max_records"", 5, {""maxRecords"": 5}],
+        [""page_size"", 5, {""pageSize"": 5}],
+        [""formula"", ""NOT(1)"", {""filterByFormula"": ""NOT(1)""}],
+        [""formula"", ""NOT(1)"", {""filterByFormula"": ""NOT(1)""}],
+        [
+            ""formula"",
+            ""AND({COLUMN_ID}<=6, {COLUMN_ID}>3)"",
+            {""filterByFormula"": ""AND({COLUMN_ID}<=6, {COLUMN_ID}>3)""},
+        ],
+        [""fields"", [""Name""], {""fields"": [""Name""]}],
+        [
+            ""fields"",
+            [""Name"", ""Phone""],
+            {""fields"": [""Name"", ""Phone""]},
+        ],
+        [
+            ""sort"",
+            [""Name""],
+            {""sort"": [{""field"": ""Name"", ""direction"": ""asc""}]},
+        ],
+        [
+            ""sort"",
+            [""Name"", ""Phone""],
+            {
+                ""sort"": [
+                    {""field"": ""Name"", ""direction"": ""asc""},
+                    {""field"": ""Phone"", ""direction"": ""asc""},
+                ]
+            },
+        ],
+        [
+            ""sort"",
+            [""Name"", ""-Phone""],
+            {
+                ""sort"": [
+                    {""field"": ""Name"", ""direction"": ""asc""},
+                    {""field"": ""Phone"", ""direction"": ""desc""},
+                ]
+            },
+        ],
+        [""cell_format"", ""string"", {""cellFormat"": ""string""}],
+        [""use_field_ids"", True, {""returnFieldsByFieldId"": True}],
+        [""use_field_ids"", 1, {""returnFieldsByFieldId"": True}],
+        [""use_field_ids"", False, {""returnFieldsByFieldId"": False}],
+        # userLocale and timeZone are not supported via POST, so they return ""spare params""
+        [""user_locale"", ""en-US"", ({}, {""userLocale"": ""en-US""})],
+        [""time_zone"", ""America/Chicago"", ({}, {""timeZone"": ""America/Chicago""})],
+    ],
+)
+def test_convert_options_to_json(option, value, expected):
+    if isinstance(expected, dict):
+        expected = (expected, {})  # most of the time, this returns empty ""spare params""
+    assert options_to_json_and_params({option: value}) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_params.py","test_dict_list_to_request_params","def test_dict_list_to_request_params():
+    values = [{""field"": ""a"", ""direction"": ""asc""}, {""field"": ""b"", ""direction"": ""desc""}]
+    rv = dict_list_to_request_params(""sort"", values)
+    assert rv == {
+        ""sort[0][field]"": ""a"",
+        ""sort[0][direction]"": ""asc"",
+        ""sort[1][field]"": ""b"",
+        ""sort[1][direction]"": ""desc"","
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_params.py","test_field_names_to_sorting_dict","def test_field_names_to_sorting_dict():
+    rv = field_names_to_sorting_dict([""Name"", ""-Age""])
+    assert rv == [
+        {
+            ""field"": ""Name"",
+            ""direction"": ""asc"",
+        },
+        {
+            ""field"": ""Age"",
+            ""direction"": ""desc"","
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_field","def test_field():
+    class T:
+        name = f.Field(""Name"")
+
+    t = T()
+    t.name = ""x""
+    assert t.name == ""x""
+    assert t.__dict__[""_fields""][""Name""] == ""x""
+
+    with pytest.raises(AttributeError):
+        del t.name"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_description","def test_description():
+    class T:
+        name = f.Field(""Name"")
+
+    T.other = f.Field(""Other"")
+
+    assert T.name._description == ""T.name""
+    assert T.other._description == ""'Other' field"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_repr","@pytest.mark.parametrize(
+    ""instance,expected"",
+    [
+        (
+            f.Field(""Name""),
+            ""Field('Name', readonly=False, validate_type=True)"",
+        ),
+        (
+            f.Field(""Name"", readonly=True, validate_type=False),
+            ""Field('Name', readonly=True, validate_type=False)"",
+        ),
+        (
+            f.CollaboratorField(""Collaborator""),
+            ""CollaboratorField('Collaborator', readonly=False, validate_type=True)"",
+        ),
+        (
+            f.LastModifiedByField(""User""),
+            ""LastModifiedByField('User', readonly=True, validate_type=True)"",
+        ),
+        (
+            f.LookupField[dict](""Items"", validate_type=False),
+            ""LookupField('Items', readonly=True, validate_type=False)"",
+        ),
+        (
+            f.LinkField(""Records"", type(""TestModel"", (Model,), {""Meta"": fake_meta()})),
+            ""LinkField('Records', model=<class 'test_orm_fields.TestModel'>, validate_type=True, readonly=False, lazy=False)"",
+        ),
+        (
+            f.SingleLinkField(
+                ""Records"", type(""TestModel"", (Model,), {""Meta"": fake_meta()})
+            ),
+            ""SingleLinkField('Records', model=<class 'test_orm_fields.TestModel'>, validate_type=True, readonly=False, lazy=False, raise_if_many=False)"",
+        ),
+    ],
+)
+def test_repr(instance, expected):
+    assert repr(instance) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_orm_missing_values","@pytest.mark.parametrize(
+    argnames=(""field_type"", ""default_value""),
+    argvalues=[
+        (f.Field, None),
+        (f.CheckboxField, False),
+        (f.TextField, """"),
+        (f.LookupField, []),
+        (f.AttachmentsField, []),
+        (f.MultipleCollaboratorsField, []),
+        (f.MultipleSelectField, []),
+    ],
+)
+def test_orm_missing_values(field_type, default_value):
+    """"""
+    Test that certain field types produce the correct default value
+    when there is no field value provided from Airtable.
+    """"""
+
+    class T(Model):
+        Meta = fake_meta()
+        the_field = field_type(""Field Name"")
+
+    t = T()
+    assert t.the_field == default_value
+
+    t = T.from_record(fake_record({""Field Name"": None}))
+    assert t.the_field == default_value"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_type_validation_LinkField","def test_type_validation_LinkField():
+    """"""
+    Test that a link field will reject models of the wrong class.
+    """"""
+
+    class A(Model):
+        Meta = fake_meta()
+
+    class B(Model):
+        Meta = fake_meta()
+
+    class Container(Model):
+        Meta = fake_meta()
+        linked = f.LinkField(""Linked"", model=A)
+
+    a1 = A.from_record(fake_record())
+    a2 = A.from_record(fake_record())
+    a3 = A.from_record(fake_record())
+    b1 = B.from_record(fake_record())
+    b2 = B.from_record(fake_record())
+    b3 = B.from_record(fake_record())
+
+    record = Container()
+    assert record.linked == []
+
+    record.linked.append(a1)
+    record.linked.append(a2)
+    assert record.to_record()[""fields""][""Linked""] == [a1.id, a2.id]
+
+    record.linked = [a1, a2, a3]
+    assert record.to_record()[""fields""][""Linked""] == [a1.id, a2.id, a3.id]
+
+    # We can validate the type of each object during assignment
+    with pytest.raises(TypeError):
+        record.linked = [b1, b2, b3]
+
+    # We can't (easily) stop an implementer from appending the wrong type
+    # to the end of the list, but we can catch it during to_record().
+    record.linked.append(b1)
+    with pytest.raises(TypeError):
+        record.to_record()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_readonly_fields","@pytest.mark.parametrize(
+    argnames=""test_case"",
+    argvalues=[
+        # If a 2-tuple, the API and ORM values should be identical.
+        (f.AITextField, {""state"": ""empty"", ""isStale"": True, ""value"": None}),
+        (f.AutoNumberField, 1),
+        (f.CountField, 1),
+        (f.ExternalSyncSourceField, ""Source""),
+        (f.ButtonField, {""label"": ""Click me!""}),
+        (f.LookupField, [""any"", ""values""]),
+        (f.CreatedByField, fake_user()),
+        (f.LastModifiedByField, fake_user()),
+        # If a 3-tuple, we should be able to convert API -> ORM values.
+        (f.CreatedTimeField, DATETIME_S, DATETIME_V),
+        (f.LastModifiedTimeField, DATETIME_S, DATETIME_V),
+        # We also want to test the not-null versions of these fields
+        (f.RequiredAITextField, {""state"": ""empty"", ""isStale"": True, ""value"": None}),
+        (f.RequiredCountField, 1),
+    ],
+    ids=operator.itemgetter(0),
+)
+def test_readonly_fields(test_case):
+    """"""
+    Test that a readonly field cannot be overwritten.
+    """"""
+    if len(test_case) == 2:
+        field_type, api_value = test_case
+        orm_value = api_value
+    else:
+        field_type, api_value, orm_value = test_case
+
+    class T(Model):
+        Meta = fake_meta()
+        the_field = field_type(""Field Name"")
+
+    assert orm_value == T.the_field.to_internal_value(api_value)
+    assert api_value == T.the_field.to_record_value(orm_value)
+
+    t = T.from_record(fake_record({""Field Name"": api_value}))
+    assert t.the_field == orm_value
+    with pytest.raises(AttributeError):
+        t.the_field = orm_value"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_writable_fields","@pytest.mark.parametrize(
+    argnames=""test_case"",
+    argvalues=[
+        # If a 2-tuple, the API and ORM values should be identical.
+        (f.Field, object()),  # accepts any value, but Airtable API *will* complain
+        (f.TextField, ""name""),
+        (f.EmailField, ""x@y.com""),
+        (f.NumberField, 1),
+        (f.NumberField, 1.5),
+        (f.IntegerField, 1),
+        (f.FloatField, 1.5),
+        (f.RatingField, 1),
+        (f.CurrencyField, 1.05),
+        (f.CheckboxField, True),
+        (f.CollaboratorField, {""id"": ""usrFakeUserId"", ""email"": ""x@y.com""}),
+        (f.AttachmentsField, [fake_attachment(), fake_attachment()]),
+        (f.MultipleSelectField, [""any"", ""values""]),
+        (f.MultipleCollaboratorsField, [fake_user(), fake_user()]),
+        (f.BarcodeField, {""type"": ""upce"", ""text"": ""084114125538""}),
+        (f.PercentField, 0.5),
+        (f.PhoneNumberField, ""+49 40-349180""),
+        (f.RichTextField, ""Check out [Airtable](www.airtable.com)""),
+        (f.SelectField, """"),
+        (f.SelectField, ""any value""),
+        (f.UrlField, ""www.airtable.com""),
+        (f.RequiredNumberField, 1),
+        (f.RequiredNumberField, 1.5),
+        (f.RequiredIntegerField, 1),
+        (f.RequiredFloatField, 1.5),
+        (f.RequiredRatingField, 1),
+        (f.RequiredCurrencyField, 1.05),
+        (f.RequiredCollaboratorField, {""id"": ""usrFakeUserId"", ""email"": ""x@y.com""}),
+        (f.RequiredBarcodeField, {""type"": ""upce"", ""text"": ""084114125538""}),
+        (f.RequiredPercentField, 0.5),
+        (f.RequiredSelectField, ""any value""),
+        (f.RequiredEmailField, ""any value""),
+        (f.RequiredPhoneNumberField, ""any value""),
+        (f.RequiredRichTextField, ""any value""),
+        (f.RequiredTextField, ""any value""),
+        (f.RequiredUrlField, ""any value""),
+        # If a 3-tuple, we should be able to convert API -> ORM values.
+        (f.DateField, DATE_S, DATE_V),
+        (f.DatetimeField, DATETIME_S, DATETIME_V),
+        (f.DurationField, 100.5, datetime.timedelta(seconds=100, microseconds=500000)),
+        (f.RequiredDateField, DATE_S, DATE_V),
+        (f.RequiredDatetimeField, DATETIME_S, DATETIME_V),
+        (f.RequiredDurationField, 100, datetime.timedelta(seconds=100)),
+    ],
+    ids=operator.itemgetter(0),
+)
+def test_writable_fields(test_case):
+    """"""
+    Test that the ORM does not modify values that can be persisted as-is.
+    """"""
+    if len(test_case) == 2:
+        field_type, api_value = test_case
+        orm_value = api_value
+    else:
+        field_type, api_value, orm_value = test_case
+
+    class T(Model):
+        Meta = fake_meta()
+        the_field = field_type(""Field Name"")
+
+    assert orm_value == T.the_field.to_internal_value(api_value)
+    assert api_value == T.the_field.to_record_value(orm_value)
+
+    new_obj = T()
+    new_obj.the_field = orm_value
+    assert new_obj.to_record()[""fields""] == {""Field Name"": api_value}
+
+    from_init = T(the_field=orm_value)
+    assert from_init.the_field == orm_value
+
+    existing_obj = T.from_record(fake_record({""Field Name"": api_value}))
+    assert existing_obj.the_field == orm_value"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_accepts_null","@pytest.mark.parametrize(
+    ""field_type"",
+    [
+        f.Field,
+        f.AITextField,
+        f.AttachmentsField,
+        f.BarcodeField,
+        f.CheckboxField,
+        f.CollaboratorField,
+        f.CountField,
+        f.CurrencyField,
+        f.DateField,
+        f.DatetimeField,
+        f.DurationField,
+        f.EmailField,
+        f.ExternalSyncSourceField,
+        f.FloatField,
+        f.IntegerField,
+        f.LastModifiedByField,
+        f.LastModifiedTimeField,
+        f.LookupField,
+        f.MultipleCollaboratorsField,
+        f.MultipleSelectField,
+        f.NumberField,
+        f.NumberField,
+        f.PercentField,
+        f.PhoneNumberField,
+        f.RatingField,
+        f.RichTextField,
+        f.SelectField,
+        f.TextField,
+        f.UrlField,
+    ],
+)
+def test_accepts_null(field_type):
+    """"""
+    Test field types that allow null values from Airtable.
+    """"""
+
+    class T(Model):
+        Meta = fake_meta()
+        the_field = field_type(""Field Name"")
+
+    obj = T()
+    assert not obj.the_field"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_invalid_kwarg","def test_invalid_kwarg():
+    """"""
+    Ensure we raise AttributeError if an invalid kwarg is passed to the constructor.
+    """"""
+
+    class T(Model):
+        Meta = fake_meta()
+        the_field = f.TextField(""Field Name"")
+
+    assert T(the_field=""whatever"").the_field == ""whatever""
+    with pytest.raises(AttributeError):
+        T(foo=""bar"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_list_field_with_none","def test_list_field_with_none():
+    """"""
+    Ensure that a ListField represents a null value as an empty list.
+    """"""
+
+    class T(Model):
+        Meta = fake_meta()
+        the_field = f._ListField(""Fld"", str)
+
+    assert T.from_record(fake_record()).the_field == []
+    assert T.from_record(fake_record(Fld=None)).the_field == []"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_link_field","def test_link_field():
+    """"""
+    Test basic interactions and type checking for LinkField.
+    """"""
+
+    class Book(Model):
+        Meta = fake_meta()
+
+    class Author(Model):
+        Meta = fake_meta()
+        books = f.LinkField(""Books"", model=Book)
+
+    collection = [Book(), Book(), Book()]
+    author = Author()
+    author.books = collection
+    assert author.books == collection
+
+    with pytest.raises(TypeError):
+        author.books = Book()
+
+    with pytest.raises(TypeError):
+        author.books = [1, 2, 3]
+
+    with pytest.raises(TypeError):
+        author.books = -1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_link_field__linked_model","def test_link_field__linked_model():
+    """"""
+    Test the various ways of specifying a linked model for the LinkField.
+    """"""
+
+    class HasLinks(Model):
+        Meta = fake_meta()
+        # If the other model class is available, you can link to it directly
+        explicit_link = f.LinkField(""explicit"", Dummy)
+        # You can pass a fully qualified path.to.module.Class
+        indirect_link = f.LinkField(""indirect"", ""test_orm_fields.Dummy"")
+        # If there's no module, just a class, we assume it's in the same module
+        neighbor_link = f.LinkField(""neighbor"", ""Dummy"")
+        # Sentinel value LinkSelf means ""link to the same model""
+        circular_link = f.LinkField(""circular"", f.LinkSelf)
+
+    assert HasLinks.explicit_link.linked_model is Dummy
+    assert HasLinks.indirect_link.linked_model is Dummy
+    assert HasLinks.neighbor_link.linked_model is Dummy
+    assert HasLinks.circular_link.linked_model is HasLinks
+
+    # While it is technically possible to add fields to a Model class after creation,
+    # those fields won't get __set_name__ called, which means they won't have a
+    # reference to their own Model class. This means...
+
+    # ...that LinkField(model=f.LinkSelf) won't work:
+    HasLinks.invalid_circular_link = f.LinkField(""Invalid"", f.LinkSelf)
+    with pytest.raises(RuntimeError):
+        HasLinks.invalid_circular_link.linked_model
+
+    # ...and LinkField(model=""Class"") without the module path won't work:
+    HasLinks.invalid_neighbor_link = f.LinkField(""Invalid"", ""Dummy"")
+    with pytest.raises(RuntimeError):
+        HasLinks.invalid_neighbor_link.linked_model"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_link_field__cycle","def test_link_field__cycle(requests_mock):
+    """"""
+    Test that cyclical relationships like A -> B -> C -> A don't cause infinite recursion.
+    """"""
+
+    id_a = fake_id(""rec"", ""A"")
+    id_b = fake_id(""rec"", ""B"")
+    id_c = fake_id(""rec"", ""C"")
+    rec_a = {""id"": id_a, ""createdTime"": DATETIME_S, ""fields"": {""Friends"": [id_b]}}
+    rec_b = {""id"": id_b, ""createdTime"": DATETIME_S, ""fields"": {""Friends"": [id_c]}}
+    rec_c = {""id"": id_c, ""createdTime"": DATETIME_S, ""fields"": {""Friends"": [id_a]}}
+
+    requests_mock.get(Person.meta.table.record_url(id_a), json=rec_a)
+    a = Person.from_id(id_a)
+
+    for record in (rec_a, rec_b, rec_c):
+        url_re = re.compile(
+            re.escape(Person.meta.table.url + ""?filterByFormula="") + "".*"" + record[""id""]
+        )
+        requests_mock.get(url_re, json={""records"": [record]})
+
+    assert a.friends[0].id == id_b
+    assert a.friends[0].friends[0].id == id_c
+    assert a.friends[0].friends[0].friends[0].id == id_a"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_link_field__load_many","def test_link_field__load_many(requests_mock):
+    """"""
+    Tests that a LinkField which returns several IDs will minimize the number
+    of API calls it makes in order to fetch data.
+    """"""
+
+    person_id = fake_id(""rec"", ""A"")
+    person_url = Person.meta.table.record_url(person_id)
+    friend_ids = [fake_id(""rec"", c) for c in ""123456789ABCDEF""]
+
+    person_json = {
+        ""id"": person_id,
+        ""createdTime"": DATETIME_S,
+        ""fields"": {""Friends"": friend_ids},
+    }
+    friends_json = [
+        {""id"": record_id, ""createdTime"": DATETIME_S, ""fields"": {""Name"": record_id[-1]}}
+        for record_id in friend_ids
+    ]
+
+    # This retrieves a record; we test this behavior elsewhere, no need to check values
+    requests_mock.get(person_url, json=person_json)
+    person = Person.from_id(person_id)
+
+    # Here we test that calling `person.friends` retrieves records in bulk,
+    # instead of calling `.fetch()` on every record individually.
+    # The mocked URL specifically includes every record ID in our test set,
+    # to ensure the library isn't somehow dropping records from its query.
+    url_regex = "".*"".join(
+        [re.escape(Person.meta.table.url + ""?filterByFormula=""), *friend_ids]
+    )
+    mock_list = requests_mock.get(
+        re.compile(url_regex),
+        [
+            {""json"": {""records"": friends_json[:10], ""offset"": ""offset1""}},
+            {""json"": {""records"": friends_json[10:]}},
+        ],
+    )
+    assert person.friends
+    assert mock_list.call_count == 2
+    assert len(person.friends) == len(friend_ids)
+    assert [friend.id for friend in person.friends] == friend_ids
+    # Make sure we didn't keep calling the API on every `person.friends`
+    assert mock_list.call_count == 2"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_single_link_field","def test_single_link_field():
+    class Author(Model):
+        Meta = fake_meta()
+        name = f.TextField(""Name"")
+
+    class Book(Model):
+        Meta = fake_meta()
+        author = f.SingleLinkField(""Author"", Author, lazy=True)
+
+    assert Book.author.linked_model is Author
+
+    book = Book()
+    assert book.author is None
+
+    with pytest.raises(TypeError):
+        book.author = [Author()]
+
+    with pytest.raises(TypeError):
+        book.author = []
+
+    alice = Author.from_record(fake_record(Name=""Alice""))
+    book.author = alice
+
+    with mock.patch(""pyairtable.Table.get"", return_value=alice.to_record()) as m:
+        book.author.fetch()
+        m.assert_called_once_with(alice.id)
+
+    assert book.author.id == alice.id
+    assert book.author.name == ""Alice""
+
+    book.author = (bob := Author(name=""Bob""))
+    assert not book.author.exists()
+    assert book.author.name == ""Bob""
+
+    with mock.patch(""pyairtable.Table.create"", return_value=fake_record()) as m:
+        book.author.save()
+        m.assert_called_once_with({""Name"": ""Bob""}, typecast=True)
+
+    with mock.patch(""pyairtable.Table.create"", return_value=fake_record()) as m:
+        book.save()
+        m.assert_called_once_with({""Author"": [bob.id]}, typecast=True)
+
+    with mock.patch(""pyairtable.Table.update"", return_value=book.to_record()) as m:
+        book.author = None
+        book.save()
+        m.assert_called_once_with(book.id, {""Author"": None}, typecast=True)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_single_link_field__multiple_values","def test_single_link_field__multiple_values():
+    """"""
+    Test the behavior of SingleLinkField when the Airtable API
+    returns multiple values.
+    """"""
+
+    class Author(Model):
+        Meta = fake_meta()
+        name = f.TextField(""Name"")
+
+    class Book(Model):
+        Meta = fake_meta()
+        author = f.SingleLinkField(""Author"", Author)
+
+    records = [fake_record(Name=f""Author {n+1}"") for n in range(3)]
+    a1, a2, a3 = [r[""id""] for r in records]
+
+    # if Airtable sends back multiple IDs, we'll only retrieve the first one.
+    book = Book.from_record(fake_record(Author=[a1, a2, a3]))
+    with mock.patch(""pyairtable.Table.all"", return_value=records) as m:
+        book.author
+        m.assert_called_once_with(formula=OR(RECORD_ID().eq(records[0][""id""])))
+
+    assert book.author.id == a1
+    assert book.author.name == ""Author 1""
+    assert book._fields[""Author""][1:] == [a2, a3]  # not converted to models
+
+    # if book.author.__set__ not called, the entire list will be sent back to the API
+    with mock.patch(""pyairtable.Table.update"", return_value=book.to_record()) as m:
+        book.save()
+        m.assert_called_once_with(book.id, {""Author"": [a1, a2, a3]}, typecast=True)
+
+    # if we modify the field value, it will drop items 2-N
+    book.author = Author.from_record(fake_record())
+    with mock.patch(""pyairtable.Table.update"", return_value=book.to_record()) as m:
+        book.save()
+        m.assert_called_once_with(book.id, {""Author"": [book.author.id]}, typecast=True)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_link_field__populate","@pytest.mark.parametrize(""field_type"", (f.LinkField, f.SingleLinkField))
+def test_link_field__populate(field_type, requests_mock):
+    """"""
+    Test that implementers can use Model.link_field.populate(instance) to control
+    whether loading happens lazy or non-lazy at runtime.
+    """"""
+
+    class Linked(Model):
+        Meta = fake_meta()
+        name = f.TextField(""Name"")
+
+    class T(Model):
+        Meta = fake_meta()
+        link = field_type(""Link"", Linked)
+
+    links = [fake_record(id=n, Name=f""link{n}"") for n in range(1, 4)]
+    link_ids = [link[""id""] for link in links]
+    obj = T.from_record(fake_record(Link=link_ids[:]))
+    assert obj._fields.get(""Link"") == link_ids
+    assert obj._fields.get(""Link"") is not link_ids
+
+    # calling the record directly will attempt network traffic
+    with pytest.raises(NoMockAddress):
+        obj.link
+
+    # on a non-lazy field, we can still call .populate() to load it lazily
+    T.link.populate(obj, lazy=True)
+
+    if field_type is f.SingleLinkField:
+        assert isinstance(obj.link, Linked)
+        assert obj.link.id == links[0][""id""]
+        assert obj.link.name == """"
+    else:
+        assert isinstance(obj.link[0], Linked)
+        assert link_ids == [link.id for link in obj.link]
+        assert all(link.name == """" for link in obj.link)
+
+    # calling .populate() on the wrong model raises an exception
+    with pytest.raises(RuntimeError):
+        T.link.populate(Linked())"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_lookup_field","def test_lookup_field():
+    class T:
+        items = f.LookupField(""Items"")
+
+    lookup_from_airtable = [""Item 1"", ""Item 2"", ""Item 3""]
+    rv_list = T.items.to_internal_value(lookup_from_airtable)
+    rv_json = T.items.to_record_value(rv_list)
+    assert rv_json == lookup_from_airtable
+    assert isinstance(rv_list, list)
+    assert rv_list[0] == ""Item 1"" and rv_list[1] == ""Item 2"" and rv_list[2] == ""Item 3""
+
+    class T:
+        events = f.LookupField(""Event times"")
+
+    lookup_from_airtable = [
+        ""2000-01-02T03:04:05.000Z"",
+        ""2000-02-02T03:04:05.000Z"",
+        ""2000-03-02T03:04:05.000Z"",
+    ]
+    rv_to_internal = T.events.to_internal_value(lookup_from_airtable)
+    rv_to_record = T.events.to_record_value(rv_to_internal)
+    assert rv_to_record == lookup_from_airtable
+    assert isinstance(rv_to_internal, list)
+    assert (
+        rv_to_internal[0] == ""2000-01-02T03:04:05.000Z""
+        and rv_to_internal[1] == ""2000-02-02T03:04:05.000Z""
+        and rv_to_internal[2] == ""2000-03-02T03:04:05.000Z"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_datetime_timezones","def test_datetime_timezones(requests_mock):
+    """"""
+    Test that DatetimeField handles time zones properly.
+    """"""
+
+    class M(Model):
+        Meta = fake_meta()
+        dt = f.DatetimeField(""dt"")
+
+    obj = M.from_record(fake_record(dt=""2024-02-29T12:34:56Z""))
+
+    def patch_callback(request, context):
+        return {
+            ""id"": obj.id,
+            ""createdTime"": datetime_to_iso_str(obj.created_time),
+            ""fields"": request.json()[""fields""],
+        }
+
+    m = requests_mock.patch(M.meta.table.record_url(obj.id), json=patch_callback)
+
+    # Test that we parse the ""Z"" into UTC correctly
+    assert obj.dt.date() == datetime.date(2024, 2, 29)
+    assert obj.dt.tzinfo is datetime.timezone.utc
+    obj.save()
+    assert m.last_request.json()[""fields""][""dt""] == ""2024-02-29T12:34:56.000Z""
+
+    # Test that we can set a UTC timezone and it will be saved as-is.
+    obj.dt = datetime.datetime(2024, 3, 1, 11, 22, 33, tzinfo=datetime.timezone.utc)
+    obj.save()
+    assert m.last_request.json()[""fields""][""dt""] == ""2024-03-01T11:22:33.000Z""
+
+    # Test that we can set a local timezone and it will be sent to Airtable.
+    pacific = datetime.timezone(datetime.timedelta(hours=-8))
+    obj.dt = datetime.datetime(2024, 3, 1, 11, 22, 33, tzinfo=pacific)
+    obj.save()
+    assert m.last_request.json()[""fields""][""dt""] == ""2024-03-01T11:22:33.000-08:00""
+
+    # Test that a timezone-unaware datetime is passed as-is to Airtable.
+    # This behavior will vary depending on how the field is configured.
+    # See https://airtable.com/developers/web/api/field-model#dateandtime
+    obj.dt = datetime.datetime(2024, 3, 1, 11, 22, 33)
+    obj.save()
+    assert m.last_request.json()[""fields""][""dt""] == ""2024-03-01T11:22:33.000"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py","test_select_field","@pytest.mark.parametrize(
+    ""fields,expected"",
+    [
+        ({}, None),
+        ({""Field"": None}, None),
+        ({""Field"": """"}, """"),
+        ({""Field"": ""xyz""}, ""xyz""),
+    ],
+)
+def test_select_field(fields, expected):
+    """"""
+    Test that select field distinguishes between empty string and None.
+    """"""
+
+    class T(Model):
+        Meta = fake_meta()
+        the_field = f.SelectField(""Field"")
+
+    obj = T.from_record(fake_record(**fields))
+    assert obj.the_field == expected
+
+    with mock.patch(""pyairtable.Table.update"", return_value=obj.to_record()) as m:
+        obj.save()
+        m.assert_called_once_with(obj.id, fields, typecast=True)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models.py","test_raw","def test_raw(api):
+    """"""
+    Test that AirtableModel.from_api saves the raw value, so that developers
+    can access the exact payload we received from the API. This is mostly
+    in case Airtable adds new things to webhooks or schemas in the future.
+    """"""
+
+    class Grandchild(AirtableModel):
+        value: int
+
+    class Child(AirtableModel):
+        grandchild: Grandchild
+
+    class Parent(AirtableModel):
+        child: Child
+
+    raw = {""child"": {""grandchild"": {""value"": 1}}, ""foo"": ""FOO"", ""bar"": ""BAR""}
+    obj = Parent.from_api(raw, api)
+    assert not hasattr(obj, ""foo"")
+    assert not hasattr(obj, ""bar"")
+    assert obj._raw == raw
+    assert obj.child._raw == raw[""child""]
+    assert obj.child.grandchild._raw == raw[""child""][""grandchild""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models.py","test_from_api","@pytest.mark.parametrize(""prefix"", [""https://api.airtable.com/v0/prefix"", ""prefix""])
+def test_from_api(raw_data, prefix, api):
+    """"""
+    Test that CanUpdate.from_api persists its parameters correctly,
+    and that if `url=` is passed to the subclass, we'll always get a valid URL.
+    """"""
+
+    class Dummy(CanUpdateModel, url=""{prefix}/foo={self.foo}/bar={self.bar}""):
+        foo: int
+        bar: int
+
+    obj = Dummy.from_api(raw_data, api, context={""prefix"": prefix})
+    assert obj._api == api
+    assert obj._raw == raw_data
+    assert obj._url == ""https://api.airtable.com/v0/prefix/foo=1/bar=2""
+    assert obj.foo == 1
+    assert obj.bar == 2
+    assert not hasattr(obj, ""baz"")
+    assert obj._raw[""baz""] == 3"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models.py","test_save","def test_save(requests_mock, create_instance):
+    obj = create_instance()
+    obj.foo *= 2
+    obj.bar *= 3
+    expected_patch = {""foo"": 2, ""bar"": 6, ""baz"": 3}
+    returned_patch = {""foo"": -1, ""bar"": -2, ""baz"": -3}
+    m = requests_mock.patch(obj._url, json=returned_patch)
+    obj.save()
+    assert m.call_count == 1
+    assert m.request_history[0].json() == expected_patch
+    assert obj.foo == returned_patch[""foo""]
+    assert obj.bar == returned_patch[""bar""]
+    assert obj.baz == returned_patch[""baz""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models.py","test_save__nested_reload","def test_save__nested_reload(requests_mock, api):
+    """"""
+    Test that reloading an object with nested models correctly reloads all of them,
+    while preserving those nested models' access to the API.
+    """"""
+
+    class Parent(CanUpdateModel, url=""foo/{self.id}""):
+        id: int
+        name: str
+        children: List[""Parent.Child""]  # noqa
+
+        class Child(CanUpdateModel, url=""foo/{parent.id}/child/{child.id}""):
+            id: int
+            name: str
+
+    update_forward_refs(Parent)
+
+    parent_data = {
+        ""id"": 1,
+        ""name"": ""One"",
+        ""children"": [
+            (child2_data := {""id"": 2, ""name"": ""Two""}),
+            (child3_data := {""id"": 3, ""name"": ""Three""}),
+        ],
+    }
+    requests_mock.get(parent_url := api.build_url(""foo/1""), json=parent_data)
+    requests_mock.get(child2_url := api.build_url(""foo/1/child/2""), json=child2_data)
+    requests_mock.get(child3_url := api.build_url(""foo/1/child/3""), json=child3_data)
+
+    parent = Parent.from_api(parent_data, api)
+    assert parent.name == ""One""
+    assert parent.children[0].name == ""Two""
+
+    # Test that we can still reload the parent object
+    m_parent_patch = requests_mock.patch(
+        parent_url,
+        json={
+            **parent_data,
+            ""name"": (parent_update := ""One Updated""),
+        },
+    )
+    parent.name = parent_update
+    parent.save()
+    assert m_parent_patch.call_count == 1
+    assert m_parent_patch.last_request.json()[""name""] == parent_update
+
+    # Test that we can still patch a nested object after its parent was reloaded,
+    # because we saved the URL context from `from_api()` and reused it on `_reload()`.
+    m_child2_patch = requests_mock.patch(child2_url, json=child2_data)
+    m_child3_patch = requests_mock.patch(
+        child3_url,
+        json={
+            **child3_data,
+            ""name"": (child3_update := ""Three Updated""),
+        },
+    )
+    parent.children[1].name = child3_update
+    parent.children[1].save()
+    assert m_child3_patch.call_count == 1
+    assert m_child3_patch.last_request.json()[""name""] == child3_update
+    assert parent.children[1].name == child3_update
+    assert m_child2_patch.call_count == 0  # just to be sure"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models.py","test_delete","def test_delete(requests_mock, create_instance):
+    obj = create_instance()
+    m = requests_mock.delete(obj._url)
+    obj.delete()
+    assert m.call_count == 1
+    assert obj.deleted
+    with pytest.raises(RuntimeError):
+        obj.save()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models.py","test_restfulmodel__set_url","def test_restfulmodel__set_url(api, base):
+    """"""
+    Test that the RestfulModel class generates a URL based on API context.
+    Also test that RestfulModel puts the full URL context into certain types
+    of exceptions that occur during URL formatting.
+    """"""
+
+    class Dummy(RestfulModel, url=""{base.id}/{dummy.one}/{dummy.two}""):
+        one: int
+        two: str
+
+    data = {""one"": 1, ""two"": ""2""}
+
+    d = Dummy.from_api(data, api, context={""base"": base})
+    assert d._url == api.build_url(f""{base.id}/1/2"")
+
+    with pytest.raises(KeyError) as exc_info:
+        Dummy.from_api(data, api)
+
+    assert exc_info.match(r""\('base', \{'dummy': .*\}\)"")
+
+    with pytest.raises(AttributeError) as exc_info:
+        Dummy.from_api(data, api, context={""base"": None})
+
+    assert exc_info.match(
+        r'""\'NoneType\' object has no attribute \'id\'""'"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models.py","test_datetime_conversion","def test_datetime_conversion(api, requests_mock):
+    """"""
+    Test that if an AirtableModel field is specified as a datetime,
+    and the input data is provided as a str, we'll convert to a datetime
+    and back to a str when saving.
+    """"""
+
+    class Dummy(CanUpdateModel, url=""{self.id}"", writable=[""timestamp""]):
+        id: str
+        timestamp: datetime
+
+    data = {""id"": ""rec000"", ""timestamp"": ""2024-01-08T12:34:56Z""}
+    obj = Dummy.from_api(data, api)
+    assert obj.timestamp == datetime(2024, 1, 8, 12, 34, 56, tzinfo=timezone.utc)
+    m = requests_mock.patch(obj._url, json=data)
+    obj.save()
+    assert m.call_count == 1
+    assert m.request_history[0].json() == {""timestamp"": ""2024-01-08T12:34:56.000Z""}"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_constructor","def test_constructor(api):
+    base = Base(api, ""base_id"")
+    assert base.api == api
+    assert base.id == ""base_id"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_deprecated_constructor","def test_deprecated_constructor():
+    with pytest.warns(DeprecationWarning):
+        base = Base(""api_key"", ""base_id"")
+
+    assert base.api.api_key == ""api_key""
+    assert base.id == ""base_id"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_repr","@pytest.mark.parametrize(
+    ""kwargs,expected"",
+    [
+        (
+            dict(base_id=""appFake""),
+            ""<Base id='appFake'>"",
+        ),
+        (
+            dict(base_id=""appFake"", name=""Some name""),
+            ""<Base id='appFake' name='Some name'>"",
+        ),
+        (
+            dict(base_id=""appFake"", permission_level=""editor""),
+            ""<Base id='appFake' permission_level='editor'>"",
+        ),
+    ],
+)
+def test_repr(api, kwargs, expected):
+    base = Base(api, **kwargs)
+    assert repr(base) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_url","def test_url(base):
+    assert base.url == ""https://api.airtable.com/v0/appLkNDICXNqxSDhG"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_schema","def test_schema(base: Base, mock_tables_endpoint):
+    table_schema = base.schema().table(""tbltp8DGLhqbUmjK1"")
+    assert table_schema.name == ""Apartments""
+    assert mock_tables_endpoint.call_count == 1
+
+    # Test that we cache the result unless force=True
+    base.schema()
+    assert mock_tables_endpoint.call_count == 1
+    base.schema(force=True)
+    assert mock_tables_endpoint.call_count == 2"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_table","def test_table(base: Base, requests_mock):
+    # no network traffic expected; requests_mock will fail if it happens
+    rv = base.table(""tablename"")
+    assert isinstance(rv, Table)
+    assert rv.base == base
+    assert rv.name == ""tablename""
+    assert rv.url == f""https://api.airtable.com/v0/{base.id}/tablename"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_table_validate","def test_table_validate(base: Base, mock_tables_endpoint):
+    """"""
+    Test that Base.table(..., validate=True) allows us to look up a table
+    by either ID or name and get the correct properties.
+    """"""
+    # It will reuse the cached schema when validate=True is called multiple times...
+    base.table(""tbltp8DGLhqbUmjK1"", validate=True)
+    base.table(""Apartments"", validate=True)
+    assert mock_tables_endpoint.call_count == 1
+    # ...unless we also pass force=True
+    base.table(""Apartments"", validate=True, force=True)
+    assert mock_tables_endpoint.call_count == 2"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_tables","def test_tables(base: Base, mock_tables_endpoint):
+    """"""
+    Test that Base.tables() returns a list of validated Base instances.
+    """"""
+    result = base.tables()
+    assert len(result) == 2
+    assert result[0].name == ""Apartments""
+    assert result[1].name == ""Districts"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_collaborators","def test_collaborators(base: Base, requests_mock, sample_json):
+    requests_mock.get(base.meta_url(), json=sample_json(""BaseCollaborators""))
+    result = base.collaborators()
+    assert result.individual_collaborators.via_base[0].email == ""foo@bam.com""
+    assert result.group_collaborators.via_workspace[0].group_id == ""ugp1mKGb3KXUyQfOZ"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_shares","def test_shares(base: Base, requests_mock, sample_json):
+    requests_mock.get(base.meta_url(""shares""), json=sample_json(""BaseShares""))
+    result = base.shares()
+    assert result[0].state == ""enabled""
+    assert result[1].effective_email_domain_allow_list == []"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_webhooks","def test_webhooks(base: Base, requests_mock, sample_json):
+    m = requests_mock.get(
+        base.webhooks_url,
+        json={""webhooks"": [sample_json(""Webhook"")]},
+    )
+    webhooks = base.webhooks()
+    assert m.call_count == 1
+    assert len(webhooks) == 1
+    assert webhooks[0].is_hook_enabled
+    assert webhooks[0].last_notification_result.error"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_webhook","def test_webhook(base: Base, requests_mock, sample_json):
+    requests_mock.get(base.webhooks_url, json={""webhooks"": [sample_json(""Webhook"")]})
+    webhook = base.webhook(""ach00000000000001"")
+    assert webhook.id == ""ach00000000000001""
+    assert webhook.notification_url == ""https://example.com/receive-ping""
+    with pytest.raises(KeyError):
+        base.webhook(""DoesNotExist"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_add_webhook","def test_add_webhook(base: Base, requests_mock):
+    def _callback(request, context):
+        expires = datetime.datetime.now() + datetime.timedelta(days=7)
+        return {
+            ""id"": fake_id(""ach""),
+            ""expirationTime"": expires.isoformat(),
+            ""macSecretBase64"": ""secret"",
+        }
+
+    spec = {
+        ""options"": {
+            ""filters"": {
+                ""fromSources"": [""client""],
+                ""dataTypes"": [""tableData""],
+                ""recordChangeScope"": ""tbl00000000000000"",
+                ""watchDataInFieldIds"": [
+                    ""fld00000000000000"",
+                    ""fld00000000000001"",
+                    ""fld00000000000002"",
+                ],
+            }
+        }
+    }
+    m = requests_mock.post(base.webhooks_url, json=_callback)
+    result = base.add_webhook(""https://example.com/cb"", spec)
+
+    assert m.call_count == 1
+    assert m.last_request.json()[""notificationUrl""] == ""https://example.com/cb""
+    assert m.last_request.json()[""specification""] == spec
+    assert result.id.startswith(""ach"")
+    assert result.mac_secret_base64 == ""secret"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_name","def test_name(api, base, requests_mock):
+    """"""
+    Test that Base().name is only set if passed explicitly to the constructor,
+    or if it is available in cached schema information.
+    """"""
+    requests_mock.get(
+        base.meta_url(),
+        json={
+            ""id"": base.id,
+            ""name"": ""Mocked Base Name"",
+            ""permissionLevel"": ""create"",
+            ""workspaceId"": ""wspFake"",
+        },
+    )
+
+    assert api.base(base.id).name is None
+    assert base.name is None
+    assert base.collaborators().name == ""Mocked Base Name""
+    assert base.name == ""Mocked Base Name""
+
+    # Test behavior with older constructor pattern
+    with pytest.warns(DeprecationWarning):
+        assert Base(""tok"", ""app"").name is None
+    with pytest.warns(DeprecationWarning):
+        assert Base(""tok"", ""app"", name=""Base Name"").name == ""Base Name"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_create_table","def test_create_table(base, requests_mock, mock_tables_endpoint):
+    """"""
+    Test that Base.create_table() makes two calls, one to create the table,
+    and another to re-retrieve the entire base's schema.
+    """"""
+    m = requests_mock.post(mock_tables_endpoint._url, json={""id"": ""tblWasJustCreated""})
+    mock_tables_endpoint._responses[0]._params[""json""][""tables""].append(
+        {
+            ""id"": ""tblWasJustCreated"",
+            ""name"": ""Table Name"",
+            ""primaryFieldId"": ""fldWasJustCreated"",
+            ""fields"": [
+                {
+                    ""id"": ""fldWasJustCreated"",
+                    ""name"": ""Whatever"",
+                    ""type"": ""singleLineText"",
+                }
+            ],
+            ""views"": [],
+        }
+    )
+    table = base.create_table(
+        ""Table Name"",
+        fields=[{""name"": ""Whatever""}],
+        description=""Description"",
+    )
+    assert m.call_count == 1
+    assert m.request_history[-1].json() == {
+        ""name"": ""Table Name"",
+        ""description"": ""Description"",
+        ""fields"": [{""name"": ""Whatever""}],
+    }
+
+    assert isinstance(table, Table)
+    assert table.id == ""tblWasJustCreated""
+    assert table.name == ""Table Name""
+    assert table.schema().primary_field_id == ""fldWasJustCreated"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_schema_refresh","def test_schema_refresh(base, requests_mock, mock_tables_endpoint):
+    """"""
+    Test that base.schema() is forced to refresh on table create.
+    """"""
+
+    schema_id = id(base.schema())
+
+    m = requests_mock.post(mock_tables_endpoint._url, json={""id"": ""tblWasJustCreated""})
+    mock_tables_endpoint._responses[0]._params[""json""][""tables""].append(
+        {
+            ""id"": ""tblWasJustCreated"",
+            ""name"": ""Table Name"",
+            ""primaryFieldId"": ""fldWasJustCreated"",
+            ""fields"": [
+                {
+                    ""id"": ""fldWasJustCreated"",
+                    ""name"": ""Whatever"",
+                    ""type"": ""singleLineText"",
+                }
+            ],
+            ""views"": [],
+        }
+    )
+
+    table = base.create_table(
+        ""Table Name"",
+        fields=[{""name"": ""Whatever""}],
+        description=""Description"",
+    )
+
+    assert m.call_count == 1
+    assert table.id == ""tblWasJustCreated""
+    assert not id(base.schema()) == schema_id"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_delete","def test_delete(base, requests_mock):
+    """"""
+    Test that Base.delete() hits the right endpoint.
+    """"""
+    m = requests_mock.delete(base.meta_url(), json={""id"": base.id, ""deleted"": True})
+    base.delete()
+    assert m.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py","test_delete__enterprise_only_table","def test_delete__enterprise_only_table(api, base, requests_mock):
+    """"""
+    Test that Base.delete() explains why it might be getting a 404.
+    """"""
+    requests_mock.delete(base.meta_url(), status_code=404)
+    with pytest.raises(HTTPError) as excinfo:
+        base.delete()
+    assert ""Base.delete() requires an enterprise billing plan"" in str(excinfo)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py","test_collaborators","def test_collaborators(workspace, mock_info):
+    assert workspace.collaborators().id == ""wspmhESAta6clCCwF""
+    assert workspace.collaborators().name == ""my first workspace""
+    assert mock_info.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py","test_name","def test_name(workspace, mock_info):
+    assert workspace.name == ""my first workspace""
+    assert mock_info.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py","test_bases","def test_bases(workspace, mock_info):
+    bases = workspace.bases()
+    assert len(bases) == 2
+    assert bases[0].id == ""appLkNDICXNqxSDhG""
+    assert bases[1].id == ""appSW9R5uCNmRmfl6""
+    assert mock_info.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py","test_create_base","def test_create_base(workspace, requests_mock, sample_json):
+    url = workspace.api.build_url(""meta/bases"")
+    requests_mock.get(url, json=sample_json(""Bases""))
+    requests_mock.post(url, json={""id"": ""appLkNDICXNqxSDhG""})
+    base = workspace.create_base(""Base Name"", [])
+    assert isinstance(base, Base)
+    assert base.id == ""appLkNDICXNqxSDhG"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py","test_delete","def test_delete(workspace, requests_mock):
+    m = requests_mock.delete(workspace.url, json={""id"": workspace.id, ""deleted"": True})
+    workspace.delete()
+    assert m.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py","test_move_base","@pytest.mark.parametrize(""workspace_param"", [""workspace"", ""workspace_id""])
+@pytest.mark.parametrize(""base_param"", [""base"", ""base_id""])
+@pytest.mark.parametrize(
+    ""kwargs,expected"",
+    [
+        ({}, {}),
+        ({""index"": 8}, {""targetIndex"": 8}),
+    ],
+)
+def test_move_base(
+    workspace,
+    workspace_id,
+    workspace_param,
+    base,
+    base_id,
+    base_param,
+    kwargs,
+    expected,
+    requests_mock,
+):
+    m = requests_mock.post(workspace.url + ""/moveBase"")
+    workspace.move_base(locals()[base_param], locals()[workspace_param], **kwargs)
+    assert m.call_count == 1
+    assert m.request_history[-1].json() == {
+        ""baseId"": base_id,
+        ""targetWorkspaceId"": workspace_id,
+        **expected,"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model__memoization.py","test_memoize__from_id","@parametrized_memoization_test
+def test_memoize__from_id(record_mocks, cls, kwargs, expect_memoized):
+    """"""
+    Test whether Model.from_id saves objects to Model._memoized
+    """"""
+    record_id = list(getattr(record_mocks, cls.__name__.lower() + ""s""))[0]
+    obj = cls.from_id(record_id, **kwargs)
+    assert record_mocks.get[record_id].call_count == 1
+    assert_memoized(obj, expect_memoized)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model__memoization.py","test_from_id","def test_from_id():
+    """"""
+    Test that Model.from_id pulls from Model._memoized, regardless
+    of whether Model.Meta.memoize is True or False.
+    """"""
+    book = Book.from_record(fake_record())
+    Book._memoized[book.id] = book
+    assert Book.from_id(book.id) is book"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model__memoization.py","test_from_ids","def test_from_ids(record_mocks):
+    """"""
+    Test that Model.from_ids pulls from Model._memoized, regardless
+    of whether Model.Meta.memoize is True or False.
+    """"""
+    book = Book.from_record(fake_record())
+    Book._memoized = {book.id: book}
+    books = Book.from_ids([book.id, *list(record_mocks.books)])
+    # We got all four, but only requested the non-memoized three from the API
+    assert len(books) == 4
+    assert record_mocks.get_books.call_count == 1
+    assert record_mocks.get_books.last_request.qs[""filterByFormula""] == [
+        ""OR(%s)"" % "", "".join(f""RECORD_ID()='{id}'"" for id in sorted(record_mocks.books))"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model__memoization.py","test_memoize__link_field","def test_memoize__link_field(record_mocks):
+    """"""
+    Test that Model.link_field writes to Model._memoized if Model.Meta.memoize is True
+    """"""
+    book_id = list(record_mocks.books)[0]
+    book = Book.from_id(book_id)
+    assert record_mocks.get[book_id].call_count == 1
+
+    # no memoization yet
+    assert not Book._memoized
+    assert not Author._memoized
+
+    book.author  # this makes the call
+    assert book.author.id == record_mocks.books[book_id][""fields""][""Author""][0]
+    assert Author._memoized[book.author.id] is book.author
+
+    # test that we only ever made one network call per object
+    assert record_mocks.get[book.id].call_count == 1
+    assert record_mocks.get[book.author.id].call_count == 0
+    assert record_mocks.get_authors.call_count == 1
+    assert record_mocks.get_authors.last_request.qs[""filterByFormula""] == [
+        f""OR(RECORD_ID()='{book.author.id}')"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model__memoization.py","test_memoize__link_field__populate","def test_memoize__link_field__populate(record_mocks):
+    """"""
+    Test that Model.link_field.populate writes to Model._memoized if memoize=True
+    """"""
+    author_id = list(record_mocks.authors)[0]
+    author = Author.from_id(author_id)
+    Author.books.populate(author, memoize=True)
+    assert len(author.books) == 1
+    for book in author.books:
+        assert Book._memoized[book.id] is book
+        assert record_mocks.get[book.id].call_count == 0
+    # test that we only ever made one network call
+    assert record_mocks.get_books.call_count == 1
+    assert record_mocks.get_books.last_request.qs[""filterByFormula""] == [
+        ""OR(%s)"" % "", "".join(f""RECORD_ID()='{book.id}'"" for book in author.books)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_url_escape.py","test_url_escape","@pytest.mark.parametrize(
+    ""table_name,escaped"",
+    [
+        (""Test table 1"", ""Test%20table%201""),
+        (""Test/Table 2"", ""Test%2FTable%202""),
+        (""Another (test) table"", ""Another%20%28test%29%20table""),
+        (""A & test & table"", ""A%20%26%20test%20%26%20table""),
+        (""percentage % table"", ""percentage%20%25%20table""),
+    ],
+)
+def test_url_escape(base, table_name, escaped):
+    """"""
+    Test for proper escaping of urls including unsafe characters in
+    table names (which Airtable *will* allow).
+    """"""
+    table = base.table(table_name)
+    assert table.url.endswith(escaped)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_repr","def test_repr(api):
+    assert ""Api"" in api.__repr__()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_get_base","def test_get_base(api: Api):
+    rv = api.base(""appTest"")
+    assert isinstance(rv, Base)
+    assert rv.id == ""appTest""
+    assert rv.api == api"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_get_table","def test_get_table(api: Api):
+    rv = api.table(""appTest"", ""tblTest"")
+    assert isinstance(rv, Table)
+    assert rv.name == ""tblTest""
+    assert rv.base.id == ""appTest"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_default_endpoint_url","def test_default_endpoint_url(api: Api):
+    rv = api.build_url(""appTest"", ""tblTest"")
+    assert rv == ""https://api.airtable.com/v0/appTest/tblTest"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_endpoint_url","def test_endpoint_url():
+    api = Api(""apikey"", endpoint_url=""https://api.example.com"")
+    rv = api.build_url(""appTest"", ""tblTest"")
+    assert rv == ""https://api.example.com/v0/appTest/tblTest"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_endpoint_url_with_trailing_slash","def test_endpoint_url_with_trailing_slash():
+    api = Api(""apikey"", endpoint_url=""https://api.example.com/"")
+    rv = api.build_url(""appTest"", ""tblTest"")
+    assert rv == ""https://api.example.com/v0/appTest/tblTest"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_update_api_key","def test_update_api_key(api):
+    """"""
+    Test that changing the access token also changes the default request headers.
+    """"""
+    api.api_key = ""123""
+    assert ""123"" in api.session.headers[""Authorization""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_whoami","def test_whoami(api, requests_mock):
+    """"""
+    Test the /whoami endpoint gets passed straight through.
+    """"""
+    payload = {
+        ""id"": ""usrFakeTestingUser"",
+        ""scopes"": [
+            ""data.records:read"",
+            ""data.records:write"",
+        ],
+    }
+    requests_mock.get(""https://api.airtable.com/v0/meta/whoami"", json=payload)
+    assert api.whoami() == payload"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_base","@pytest.mark.parametrize(""base_id"", (""appLkNDICXNqxSDhG"", ""Apartment Hunting""))
+def test_base(api, base_id, mock_bases_endpoint):
+    # test behavior without validation
+    base = api.base(base_id)
+    assert base.id == base_id
+    assert base.name is None
+    assert base.permission_level is None
+    assert mock_bases_endpoint.call_count == 0
+
+    # test behavior with validation
+    base = api.base(base_id, validate=True)
+    assert base.id == ""appLkNDICXNqxSDhG""
+    assert base.name == ""Apartment Hunting""
+    assert base.permission_level == ""create""
+    assert mock_bases_endpoint.call_count == 1
+
+    # calling a second time uses cached information...
+    api.base(base_id, validate=True)
+    assert mock_bases_endpoint.call_count == 1
+
+    # ...unless we also pass force=True
+    base = api.base(base_id, validate=True, force=True)
+    assert mock_bases_endpoint.call_count == 2"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_bases","def test_bases(api, mock_bases_endpoint):
+    base_ids = [base.id for base in api.bases()]
+    assert mock_bases_endpoint.call_count == 1
+    assert base_ids == [""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""]
+
+    # Should not make a second API call...
+    assert [base.id for base in api.bases()] == base_ids
+    assert mock_bases_endpoint.call_count == 1
+    # ....unless we force it:
+    reloaded = api.bases(force=True)
+    assert [base.id for base in reloaded] == base_ids
+    assert mock_bases_endpoint.call_count == 2"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_iterate_requests","def test_iterate_requests(api: Api, requests_mock):
+    url = ""https://example.com""
+    response_list = [{""json"": {""page"": n, ""offset"": n + 1}} for n in range(1, 3)]
+    response_list[-1][""json""][""offset""] = None
+    requests_mock.get(url, response_list=response_list)
+    responses = list(api.iterate_requests(""GET"", url))
+    assert responses == [response[""json""] for response in response_list]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_iterate_requests__invalid_type","def test_iterate_requests__invalid_type(api: Api, requests_mock):
+    url = ""https://example.com""
+    response_list = [{""json"": {""page"": n, ""offset"": n + 1}} for n in range(1, 3)]
+    response_list.append({""json"": ""anything but a dict, and we stop immediately""})
+    requests_mock.get(url, response_list=response_list)
+    responses = list(api.iterate_requests(""GET"", url))
+    assert responses == [response[""json""] for response in response_list]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_workspace","def test_workspace(api):
+    assert api.workspace(""wspFake"").id == ""wspFake"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py","test_enterprise","def test_enterprise(api, requests_mock, sample_json):
+    url = api.build_url(""meta/enterpriseAccount/entUBq2RGdihxl3vU"")
+    requests_mock.get(url, json=sample_json(""EnterpriseInfo""))
+    enterprise = api.enterprise(""entUBq2RGdihxl3vU"")
+    assert enterprise.id == ""entUBq2RGdihxl3vU"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_collaborator.py","test_parse","def test_parse():
+    user = Collaborator.parse_obj(fake_user_data)
+    assert user.id == fake_user_data[""id""]
+    assert user.email == fake_user_data[""email""]
+    assert user.name == fake_user_data[""name""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_collaborator.py","test_init","def test_init():
+    c = Collaborator(id=""usrXXXXXXXXXXXXX"")
+    assert c.id == ""usrXXXXXXXXXXXXX""
+    assert c.email is None
+    assert c.name is None
+
+    with pytest.raises(ValueError):
+        Collaborator()
+
+    with pytest.raises(ValueError):
+        Collaborator(name=""Fake User"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_retrying.py","test_without_retry_strategy__succeed","def test_without_retry_strategy__succeed(
+    table_with_retry_strategy,
+    mock_endpoint,
+    mock_response_single,
+):
+    mock_endpoint.canned_responses = [(200, mock_response_single)]
+    table = table_with_retry_strategy(None)
+    assert table.get(""record"") == mock_response_single"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_retrying.py","test_retry_eventual_success","def test_retry_eventual_success(
+    table_with_retry_strategy,
+    mock_endpoint,
+    mock_response_single,
+):
+    """"""
+    Test that our retry logic succeeds if we eventually get a valid result.
+    """"""
+    strategy = retry_strategy(total=2, status_forcelist=[429, 500])
+    table = table_with_retry_strategy(strategy)
+
+    mock_endpoint.canned_responses = [
+        (429, None),
+        (500, None),
+        (200, mock_response_single),
+    ]
+
+    assert table.get(""record"") == mock_response_single"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_retrying.py","test_retry_during_iterate","def test_retry_during_iterate(table_with_retry_strategy, mock_endpoint):
+    """"""
+    Test that our default retry logic will be enough to get through several pages of data.
+    Relies on ``mock_endpoint`` to return 429s whenever QPS goes over the limit.
+    """"""
+    table = table_with_retry_strategy(retry_strategy())
+
+    page_count = 10
+    per_page = 5  # real world number is 100, but we don't need that much data here
+    page = {""records"": [fake_record()] * per_page}
+    mock_endpoint.canned_responses = [(200, {**page, ""offset"": ""offset""})] * page_count
+    mock_endpoint.canned_responses[-1] = (200, page)  # no offset on the last page
+
+    records = table.all()
+    assert len(records) == page_count * per_page"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_utils.py","test_datetime_utils","@pytest.mark.parametrize(
+    ""dt_obj,dt_str"",
+    [
+        (datetime(2000, 1, 2, 3, 4, 5, 0), ""2000-01-02T03:04:05.000""),
+        (datetime(2025, 12, 31, 23, 59, 59, 0), ""2025-12-31T23:59:59.000""),
+        (datetime(2025, 12, 31, 23, 59, 59, 5_000), ""2025-12-31T23:59:59.005""),
+        (datetime(2025, 12, 31, 23, 59, 59, 555_000), ""2025-12-31T23:59:59.555""),
+        (utc_tz(2000, 1, 2, 3, 4, 5, 0), ""2000-01-02T03:04:05.000Z""),
+        (utc_tz(2025, 12, 31, 23, 59, 59, 0), ""2025-12-31T23:59:59.000Z""),
+        (utc_tz(2025, 12, 31, 23, 59, 59, 5_000), ""2025-12-31T23:59:59.005Z""),
+        (utc_tz(2025, 12, 31, 23, 59, 59, 555_000), ""2025-12-31T23:59:59.555Z""),
+    ],
+)
+def test_datetime_utils(dt_obj, dt_str):
+    assert utils.datetime_to_iso_str(dt_obj) == dt_str
+    assert utils.datetime_from_iso_str(dt_str) == dt_obj"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_utils.py","test_date_utils","@pytest.mark.parametrize(
+    ""date_obj,date_str"",
+    [
+        (date(2000, 1, 2), ""2000-01-02""),
+        (date(2025, 12, 31), ""2025-12-31""),
+    ],
+)
+def test_date_utils(date_obj, date_str):
+    assert utils.date_to_iso_str(date_obj) == date_str
+    assert utils.date_from_iso_str(date_str) == date_obj"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_utils.py","test_attachment","def test_attachment():
+    assert utils.attachment(""https://url.com"") == {""url"": ""https://url.com""}
+    assert utils.attachment(""https://url.com"", filename=""test.jpg"") == {
+        ""url"": ""https://url.com"",
+        ""filename"": ""test.jpg"","
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_utils.py","test_id_check","@pytest.mark.parametrize(
+    ""func,value,expected"",
+    [
+        (utils.is_airtable_id, -1, False),
+        (utils.is_airtable_id, ""appAkBDICXDqESDhF"", True),
+        (utils.is_airtable_id, ""app0000000000Fake"", True),
+        (utils.is_airtable_id, ""appWrongLength"", False),
+        (utils.is_record_id, ""rec0000000000Fake"", True),
+        (utils.is_record_id, ""app0000000000Fake"", False),
+        (utils.is_base_id, ""app0000000000Fake"", True),
+        (utils.is_base_id, ""rec0000000000Fake"", False),
+        (utils.is_table_id, ""tbl0000000000Fake"", True),
+        (utils.is_table_id, ""rec0000000000Fake"", False),
+        (utils.is_field_id, ""fld0000000000Fake"", True),
+        (utils.is_field_id, ""rec0000000000Fake"", False),
+    ],
+)
+def test_id_check(func, value, expected):
+    assert func(value) is expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_utils.py","test_converter","@pytest.mark.parametrize(
+    ""func,input,expected"",
+    [
+        (utils.coerce_iso_str, None, None),
+        (utils.coerce_iso_str, ""asdf"", ValueError),
+        (utils.coerce_iso_str, -1, TypeError),
+        (utils.coerce_iso_str, ""2023-01-01"", ""2023-01-01""),
+        (utils.coerce_iso_str, ""2023-01-01 12:34:56"", ""2023-01-01 12:34:56""),
+        (utils.coerce_iso_str, date(2023, 1, 1), ""2023-01-01""),
+        (
+            utils.coerce_iso_str,
+            datetime(2023, 1, 1, 12, 34, 56),
+            ""2023-01-01T12:34:56"",
+        ),
+        (utils.coerce_list_str, None, []),
+        (utils.coerce_list_str, ""asdf"", [""asdf""]),
+        (utils.coerce_list_str, (""one"", ""two"", ""three""), [""one"", ""two"", ""three""]),
+        (utils.coerce_list_str, -1, TypeError),
+    ],
+)
+def test_converter(func, input, expected):
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            func(input)
+        return
+
+    assert func(input) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_constructor","def test_constructor(base: Base):
+    """"""
+    Test the constructor.
+    """"""
+    table = Table(None, base, ""table_name"")
+    assert table.api == base.api
+    assert table.base == base
+    assert table.name == ""table_name"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_constructor_with_schema","def test_constructor_with_schema(base: Base, table_schema: TableSchema):
+    table = Table(None, base, table_schema)
+    assert table.api == base.api
+    assert table.base == base
+    assert table.name == table_schema.name
+    assert table.url == f""https://api.airtable.com/v0/{base.id}/{table_schema.id}""
+    assert (
+        repr(table)
+        == f""<Table base='{base.id}' id='{table_schema.id}' name='{table_schema.name}'>"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_deprecated_constructor","def test_deprecated_constructor(api: Api, base: Base):
+    """"""
+    Test that ""legacy"" constructor (passing strings instead of instances)
+    will throw deprecation warning, but it _will_ work.
+    """"""
+    with pytest.warns(DeprecationWarning):
+        table = Table(api.api_key, base.id, ""table_name"", timeout=(1, 99))
+
+    assert table.api.api_key == api.api_key
+    assert table.api.timeout == (1, 99)
+    assert table.base.id == base.id
+    assert table.name == ""table_name"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_repr","def test_repr(table: Table):
+    assert repr(table) == ""<Table base='appLkNDICXNqxSDhG' name='Table Name'>"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_schema","def test_schema(base, requests_mock, sample_json):
+    """"""
+    Test that we can load schema from API.
+    """"""
+    table = base.table(""Apartments"")
+    m = requests_mock.get(base.meta_url(""tables""), json=sample_json(""BaseSchema""))
+    assert isinstance(schema := table.schema(), TableSchema)
+    assert m.call_count == 1
+    assert schema.id == ""tbltp8DGLhqbUmjK1"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_id","def test_id(base, requests_mock, sample_json):
+    """"""
+    Test that we load schema from API if we need the ID and don't have it,
+    but if we get a name that *looks* like an ID, we trust it.
+    """"""
+    m = requests_mock.get(base.meta_url(""tables""), json=sample_json(""BaseSchema""))
+
+    table = base.table(""tbltp8DGLhqbUmjK1"")
+    assert table.id == ""tbltp8DGLhqbUmjK1""
+    assert m.call_count == 0
+
+    table = base.table(""Apartments"")
+    assert table.id == ""tbltp8DGLhqbUmjK1""
+    assert m.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_url","@pytest.mark.parametrize(
+    ""base_id,table_name,table_url_suffix"",
+    [
+        (""abc"", ""My Table"", ""abc/My%20Table""),
+        (""abc"", ""SomeTable"", ""abc/SomeTable""),
+        (""abc"", ""Table-fake"", ""abc/Table-fake""),
+    ],
+)
+def test_url(api: Api, base_id, table_name, table_url_suffix):
+    table = api.table(base_id, table_name)
+    assert table.url == f""https://api.airtable.com/v0/{table_url_suffix}"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_chunk","def test_chunk(table: Table):
+    chunks = [chunk for chunk in chunked([0, 0, 1, 1, 2, 2, 3], 2)]
+    assert chunks[0] == [0, 0]
+    assert chunks[1] == [1, 1]
+    assert chunks[2] == [2, 2]
+    assert chunks[3] == [3]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_record_url","def test_record_url(table: Table):
+    rv = table.record_url(""xxx"")
+    assert rv == urljoin(table.url, ""xxx"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_get","def test_get(table: Table, mock_response_single):
+    _id = mock_response_single[""id""]
+    with Mocker() as mock:
+        mock.get(table.record_url(_id), status_code=200, json=mock_response_single)
+        resp = table.get(_id)
+    assert dict_equals(resp, mock_response_single)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_first","def test_first(table: Table, mock_response_single):
+    mock_response = {""records"": [mock_response_single]}
+    with Mocker() as mock:
+        url = Request(""get"", table.url, params={""maxRecords"": 1}).prepare().url
+        mock.get(
+            url,
+            status_code=200,
+            json=mock_response,
+        )
+        rv = table.first()
+        assert rv
+    assert rv[""id""] == mock_response_single[""id""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_first_via_post","def test_first_via_post(table: Table, mock_response_single):
+    mock_response = {""records"": [mock_response_single]}
+    with Mocker() as mock:
+        url = table.url + ""/listRecords""
+        formula = f""RECORD_ID() != '{'x' * 17000}'""
+        mock_endpoint = mock.post(url, status_code=200, json=mock_response)
+        rv = table.first(formula=formula)
+
+    assert mock_endpoint.last_request.json() == {
+        ""filterByFormula"": formula,
+        ""maxRecords"": 1,
+        ""pageSize"": 1,
+    }
+    assert rv == mock_response_single"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_first_none","def test_first_none(table: Table, mock_response_single):
+    mock_response = {""records"": []}
+    with Mocker() as mock:
+        url = Request(""get"", table.url, params={""maxRecords"": 1}).prepare().url
+        mock.get(
+            url,
+            status_code=200,
+            json=mock_response,
+        )
+        rv = table.first()
+        assert rv is None"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_all","def test_all(table: Table, mock_response_list, mock_records):
+    with Mocker() as mock:
+        mock.get(
+            table.url,
+            status_code=200,
+            json=mock_response_list[0],
+            complete_qs=True,
+        )
+        for n, resp in enumerate(mock_response_list, 1):
+            offset = resp.get(""offset"", None)
+            if not offset:
+                continue
+            offset_url = table.url + ""?offset={}"".format(offset)
+            mock.get(
+                offset_url,
+                status_code=200,
+                json=mock_response_list[1],
+                complete_qs=True,
+            )
+        response = table.all()
+
+    for n, resp in enumerate(response):
+        assert dict_equals(resp, mock_records[n])"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_iterate","def test_iterate(table: Table, mock_response_list, mock_records):
+    with Mocker() as mock:
+        mock.get(
+            table.url,
+            status_code=200,
+            json=mock_response_list[0],
+            complete_qs=True,
+        )
+        for n, resp in enumerate(mock_response_list, 1):
+            offset = resp.get(""offset"", None)
+            if not offset:
+                continue
+            params = {""offset"": offset}
+            offset_url = Request(""get"", table.url, params=params).prepare().url
+            mock.get(
+                offset_url,
+                status_code=200,
+                json=mock_response_list[1],
+                complete_qs=True,
+            )
+
+        pages = []
+        for page in table.iterate():
+            pages.append(page)
+
+    for n, response in enumerate(mock_response_list):
+        assert seq_equals(pages[n], response[""records""])"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_create","def test_create(table: Table, mock_response_single):
+    with Mocker() as mock:
+        post_data = mock_response_single[""fields""]
+        mock.post(
+            table.url,
+            status_code=201,
+            json=mock_response_single,
+            additional_matcher=match_request_data(post_data),
+        )
+        resp = table.create(post_data)
+    assert dict_equals(resp, mock_response_single)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_batch_create","@pytest.mark.parametrize(""container"", [list, tuple, iter])
+def test_batch_create(table: Table, container, mock_records):
+    with Mocker() as mock:
+        for chunk in _chunk(mock_records, 10):
+            mock.post(
+                table.url,
+                status_code=201,
+                json={""records"": chunk},
+            )
+        records = [i[""fields""] for i in mock_records]
+        resp = table.batch_create(container(records))
+    assert seq_equals(resp, mock_records)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_update","@pytest.mark.parametrize(""replace,http_method"", [(False, ""PATCH""), (True, ""PUT"")])
+def test_update(table: Table, mock_response_single, replace, http_method):
+    id_ = mock_response_single[""id""]
+    post_data = mock_response_single[""fields""]
+    with Mocker() as mock:
+        mock.register_uri(
+            http_method,
+            urljoin(table.url, id_),
+            status_code=201,
+            json=mock_response_single,
+            additional_matcher=match_request_data(post_data),
+        )
+        resp = table.update(id_, post_data, replace=replace)
+    assert dict_equals(resp, mock_response_single)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_batch_update","@pytest.mark.parametrize(""container"", [list, tuple, iter])
+@pytest.mark.parametrize(""replace,http_method"", [(False, ""PATCH""), (True, ""PUT"")])
+def test_batch_update(table: Table, container, replace, http_method):
+    records = [fake_record(fieldvalue=index) for index in range(50)]
+    with Mocker() as mock:
+        mock.register_uri(
+            http_method,
+            table.url,
+            response_list=[
+                {""json"": {""records"": chunk}} for chunk in table.api.chunked(records)
+            ],
+        )
+        resp = table.batch_update(container(records), replace=replace)
+
+    assert resp == records"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_batch_upsert","@pytest.mark.parametrize(""container"", [list, tuple, iter])
+@pytest.mark.parametrize(""replace,http_method"", [(False, ""PATCH""), (True, ""PUT"")])
+def test_batch_upsert(table: Table, container, replace, http_method, monkeypatch):
+    field_name = ""Name""
+    exists1 = fake_record({field_name: ""Exists 1""})
+    exists2 = fake_record({field_name: ""Exists 2""})
+    created = fake_record({field_name: ""Does not exist""})
+    payload = [
+        {""id"": exists1[""id""], ""fields"": {field_name: ""Exists 1""}},
+        {""fields"": {field_name: ""Exists 2""}},
+        {""fields"": {field_name: ""Does not exist""}},
+    ]
+    responses = [
+        {""createdRecords"": [], ""updatedRecords"": [exists1[""id""]], ""records"": [exists1]},
+        {""createdRecords"": [], ""updatedRecords"": [exists2[""id""]], ""records"": [exists2]},
+        {""createdRecords"": [created[""id""]], ""updatedRecords"": [], ""records"": [created]},
+    ]
+    with Mocker() as mock:
+        mock.register_uri(
+            http_method,
+            table.url,
+            response_list=[{""json"": response} for response in responses],
+        )
+        monkeypatch.setattr(table.api, ""MAX_RECORDS_PER_REQUEST"", 1)
+        resp = table.batch_upsert(
+            container(payload), key_fields=[field_name], replace=replace
+        )
+
+    assert resp == {
+        ""createdRecords"": [created[""id""]],
+        ""updatedRecords"": [exists1[""id""], exists2[""id""]],
+        ""records"": [exists1, exists2, created],"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_delete","def test_delete(table: Table, mock_response_single):
+    id_ = mock_response_single[""id""]
+    expected = {""deleted"": True, ""id"": id_}
+    with Mocker() as mock:
+        mock.delete(urljoin(table.url, id_), status_code=201, json=expected)
+        resp = table.delete(id_)
+    assert resp == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_batch_delete","@pytest.mark.parametrize(""container"", [list, tuple, iter])
+def test_batch_delete(table: Table, container, mock_records):
+    ids = [i[""id""] for i in mock_records]
+    with Mocker() as mock:
+        for chunk in _chunk(ids, 10):
+            json_response = {""records"": [{""deleted"": True, ""id"": id_} for id_ in chunk]}
+            url_match = (
+                Request(""get"", table.url, params={""records[]"": chunk}).prepare().url
+            )
+            mock.delete(
+                url_match,
+                status_code=201,
+                json=json_response,
+            )
+
+        resp = table.batch_delete(container(ids))
+    expected = [{""deleted"": True, ""id"": i} for i in ids]
+    assert resp == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_create_field","def test_create_field(table, mock_schema, requests_mock, sample_json):
+    """"""
+    Tests the API for creating a field (but without actually performing the operation).
+    """"""
+    mock_create = requests_mock.post(
+        table.meta_url(""fields""),
+        json=sample_json(""field_schema/SingleSelectFieldSchema""),
+    )
+
+    # Ensure we have pre-loaded our schema
+    table.schema()
+    assert mock_schema.call_count == 1
+
+    # Create the field
+    choices = [""Todo"", ""In progress"", ""Done""]
+    fld = table.create_field(
+        ""Status"",
+        ""singleSelect"",
+        description=""field description"",
+        options={""choices"": choices},
+    )
+    assert mock_create.call_count == 1
+    assert mock_create.request_history[-1].json() == {
+        ""name"": ""Status"",
+        ""type"": ""singleSelect"",
+        ""description"": ""field description"",
+        ""options"": {""choices"": choices},
+    }
+
+    # Test the result we got back
+    assert fld.id == ""fldqCjrs1UhXgHUIc""
+    assert fld.name == ""Status""
+    assert {c.name for c in fld.options.choices} == set(choices)
+
+    # Test that we constructed the URL correctly
+    assert fld._url.endswith(f""/{table.base.id}/tables/{table.name}/fields/{fld.id}"")
+
+    # Test that the schema has been updated without a second API call
+    assert table._schema.field(fld.id).name == ""Status""
+    assert mock_schema.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_table.py","test_delete_view","def test_delete_view(table, mock_schema, requests_mock):
+    view = table.schema().view(""Grid view"")
+    m = requests_mock.delete(view._url)
+    view.delete()
+    assert m.call_count == 1"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_equivalence","def test_equivalence():
+    assert F.Formula(""a"") == F.Formula(""a"")
+    assert F.Formula(""a"") != F.Formula(""b"")
+    assert F.Formula(""a"") != ""b"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_operators","def test_operators():
+    lft = F.Formula(""a"")
+    rgt = F.Formula(""b"")
+    assert str(lft) == ""a""
+    assert str(lft & rgt) == ""AND(a, b)""
+    assert str(lft | rgt) == ""OR(a, b)""
+    assert str(~(lft & rgt)) == ""NOT(AND(a, b))""
+    assert repr(lft & rgt) == ""AND(Formula('a'), Formula('b'))""
+    assert repr(lft | rgt) == ""OR(Formula('a'), Formula('b'))""
+    assert repr(~F.Formula(""a"")) == ""NOT(Formula('a'))""
+    assert lft.flatten() is lft
+    assert repr(lft ^ rgt) == ""XOR(Formula('a'), Formula('b'))""
+    assert str(lft ^ rgt) == ""XOR(a, b)"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_comparisons","@pytest.mark.parametrize(
+    ""cmp,op"",
+    [
+        (EQ, ""=""),
+        (NE, ""!=""),
+        (GT, "">""),
+        (GTE, "">=""),
+        (LT, ""<""),
+        (LTE, ""<=""),
+    ],
+)
+def test_comparisons(cmp, op):
+    assert repr(cmp(1, 1)) == f""{cmp.__name__}(1, 1)""
+    assert str(cmp(1, 1)) == f""1{op}1""
+    assert str(cmp(F.Formula(""Foo""), ""Foo"")) == f""Foo{op}'Foo'"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_comparison_shortcuts","@pytest.mark.parametrize(
+    ""target"",
+    [
+        F.Formula(""X""),  # Formula
+        F.Field(""X""),  # Field
+        F.EQ(1, 1),  # Comparison
+        F.TODAY(),  # FunctionCall
+    ],
+)
+@pytest.mark.parametrize(
+    ""shortcut,cmp"",
+    [
+        (""eq"", EQ),
+        (""ne"", NE),
+        (""gt"", GT),
+        (""gte"", GTE),
+        (""lt"", LT),
+        (""lte"", LTE),
+    ],
+)
+def test_comparison_shortcuts(target, shortcut, cmp):
+    """"""
+    Test that methods like .eq() are exposed on all subclasses of Formula.
+    """"""
+    formula = getattr(target, shortcut)(""Y"")  # Field(""X"").eq(""Y"")
+    assert formula == cmp(target, ""Y"")  # EQ(Field(""X""), ""Y"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_comparison_equivalence","def test_comparison_equivalence():
+    assert EQ(1, 1) == EQ(1, 1)
+    assert EQ(1, 2) != EQ(2, 1)
+    assert EQ(1, 1) != NE(1, 1)
+    assert EQ(1, 1) != F.Formula(""1=1"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_compound","@pytest.mark.parametrize(""op"", (""AND"", ""OR""))
+def test_compound(op):
+    cmp = F.Compound(op, [EQ(""foo"", 1), EQ(""bar"", 2)])
+    assert repr(cmp) == f""{op}(EQ('foo', 1), EQ('bar', 2))"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_compound_with_iterable","@pytest.mark.parametrize(""op"", (""AND"", ""OR""))
+def test_compound_with_iterable(op):
+    cmp = F.Compound(op, (EQ(f""f{n}"", n) for n in range(3)))
+    assert repr(cmp) == f""{op}(EQ('f0', 0), EQ('f1', 1), EQ('f2', 2))"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_compound_equivalence","def test_compound_equivalence():
+    assert F.Compound(""AND"", [1]) == F.Compound(""AND"", [1])
+    assert F.Compound(""AND"", [1]) != F.Compound(""AND"", [2])
+    assert F.Compound(""AND"", [1]) != F.Compound(""OR"", [1])
+    assert F.Compound(""AND"", [1]) != [1]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_compound_constructors","@pytest.mark.parametrize(""cmp"", [AND, OR])
+@pytest.mark.parametrize(
+    ""call_args"",
+    [
+        # mix *components and and **fields
+        call(EQ(""foo"", 1), bar=2),
+        # multiple *components
+        call(EQ(""foo"", 1), EQ(F.Field(""bar""), 2)),
+        # one item in *components that is also an iterable
+        call([EQ(""foo"", 1), EQ(F.Field(""bar""), 2)]),
+        call((EQ(""foo"", 1), EQ(F.Field(""bar""), 2))),
+        lambda: call(iter([EQ(""foo"", 1), EQ(F.Field(""bar""), 2)])),
+        # test that we accept `str` and convert to formulas
+        call([""'foo'=1"", ""{bar}=2""]),
+    ],
+)
+def test_compound_constructors(cmp, call_args):
+    if type(call_args) is not type(call):
+        call_args = call_args()
+    compound = cmp(*call_args.args, **call_args.kwargs)
+    expected = cmp(EQ(""foo"", 1), EQ(F.Field(""bar""), 2))
+    # compare final output expression, since the actual values will not be equal
+    assert str(compound) == str(expected)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_compound_flatten","def test_compound_flatten():
+    a = EQ(""a"", ""a"")
+    b = EQ(""b"", ""b"")
+    c = EQ(""c"", ""c"")
+    d = EQ(""d"", ""d"")
+    e = EQ(""e"", ""e"")
+    c = (a & b) & (c & (d | e))
+    assert repr(c) == repr(
+        AND(
+            AND(EQ(""a"", ""a""), EQ(""b"", ""b"")),
+            AND(EQ(""c"", ""c""), OR(EQ(""d"", ""d""), EQ(""e"", ""e""))),
+        )
+    )
+    assert repr(c.flatten()) == repr(
+        AND(
+            EQ(""a"", ""a""),
+            EQ(""b"", ""b""),
+            EQ(""c"", ""c""),
+            OR(EQ(""d"", ""d""), EQ(""e"", ""e"")),
+        )
+    )
+    assert repr((~c).flatten()) == repr(
+        NOT(
+            AND(
+                EQ(""a"", ""a""),
+                EQ(""b"", ""b""),
+                EQ(""c"", ""c""),
+                OR(EQ(""d"", ""d""), EQ(""e"", ""e"")),
+            )
+        )
+    )
+    assert str((~c).flatten()) == (
+        ""NOT(AND('a'='a', 'b'='b', 'c'='c', OR('d'='d', 'e'='e')))"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_compound_with_compound","@pytest.mark.parametrize(
+    ""compound,expected"",
+    [
+        (EQ(1, 1).eq(True), ""(1=1)=TRUE()""),
+        (EQ(False, EQ(1, 2)), ""FALSE()=(1=2)""),
+    ],
+)
+def test_compound_with_compound(compound, expected):
+    assert str(compound) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_not","def test_not():
+    assert str(NOT(EQ(""foo"", 1))) == ""NOT('foo'=1)""
+    assert str(NOT(foo=1)) == ""NOT({foo}=1)""
+
+    with pytest.raises(TypeError):
+        NOT(EQ(""foo"", 1), EQ(""bar"", 2))
+
+    with pytest.raises(ValueError, match=""requires exactly one condition; got 2""):
+        NOT(EQ(""foo"", 1), bar=2)
+
+    with pytest.raises(ValueError, match=""requires exactly one condition; got 2""):
+        NOT(foo=1, bar=2)
+
+    with pytest.raises(ValueError, match=""requires exactly one condition; got 0""):
+        NOT()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_to_formula","@pytest.mark.parametrize(
+    ""input,expected"",
+    [
+        (EQ(F.Formula(""a""), ""b""), EQ(F.Formula(""a""), ""b"")),
+        (True, F.TRUE()),
+        (False, F.FALSE()),
+        (3, F.Formula(""3"")),
+        (3.5, F.Formula(""3.5"")),
+        (Decimal(""3.14159265""), F.Formula(""3.14159265"")),
+        (Fraction(""4/19""), F.Formula(""4/19"")),
+        (""asdf"", F.Formula(""'asdf'"")),
+        (""Jane's"", F.Formula(""'Jane\\'s'"")),
+        ([1, 2, 3], TypeError),
+        ((1, 2, 3), TypeError),
+        ({1, 2, 3}, TypeError),
+        ({1: 2, 3: 4}, TypeError),
+        (
+            date(2023, 12, 1),
+            F.DATETIME_PARSE(""2023-12-01""),
+        ),
+        (
+            datetime(2023, 12, 1, 12, 34, 56),
+            F.DATETIME_PARSE(""2023-12-01T12:34:56.000""),
+        ),
+        (
+            datetime(2023, 12, 1, 12, 34, 56, tzinfo=timezone.utc),
+            F.DATETIME_PARSE(""2023-12-01T12:34:56.000Z""),
+        ),
+        (orm.fields.Field(""Foo""), F.Field(""Foo"")),
+    ],
+)
+def test_to_formula(input, expected):
+    """"""
+    Test that certain values are not changed at all by to_formula()
+    """"""
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            F.to_formula(input)
+    else:
+        assert F.to_formula(input) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_to_formula_str","@pytest.mark.parametrize(
+    ""input,expected"",
+    [
+        (EQ(F.Formula(""a""), ""b""), ""a='b'""),
+        (True, ""TRUE()""),
+        (False, ""FALSE()""),
+        (3, ""3""),
+        (3.5, ""3.5""),
+        (Decimal(""3.14159265""), ""3.14159265""),
+        (Fraction(""4/19""), ""4/19""),
+        (""asdf"", ""'asdf'""),
+        (""Jane's"", ""'Jane\\'s'""),
+        ([1, 2, 3], TypeError),
+        ((1, 2, 3), TypeError),
+        ({1, 2, 3}, TypeError),
+        ({1: 2, 3: 4}, TypeError),
+        (
+            date(2023, 12, 1),
+            ""DATETIME_PARSE('2023-12-01')"",
+        ),
+        (
+            datetime(2023, 12, 1, 12, 34, 56),
+            ""DATETIME_PARSE('2023-12-01T12:34:56.000')"",
+        ),
+        (
+            datetime(2023, 12, 1, 12, 34, 56, tzinfo=timezone.utc),
+            ""DATETIME_PARSE('2023-12-01T12:34:56.000Z')"",
+        ),
+        (orm.fields.Field(""Foo""), ""{Foo}""),
+    ],
+)
+def test_to_formula_str(input, expected):
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            F.to_formula_str(input)
+    else:
+        assert F.to_formula_str(input) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_match","@pytest.mark.parametrize(
+    ""sig,expected"",
+    [
+        (call({""Field"": ""value""}), ""{Field}='value'""),
+        (call({""A"": (""="", 123), ""B"": (""!="", 123)}), ""AND({A}=123, {B}!=123)""),
+        (call({""A"": 123, ""B"": 123}, match_any=True), ""OR({A}=123, {B}=123)""),
+        (call({""Field"": (""<"", 123)}), ""{Field}<123""),
+        (call({""Field"": (""<="", 123)}), ""{Field}<=123""),
+        (call({""Field"": ("">"", 123)}), ""{Field}>123""),
+        (call({""Field"": ("">="", 123)}), ""{Field}>=123""),
+    ],
+)
+def test_match(sig, expected):
+    assert str(F.match(*sig.args, **sig.kwargs)) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_function_call","def test_function_call():
+    fc = F.FunctionCall(""IF"", 1, True, False)
+    assert repr(fc) == ""IF(1, True, False)""
+    assert str(fc) == ""IF(1, TRUE(), FALSE())"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_function_call_equivalence","def test_function_call_equivalence():
+    assert F.TODAY() == F.TODAY()
+    assert F.TODAY() != F.NOW()
+    assert F.CEILING(1) == F.CEILING(1)
+    assert F.CEILING(1) != F.CEILING(2)
+    assert F.TODAY() != F.Formula(""TODAY()"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_field_name","@pytest.mark.parametrize(
+    ""input,expected"",
+    [
+        (""First Name"", ""{First Name}""),
+        (""Guest's Name"", r""{Guest\'s Name}""),
+        (""With {Curly Braces}"", r""{With {Curly Braces\}}""),
+    ],
+)
+def test_field_name(input, expected):
+    assert F.field_name(input) == expected"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_quoted","def test_quoted():
+    assert F.quoted(""John"") == ""'John'""
+    assert F.quoted(""Guest's Name"") == ""'Guest\\'s Name'"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_orm_field_comparison_shortcuts","@pytest.mark.parametrize(
+    ""methodname,op"",
+    [
+        (""eq"", ""=""),
+        (""ne"", ""!=""),
+        (""gt"", "">""),
+        (""gte"", "">=""),
+        (""lt"", ""<""),
+        (""lte"", ""<=""),
+    ],
+)
+def test_orm_field_comparison_shortcuts(methodname, op):
+    """"""
+    Test each shortcut method on an ORM field.
+    """"""
+    formula = getattr(FakeModel.name, methodname)(""Value"")
+    assert F.to_formula_str(formula) == f""{{Name}}{op}'Value'"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_orm_field_as_formula","def test_orm_field_as_formula():
+    """"""
+    Test different ways of using an ORM field in a formula.
+    """"""
+    formula = FakeModel.email.ne(F.BLANK()) | NE(FakeModel.phone, F.BLANK())
+    formula &= FakeModel.name
+    result = F.to_formula_str(formula.flatten())
+    assert result == ""AND(OR({Email}!=BLANK(), {Phone}!=BLANK()), {Name})"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py","test_function_calls","@pytest.mark.parametrize(
+    ""fn,argcount"",
+    [
+        (""ABS"", 1),
+        (""AVERAGE"", 2),
+        (""BLANK"", 0),
+        (""CEILING"", 2),
+        (""CONCATENATE"", 2),
+        (""COUNT"", 2),
+        (""COUNTA"", 2),
+        (""COUNTALL"", 2),
+        (""CREATED_TIME"", 0),
+        (""DATEADD"", 3),
+        (""DATESTR"", 1),
+        (""DATETIME_DIFF"", 3),
+        (""DATETIME_FORMAT"", 2),
+        (""DATETIME_PARSE"", 3),
+        (""DAY"", 1),
+        (""ENCODE_URL_COMPONENT"", 1),
+        (""ERROR"", 0),
+        (""EVEN"", 1),
+        (""EXP"", 1),
+        (""FALSE"", 0),
+        (""FIND"", 3),
+        (""FLOOR"", 2),
+        (""FROMNOW"", 1),
+        (""HOUR"", 1),
+        (""IF"", 3),
+        (""INT"", 1),
+        (""ISERROR"", 1),
+        (""IS_AFTER"", 2),
+        (""IS_BEFORE"", 2),
+        (""IS_SAME"", 3),
+        (""LAST_MODIFIED_TIME"", 1),
+        (""LEFT"", 2),
+        (""LEN"", 1),
+        (""LOG"", 2),
+        (""LOWER"", 1),
+        (""MAX"", 2),
+        (""MID"", 3),
+        (""MIN"", 2),
+        (""MINUTE"", 1),
+        (""MOD"", 2),
+        (""MONTH"", 1),
+        (""NOW"", 0),
+        (""ODD"", 1),
+        (""POWER"", 2),
+        (""RECORD_ID"", 0),
+        (""REGEX_EXTRACT"", 2),
+        (""REGEX_MATCH"", 2),
+        (""REGEX_REPLACE"", 3),
+        (""REPLACE"", 4),
+        (""REPT"", 2),
+        (""RIGHT"", 2),
+        (""ROUND"", 2),
+        (""ROUNDDOWN"", 2),
+        (""ROUNDUP"", 2),
+        (""SEARCH"", 3),
+        (""SECOND"", 1),
+        (""SET_LOCALE"", 2),
+        (""SET_TIMEZONE"", 2),
+        (""SQRT"", 1),
+        (""SUBSTITUTE"", 4),
+        (""SUM"", 2),
+        (""SWITCH"", 4),
+        (""T"", 1),
+        (""TIMESTR"", 1),
+        (""TODAY"", 0),
+        (""TONOW"", 1),
+        (""TRIM"", 1),
+        (""TRUE"", 0),
+        (""UPPER"", 1),
+        (""VALUE"", 1),
+        (""WEEKDAY"", 2),
+        (""WEEKNUM"", 2),
+        (""WORKDAY"", 3),
+        (""WORKDAY_DIFF"", 3),
+        (""XOR"", 2),
+        (""YEAR"", 1),
+    ],
+)
+def test_function_calls(fn, argcount):
+    """"""
+    Test that the function call shortcuts in the formulas module
+    all behave as expected with the given number of arguments.
+    """"""
+    args = tuple(f""arg{n}"" for n in range(1, argcount + 1))
+    args_repr = "", "".join(repr(arg) for arg in args)
+    args_formula = "", "".join(F.to_formula_str(arg) for arg in args)
+    result = getattr(F, fn)(*args)
+    assert isinstance(result, F.FunctionCall)
+    assert result.name == fn
+    assert result.args == args
+    assert repr(result) == f""{fn}({args_repr})""
+    assert str(result) == f""{fn}({args_formula})"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_metadata.py","test_api_bases","def test_api_bases(api: Api, base_id: str, base_name: str, table_name: str):
+    bases = {base.id: base for base in api.bases()}
+    assert bases[base_id].name == base_name
+    assert bases[base_id].table(table_name).name == table_name"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_metadata.py","test_api_base","def test_api_base(api: Api, base_id: str, base_name: str):
+    base = api.base(base_id, validate=True)
+    assert base.name == base_name"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_metadata.py","test_base_schema","def test_base_schema(base: Base, table_name: str):
+    schema = base.schema()
+    assert table_name in [t.name for t in schema.tables]
+    assert schema.table(table_name).name == table_name"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_metadata.py","test_table_schema","def test_table_schema(base: Base, table_name: str, cols):
+    schema = base.table(table_name).schema()
+    assert cols.TEXT in [f.name for f in schema.fields]
+    assert schema.field(cols.TEXT).id == cols.TEXT_ID
+    assert schema.field(cols.TEXT_ID).name == cols.TEXT"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_enterprise.py","test_user","def test_user(enterprise: pyairtable.Enterprise):
+    """"""
+    Test that we can retrieve information about the current logged-in user.
+    """"""
+    user_id = enterprise.api.whoami()[""id""]
+    assert user_id == enterprise.user(user_id).id"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_enterprise.py","test_users","def test_users(enterprise: pyairtable.Enterprise):
+    """"""
+    Test that we can retrieve information about an enterprise
+    and retrieve user information by ID or by email.
+    """"""
+    user_ids = enterprise.info().user_ids[:5]
+    users_from_ids = enterprise.users(user_ids)
+    assert {u.id for u in users_from_ids} == set(user_ids)
+    users_from_emails = enterprise.users(u.email for u in users_from_ids)
+    assert {u.id for u in users_from_emails} == set(user_ids)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_enterprise.py","test_create_table","def test_create_table(blank_base: pyairtable.Base):
+    """"""
+    Test that we can create a new table on an existing base.
+    """"""
+    table = blank_base.create_table(""Two"", [{""type"": ""singleLineText"", ""name"": ""Name""}])
+    assert table.schema().field(""Name"").type == ""singleLineText"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_enterprise.py","test_update_table","def test_update_table(blank_base: pyairtable.Base):
+    """"""
+    Test that we can modify a table's name and description.
+    """"""
+    new_name = f""Renamed {uuid.uuid1().hex[-6:]}""
+    schema = blank_base.schema().tables[0]
+    schema.name = new_name
+    schema.save()
+    assert blank_base.schema(force=True).tables[0].name == new_name
+    schema.description = ""Renamed""
+    schema.save()
+    assert blank_base.schema(force=True).tables[0].description == ""Renamed"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_enterprise.py","test_create_field","def test_create_field(blank_base: pyairtable.Base):
+    """"""
+    Test that we can create a new field on an existing table.
+    """"""
+    table = blank_base.tables()[0]
+    assert len(table.schema().fields) == 1
+    fld = table.create_field(
+        ""Status"",
+        type=""singleSelect"",
+        options={
+            ""choices"": [
+                {""name"": ""Todo""},
+                {""name"": ""In Progress""},
+                {""name"": ""Done""},
+            ]
+        },
+    )
+    # Ensure we don't need to reload the schema to see this new field
+    assert table._schema.field(fld.id).name == ""Status"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_enterprise.py","test_update_field","def test_update_field(blank_base: pyairtable.Base):
+    """"""
+    Test that we can modify a field's name and description.
+    """"""
+
+    def reload_field():
+        return blank_base.schema(force=True).tables[0].fields[0]
+
+    field = reload_field()
+
+    new_name = f""Renamed {uuid.uuid1().hex[-6:]}""
+    field.name = new_name
+    field.save()
+    assert reload_field().name == new_name
+
+    field.description = ""Renamed""
+    field.save()
+    assert reload_field().description == ""Renamed"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_enterprise.py","test_audit_log","def test_audit_log(api):
+    """"""
+    Test that we can call the audit log endpoint.
+    """"""
+    if ""AIRTABLE_ENTERPRISE_ID"" not in os.environ:
+        return pytest.skip(""test_audit_log requires AIRTABLE_ENTERPRISE_ID"")
+
+    enterprise = api.enterprise(os.environ[""AIRTABLE_ENTERPRISE_ID""])
+    for page in enterprise.audit_log(page_limit=1):
+        for event in page.events:
+            assert isinstance(event.action, str)"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_table","def test_integration_table(table, cols):
+    # Create / Get
+    rec = table.create({cols.TEXT: ""A"", cols.NUM: 1, cols.BOOL: True})
+    rv_get = table.get(rec[""id""])
+    assert rv_get[""fields""][cols.TEXT] == ""A""
+
+    # Update
+    rv = table.update(rec[""id""], {cols.TEXT: ""B""})
+    assert rv[""fields""][cols.TEXT] == ""B""
+    assert rv[""fields""][cols.NUM] == 1
+
+    # Replace
+    rv = table.update(rec[""id""], {cols.NUM: 2}, replace=True)
+    assert rv[""fields""] == {cols.NUM: 2}
+
+    # Get all
+    records = table.all()
+    assert rec[""id""] in [r[""id""] for r in records]
+    assert cols.NUM in records[0][""fields""]  # col name in ""fields""
+
+    # Delete
+    rv = table.delete(rec[""id""])
+    assert rv[""deleted""]
+
+    # Batch Create
+    COUNT = 15
+    records = table.batch_create(
+        [{cols.TEXT: ""A"", cols.NUM: 1, cols.BOOL: True} for _ in range(COUNT)]
+    )
+
+    for record in records:
+        record[""fields""][cols.TEXT] = ""C""
+    rv_batch_update = table.batch_update(records)
+    assert all([r[""fields""][cols.TEXT] == ""C"" for r in rv_batch_update])
+
+    # Batch Delete
+    records = table.batch_delete([r[""id""] for r in records])
+    assert len(records) == COUNT"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_use_field_ids","def test_use_field_ids(table: Table, cols):
+    """"""
+    Test that we can get, create, and update records by field ID vs. name.
+
+    See https://github.com/gtalarico/pyairtable/issues/194
+    """"""
+    # Create one record with use_field_ids=True
+    record = table.create({cols.TEXT_ID: ""Hello""}, use_field_ids=True)
+    assert record[""fields""][cols.TEXT_ID] == ""Hello""
+
+    # Update one record with use_field_ids=True
+    updated = table.update(
+        record[""id""],
+        {cols.TEXT_ID: ""Goodbye""},
+        use_field_ids=True,
+    )
+    assert updated[""fields""][cols.TEXT_ID] == ""Goodbye""
+
+    # Create multiple records with use_field_ids=True
+    records = table.batch_create(
+        [
+            {cols.TEXT_ID: ""Alpha""},
+            {cols.TEXT_ID: ""Bravo""},
+            {cols.TEXT_ID: ""Charlie""},
+        ],
+        use_field_ids=True,
+    )
+    assert records[0][""fields""][cols.TEXT_ID] == ""Alpha""
+    assert records[1][""fields""][cols.TEXT_ID] == ""Bravo""
+    assert records[2][""fields""][cols.TEXT_ID] == ""Charlie""
+
+    # Update multiple records with use_field_ids=True
+    updates = [
+        dict(
+            record,
+            fields={cols.TEXT_ID: ""Hello, "" + record[""fields""][cols.TEXT_ID]},
+        )
+        for record in records
+    ]
+    updated = table.batch_update(updates, use_field_ids=True)
+    assert updated[0][""fields""][cols.TEXT_ID] == ""Hello, Alpha""
+    assert updated[1][""fields""][cols.TEXT_ID] == ""Hello, Bravo""
+    assert updated[2][""fields""][cols.TEXT_ID] == ""Hello, Charlie"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_get_records_options","def test_get_records_options(table: Table, cols):
+    """"""
+    Test that we pass all valid options to the GET endpoint.
+    """"""
+    rec = table.create({cols.TEXT: ""abracadabra""})
+
+    # Test that each supported option works via GET
+    # (or, at least, that we don't get complaints from the API)
+    assert table.all(view=""view"") == [rec]
+    assert table.all(max_records=1) == [rec]
+    assert table.all(page_size=1) == [rec]
+    assert table.all(offset="""") == [rec]
+    assert table.all(fields=[cols.TEXT, cols.NUM]) == [rec]
+    assert table.all(cell_format=""json"") == [rec]
+    assert table.all(sort=[cols.TEXT, cols.NUM]) == [rec]
+    assert table.all(time_zone=""utc"") == [rec]
+    assert table.all(user_locale=""en-ie"") == [rec]
+    assert table.all(use_field_ids=True) == [
+        {
+            ""id"": rec[""id""],
+            ""createdTime"": rec[""createdTime""],
+            ""fields"": {cols.TEXT_ID: rec[""fields""][cols.TEXT]},
+        }
+    ]
+
+    # Test that each supported parameter works with a POST
+    # (or, at least, that we don't get complaints from the API)
+    formula = f""{cols.TEXT} != '{'x' * 17000}'""
+    assert table.all(formula=formula, view=""view"") == [rec]
+    assert table.all(formula=formula, max_records=1) == [rec]
+    assert table.all(formula=formula, page_size=1) == [rec]
+    assert table.all(formula=formula, offset="""") == [rec]
+    assert table.all(formula=formula, fields=[cols.TEXT, cols.NUM]) == [rec]
+    assert table.all(formula=formula, cell_format=""json"") == [rec]
+    assert table.all(formula=formula, sort=[cols.TEXT, cols.NUM]) == [rec]
+    assert table.all(formula=formula, time_zone=""utc"") == [rec]
+    assert table.all(formula=formula, user_locale=""en-ie"") == [rec]
+    assert table.all(formula=formula, use_field_ids=True) == [
+        {
+            ""id"": rec[""id""],
+            ""createdTime"": rec[""createdTime""],
+            ""fields"": {cols.TEXT_ID: rec[""fields""][cols.TEXT]},"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_field_equals","def test_integration_field_equals(table: Table, cols):
+    TEXT_VALUE = ""Test {}"".format(uuid4())
+    NUM_VALUE = 12345
+    values = {cols.TEXT: TEXT_VALUE, cols.NUM: NUM_VALUE}
+    rv_create = table.create(values)
+
+    # match all - finds
+    rv_first = table.first(formula=fo.match(values))
+    assert rv_first and rv_first[""id""] == rv_create[""id""]
+
+    # match all - does not find
+    values = {cols.TEXT: TEXT_VALUE, cols.NUM: 0}
+    rv_first = table.first(formula=fo.match(values))
+    assert rv_first is None
+
+    # match all w/ match_any=True - does not find
+    values = {cols.TEXT: TEXT_VALUE, cols.NUM: 0}
+    rv_first = table.first(formula=fo.match(values, match_any=True))
+    assert rv_first and rv_first[""id""] == rv_create[""id""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_batch_upsert","def test_batch_upsert(table: Table, cols):
+    one, two = table.batch_create(
+        [
+            {cols.TEXT: ""One""},
+            {cols.TEXT: ""Two""},
+        ]
+    )
+
+    # Test batch_upsert where replace=False
+    result = table.batch_upsert(
+        [
+            {""id"": one[""id""], ""fields"": {cols.NUM: 3}},  # use id
+            {""fields"": {cols.TEXT: ""Two"", cols.NUM: 4}},  # use key_fields
+            {""fields"": {cols.TEXT: ""Three"", cols.NUM: 5}},  # create record
+        ],
+        key_fields=[cols.TEXT],
+    )
+    assert set(result[""updatedRecords""]) == {one[""id""], two[""id""]}
+    assert len(result[""createdRecords""]) == 1
+    assert len(result[""records""]) == 3
+    assert result[""records""][0][""id""] == one[""id""]
+    assert result[""records""][0][""fields""] == {cols.TEXT: ""One"", cols.NUM: 3}
+    assert result[""records""][1][""id""] == two[""id""]
+    assert result[""records""][1][""fields""] == {cols.TEXT: ""Two"", cols.NUM: 4}
+    assert result[""records""][2][""fields""] == {cols.TEXT: ""Three"", cols.NUM: 5}
+
+    # Test batch_upsert where replace=True
+    result = table.batch_upsert(
+        [
+            {""id"": one[""id""], ""fields"": {cols.NUM: 3}},  # removes cols.TEXT
+            {""fields"": {cols.TEXT: ""Two""}},  # removes cols.NUM
+            {""fields"": {cols.TEXT: ""Three"", cols.NUM: 6}},  # replaces cols.NUM
+            {""fields"": {cols.TEXT: None, cols.NUM: 7}},  # creates a record
+        ],
+        key_fields=[cols.TEXT],
+        replace=True,
+    )
+    assert len(result[""records""]) == 4
+    assert result[""records""][0][""id""] == one[""id""]
+    assert result[""records""][0][""fields""] == {cols.NUM: 3}
+    assert result[""records""][1][""id""] == two[""id""]
+    assert result[""records""][1][""fields""] == {cols.TEXT: ""Two""}
+    assert result[""records""][2][""fields""] == {cols.TEXT: ""Three"", cols.NUM: 6}
+    assert result[""records""][3][""fields""] == {cols.NUM: 7}
+
+    # Test that batch_upsert passes along use_field_ids
+    result = table.batch_upsert(
+        [{""fields"": {cols.TEXT: ""Two"", cols.NUM: 8}}],
+        key_fields=[cols.TEXT],
+        use_field_ids=True,
+    )
+    assert result[""records""] == [
+        {
+            ""id"": two[""id""],
+            ""createdTime"": two[""createdTime""],
+            ""fields"": {cols.TEXT_ID: ""Two"", cols.NUM_ID: 8},"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_formula_datetime","def test_integration_formula_datetime(table: Table, cols):
+    now = datetime.now(timezone.utc)
+    formula = fo.match({cols.DATETIME: now})
+    rv_create = table.create({cols.DATETIME: datetime_to_iso_str(now)})
+    rv_first = table.first(formula=formula)
+    assert rv_first and rv_first[""id""] == rv_create[""id""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_formula_date_filter","def test_integration_formula_date_filter(table: Table, cols):
+    dt = datetime.now(timezone.utc)
+    dt_str = datetime_to_iso_str(dt)
+    date = dt.date()
+    date_str = date_to_iso_str(date)
+
+    created = []
+    for _ in range(2):
+        rec = table.create({cols.DATETIME: dt_str})
+        created.append(rec)
+
+    formula = fo.FIND(date_str, fo.Field(cols.DATETIME))
+    rv_all = table.all(formula=formula)
+    print(""repr"", repr(formula), ""\nstr"", str(formula))
+    assert rv_all
+    assert set([r[""id""] for r in rv_all]) == set([r[""id""] for r in created])"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_field_equals_with_quotes","def test_integration_field_equals_with_quotes(table: Table, cols):
+    VALUE = ""Contact's Name {}"".format(uuid4())
+    rv_create = table.create({cols.TEXT: VALUE})
+    rv_first = table.first(formula=fo.match({cols.TEXT: VALUE}))
+    assert rv_first and rv_first[""id""] == rv_create[""id""]
+
+    VALUE = 'Some ""Quote""  {}'.format(uuid4())
+    rv_create = table.create({cols.TEXT: VALUE})
+    rv_first = table.first(formula=fo.match({cols.TEXT: VALUE}))
+    assert rv_first and rv_first[""id""] == rv_create[""id""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_formula_composition","def test_integration_formula_composition(table: Table, cols):
+    text = ""Mike's Thing {}"".format(uuid4())
+    num = 1
+    bool_ = True
+    rv_create = table.create({cols.TEXT: text, cols.NUM: num, cols.BOOL: bool_})
+
+    formula = fo.AND(
+        fo.EQ(fo.Field(cols.TEXT), text),
+        fo.EQ(fo.Field(cols.NUM), num),
+        fo.EQ(fo.Field(cols.BOOL), bool_),  # not needs to be int()
+    )
+    rv_first = table.first(formula=formula)
+
+    assert rv_first[""id""] == rv_create[""id""]"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_attachment","def test_integration_attachment(table, cols, valid_img_url):
+    rec = table.create({cols.ATTACHMENT: [attachment(valid_img_url)]})
+    rv_get = table.get(rec[""id""])
+    assert rv_get[""fields""][""attachment""][0][""url""].endswith(""logo.png"")"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_attachment_multiple","def test_integration_attachment_multiple(table, cols, valid_img_url):
+    rec = table.create(
+        {
+            cols.ATTACHMENT: [
+                attachment(valid_img_url, filename=""a.jpg""),
+                attachment(valid_img_url, filename=""b.jpg""),
+            ]
+        }
+    )
+    rv_get = table.get(rec[""id""])
+    assert rv_get[""fields""][""attachment""][0][""filename""] == ""a.jpg""
+    assert rv_get[""fields""][""attachment""][1][""filename""] == ""b.jpg"""
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_api.py","test_integration_comments","def test_integration_comments(api, table: Table, cols):
+    # Test that we can create a comment
+    record = table.create({cols.TEXT: ""Text""})
+    whoami = api.whoami()[""id""]
+    table.add_comment(record[""id""], f""A comment from @[{whoami}]"")
+
+    # Retrieve the comment we just created, make some assertions about its state
+    comments = table.comments(record[""id""])
+    assert len(comments) == 1
+    assert whoami in comments[0].text
+    assert comments[0].author.id == whoami
+    assert comments[0].mentioned[whoami].id == whoami
+
+    # Test that we can modify the comment and examine its updated state
+    comments[0].text = ""Never mind!""
+    comments[0].save()
+    assert whoami not in comments[0].text
+    assert not comments[0].mentioned
+
+    # Test that we can delete the comment
+    comments[0].delete()"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_webhooks.py","test_webhook","def test_webhook(base: Base, table: Table, table_id, cols):
+    result = base.add_webhook(
+        # Throwaway URL; there's no way for us to reliably capture these in a test
+        ""https://example.com/"",
+        {
+            ""options"": {
+                ""filters"": {
+                    ""dataTypes"": [""tableData""],
+                }
+            }
+        },
+    )
+    # Retrieve the webhook and disable it immediately,
+    # so we don't actually hit example.com with data.
+    webhook_id = result.id
+    webhook = base.webhook(webhook_id)
+    webhook.disable_notifications()
+
+    # Trigger the webhook once
+    created = table.create({cols.TEXT: ""Hey there!""})
+    # Get all payloads from the webhook; there should only be one
+    payloads = list(webhook.payloads())
+    payload = payloads[0]
+    assert len(payloads) == 1
+    # Validate that the webhook payload includes the first change we made
+    table_changed = payload.changed_tables_by_id[table_id]
+    record_created = table_changed.created_records_by_id[created[""id""]]
+    assert record_created.cell_values_by_field_id == {cols.TEXT_ID: ""Hey there!""}
+
+    # Trigger the webhook many times
+    count = 20
+    for index in range(count):
+        table.update(created[""id""], {cols.TEXT: str(index)})
+    # Get all remaining payloads from the webhook endpoint.
+    # This is the only place (today) where we test WebhookPayload.cursor
+    payloads = list(webhook.payloads(cursor=(payload.cursor + 1)))
+    assert len(payloads) == count
+    # Validate the payload values
+    assert list(range(count)) == [
+        int(record_changed.current.cell_values_by_field_id[cols.TEXT_ID])
+        for payload in payloads
+        if (table_changed := payload.changed_tables_by_id[table_id])
+        and (record_changed := table_changed.changed_records_by_id[created[""id""]])"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_orm.py","test_integration_orm","def test_integration_orm(Contact, Address):
+    STREET = ""123 Han""
+    address = Address(street=STREET)
+    address.save()
+
+    contact = Contact(
+        first_name=""John"",
+        last_name=""LastName"",
+        email=""email@email.com"",
+        is_registered=True,
+        address=[address],
+        birthday=datetime.now(timezone.utc).date(),
+        last_access=datetime.now(timezone.utc),
+    )
+
+    assert contact.first_name == ""John""
+    assert contact.save()
+    assert contact.id
+
+    contact.first_name = ""Not Gui""
+    assert not contact.save()
+
+    rv_address = contact.address[0]
+    assert rv_address.exists()
+
+    assert rv_address.id == contact.address[0].id == address.id
+
+    # Fetching
+    contact = Contact.from_id(contact.id, fetch=False)
+    assert not contact.address
+    assert not contact.fetch()
+    rv_address_2 = contact.address[0]
+    assert not rv_address_2.street
+    rv_address_2.fetch()
+    assert rv_address_2.street == rv_address.street == STREET"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_orm.py","test_undeclared_fields","def test_undeclared_fields(make_meta):
+    """"""
+    Test that if our ORM is missing some fields, it does not fail on retrieval
+    and does not clobber their values on save.
+    """"""
+
+    class Contact(Model):
+        Meta = make_meta(""Contact"")
+        first_name = f.TextField(""First Name"")
+        last_name = f.TextField(""Last Name"")
+
+    table = Contact.meta.table
+    record = table.create(
+        {
+            ""First Name"": ""Alice"",
+            ""Last Name"": ""Arnold"",
+            ""Email"": ""alice@example.com"",
+            ""Birthday"": ""1970-01-01"",
+        }
+    )
+
+    # This should not raise an exception
+    contact = Contact.from_id(record[""id""])
+
+    # This should not clobber the values in 'Email' or 'Birthday'
+    contact.save()
+    assert table.get(record[""id""]) == record"
+"pyairtable","https://github.com/gtalarico/pyairtable","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/integration/test_integration_orm.py","test_every_field","def test_every_field(Everything):
+    """"""
+    Integration test for the ORM that exercises every supported field type.
+    """"""
+    # Validate there are no field types we skipped
+    classes_used = {
+        type(field) for field in vars(Everything).values() if isinstance(field, f.Field)
+    }
+    for field_class in f.ALL_FIELDS:
+        if field_class in {
+            f.ExternalSyncSourceField,
+            f.AITextField,
+            f.RequiredAITextField,
+        }:
+            continue
+        assert field_class in classes_used
+
+    record: _Everything = Everything(
+        name=None,
+        notes=None,
+        assignee=None,
+        status=None,
+        attachments=None,
+        done=None,
+        tags=None,
+        date=None,
+        datetime=None,
+        duration_hmm=None,
+        duration_hmmsss=None,
+        phone=None,
+        email=None,
+        url=None,
+        integer=None,
+        decimal=None,
+        number=None,
+        dollars=None,
+        percent=None,
+        stars=None,
+        barcode=None,
+        addresses=None,
+        link_self=None,
+    )
+    assert not record.id
+    record.save()
+    assert record.id
+    assert record.addresses == []
+    assert record.link_self is None
+    record.link_self = record
+    record.save()
+
+    # The ORM won't refresh the model's field values after save()
+    assert record.formula_integer is None
+    assert record.formula_nan == """"
+    assert record.link_count is None
+    assert record.lookup_error == []
+    assert record.lookup_integer == []
+    record.fetch()
+    assert record.formula_integer is not None
+    assert record.formula_nan == {""specialValue"": ""NaN""}
+    assert record.link_count == 1
+    assert record.lookup_error == [{""error"": ""#ERROR!""}]
+    assert record.lookup_integer == [record.formula_integer]"

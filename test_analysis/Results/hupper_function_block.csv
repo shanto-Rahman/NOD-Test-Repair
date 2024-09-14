@@ -1,0 +1,138 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py","test_proxy_proxies","def test_proxy_proxies(logger):
+    class DummyMonitor(object):
+        started = stopped = joined = False
+
+        def __call__(self, cb, **kw):
+            self.cb = cb
+            return self
+
+        def start(self):
+            self.started = True
+
+        def stop(self):
+            self.stopped = True
+
+        def join(self):
+            self.joined = True
+
+    cb = DummyCallback()
+    monitor = DummyMonitor()
+    proxy = make_proxy(monitor, cb, logger)
+    assert monitor.cb
+    assert not monitor.started and not monitor.stopped and not monitor.joined
+    proxy.start()
+    assert monitor.started and not monitor.stopped and not monitor.joined
+    proxy.stop()
+    assert monitor.stopped and monitor.joined"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py","test_proxy_expands_paths","def test_proxy_expands_paths(tmpdir, logger):
+    class DummyMonitor(object):
+        def __call__(self, cb, **kw):
+            self.cb = cb
+            self.paths = []
+            return self
+
+        def add_path(self, path):
+            self.paths.append(path)
+
+    cb = DummyCallback()
+    monitor = DummyMonitor()
+    proxy = make_proxy(monitor, cb, logger)
+    proxy.add_path('foo')
+    assert monitor.paths == ['foo']
+
+    tmpdir.join('foo.txt').ensure()
+    tmpdir.join('bar.txt').ensure()
+    rootdir = tmpdir.strpath
+    monitor.paths = []
+    proxy.add_path(os.path.join(rootdir, '*.txt'))
+    assert sorted(monitor.paths) == [
+        os.path.join(rootdir, 'bar.txt'),
+        os.path.join(rootdir, 'foo.txt'),"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py","test_proxy_tracks_changes","def test_proxy_tracks_changes(logger):
+    class DummyMonitor(object):
+        def __call__(self, cb, **kw):
+            self.cb = cb
+            return self
+
+    cb = DummyCallback()
+    monitor = DummyMonitor()
+    proxy = make_proxy(monitor, cb, logger)
+    monitor.cb('foo.txt')
+    assert cb.called == {'foo.txt'}
+    out = logger.get_output('info')
+    assert out == 'foo.txt changed; reloading ...'
+    logger.reset()
+    monitor.cb('foo.txt')
+    out = logger.get_output('info')
+    assert out == ''
+    logger.reset()
+    cb.called = False
+    proxy.clear_changes()
+    monitor.cb('foo.txt')
+    out = logger.get_output('info')
+    assert out == 'foo.txt changed; reloading ...'
+    logger.reset()"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py","test_ignore_files","def test_ignore_files():
+    class DummyMonitor(object):
+        paths = set()
+
+        def add_path(self, path):
+            self.paths.add(path)
+
+    from hupper.reloader import FileMonitorProxy
+
+    cb = DummyCallback()
+    proxy = FileMonitorProxy(cb, None, {'/a/*'})
+    monitor = proxy.monitor = DummyMonitor()
+
+    path = 'foo.txt'
+    assert path not in monitor.paths
+    proxy.add_path(path)
+    assert path in monitor.paths
+
+    path = '/a/foo.txt'
+    assert path not in monitor.paths
+    proxy.add_path(path)
+    assert path not in monitor.paths"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_ipc.py","test_ipc_close","def test_ipc_close():
+    c1, c2 = Pipe()
+    c1_q = queue.Queue()
+    c1.activate(c1_q.put)
+
+    with spawn(
+        __name__ + '.echo',
+        kwargs={""pipe"": c2},
+        pass_fds=[c2.r_fd, c2.w_fd],
+    ) as proc:
+        try:
+            c2.close()
+
+            c1.send(""hello world"")
+            assert c1_q.get() == ""hello world""
+
+            c1.close()
+        finally:
+            proc.terminate()"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_cli.py","test_interval_parser","def test_interval_parser():
+    assert interval_parser(""5"") == 5"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_it.py","test_myapp_reloads_when_touching_ini","def test_myapp_reloads_when_touching_ini(testapp):
+    testapp.start('myapp', ['--reload'])
+    testapp.wait_for_response()
+    time.sleep(2)
+    util.touch(os.path.join(here, 'myapp/foo.ini'))
+    testapp.wait_for_response()
+    testapp.stop()
+
+    assert len(testapp.response) == 2
+    assert testapp.stderr != ''"
+"hupper","https://github.com/Pylons/hupper","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_it.py","test_myapp_reloads_when_touching_pyfile","def test_myapp_reloads_when_touching_pyfile(testapp):
+    testapp.start('myapp', ['--reload'])
+    testapp.wait_for_response()
+    time.sleep(2)
+    util.touch(os.path.join(here, 'myapp/cli.py'))
+    testapp.wait_for_response()
+    testapp.stop()
+
+    assert len(testapp.response) == 2
+    assert testapp.stderr != ''"

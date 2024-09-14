@@ -1,0 +1,70 @@
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py,test_can_decode_a_story,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py,test_can_encode_a_story_no_huffman,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py,test_can_encode_a_story_with_huffman,encode#3
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_table_entry_size,table_entry_size#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_get_by_index_dynamic_table,get_by_index#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_get_by_index_static_table,get_by_index#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_get_by_index_out_of_range,get_by_index#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_repr,repr#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_add_to_large,add#3
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_static_full,search#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_static_partial,search#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_dynamic_full,search#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_dynamic_partial,search#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_no_match,search#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_maxsize_prop_getter,test_maxsize_prop_getter#0
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_maxsize_prop_setter,maxsize#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_size,_current_size#0
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_shrink_maxsize_is_zero,maxsize#0
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_shrink_maxsize,maxsize#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_literal_header_field_with_indexing,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_sensitive_headers,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_non_sensitive_headers_with_header_tuples,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_sensitive_headers_with_header_tuples,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_header_table_size_getter,header_table_size#0
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_indexed_literal_header_field_with_indexing,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_indexed_header_field,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_indexed_header_field_from_static_table,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_request_examples_without_huffman,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_request_examples_with_huffman,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_resizing_header_table,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_resizing_header_table_sends_multiple_updates,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_resizing_header_table_to_same_size_ignored,encode#3
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_resizing_header_table_sends_context_update,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_setting_table_size_to_the_same_does_nothing,encode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_evicting_header_table_objects,encode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_headers_generator,headers_generator#0
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_literal_header_field_with_indexing,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_raw_decoding,decode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_literal_header_field_without_indexing,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_header_table_size_getter,header_table_size#0
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_indexed_header_field,decode#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_request_examples_without_huffman,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_request_examples_with_huffman,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_resizing_header_table,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_apache_trafficserver,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_literal_header_field_with_indexing_emits_headertuple,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_literal_never_indexed_emits_neverindexedheadertuple,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_indexed_never_indexed_emits_neverindexedheadertuple,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_can_decode_multiple_header_table_size_changes,decode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_ordering,_dict_to_iterable#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_ordering_applies_to_encoding,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py,test_is_tuple,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py,test_unpacks_properly,HeaderTuple#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py,test_header_tuples_are_indexable,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py,test_never_indexed_tuples_are_not_indexable,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py,test_equal_to_tuples,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py,test_equal_to_self,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py,test_equal_for_different_indexes,Unable to determine the focal method(s)
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_huffman.py,test_request_huffman_decoder,decode_huffman#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_huffman.py,test_request_huffman_encode,encode#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_huffman.py,test_huffman_decoder_properly_handles_all_bytestrings,decode_huffman#1
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encoding_10_with_5_bit_prefix,encode_integer#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encoding_1337_with_5_bit_prefix,encode_integer#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encoding_42_with_8_bit_prefix,encode_integer#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_decoding_10_with_5_bit_prefix,decode_integer#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encoding_1337_with_5_bit_prefix,decode_integer#3
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encoding_42_with_8_bit_prefix,decode_integer#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encode_positive_integer_always_valid,encode_integer#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_decode_either_succeeds_or_raises_error,decode_integer#2
+hpack,https://github.com/python-hyper/hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encode_decode_round_trips,encode_integer#2

@@ -1,0 +1,185 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"ddlparse","https://github.com/shinichi-takii/ddlparse","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/test/test_ddlparse.py","test_parse","@pytest.mark.parametrize((""test_case"", ""parse_pattern""), [
+    (""basic"", DDL_SET_PATTERN.method),
+    (""basic"", DDL_SET_PATTERN.property),
+    (""constraint_mysql"", DDL_SET_PATTERN.method),
+    (""constraint_postgres_oracle_redshift"", DDL_SET_PATTERN.method),
+    (""default_postgres_redshift"", DDL_SET_PATTERN.method),
+    (""datatype_oracle"", DDL_SET_PATTERN.method),
+    (""datatype_postgres"", DDL_SET_PATTERN.method),
+    (""datatype_mysql"", DDL_SET_PATTERN.method),
+    (""name_backquote"", DDL_SET_PATTERN.method),
+    (""name_doublequote"", DDL_SET_PATTERN.method),
+    (""temp_table"", DDL_SET_PATTERN.method),
+    (""table_with_schema"", DDL_SET_PATTERN.method),
+    (""column_comment"", DDL_SET_PATTERN.method),
+])
+def test_parse(test_case, parse_pattern):
+    # Get test ddl script
+    data = TEST_DATA[test_case]
+
+    # Create parse object instance
+    ddlparse = DdlParse()
+
+    # Set source database option
+
+    # Set source database option & Parse ddl
+    if parse_pattern == DDL_SET_PATTERN.method:
+        if data[""database""] is not None:
+            table = ddlparse.parse(data[""ddl""], data[""database""])
+        else:
+            table = ddlparse.parse(data[""ddl""])
+    else:
+        if data[""database""] is not None:
+            ddlparse.source_database = data[""database""]
+        ddlparse.ddl = data[""ddl""]
+        table = ddlparse.parse()
+
+
+    # Check DDL
+    assert ddlparse.ddl == data[""ddl""]
+
+    # Check source database option
+    assert ddlparse.source_database == data[""database""]
+
+    # Check table
+    assert table.schema == data[""table""][""schema""] if data[""table""][""schema""] is not None else table.schema is None
+    assert table.name == data[""table""][""name""]
+    assert table.is_temp == data[""table""][""temp""]
+    assert table.source_database == data[""database""]
+
+
+    # Check columns
+    data_bq_field_lower = []
+    data_bq_field_upper = []
+
+    i = 0
+    for col in table.columns.values():
+        data_col = data[""columns""][i]
+
+        # カラム制約 テスト評価のデフォルト値をセット
+        _DEFAULT_CONSTRAINT = {
+            'is_unsigned': False,
+            'is_zerofill': False,
+            'description': None,
+            'array_dimensional': 0,
+            'not_null': False,
+            'pk': False,
+            'unique': False,
+            'auto_increment': False,
+            'distkey': False,
+            'sortkey': False,
+            'encode': None,
+            'default': None,
+            'character_set': None,
+            'constraint': '',
+        }
+
+        for constraint_name, default_val in _DEFAULT_CONSTRAINT.items():
+            if constraint_name not in data_col.keys():
+                data_col[constraint_name] = default_val
+
+
+        assert col.name              == data_col[""name""]
+        assert col.data_type         == data_col[""type""]
+        assert col.is_unsigned       == data_col[""is_unsigned""]
+        assert col.is_zerofill       == data_col[""is_zerofill""]
+        assert col.length            == data_col[""length""] if data_col[""length""] is not None else col.length is None
+        assert col.precision         == data_col[""length""] if data_col[""length""] is not None else col.length is None
+        assert col.scale             == data_col[""scale""] if data_col[""scale""] is not None else col.scale is None
+        assert col.array_dimensional == data_col[""array_dimensional""]
+        assert col.not_null          == data_col[""not_null""]
+        assert col.primary_key       == data_col[""pk""]
+        assert col.unique            == data_col[""unique""]
+        assert col.constraint        == data_col[""constraint""]
+        assert col.source_database   == data[""database""]
+        assert col.comment           == data_col[""description""] if data_col[""description""] is not None else col.comment is None
+        assert col.description       == data_col[""description""] if data_col[""description""] is not None else col.description is None
+        assert col.auto_increment    == data_col[""auto_increment""]
+        assert col.distkey           == data_col[""distkey""]
+        assert col.sortkey           == data_col[""sortkey""]
+        assert col.encode            == data_col[""encode""]
+        assert col.default           == data_col[""default""]
+        assert col.character_set     == data_col[""character_set""]
+
+        data_bq_field = data[""bq_field""][i]
+        assert col.to_bigquery_field() == data_bq_field
+
+        data_bq_field_lower.append(re.sub(r'({""name"": "")Col', r'\1col', data_bq_field))
+        assert col.to_bigquery_field(col.NAME_CASE.lower) == data_bq_field_lower[-1]
+
+        data_bq_field_upper.append(re.sub(r'({""name"": "")Col', r'\1COL', data_bq_field))
+        assert col.to_bigquery_field(col.NAME_CASE.upper) == data_bq_field_upper[-1]
+
+        assert col.bigquery_legacy_data_type == col.bigquery_data_type
+        assert col.bigquery_standard_data_type == data[""bq_standard_data_type""][i]
+
+        i += 1
+
+
+    # Check BigQuery fields format of DdlParseColumnDict
+    assert table.columns.to_bigquery_fields() == ""[{}]"".format("","".join(data[""bq_field""]))
+    assert table.columns.to_bigquery_fields(col.NAME_CASE.lower) == ""[{}]"".format("","".join(data_bq_field_lower))
+    assert table.columns.to_bigquery_fields(col.NAME_CASE.upper) == ""[{}]"".format("","".join(data_bq_field_upper))
+    assert table.columns.source_database == data[""database""]
+
+    # Check BigQuery fields format of DdlParseTable
+    assert table.columns.to_bigquery_fields() == table.to_bigquery_fields()
+    assert table.columns.to_bigquery_fields(col.NAME_CASE.lower) == table.to_bigquery_fields(col.NAME_CASE.lower)
+    assert table.columns.to_bigquery_fields(col.NAME_CASE.upper) == table.to_bigquery_fields(col.NAME_CASE.upper)"
+"ddlparse","https://github.com/shinichi-takii/ddlparse","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/test/test_ddlparse.py","test_bq_ddl","@pytest.mark.parametrize((""test_case""), [
+    (""exist_schema_name""),
+    (""no_schema_name""),
+    (""datatype_postgres""),
+    (""column_comment""),
+])
+def test_bq_ddl(test_case):
+    # Get test data
+    data = TEST_DATA_DDL[test_case]
+
+    # Parse ddl
+    table = DdlParse().parse(data[""source_ddl""])
+
+    # Check generate BigQuery DDL statements of DdlParseTable
+    assert table.to_bigquery_ddl() == textwrap.dedent(data[""bq_ddl""][DdlParse.NAME_CASE.original])
+    assert table.to_bigquery_ddl(DdlParse.NAME_CASE.original) == textwrap.dedent(data[""bq_ddl""][DdlParse.NAME_CASE.original])
+    assert table.to_bigquery_ddl(DdlParse.NAME_CASE.lower) == textwrap.dedent(data[""bq_ddl""][DdlParse.NAME_CASE.lower])
+    assert table.to_bigquery_ddl(DdlParse.NAME_CASE.upper) == textwrap.dedent(data[""bq_ddl""][DdlParse.NAME_CASE.upper])"
+"ddlparse","https://github.com/shinichi-takii/ddlparse","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/test/test_ddlparse.py","test_set_comment","def test_set_comment():
+    ddl = """"""
+        CREATE TABLE Sample_Table (
+          Col_01 integer
+        );
+        """"""
+
+    # Parse DDL
+    table = DdlParse().parse(ddl)
+
+    # Check blank comment
+    assert table.columns[""Col_01""].comment is None
+    assert table.columns[""Col_01""].description is None
+
+    # Check comment setter
+    table.columns[""Col_01""].comment = ""comment_1""
+    assert table.columns[""Col_01""].comment == ""comment_1""
+
+    # Check description setter
+    table.columns[""Col_01""].description = ""comment_2""
+    assert table.columns[""Col_01""].description == ""comment_2"""
+"ddlparse","https://github.com/shinichi-takii/ddlparse","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/test/test_ddlparse.py","test_constraint_compatibility","def test_constraint_compatibility():
+    """"""
+    Test compatibility v1.6.1 and earlier
+    """"""
+
+    dl_col = DdlParseColumn(
+        name='Col',
+        data_type_array={'type_name': ['INT']},
+    )
+
+    dl_col.constraint = ""PRIMARY KEY COMMENT 'foo'""
+
+    # Check column constraint
+    assert dl_col.not_null is True
+    assert dl_col.primary_key is True
+    assert dl_col.unique is False
+    assert dl_col.comment == 'foo'"

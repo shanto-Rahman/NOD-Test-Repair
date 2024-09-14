@@ -1,0 +1,2471 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_unary_unary","@pytest.mark.asyncio
+async def test_unary_unary(cs: ClientStream):
+    async with cs.client_stream as stream:
+        await stream.send_message(DummyRequest(value='ping'))
+
+        events = cs.client_conn.to_server_transport.events()
+        event = events[-1]
+        assert isinstance(event, StreamEnded)
+        stream_id = event.stream_id
+
+        cs.client_conn.server_h2c.send_headers(
+            stream_id,
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto')],
+        )
+        cs.client_conn.server_h2c.send_data(
+            stream_id,
+            grpc_encode(DummyReply(value='pong'), DummyReply),
+        )
+        cs.client_conn.server_h2c.send_headers(
+            stream_id,
+            [('grpc-status', str(Status.OK.value))],
+            end_stream=True,
+        )
+        cs.client_conn.server_flush()
+
+        assert await stream.recv_message() == DummyReply(value='pong')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_no_end","@pytest.mark.asyncio
+async def test_no_end():
+    cs = ClientStream(send_type=DummyRequest, recv_type=DummyReply,
+                      cardinality=Cardinality.STREAM_UNARY)
+    with pytest.raises(ProtocolError) as exc:
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'))  # no end
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+            cs.client_conn.server_h2c.send_headers(
+                stream_id,
+                [(':status', '200'),
+                 ('content-type', 'application/grpc+proto')],
+            )
+            cs.client_conn.server_flush()
+            await stream.recv_initial_metadata()
+
+            cs.client_conn.server_h2c.send_data(
+                stream_id,
+                grpc_encode(DummyReply(value='pong'), DummyReply),
+            )
+            cs.client_conn.server_flush()
+            assert await stream.recv_message() == DummyReply(value='pong')
+
+            await stream.recv_trailing_metadata()
+    exc.match('Outgoing stream was not ended')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_outbound_streams_limit","@pytest.mark.asyncio
+async def test_outbound_streams_limit(loop):
+    client_conn = ClientConn()
+    client_conn.server_h2c.update_settings({
+        SettingCodes.MAX_CONCURRENT_STREAMS: 1,
+    })
+    client_conn.server_flush()
+
+    async def worker1():
+        cs = ClientStream(client_conn=client_conn,
+                          send_type=DummyRequest, recv_type=DummyReply)
+        async with cs.client_stream as stream:
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+            assert await stream.recv_message() == DummyReply(value='pong')
+
+    async def worker2():
+        cs = ClientStream(client_conn=client_conn,
+                          send_type=DummyRequest, recv_type=DummyReply)
+        async with cs.client_stream as stream:
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+            assert await stream.recv_message() == DummyReply(value='pong')
+
+    def send_response(stream_id):
+        client_conn.server_h2c.send_headers(
+            stream_id,
+            [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+            ],
+        )
+        client_conn.server_h2c.send_data(
+            stream_id,
+            grpc_encode(DummyReply(value='pong'), DummyReply),
+        )
+        client_conn.server_h2c.send_headers(
+            stream_id,
+            [
+                ('grpc-status', str(Status.OK.value)),
+            ],
+            end_stream=True,
+        )
+        client_conn.server_flush()
+
+    w1 = loop.create_task(worker1())
+    w2 = loop.create_task(worker2())
+
+    done, pending = await asyncio.wait([w1, w2], timeout=0.001)
+    assert not done and pending == {w1, w2}
+
+    send_response(1)
+    await asyncio.wait_for(w1, 0.1)
+
+    send_response(3)
+    await asyncio.wait_for(w2, 0.1)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_unimplemented_error","@pytest.mark.asyncio
+async def test_unimplemented_error(cs: ClientStream):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+                ('grpc-status', str(Status.UNIMPLEMENTED.value)),
+            ], end_stream=True)
+            cs.client_conn.server_flush()
+
+            try:
+                await stream.recv_initial_metadata()
+            except GRPCError as exc:
+                assert exc and exc.status == Status.UNIMPLEMENTED
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_unimplemented_error_with_stream_reset","@pytest.mark.asyncio
+async def test_unimplemented_error_with_stream_reset(cs: ClientStream):
+    with pytest.raises(GRPCError) as err:
+        async with cs.client_stream as stream:
+            await stream.send_request()
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+                ('grpc-status', str(Status.UNIMPLEMENTED.value)),
+            ], end_stream=True)
+            cs.client_conn.server_h2c.reset_stream(stream_id)
+            cs.client_conn.server_flush()
+
+    assert err.value.status == Status.UNIMPLEMENTED"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_non_ok_status","@pytest.mark.asyncio
+@pytest.mark.parametrize('status, grpc_status', [
+    ('401', Status.UNAUTHENTICATED),
+    ('404', Status.UNIMPLEMENTED),
+    ('429', Status.UNAVAILABLE),
+    ('508', Status.UNKNOWN),
+])
+async def test_non_ok_status(cs: ClientStream, status, grpc_status):
+    with pytest.raises(GRPCError) as err:
+        async with cs.client_stream as stream:
+            await stream.send_request()
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', status),
+            ], end_stream=True)
+            cs.client_conn.server_h2c.reset_stream(stream_id)
+            cs.client_conn.server_flush()
+
+    assert err.value.status == grpc_status
+    assert err.value.message == 'Received :status = {!r}'.format(status)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_missing_grpc_status","@pytest.mark.asyncio
+async def test_missing_grpc_status(cs: ClientStream):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+            ])
+            cs.client_conn.server_h2c.send_data(
+                stream_id,
+                grpc_encode(DummyReply(value='pong'), DummyReply),
+            )
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                ('foo', 'bar'),
+            ], end_stream=True)
+            cs.client_conn.server_flush()
+
+            await stream.recv_initial_metadata()
+            await stream.recv_message()
+            try:
+                await stream.recv_trailing_metadata()
+            except GRPCError as exc:
+                assert exc
+                assert exc.status == Status.UNKNOWN
+                assert exc.message == 'Missing grpc-status header'
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_invalid_grpc_status_in_headers","@pytest.mark.asyncio
+@pytest.mark.parametrize('grpc_status', ['invalid_number', '-42'])
+async def test_invalid_grpc_status_in_headers(cs: ClientStream, grpc_status):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+                ('grpc-status', grpc_status),
+            ], end_stream=True)
+            cs.client_conn.server_flush()
+
+            try:
+                await stream.recv_initial_metadata()
+            except GRPCError as exc:
+                assert exc
+                assert exc.status == Status.UNKNOWN
+                assert exc.message == ('Invalid grpc-status: {!r}'
+                                       .format(grpc_status))
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_invalid_grpc_status_in_trailers","@pytest.mark.asyncio
+@pytest.mark.parametrize('grpc_status', ['invalid_number', '-42'])
+async def test_invalid_grpc_status_in_trailers(cs: ClientStream, grpc_status):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+            ])
+            cs.client_conn.server_h2c.send_data(
+                stream_id,
+                grpc_encode(DummyReply(value='pong'), DummyReply),
+            )
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                ('grpc-status', grpc_status),
+            ], end_stream=True)
+            cs.client_conn.server_flush()
+
+            await stream.recv_initial_metadata()
+            await stream.recv_message()
+            try:
+                await stream.recv_trailing_metadata()
+            except GRPCError as exc:
+                assert exc
+                assert exc.status == Status.UNKNOWN
+                assert exc.message == ('Invalid grpc-status: {!r}'
+                                       .format(grpc_status))
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_non_ok_grpc_status_in_headers","@pytest.mark.asyncio
+@pytest.mark.parametrize('grpc_message', [None, fake.pystr()])
+async def test_non_ok_grpc_status_in_headers(cs: ClientStream, grpc_message):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            headers = [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+                ('grpc-status', str(Status.DATA_LOSS.value)),
+            ]
+            if grpc_message is not None:
+                headers.append(('grpc-message', grpc_message))
+            cs.client_conn.server_h2c.send_headers(stream_id, headers,
+                                                   end_stream=True)
+            cs.client_conn.server_flush()
+
+            try:
+                await stream.recv_initial_metadata()
+            except GRPCError as exc:
+                assert exc
+                assert exc.status == Status.DATA_LOSS
+                assert exc.message == grpc_message
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_non_ok_grpc_status_in_trailers","@pytest.mark.asyncio
+@pytest.mark.parametrize('grpc_message', [None, fake.pystr()])
+async def test_non_ok_grpc_status_in_trailers(cs: ClientStream, grpc_message):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+            ])
+            cs.client_conn.server_h2c.send_data(
+                stream_id,
+                grpc_encode(DummyReply(value='pong'), DummyReply),
+            )
+            headers = [
+                ('grpc-status', str(Status.DATA_LOSS.value)),
+            ]
+            if grpc_message is not None:
+                headers.append(('grpc-message', grpc_message))
+            cs.client_conn.server_h2c.send_headers(stream_id, headers,
+                                                   end_stream=True)
+            cs.client_conn.server_flush()
+
+            await stream.recv_initial_metadata()
+            await stream.recv_message()
+            try:
+                await stream.recv_trailing_metadata()
+            except GRPCError as exc:
+                assert exc
+                assert exc.status == Status.DATA_LOSS
+                assert exc.message == grpc_message
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_missing_content_type","@pytest.mark.asyncio
+async def test_missing_content_type(cs: ClientStream):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('grpc-status', str(Status.OK.value)),
+            ])
+            cs.client_conn.server_flush()
+
+            try:
+                await stream.recv_initial_metadata()
+            except GRPCError as exc:
+                assert exc
+                assert exc.status == Status.UNKNOWN
+                assert exc.message == ""Missing content-type header""
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_invalid_content_type","@pytest.mark.asyncio
+async def test_invalid_content_type(cs: ClientStream):
+    with pytest.raises(ErrorDetected):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+
+            events = cs.client_conn.to_server_transport.events()
+            stream_id = events[-1].stream_id
+
+            cs.client_conn.server_h2c.send_headers(stream_id, [
+                (':status', '200'),
+                ('grpc-status', str(Status.OK.value)),
+                ('content-type', 'text/invalid'),
+            ])
+            cs.client_conn.server_flush()
+
+            try:
+                await stream.recv_initial_metadata()
+            except GRPCError as exc:
+                assert exc
+                assert exc.status == Status.UNKNOWN
+                assert exc.message == ""Invalid content-type: 'text/invalid'""
+                raise ErrorDetected()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_request_headers","@pytest.mark.asyncio
+async def test_request_headers(cs: ClientStream):
+    async with cs.client_stream as stream:
+        await stream.send_request()
+        events = cs.client_conn.to_server_transport.events()
+        request_received = events[-1]
+        assert request_received.headers == [
+            (':method', 'POST'),
+            (':scheme', 'http'),
+            (':path', '/foo/bar'),
+            (':authority', 'test.com'),
+            ('te', 'trailers'),
+            ('content-type', 'application/grpc'),
+            ('user-agent', USER_AGENT),
+        ]
+        await stream.cancel()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_request_headers_with_deadline","@pytest.mark.asyncio
+async def test_request_headers_with_deadline():
+    deadline = Mock()
+    deadline.time_remaining.return_value = 0.1
+    cs = ClientStream(deadline=deadline)
+    async with cs.client_stream as stream:
+        await stream.send_request()
+        events = cs.client_conn.to_server_transport.events()
+        request_received = events[-1]
+        assert request_received.headers == [
+            (':method', 'POST'),
+            (':scheme', 'http'),
+            (':path', '/foo/bar'),
+            (':authority', 'test.com'),
+            ('grpc-timeout', '100m'),
+            ('te', 'trailers'),
+            ('content-type', 'application/grpc'),
+            ('user-agent', USER_AGENT),
+        ]
+        await stream.cancel()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_no_messages_for_unary","@pytest.mark.asyncio
+async def test_no_messages_for_unary(loop, cs: ClientStream):
+    with pytest.raises(ProtocolError, match='Unary request requires'):
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            cs.client_conn.to_server_transport.events()
+            await stream.end()
+    reset_event, = cs.client_conn.to_server_transport.events()
+    assert isinstance(reset_event, StreamReset)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_empty_request","@pytest.mark.asyncio
+async def test_empty_request():
+    cs = ClientStream(cardinality=Cardinality.STREAM_UNARY,
+                      send_type=DummyRequest, recv_type=DummyReply)
+    async with cs.client_stream as stream:
+        await stream.send_request(end=True)
+        events = cs.client_conn.to_server_transport.events()
+        stream_ended = events[-1]
+        assert isinstance(stream_ended, StreamEnded)
+        stream_id = stream_ended.stream_id
+        cs.client_conn.server_h2c.send_headers(stream_id, [
+            (':status', '200'),
+            ('content-type', 'application/grpc+proto'),
+        ])
+        cs.client_conn.server_h2c.send_data(
+            stream_id,
+            grpc_encode(DummyReply(value='pong'), DummyReply),
+        )
+        cs.client_conn.server_h2c.send_headers(stream_id, [
+            ('grpc-status', str(Status.OK.value)),
+        ], end_stream=True)
+        cs.client_conn.server_flush()
+
+        reply = await stream.recv_message()
+        assert reply == DummyReply(value='pong')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_empty_response","@pytest.mark.asyncio
+async def test_empty_response():
+    cs = ClientStream(cardinality=Cardinality.UNARY_STREAM,
+                      send_type=DummyRequest, recv_type=DummyReply)
+    async with cs.client_stream as stream:
+        await stream.send_message(DummyRequest(value='ping'), end=True)
+        events = cs.client_conn.to_server_transport.events()
+        stream_id = events[-1].stream_id
+        cs.client_conn.server_h2c.send_headers(stream_id, [
+            (':status', '200'),
+            ('content-type', 'application/grpc+proto'),
+        ])
+        cs.client_conn.server_h2c.send_headers(stream_id, [
+            ('grpc-status', str(Status.OK.value)),
+        ], end_stream=True)
+        cs.client_conn.server_flush()
+        reply = await stream.recv_message()
+        assert reply is None"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_stream.py","test_empty_trailers_only_response","@pytest.mark.asyncio
+async def test_empty_trailers_only_response():
+    cs = ClientStream(cardinality=Cardinality.UNARY_STREAM,
+                      send_type=DummyRequest, recv_type=DummyReply)
+    async with cs.client_stream as stream:
+        await stream.send_message(DummyRequest(value='ping'), end=True)
+        events = cs.client_conn.to_server_transport.events()
+        stream_id = events[-1].stream_id
+        cs.client_conn.server_h2c.send_headers(stream_id, [
+            (':status', '200'),
+            ('content-type', 'application/grpc+proto'),
+            ('grpc-status', str(Status.OK.value)),
+        ], end_stream=True)
+        cs.client_conn.server_flush()
+        reply = await stream.recv_message()
+        assert reply is None
+        await stream.recv_trailing_metadata()  # should be noop"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_methods.py","test_unary_reply_error","@pytest.mark.asyncio
+@pytest.mark.parametrize('cardinality, method_cls, method_arg', [
+    (Cardinality.UNARY_UNARY, UnaryUnaryMethod, Empty()),
+    (Cardinality.STREAM_UNARY, StreamUnaryMethod, [Empty()]),
+])
+async def test_unary_reply_error(cardinality, method_cls, method_arg):
+    class Service:
+        async def Case(self, stream):
+            await stream.send_initial_metadata()
+            await stream.send_trailing_metadata(status=Status.PERMISSION_DENIED)
+
+        def __mapping__(self):
+            return {
+                '/test.Test/Case': Handler(
+                    self.Case,
+                    cardinality,
+                    Empty,
+                    Empty,
+                )
+            }
+
+    async with ChannelFor([Service()]) as channel:
+        method = method_cls(channel, '/test.Test/Case', Empty, Empty)
+        with pytest.raises(GRPCError) as err:
+            await method(method_arg)
+        assert err.value.status is Status.PERMISSION_DENIED"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_methods.py","test_empty_streaming_request","@pytest.mark.asyncio
+@pytest.mark.parametrize('cardinality, method_cls, method_res', [
+    (Cardinality.STREAM_UNARY, StreamUnaryMethod, Empty()),
+    (Cardinality.STREAM_STREAM, StreamStreamMethod, [Empty()]),
+])
+async def test_empty_streaming_request(cardinality, method_cls, method_res):
+    class Service:
+        async def Case(self, stream):
+            await stream.send_message(Empty())
+
+        def __mapping__(self):
+            return {
+                '/test.Test/Case': Handler(
+                    self.Case,
+                    cardinality,
+                    Empty,
+                    Empty,
+                )
+            }
+
+    async with ChannelFor([Service()]) as channel:
+        method = method_cls(channel, '/test.Test/Case', Empty, Empty)
+        assert await method([]) == method_res"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_recv_data_larger_than_window_size","@pytest.mark.asyncio
+async def test_recv_data_larger_than_window_size(loop, config):
+    client_h2c, server_h2c = create_connections()
+
+    to_client_transport = TransportStub(client_h2c)
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+
+    to_server_transport = TransportStub(server_h2c)
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+
+    client_proc = EventsProcessor(DummyHandler(), client_conn)
+    client_stream = client_conn.create_stream()
+
+    await client_stream.send_request(create_headers(), _processor=client_proc)
+
+    initial_window = server_h2c.local_settings.initial_window_size
+    assert (client_h2c.local_flow_control_window(client_stream.id)
+            == initial_window)
+
+    # data should be bigger than window size
+    data = b'0' * (initial_window + 1)
+    size = len(data)
+
+    # sending less than a full message
+    await client_stream.send_data(data[:initial_window - 1])
+
+    # let server process it's events
+    server_processor = EventsProcessor(DummyHandler(), server_conn)
+    to_server_transport.process(server_processor)
+
+    # checking window size was decreased
+    assert client_h2c.local_flow_control_window(client_stream.id) == 1
+
+    # simulate that server is waiting for the size of a message and should
+    # acknowledge that size as soon as it will be received
+    server_stream, = server_processor.streams.values()
+    recv_task = loop.create_task(server_stream.recv_data(size))
+    await asyncio.wait([recv_task], timeout=.01)
+    assert server_stream.buffer._acked_size == initial_window - 1
+
+    # check that server acknowledged received partial data
+    assert client_h2c.local_flow_control_window(client_stream.id) > 1
+
+    # sending remaining data and recv_task should finish
+    await client_stream.send_data(data[initial_window - 1:])
+    to_server_transport.process(server_processor)
+    await asyncio.wait_for(recv_task, 0.01)
+    assert server_stream.buffer._acked_size == 0"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_stream_release","@pytest.mark.asyncio
+async def test_stream_release(config):
+    client_h2c, server_h2c = create_connections()
+
+    to_client_transport = TransportStub(client_h2c)
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+
+    to_server_transport = TransportStub(server_h2c)
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+
+    client_processor = EventsProcessor(DummyHandler(), client_conn)
+    client_stream = client_conn.create_stream()
+
+    server_processor = EventsProcessor(DummyHandler(), server_conn)
+
+    assert not client_processor.streams
+    client_release_stream = await client_stream.send_request(
+        create_headers(), _processor=client_processor,
+    )
+    assert client_release_stream and client_processor.streams
+
+    # sending data and closing stream on the client-side
+    msg = b'message'
+    await client_stream.send_data(msg, end_stream=True)
+    events1 = to_server_transport.process(server_processor)
+    assert any(isinstance(e, StreamEnded) for e in events1), events1
+
+    # intentionally sending some stream-specific frame after stream was
+    # half-closed
+    client_h2c.increment_flow_control_window(10, stream_id=client_stream.id)
+    client_conn.flush()
+    events2 = to_server_transport.process(server_processor)
+    assert any(isinstance(e, WindowUpdated) for e in events2), events2
+
+    server_stream, = server_processor.streams.values()
+    await server_stream.recv_data(len(msg))
+    await server_stream.send_headers([(':status', '200')], end_stream=True)
+
+    events3 = to_client_transport.process(client_processor)
+    assert any(isinstance(e, StreamEnded) for e in events3), events3
+
+    # simulating request handler exit by releasing server-side stream
+    server_processor.handler.release_stream()
+    assert not server_processor.streams
+
+    # simulating call exit by releasing client-side stream
+    assert client_processor.streams
+    client_release_stream()
+    assert not client_processor.streams"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_initial_window_size_update","@pytest.mark.asyncio
+async def test_initial_window_size_update(loop, config):
+    client_h2c, server_h2c = create_connections()
+
+    to_client_transport = TransportStub(client_h2c)
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+
+    to_server_transport = TransportStub(server_h2c)
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+
+    client_proc = EventsProcessor(DummyHandler(), client_conn)
+    client_stream = client_conn.create_stream()
+
+    await client_stream.send_request(create_headers(), _processor=client_proc)
+
+    # data should be bigger than window size
+    initial_window = server_h2c.local_settings.initial_window_size
+    data = b'0' * (initial_window + 1)
+
+    assert (client_h2c.local_flow_control_window(client_stream.id)
+            == initial_window)
+
+    # send_data should wait until settings/window updated
+    send_task = loop.create_task(client_stream.send_data(data))
+    await asyncio.wait([send_task], timeout=0.01)
+
+    assert client_h2c.local_flow_control_window(client_stream.id) == 0
+
+    # updating settings and window, this should increase stream window size
+    server_h2c.update_settings({
+        SettingCodes.INITIAL_WINDOW_SIZE: initial_window + 1
+    })
+    server_h2c.increment_flow_control_window(1, stream_id=None)
+    server_conn.flush()
+    to_client_transport.process(client_proc)
+
+    assert client_h2c.local_flow_control_window(client_stream.id) == 1
+    await asyncio.wait([send_task], timeout=0.01)
+
+    assert send_task.result() is None"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_ping","@pytest.mark.asyncio
+async def test_ping(config):
+    client_h2c, server_h2c = create_connections()
+
+    to_client_transport = TransportStub(client_h2c)
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+
+    to_server_transport = TransportStub(server_h2c)
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+
+    client_processor = EventsProcessor(DummyHandler(), client_conn)
+    server_processor = EventsProcessor(DummyHandler(), server_conn)
+
+    client_h2c.ping(b'12345678')
+    client_conn.flush()
+
+    to_server_transport.process(server_processor)
+    server_conn.flush()
+
+    ping_ack, = to_client_transport.process(client_processor)
+    assert isinstance(ping_ack, PingAckReceived)
+    assert ping_ack.ping_data == b'12345678'"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_unread_data_ack","@pytest.mark.asyncio
+async def test_unread_data_ack(config):
+    client_h2c, server_h2c = create_connections()
+    initial_window = client_h2c.outbound_flow_control_window
+    # should be large enough to trigger WINDOW_UPDATE frame
+    data_size = initial_window - 1
+
+    to_client_transport = TransportStub(client_h2c)
+    server_handler = DummyHandler()
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+    server_proc = EventsProcessor(server_handler, server_conn)
+
+    to_server_transport = TransportStub(server_h2c)
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+    client_proc = EventsProcessor(DummyHandler(), client_conn)
+    client_stream = client_conn.create_stream()
+
+    await client_stream.send_request(create_headers(), _processor=client_proc)
+    await client_stream.send_data(b'x' * data_size)
+    assert client_h2c.outbound_flow_control_window == initial_window - data_size
+    to_server_transport.process(server_proc)
+
+    # server_handler.stream.recv_data(data_size) intentionally not called
+    await server_handler.stream.send_headers([  # trailers-only error
+        (':status', '200'),
+        ('content-type', 'application/grpc+proto'),
+        ('grpc-status', str(Status.UNKNOWN.value)),
+    ], end_stream=True)
+    to_client_transport.process(client_proc)
+
+    assert client_h2c.outbound_flow_control_window == initial_window - data_size
+    server_handler.release_stream()  # should ack received data
+    assert client_h2c.outbound_flow_control_window == initial_window"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_released_stream_data_ack","@pytest.mark.asyncio
+async def test_released_stream_data_ack(config):
+    client_h2c, server_h2c = create_connections()
+    initial_window = client_h2c.outbound_flow_control_window
+    # should be large enough to trigger WINDOW_UPDATE frame
+    data_size = initial_window - 1
+
+    to_client_transport = TransportStub(client_h2c)
+    server_handler = DummyHandler()
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+    server_proc = EventsProcessor(server_handler, server_conn)
+
+    to_server_transport = TransportStub(server_h2c)
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+    client_proc = EventsProcessor(DummyHandler(), client_conn)
+    client_stream = client_conn.create_stream()
+
+    await client_stream.send_request(create_headers(), _processor=client_proc)
+    to_server_transport.process(server_proc)
+
+    # server_handler.stream.recv_data(data_size) intentionally not called
+    await server_handler.stream.send_headers([  # trailers-only error
+        (':status', '200'),
+        ('content-type', 'application/grpc+proto'),
+        ('grpc-status', str(Status.UNKNOWN.value)),
+    ], end_stream=True)
+    to_client_transport.process(client_proc)
+    server_handler.release_stream()
+
+    assert client_h2c.outbound_flow_control_window == initial_window
+    await client_stream.send_data(b'x' * data_size)
+    assert client_h2c.outbound_flow_control_window == 1
+    to_server_transport.process(server_proc)
+    # client-side flow control window will increase to initial value eventually
+    assert client_h2c.outbound_flow_control_window > 1"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_negative_window_size","@pytest.mark.asyncio
+async def test_negative_window_size(loop, config):
+    client_h2c, server_h2c = create_connections()
+
+    to_client_transport = TransportStub(client_h2c)
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+
+    to_server_transport = TransportStub(server_h2c)
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+
+    client_proc = EventsProcessor(DummyHandler(), client_conn)
+    client_stream = client_conn.create_stream()
+
+    await client_stream.send_request(create_headers(), _processor=client_proc)
+
+    # data should be bigger than window size
+    initial_window = server_h2c.local_settings.initial_window_size
+    data = b'0' * (initial_window + 1)
+
+    assert (client_h2c.local_flow_control_window(client_stream.id)
+            == initial_window)
+
+    # send_data should wait until settings/window updated
+    send_task = loop.create_task(client_stream.send_data(data))
+    await asyncio.wait([send_task], timeout=0.01)
+
+    assert client_h2c.local_flow_control_window(client_stream.id) == 0
+
+    # updating settings, this should decrease connection window size
+    server_h2c.update_settings({
+        SettingCodes.INITIAL_WINDOW_SIZE: initial_window - 1
+    })
+    server_conn.flush()
+    to_client_transport.process(client_proc)
+
+    # window is negative and client should wait
+    assert client_h2c.local_flow_control_window(client_stream.id) == -1
+    await asyncio.wait([send_task], timeout=0.01)
+    assert not send_task.done()
+
+    # now `send_data` should succeed
+    server_h2c.increment_flow_control_window(2, stream_id=client_stream.id)
+    # INITIAL_WINDOW_SIZE not changes connection's window size, so it should be
+    # incremented only by 1
+    server_h2c.increment_flow_control_window(1, stream_id=None)
+    server_conn.flush()
+    to_client_transport.process(client_proc)
+    assert client_h2c.local_flow_control_window(client_stream.id) == 1
+    await asyncio.wait([send_task], timeout=0.01)
+    assert send_task.result() is None"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_peer_addr","def test_peer_addr():
+    transport = Mock()
+    transport.get_extra_info.return_value = ('123.45.67.89', 42)
+
+    peer = Peer(transport)
+    assert peer.addr() == ('123.45.67.89', 42)
+    transport.get_extra_info.assert_called_once_with('peername')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_peer_cert","@pytest.mark.parametrize('cert', [None, object()])
+def test_peer_cert(cert):
+    ssl_object = Mock()
+    ssl_object.getpeercert.return_value = cert
+
+    transport = Mock()
+    transport.get_extra_info.return_value = ssl_object
+
+    peer = Peer(transport)
+    assert peer.cert() is cert
+    transport.get_extra_info.assert_called_once_with('ssl_object')
+    ssl_object.getpeercert.assert_called_once_with()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_protocol.py","test_max_window_size","@pytest.mark.parametrize('config', [
+    Configuration(http2_connection_window_size=2**16 - 1),
+    Configuration(http2_connection_window_size=2**31 - 1),
+    Configuration(http2_stream_window_size=2**16 - 1),
+    Configuration(http2_stream_window_size=2**31 - 1),
+])
+def test_max_window_size(config):
+    server_h2c = H2Connection(H2Configuration(client_side=False,
+                                              header_encoding='ascii'))
+    proto = H2Protocol(Mock(), config.__for_test__(),
+                       H2Configuration(client_side=True))
+    proto.connection_made(TransportStub(server_h2c))
+    assert server_h2c.outbound_flow_control_window \
+        == config.http2_connection_window_size
+    assert server_h2c.remote_settings.initial_window_size \
+        == config.http2_stream_window_size"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_send_custom_metadata","@pytest.mark.asyncio
+async def test_send_custom_metadata(stream, stub):
+    async with stream:
+        await stream.send_initial_metadata(metadata={
+            'foo': 'foo-value',
+        })
+        await stream.send_message(DummyReply(value='pong'))
+        await stream.send_trailing_metadata(metadata={
+            'bar': 'bar-value',
+        })
+    assert stub.__events__ == [
+        SendHeaders(
+            [
+                (':status', '200'),
+                ('content-type', 'application/grpc+proto'),
+                ('foo', 'foo-value'),
+            ],
+            end_stream=False,
+        ),
+        SendData(
+            encode_message(DummyReply(value='pong')),
+            end_stream=False,
+        ),
+        SendHeaders(
+            [
+                ('grpc-status', str(Status.OK.value)),
+                ('bar', 'bar-value'),
+            ],
+            end_stream=True,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_send_message_twice_ok","@pytest.mark.asyncio
+async def test_send_message_twice_ok(stream_streaming, stub):
+    async with stream_streaming:
+        await stream_streaming.send_message(DummyReply(value='pong1'))
+        await stream_streaming.send_message(DummyReply(value='pong2'))
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto')],
+            end_stream=False,
+        ),
+        SendData(
+            encode_message(DummyReply(value='pong1')),
+            end_stream=False,
+        ),
+        SendData(
+            encode_message(DummyReply(value='pong2')),
+            end_stream=False,
+        ),
+        SendHeaders(
+            [('grpc-status', str(Status.OK.value))],
+            end_stream=True,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_no_response","@pytest.mark.asyncio
+async def test_no_response(stream, stub):
+    with pytest.raises(ProtocolError, match='requires a single message'):
+        async with stream:
+            pass
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto'),
+             ('grpc-status', str(Status.UNKNOWN.value)),
+             ('grpc-message', 'Internal Server Error')],
+            end_stream=True,
+        ),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_no_messages_for_stream","@pytest.mark.asyncio
+async def test_no_messages_for_stream(stream_streaming, stub):
+    async with stream_streaming:
+        await stream_streaming.send_initial_metadata()
+        await stream_streaming.send_trailing_metadata()
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto')],
+            end_stream=False,
+        ),
+        SendHeaders(
+            [('grpc-status', str(Status.OK.value))],
+            end_stream=True,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_successful_trailers_only_explicit","@pytest.mark.asyncio
+async def test_successful_trailers_only_explicit(stream_streaming, stub):
+    async with stream_streaming:
+        await stream_streaming.send_trailing_metadata()
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto'),
+             ('grpc-status', str(Status.OK.value))],
+            end_stream=True,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_successful_trailers_only_implicit","@pytest.mark.asyncio
+async def test_successful_trailers_only_implicit(stream_streaming, stub):
+    async with stream_streaming:
+        pass
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto'),
+             ('grpc-status', str(Status.OK.value))],
+            end_stream=True,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_error_before_send_initial_metadata","@pytest.mark.asyncio
+async def test_error_before_send_initial_metadata(stream, stub):
+    async with stream:
+        raise Exception()
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto'),
+             ('grpc-status', str(Status.UNKNOWN.value)),
+             ('grpc-message', 'Internal Server Error')],
+            end_stream=True,
+        ),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_error_after_send_initial_metadata","@pytest.mark.asyncio
+async def test_error_after_send_initial_metadata(stream, stub):
+    async with stream:
+        await stream.send_initial_metadata()
+        raise Exception()
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto')],
+            end_stream=False,
+        ),
+        SendHeaders(
+            [('grpc-status', str(Status.UNKNOWN.value)),
+             ('grpc-message', 'Internal Server Error')],
+            end_stream=True,
+        ),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_error_after_send_message","@pytest.mark.asyncio
+async def test_error_after_send_message(stream, stub):
+    async with stream:
+        await stream.send_message(DummyReply(value='pong'))
+        raise Exception()
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto')],
+            end_stream=False,
+        ),
+        SendData(
+            encode_message(DummyReply(value='pong')),
+            end_stream=False,
+        ),
+        SendHeaders(
+            [('grpc-status', str(Status.UNKNOWN.value)),
+             ('grpc-message', 'Internal Server Error')],
+            end_stream=True,
+        ),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_error_after_send_trailing_metadata","@pytest.mark.asyncio
+async def test_error_after_send_trailing_metadata(stream, stub):
+    async with stream:
+        await stream.send_message(DummyReply(value='pong'))
+        await stream.send_trailing_metadata()
+        raise Exception()
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto')],
+            end_stream=False,
+        ),
+        SendData(
+            encode_message(DummyReply(value='pong')),
+            end_stream=False,
+        ),
+        SendHeaders(
+            [('grpc-status', str(Status.OK.value))],
+            end_stream=True,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_grpc_error","@pytest.mark.asyncio
+async def test_grpc_error(stream, stub):
+    async with stream:
+        raise GRPCError(Status.DEADLINE_EXCEEDED)
+    assert stub.__events__ == [
+        SendHeaders(
+            [(':status', '200'),
+             ('content-type', 'application/grpc+proto'),
+             ('grpc-status', str(Status.DEADLINE_EXCEEDED.value))],
+            end_stream=True,
+        ),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_stream.py","test_send_trailing_metadata_on_closed_stream","@pytest.mark.asyncio
+async def test_send_trailing_metadata_on_closed_stream(loop, config):
+    client_h2c, server_h2c = create_connections()
+
+    to_client_transport = TransportStub(client_h2c)
+    to_server_transport = TransportStub(server_h2c)
+
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+
+    server_proc = EventsProcessor(DummyHandler(), server_conn)
+    client_proc = EventsProcessor(DummyHandler(), client_conn)
+
+    client_h2_stream = client_conn.create_stream()
+    await client_h2_stream.send_request(create_headers(),
+                                        _processor=client_proc)
+
+    request = DummyRequest(value='ping')
+    await send_message(client_h2_stream, ProtoCodec(), request, DummyRequest,
+                       end=True)
+    to_server_transport.process(server_proc)
+
+    server_h2_stream = server_proc.handler.stream
+    request_metadata = decode_metadata(server_proc.handler.headers)
+
+    send_trailing_metadata_done = False
+    async with mk_stream(server_h2_stream, request_metadata) as server_stream:
+        await server_stream.send_trailing_metadata(status=Status.UNKNOWN)
+        send_trailing_metadata_done = True
+
+    assert send_trailing_metadata_done"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_codec.py","test_rpc_call","@pytest.mark.asyncio
+async def test_rpc_call():
+    ctx = ClientServer(PingServiceHandler, PingServiceStub, codec=JSONCodec())
+    async with ctx as (handler, stub):
+        reply = await stub.UnaryUnary({'value': 'ping'})
+        assert reply == {'value': 'pong'}"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_codec.py","test_client_receive_json","@pytest.mark.asyncio
+async def test_client_receive_json():
+    cs = ClientStream(codec=JSONCodec())
+
+    async with cs.client_stream as stream:
+        await stream.send_request()
+        *_, request_received = cs.client_conn.to_server_transport.events()
+        await stream.send_message({'value': 'ping'}, end=True)
+
+        content_type = dict(request_received.headers)['content-type']
+        assert content_type == 'application/grpc+json'
+
+        cs.client_conn.server_h2c.send_headers(
+            request_received.stream_id,
+            [
+                (':status', '200'),
+                ('content-type', 'application/grpc+json'),
+            ],
+        )
+        cs.client_conn.server_h2c.send_data(
+            request_received.stream_id,
+            grpc_encode({'value': 'pong'}, None, JSONCodec()),
+        )
+        cs.client_conn.server_h2c.send_headers(
+            request_received.stream_id,
+            [
+                ('grpc-status', str(grpclib.const.Status.OK.value)),
+            ],
+            end_stream=True,
+        )
+        cs.client_conn.server_flush()
+
+        reply = await stream.recv_message()
+        assert reply == {'value': 'pong'}"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_codec.py","test_client_receive_invalid","@pytest.mark.asyncio
+async def test_client_receive_invalid():
+    cs = ClientStream(codec=JSONCodec())
+    with pytest.raises(GRPCError) as exc:
+        async with cs.client_stream as stream:
+            await stream.send_request()
+            *_, request_received = cs.client_conn.to_server_transport.events()
+
+            content_type = dict(request_received.headers)['content-type']
+            assert content_type == 'application/grpc+json'
+
+            cs.client_conn.server_h2c.send_headers(
+                request_received.stream_id,
+                [
+                    (':status', '200'),
+                    ('content-type', 'application/grpc+proto'),
+                ],
+            )
+            cs.client_conn.server_h2c.send_data(
+                request_received.stream_id,
+                grpc_encode({'value': 'pong'}, None, JSONCodec()),
+            )
+            cs.client_conn.server_h2c.send_headers(
+                request_received.stream_id,
+                [
+                    ('grpc-status', str(grpclib.const.Status.OK.value)),
+                ],
+                end_stream=True,
+            )
+            cs.client_conn.server_flush()
+
+            await stream.recv_message()
+    exc.match(r""Invalid content-type: 'application/grpc\+proto'"")"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_codec.py","test_server_receive_json","@pytest.mark.asyncio
+async def test_server_receive_json():
+    handler = PingServiceHandler()
+    mapping = handler.__mapping__()
+    path = next(iter(mapping.keys()))
+    ss = ServerStream(codec=JSONCodec(), path=path,
+                      content_type='application/grpc+json')
+    ss.server_conn.client_h2c.send_data(
+        ss.stream_id,
+        grpc_encode({'value': 'ping'}, None, JSONCodec()),
+        end_stream=True,
+    )
+    ss.server_conn.client_flush()
+    await grpclib.server.request_handler(
+        handler.__mapping__(),
+        ss.server_h2s,
+        ss.server_conn.server_proto.processor.handler.headers,
+        JSONCodec(),
+        None,
+        _DispatchServerEvents(),
+        lambda: None,
+    )
+    response_received, data_received, trailers_received, _ = \
+        ss.server_conn.to_client_transport.events()
+
+    assert dict(response_received.headers)[':status'] == '200'
+    assert dict(response_received.headers)['content-type'] == \
+        'application/grpc+json'
+
+    reply = grpc_decode(data_received.data, None, JSONCodec())
+    assert reply == {'value': 'pong'}
+
+    assert dict(trailers_received.headers)['grpc-status'] == '0'"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_codec.py","test_server_receive_invalid","@pytest.mark.asyncio
+async def test_server_receive_invalid():
+    handler = PingServiceHandler()
+    mapping = handler.__mapping__()
+    path = next(iter(mapping.keys()))
+    ss = ServerStream(codec=JSONCodec(), path=path,
+                      content_type='application/grpc+invalid')
+    ss.server_conn.client_h2c.send_data(
+        ss.stream_id,
+        grpc_encode({'value': 'ping'}, None, JSONCodec()),
+        end_stream=True,
+    )
+    ss.server_conn.client_flush()
+    await grpclib.server.request_handler(
+        handler.__mapping__(),
+        ss.server_h2s,
+        ss.server_conn.server_proto.processor.handler.headers,
+        JSONCodec(),
+        None,
+        _DispatchServerEvents(),
+        lambda: None,
+    )
+    response_received, _ = ss.server_conn.to_client_transport.events()
+
+    assert dict(response_received.headers)[':status'] == '415'
+    assert dict(response_received.headers)['grpc-status'] == '2'
+    assert dict(response_received.headers)['grpc-message'] == \
+        'Unacceptable content-type header'"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_codec.py","test_server_return_json","@pytest.mark.asyncio
+async def test_server_return_json():
+    ss = ServerStream(codec=JSONCodec())
+    ss.server_conn.client_h2c.send_data(
+        ss.stream_id,
+        grpc_encode({'value': 'ping'}, None, JSONCodec()),
+        end_stream=True,
+    )
+    ss.server_conn.client_flush()
+
+    message = await ss.server_stream.recv_message()
+    assert message == {'value': 'ping'}
+
+    await ss.server_stream.send_initial_metadata()
+    response_received, = ss.server_conn.to_client_transport.events()
+    content_type = dict(response_received.headers)['content-type']
+    assert content_type == 'application/grpc+json'
+
+    await ss.server_stream.send_message({'value': 'pong'})
+    data_received, = ss.server_conn.to_client_transport.events()
+
+    reply = grpc_decode(data_received.data, None, JSONCodec())
+    assert reply == {'value': 'pong'}"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_codec.py","test_proto_invalid_type","def test_proto_invalid_type():
+    codec = ProtoCodec()
+    assert codec.encode(DummyRequest(value='42'), DummyRequest) == \
+        DummyRequest(value='42').SerializeToString()
+    with pytest.raises(TypeError, match='Message must be of type'):
+        codec.encode(1, DummyRequest)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_ping.py","test_stream_cancel_by_ping","@pytest.mark.asyncio
+async def test_stream_cancel_by_ping():
+    ctx = ClientServer(PingServiceHandler, PingServiceStub,
+                       config=Configuration(_keepalive_time=0.01,
+                                            _keepalive_timeout=0.04,
+                                            _http2_max_pings_without_data=1,
+                                            ))
+
+    # should be successful
+    async with ctx as (handler, stub):
+        await stub.UnaryStream(DummyRequest(value='ping'))
+        assert ctx.channel._protocol.connection.last_ping_sent is not None
+
+    # disable ping ack logic to cause a timeout and disconnect
+    with patch.object(Connection, 'ping_ack_process') as p:
+        p.return_value = None
+        with pytest.raises(StreamTerminatedError, match='Connection lost'):
+            async with ctx as (handler, stub):
+                await stub.UnaryStream(DummyRequest(value='ping'))"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_testing.py","test_failure","@pytest.mark.asyncio
+async def test_failure():
+    class FailingService(DummyService):
+        async def UnaryUnary(self, stream):
+            raise GRPCError(Status.FAILED_PRECONDITION)
+
+    async with ChannelFor([FailingService()]) as channel:
+        stub = DummyServiceStub(channel)
+        with pytest.raises(GRPCError) as err:
+            await stub.UnaryUnary(DummyRequest(value='ping'))
+        assert err.value.status is Status.FAILED_PRECONDITION"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_testing.py","test_timeout","@pytest.mark.asyncio
+async def test_timeout(caplog):
+    async with ChannelFor([DummyService()]) as channel:
+        stub = DummyServiceStub(channel)
+        with pytest.raises(asyncio.TimeoutError):
+            await stub.UnaryUnary(DummyRequest(value='ping'), timeout=-1)
+    assert not caplog.records"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_status_details_codec.py","test_send_trailing_metadata","@pytest.mark.asyncio
+@pytest.mark.parametrize('svc_type', [ServiceType1, ServiceType2])
+async def test_send_trailing_metadata(loop, svc_type):
+    async with ChannelFor(
+        [svc_type()],
+        codec=ProtoCodec(),
+        status_details_codec=ProtoStatusDetailsCodec(),
+    ) as channel:
+        stub = DummyServiceStub(channel)
+        with pytest.raises(GRPCError) as error:
+            await stub.UnaryUnary(DummyRequest(value='ping'))
+    assert error.value.status is Status.DATA_LOSS
+    assert error.value.message == 'Some data loss occurred'
+    assert error.value.details == [
+        Help(links=[Help.Link(url='https://example.com')]),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_config.py","test_custom_default","def test_custom_default():
+    @dataclass
+    class Config:
+        param: Optional[int] = field(
+            default=_DEFAULT,
+            metadata={
+                'my-default': 42,
+            },
+        )
+
+    cfg = Config()
+    assert cfg.param is _DEFAULT
+
+    cfg_with_defaults = _with_defaults(cfg, 'my-default')
+    assert cfg_with_defaults.param == 42"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_config.py","test_default_none","def test_default_none():
+    @dataclass
+    class Config:
+        param: Optional[int] = field(
+            default=_DEFAULT,
+            metadata={
+                'my-default': None,
+            },
+        )
+
+    cfg = Config()
+    assert cfg.param is _DEFAULT
+
+    cfg_with_defaults = _with_defaults(cfg, 'my-default')
+    assert cfg_with_defaults.param is None"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_config.py","test_validate","def test_validate():
+    @dataclass
+    class Config:
+        foo: Optional[float] = field(
+            default=None,
+            metadata={
+                'validate': _optional(_chain(_of_type(int, float), _positive)),
+            },
+        )
+
+        def __post_init__(self):
+            _validate(self)
+
+    assert Config().foo is None
+    assert Config(foo=0.123).foo == 0.123
+    assert Config(foo=42).foo == 42
+
+    with pytest.raises(ValueError, match='""foo"" should be positive'):
+        assert Config(foo=0)
+
+    with pytest.raises(TypeError, match='""foo"" should be of type'):
+        assert Config(foo='a')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_config.py","test_change_default","def test_change_default():
+    # all params should be optional
+    @dataclass
+    class Config:
+        foo: Optional[float] = field(
+            default=cast(None, _DEFAULT),
+            metadata={
+                'validate': _optional(_chain(_of_type(int, float), _positive)),
+                'test-default': 1234,
+            },
+        )
+
+        def __post_init__(self):
+            _validate(self)
+
+    assert _with_defaults(Config(foo=1), 'test-default').foo == 1"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_check_unknown_service","@pytest.mark.asyncio
+async def test_check_unknown_service():
+    svc = Service()
+    health = Health({svc: []})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        with pytest.raises(GRPCError) as err:
+            await stub.Check(HealthCheckRequest(service='Unknown'))
+        assert err.value.status == Status.NOT_FOUND"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_check_zero_checks","@pytest.mark.asyncio
+async def test_check_zero_checks():
+    svc = Service()
+    health = Health({svc: []})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        response = await stub.Check(HealthCheckRequest(service=SERVICE_NAME))
+        assert response == HealthCheckResponse(
+            status=HealthCheckResponse.SERVING,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_check_service_check","@pytest.mark.asyncio
+@pytest.mark.parametrize('v1, v2, status', [
+    (None, None, HealthCheckResponse.UNKNOWN),
+    (True, False, HealthCheckResponse.NOT_SERVING),
+    (False, True, HealthCheckResponse.NOT_SERVING),
+    (True, True, HealthCheckResponse.SERVING)
+])
+async def test_check_service_check(loop, v1, v2, status):
+    svc = Service()
+    c1 = Check()
+    c2 = Check()
+    health = Health({svc: [
+        ServiceCheck(c1, check_ttl=0),
+        ServiceCheck(c2, check_ttl=0),
+    ]})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        c1.__current_status__ = v1
+        c2.__current_status__ = v2
+        response = await stub.Check(HealthCheckRequest(service=SERVICE_NAME))
+        assert response == HealthCheckResponse(status=status)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_check_service_status","@pytest.mark.asyncio
+@pytest.mark.parametrize('v1, v2, status', [
+    (None, None, HealthCheckResponse.UNKNOWN),
+    (True, False, HealthCheckResponse.NOT_SERVING),
+    (False, True, HealthCheckResponse.NOT_SERVING),
+    (True, True, HealthCheckResponse.SERVING)
+])
+async def test_check_service_status(v1, v2, status):
+    svc = Service()
+    s1 = ServiceStatus()
+    s2 = ServiceStatus()
+    health = Health({svc: [s1, s2]})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        s1.set(v1)
+        s2.set(v2)
+        response = await stub.Check(HealthCheckRequest(service=SERVICE_NAME))
+        assert response == HealthCheckResponse(status=status)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_watch_unknown_service","@pytest.mark.asyncio
+async def test_watch_unknown_service():
+    svc = Service()
+    health = Health({svc: []})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        async with stub.Watch.open() as stream:
+            await stream.send_message(HealthCheckRequest(service='Unknown'),
+                                      end=True)
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.SERVICE_UNKNOWN,
+            )
+            try:
+                async with async_timeout.timeout(0.01):
+                    assert not await stream.recv_message()
+            except asyncio.TimeoutError:
+                pass
+            await stream.cancel()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_watch_zero_checks","@pytest.mark.asyncio
+async def test_watch_zero_checks():
+    svc = Service()
+    health = Health({svc: []})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        async with stub.Watch.open() as stream:
+            await stream.send_message(HealthCheckRequest(service=SERVICE_NAME),
+                                      end=True)
+            response = await stream.recv_message()
+            assert response == HealthCheckResponse(
+                status=HealthCheckResponse.SERVING,
+            )
+            try:
+                async with async_timeout.timeout(0.01):
+                    assert not await stream.recv_message()
+            except asyncio.TimeoutError:
+                pass
+            await stream.cancel()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_watch_service_check","@pytest.mark.asyncio
+async def test_watch_service_check():
+    svc = Service()
+    c1 = Check()
+    c2 = Check()
+    health = Health({svc: [
+        ServiceCheck(c1, check_ttl=0.001),
+        ServiceCheck(c2, check_ttl=0.001),
+    ]})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        async with stub.Watch.open() as stream:
+            await stream.send_message(HealthCheckRequest(service=SERVICE_NAME),
+                                      end=True)
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.UNKNOWN,
+            )
+
+            # check that there are no unnecessary messages
+            try:
+                async with async_timeout.timeout(0.01):
+                    assert not await stream.recv_message()
+            except asyncio.TimeoutError:
+                pass
+
+            c1.__current_status__ = True
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.NOT_SERVING,
+            )
+            c2.__current_status__ = True
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.SERVING,
+            )
+            c1.__current_status__ = False
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.NOT_SERVING,
+            )
+            c1.__current_status__ = True
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.SERVING,
+            )
+            await stream.cancel()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_service.py","test_watch_service_status","@pytest.mark.asyncio
+async def test_watch_service_status():
+    svc = Service()
+    s1 = ServiceStatus()
+    s2 = ServiceStatus()
+    health = Health({svc: [s1, s2]})
+    async with ChannelFor([svc, health]) as channel:
+        stub = HealthStub(channel)
+        async with stub.Watch.open() as stream:
+            await stream.send_message(HealthCheckRequest(service=SERVICE_NAME),
+                                      end=True)
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.UNKNOWN,
+            )
+            s1.set(True)
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.NOT_SERVING,
+            )
+            s2.set(True)
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.SERVING,
+            )
+            s1.set(False)
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.NOT_SERVING,
+            )
+            s1.set(True)
+            assert await stream.recv_message() == HealthCheckResponse(
+                status=HealthCheckResponse.SERVING,
+            )
+
+            # check that there are no unnecessary messages if status isn't
+            # changed
+            s1.set(True)
+            try:
+                async with async_timeout.timeout(0.01):
+                    assert not await stream.recv_message()
+            except asyncio.TimeoutError:
+                pass
+
+            await stream.cancel()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_compat.py","test_const_imports","def test_const_imports():
+    const = importlib.import_module('grpclib.const')
+    assert getattr(const, 'Cardinality')
+    assert getattr(const, 'Handler')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_compat.py","test_client_imports","def test_client_imports():
+    client = importlib.import_module('grpclib.client')
+    assert getattr(client, 'Channel')
+    assert getattr(client, 'UnaryUnaryMethod')
+    assert getattr(client, 'UnaryStreamMethod')
+    assert getattr(client, 'StreamUnaryMethod')
+    assert getattr(client, 'StreamStreamMethod')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_invalid_method","@pytest.mark.asyncio
+async def test_invalid_method():
+    stream = H2StreamStub()
+    headers = [(':method', 'GET')]
+    await call_handler({}, stream, headers)
+    assert stream.__events__ == [
+        SendHeaders(headers=[(':status', '405')], end_stream=True),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_missing_te_header","@pytest.mark.asyncio
+async def test_missing_te_header():
+    stream = H2StreamStub()
+    headers = [
+        (':method', 'POST'),
+        ('content-type', 'application/grpc'),
+    ]
+    await call_handler({}, stream, headers)
+    assert stream.__events__ == [
+        SendHeaders(headers=[
+            (':status', '400'),
+            ('grpc-status', '2'),  # UNKNOWN
+            ('grpc-message', 'Required ""te: trailers"" header is missing'),
+        ], end_stream=True),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_missing_content_type","@pytest.mark.asyncio
+async def test_missing_content_type():
+    stream = H2StreamStub()
+    headers = [
+        (':method', 'POST'),
+    ]
+    await call_handler({}, stream, headers)
+    assert stream.__events__ == [
+        SendHeaders(headers=[
+            (':status', '415'),
+            ('grpc-status', '2'),  # UNKNOWN
+            ('grpc-message', 'Missing content-type header'),
+        ], end_stream=True),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_invalid_content_type","@pytest.mark.asyncio
+@pytest.mark.parametrize('content_type',
+                         ['text/invalid', 'application/grpc+invalid'])
+async def test_invalid_content_type(content_type):
+    stream = H2StreamStub()
+    headers = [
+        (':method', 'POST'),
+        ('content-type', content_type),
+    ]
+    await call_handler({}, stream, headers)
+    assert stream.__events__ == [
+        SendHeaders(headers=[
+            (':status', '415'),
+            ('grpc-status', '2'),  # UNKNOWN
+            ('grpc-message', 'Unacceptable content-type header'),
+        ], end_stream=True),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_missing_method","@pytest.mark.asyncio
+async def test_missing_method():
+    stream = H2StreamStub()
+    headers = [
+        (':method', 'POST'),
+        (':path', '/missing.Service/MissingMethod'),
+        ('te', 'trailers'),
+        ('content-type', 'application/grpc'),
+    ]
+    await call_handler({}, stream, headers)
+    assert stream.__events__ == [
+        SendHeaders(headers=[
+            (':status', '200'),
+            ('grpc-status', '12'),  # UNIMPLEMENTED
+            ('grpc-message', 'Method not found'),
+        ], end_stream=True),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_invalid_grpc_timeout","@pytest.mark.asyncio
+async def test_invalid_grpc_timeout():
+    stream = H2StreamStub()
+    headers = [
+        (':method', 'POST'),
+        (':path', '/package.Service/Method'),
+        ('te', 'trailers'),
+        ('content-type', 'application/grpc'),
+        ('grpc-timeout', 'invalid'),
+    ]
+    methods = {'/package.Service/Method': object()}
+    await call_handler(methods, stream, headers)
+    assert stream.__events__ == [
+        SendHeaders(headers=[
+            (':status', '200'),
+            ('grpc-status', '2'),  # UNKNOWN
+            ('grpc-message', 'Invalid grpc-timeout header'),
+        ], end_stream=True),
+        Reset(ErrorCodes.NO_ERROR),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_deadline","@pytest.mark.asyncio
+@pytest.mark.parametrize('handler, level, msg, exc_type, exc_text', [
+    (
+        _slow_handler, 'INFO', 'Deadline exceeded',
+        None, None,
+    ),
+    (
+        _broken_handler, 'ERROR', 'Failed to handle cancellation',
+        asyncio.TimeoutError, 'This was unexpected',
+    ),
+])
+async def test_deadline(
+    loop, caplog, handler, level, msg, exc_type, exc_text
+):
+    caplog.set_level(logging.INFO)
+    stream = H2StreamStub()
+    headers = [
+        (':method', 'POST'),
+        (':path', '/package.Service/Method'),
+        ('te', 'trailers'),
+        ('content-type', 'application/grpc'),
+        ('grpc-timeout', '50m'),
+    ]
+    methods = {'/package.Service/Method': Handler(
+        handler,
+        Cardinality.UNARY_UNARY,
+        DummyRequest,
+        DummyReply,
+    )}
+    task = loop.create_task(
+        call_handler(methods, stream, headers)
+    )
+    await asyncio.wait_for(task, 0.1)  # should be bigger than grpc-timeout
+    assert stream.__events__ == [
+        SendHeaders(headers=[
+            (':status', '200'),
+            ('content-type', 'application/grpc+proto'),
+            ('grpc-status', str(Status.DEADLINE_EXCEEDED.value)),
+        ], end_stream=True),
+        Reset(ErrorCodes.NO_ERROR),
+    ]
+
+    record, = caplog.records
+    assert record.name == 'grpclib.server'
+    assert record.levelname == level
+    assert msg in record.getMessage()
+    if exc_type is not None:
+        assert record.exc_info[0] is exc_type
+    if exc_text is not None:
+        assert exc_text in record.exc_text"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_handler.py","test_client_reset","@pytest.mark.asyncio
+@pytest.mark.parametrize('handler, level, msg, exc_type, exc_text', [
+    (
+        _slow_handler, 'INFO',
+        'Request was cancelled: Stream reset by remote party',
+        None, None,
+    ),
+    (
+        _broken_handler, 'ERROR',
+        'Failed to handle cancellation',
+        StreamTerminatedError, 'This was unexpected',
+    ),
+])
+async def test_client_reset(
+    loop, caplog, handler, level, msg, exc_type, exc_text, config,
+):
+    caplog.set_level(logging.INFO)
+    client_h2c, server_h2c = create_connections()
+
+    to_client_transport = TransportStub(client_h2c)
+    to_server_transport = TransportStub(server_h2c)
+
+    client_conn = Connection(client_h2c, to_server_transport, config=config)
+    server_conn = Connection(server_h2c, to_client_transport, config=config)
+
+    server_proc = EventsProcessor(DummyHandler(), server_conn)
+    client_proc = EventsProcessor(DummyHandler(), client_conn)
+
+    client_h2_stream = client_conn.create_stream()
+    await client_h2_stream.send_request(
+        create_headers(path='/package.Service/Method'),
+        _processor=client_proc,
+    )
+    to_server_transport.process(server_proc)
+
+    server_h2_stream = server_proc.handler.stream
+
+    methods = {'/package.Service/Method': Handler(
+        handler,
+        Cardinality.UNARY_UNARY,
+        DummyRequest,
+        DummyReply,
+    )}
+    task = loop.create_task(
+        call_handler(methods, server_h2_stream, server_proc.handler.headers)
+    )
+    await asyncio.wait([task], timeout=0.001)
+    await client_h2_stream.reset()
+    to_server_transport.process(server_proc)
+    await asyncio.wait_for(task, 0.1)
+
+    record, = caplog.records
+    assert record.name == 'grpclib.server'
+    assert record.levelname == level
+    assert msg in record.getMessage()
+    if exc_type is not None:
+        assert record.exc_info[0] is exc_type
+    if exc_text is not None:
+        assert exc_text in record.exc_text"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_reflection.py","test_file_by_filename_response","@pytest.mark.asyncio
+async def test_file_by_filename_response(channel):
+    r1, r2 = await ServerReflectionStub(channel).ServerReflectionInfo([
+        ServerReflectionRequest(
+            file_by_filename=DESCRIPTOR.name,
+        ),
+        ServerReflectionRequest(
+            file_by_filename='my/missing.proto',
+        ),
+    ])
+
+    proto_bytes, = r1.file_descriptor_response.file_descriptor_proto
+    dummy_proto = FileDescriptorProto()
+    dummy_proto.ParseFromString(proto_bytes)
+    assert dummy_proto.name == DESCRIPTOR.name
+    assert dummy_proto.package == DESCRIPTOR.package
+
+    assert r2 == ServerReflectionResponse(
+        error_response=ErrorResponse(
+            error_code=5,
+            error_message='not found',"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_reflection.py","test_file_containing_symbol_response","@pytest.mark.asyncio
+async def test_file_containing_symbol_response(channel):
+    r1, r2 = await ServerReflectionStub(channel).ServerReflectionInfo([
+        ServerReflectionRequest(
+            file_containing_symbol=(
+                DESCRIPTOR.message_types_by_name['DummyRequest'].full_name
+            ),
+        ),
+        ServerReflectionRequest(
+            file_containing_symbol='unknown.Symbol',
+        ),
+    ])
+
+    proto_bytes, = r1.file_descriptor_response.file_descriptor_proto
+    dummy_proto = FileDescriptorProto()
+    dummy_proto.ParseFromString(proto_bytes)
+    assert dummy_proto.name == DESCRIPTOR.name
+    assert dummy_proto.package == DESCRIPTOR.package
+
+    assert r2 == ServerReflectionResponse(
+        error_response=ErrorResponse(
+            error_code=5,
+            error_message='not found',"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_reflection.py","test_list_services_response","@pytest.mark.asyncio
+async def test_list_services_response(channel):
+    r1, = await ServerReflectionStub(channel).ServerReflectionInfo([
+        ServerReflectionRequest(
+            list_services='',
+        ),
+    ])
+
+    service, = r1.list_services_response.service
+    assert service.name == DESCRIPTOR.services_by_name['DummyService'].full_name"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_events.py","_test","async def _test(event_type):
+    service = DummyService()
+    events = []
+
+    async def callback(event_):
+        events.append(event_)
+
+    channel_for = ChannelFor([service])
+    async with channel_for as channel:
+        server = channel_for._server
+
+        listen(server, event_type, callback)
+        stub = DummyServiceStub(channel)
+        reply = await stub.UnaryUnary(DummyRequest(value='ping'),
+                                      timeout=1,
+                                      metadata={'foo': 'bar'})
+        assert reply == DummyReply(value='pong')
+
+    event, = events
+    return event"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_events.py","test_recv_request","@pytest.mark.asyncio
+async def test_recv_request():
+    event = await _test(RecvRequest)
+    assert event.metadata == MultiDict({'foo': 'bar'})
+    assert event.method_name == '/dummy.DummyService/UnaryUnary'
+    assert event.deadline.time_remaining() > 0
+    assert event.content_type == 'application/grpc'
+    assert event.user_agent.startswith('grpc-python-grpclib')
+    assert event.peer.addr() is None"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_events.py","test_recv_message","@pytest.mark.asyncio
+async def test_recv_message():
+    event = await _test(RecvMessage)
+    assert event.message == DummyRequest(value='ping')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_events.py","test_send_message","@pytest.mark.asyncio
+async def test_send_message():
+    event = await _test(SendMessage)
+    assert event.message == DummyReply(value='pong')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_events.py","test_send_initial_metadata","@pytest.mark.asyncio
+async def test_send_initial_metadata():
+    event = await _test(SendInitialMetadata)
+    assert event.metadata == MultiDict({'initial': 'true'})"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server_events.py","test_send_trailing_metadata","@pytest.mark.asyncio
+async def test_send_trailing_metadata():
+    event = await _test(SendTrailingMetadata)
+    assert event.metadata == MultiDict({'trailing': 'true'})
+    assert event.status is Status.OK
+    assert event.status_message == ""Everything is OK""
+    assert isinstance(event.status_details[0], ResourceInfo)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_health_check.py","test_zero_monotonic_time","@pytest.mark.asyncio
+async def test_zero_monotonic_time():
+
+    async def check():
+        return True
+
+    def fake_monotonic():
+        return 0.0
+
+    check_mock = Mock(side_effect=check)
+    service_check = ServiceCheck(check_mock, check_ttl=1, check_timeout=0.001)
+
+    with patch('{}.time'.format(ServiceCheck.__module__)) as time:
+        time.monotonic.side_effect = fake_monotonic
+        assert time.monotonic.call_count == 0
+        # first check
+        await service_check.__check__()
+        assert time.monotonic.call_count == 1
+        check_mock.assert_called_once()
+        assert service_check.__status__() is True
+        # second check
+        await service_check.__check__()  # should be cached
+        assert time.monotonic.call_count == 2
+        check_mock.assert_called_once()
+        assert service_check.__status__() is True"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_events.py","_test","async def _test(event_type, *, fail=False):
+    service = DummyService(fail)
+    events = []
+
+    async def callback(event_):
+        events.append(event_)
+
+    async with ChannelFor([service]) as channel:
+        listen(channel, event_type, callback)
+        stub = DummyServiceStub(channel)
+
+        ctx = pytest.raises(GRPCError) if fail else nullcontext()
+        with ctx:
+            reply = await stub.UnaryUnary(DummyRequest(value='ping'),
+                                          timeout=1,
+                                          metadata={'request': 'true'})
+            assert reply == DummyReply(value='pong')
+
+    event, = events
+    return event"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_events.py","test_send_request","@pytest.mark.asyncio
+async def test_send_request():
+    event = await _test(SendRequest)
+    assert event.metadata == MultiDict({'request': 'true'})
+    assert event.method_name == '/dummy.DummyService/UnaryUnary'
+    assert event.deadline.time_remaining() > 0
+    assert event.content_type == 'application/grpc'"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_events.py","test_send_message","@pytest.mark.asyncio
+async def test_send_message():
+    event = await _test(SendMessage)
+    assert event.message == DummyRequest(value='ping')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_events.py","test_recv_message","@pytest.mark.asyncio
+async def test_recv_message():
+    event = await _test(RecvMessage)
+    assert event.message == DummyReply(value='pong')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_events.py","test_recv_initial_metadata","@pytest.mark.asyncio
+async def test_recv_initial_metadata():
+    event = await _test(RecvInitialMetadata)
+    assert event.metadata == MultiDict({'initial': 'true'})"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_events.py","test_recv_trailing_metadata","@pytest.mark.asyncio
+async def test_recv_trailing_metadata():
+    event = await _test(RecvTrailingMetadata, fail=True)
+    assert event.metadata == MultiDict({'trailing': 'true'})
+    assert event.status is Status.NOT_FOUND
+    assert event.status_message == ""Everything is not OK""
+    assert isinstance(event.status_details[0], ResourceInfo)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_unary_unary_simple","@pytest.mark.asyncio
+async def test_unary_unary_simple():
+    async with ClientServer() as (handler, stub):
+        reply = await stub.UnaryUnary(DummyRequest(value='ping'))
+        assert reply == DummyReply(value='pong')
+        assert handler.log == [DummyRequest(value='ping')]"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_unary_unary_simple_unix","@pytest.mark.asyncio
+async def test_unary_unary_simple_unix():
+    async with UnixClientServer() as (handler, stub):
+        reply = await stub.UnaryUnary(DummyRequest(value='ping'))
+        assert reply == DummyReply(value='pong')
+        assert handler.log == [DummyRequest(value='ping')]"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_unary_unary_advanced","@pytest.mark.asyncio
+async def test_unary_unary_advanced():
+    async with ClientServer() as (handler, stub):
+        async with stub.UnaryUnary.open() as stream:
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+            reply = await stream.recv_message()
+        assert reply == DummyReply(value='pong')
+        assert handler.log == [DummyRequest(value='ping')]"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_unary_stream_simple","@pytest.mark.asyncio
+async def test_unary_stream_simple():
+    async with ClientServer() as (handler, stub):
+        replies = await stub.UnaryStream(DummyRequest(value='ping'))
+        assert handler.log == [DummyRequest(value='ping')]
+        assert replies == [DummyReply(value='pong1'),
+                           DummyReply(value='pong2'),
+                           DummyReply(value='pong3')]"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_unary_stream_advanced","@pytest.mark.asyncio
+async def test_unary_stream_advanced():
+    async with ClientServer() as (handler, stub):
+        async with stub.UnaryStream.open() as stream:
+            await stream.send_message(DummyRequest(value='ping'), end=True)
+            replies = [message async for message in stream]
+        assert handler.log == [DummyRequest(value='ping')]
+        assert replies == [DummyReply(value='pong1'),
+                           DummyReply(value='pong2'),
+                           DummyReply(value='pong3')]"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_stream_unary_simple","@pytest.mark.asyncio
+async def test_stream_unary_simple():
+    async with ClientServer() as (handler, stub):
+        reply = await stub.StreamUnary([
+            DummyRequest(value='ping1'),
+            DummyRequest(value='ping2'),
+            DummyRequest(value='ping3'),
+        ])
+        assert reply == DummyReply(value='pong')
+        assert handler.log == [DummyRequest(value='ping1'),
+                               DummyRequest(value='ping2'),
+                               DummyRequest(value='ping3')]"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_stream_unary_advanced","@pytest.mark.asyncio
+async def test_stream_unary_advanced():
+    async with ClientServer() as (handler, stub):
+        async with stub.StreamUnary.open() as stream:
+            await stream.send_message(DummyRequest(value='ping1'))
+            await stream.send_message(DummyRequest(value='ping2'))
+            await stream.send_message(DummyRequest(value='ping3'), end=True)
+            reply = await stream.recv_message()
+        assert reply == DummyReply(value='pong')
+        assert handler.log == [DummyRequest(value='ping1'),
+                               DummyRequest(value='ping2'),
+                               DummyRequest(value='ping3')]"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_stream_stream_simple","@pytest.mark.asyncio
+async def test_stream_stream_simple():
+    async with ClientServer() as (_, stub):
+        replies = await stub.StreamStream([
+            DummyRequest(value='foo'),
+            DummyRequest(value='bar'),
+            DummyRequest(value='baz'),
+        ])
+        assert replies == [
+            DummyReply(value='foo'),
+            DummyReply(value='bar'),
+            DummyReply(value='baz'),"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_functional.py","test_stream_stream_advanced","@pytest.mark.asyncio
+async def test_stream_stream_advanced():
+    async with ClientServer() as (_, stub):
+        async with stub.StreamStream.open() as stream:
+            await stream.send_message(DummyRequest(value='foo'))
+            assert await stream.recv_message() == DummyReply(value='foo')
+
+            await stream.send_message(DummyRequest(value='bar'))
+            assert await stream.recv_message() == DummyReply(value='bar')
+
+            await stream.send_message(DummyRequest(value='baz'), end=True)
+            assert await stream.recv_message() == DummyReply(value='baz')
+
+            assert await stream.recv_message() is None"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_stats.py","test_channel_calls_succeeded","@pytest.mark.asyncio
+async def test_channel_calls_succeeded():
+    async with ChannelFor([WorkingDummyService()]) as channel:
+        stub = DummyServiceStub(channel)
+
+        assert channel._calls_started == 0
+        assert channel._calls_succeeded == 0
+        assert channel._calls_failed == 0
+        assert channel._last_call_started is None
+
+        reply = await stub.UnaryUnary(DummyRequest(value='whatever'))
+
+        assert channel._calls_started == 1
+        assert channel._calls_succeeded == 1
+        assert channel._calls_failed == 0
+        _is_recent(channel._last_call_started)
+
+    assert reply == DummyReply(value='test')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_stats.py","test_channel_calls_failed","@pytest.mark.asyncio
+async def test_channel_calls_failed():
+    async with ChannelFor([FailingDummyService()]) as channel:
+        stub = DummyServiceStub(channel)
+
+        assert channel._calls_started == 0
+        assert channel._calls_succeeded == 0
+        assert channel._calls_failed == 0
+        assert channel._last_call_started is None
+
+        with pytest.raises(GRPCError, match='Internal Server Error'):
+            await stub.UnaryUnary(DummyRequest(value='whatever'))
+
+        assert channel._calls_started == 1
+        assert channel._calls_succeeded == 0
+        assert channel._calls_failed == 1
+        _is_recent(channel._last_call_started)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_stats.py","test_channel_ready","@pytest.mark.asyncio
+async def test_channel_ready(loop):
+    async with ChannelFor([WorkingDummyService()]) as _channel:
+        channel = Channel()
+
+        async def _create_connection():
+            await asyncio.sleep(0.01)
+            return _channel._protocol
+
+        with patch.object(channel, '_create_connection', _create_connection):
+            assert channel._state is _ChannelState.IDLE
+            connect_task = loop.create_task(channel.__connect__())
+            await asyncio.sleep(0.001)
+            assert channel._state is _ChannelState.CONNECTING
+            await connect_task
+            assert channel._state is _ChannelState.READY
+
+        channel.close()
+        assert channel._state is _ChannelState.IDLE"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_stats.py","test_channel_transient_failure","@pytest.mark.asyncio
+async def test_channel_transient_failure(loop):
+    channel = Channel()
+
+    async def _create_connection():
+        await asyncio.sleep(0.01)
+        raise asyncio.TimeoutError('try again later')
+
+    with patch.object(channel, '_create_connection', _create_connection):
+        assert channel._state is _ChannelState.IDLE
+        connect_task = loop.create_task(channel.__connect__())
+        await asyncio.sleep(0.001)
+        assert channel._state is _ChannelState.CONNECTING
+        with pytest.raises(asyncio.TimeoutError, match='try again later'):
+            await connect_task
+        assert channel._state is _ChannelState.TRANSIENT_FAILURE
+
+    channel.close()
+    assert channel._state is _ChannelState.IDLE"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_stats.py","test_client_stream","@pytest.mark.asyncio
+async def test_client_stream():
+    async with ChannelFor([WorkingDummyService()]) as channel:
+        proto = await channel.__connect__()
+        stub = DummyServiceStub(channel)
+
+        async with stub.UnaryUnary.open() as stream:
+            assert proto.connection.streams_started == 0
+            assert proto.connection.streams_succeeded == 0
+            assert proto.connection.streams_failed == 0
+            assert proto.connection.last_stream_created is None
+            await stream.send_request()
+            _is_recent(stream._stream.created)
+
+            assert proto.connection.streams_started == 1
+            assert proto.connection.streams_succeeded == 0
+            assert proto.connection.streams_failed == 0
+            _is_recent(proto.connection.last_stream_created)
+
+            assert stream._messages_sent == 0
+            assert stream._stream.data_sent == 0
+            assert proto.connection.messages_sent == 0
+            assert proto.connection.data_sent == 0
+            assert proto.connection.last_message_sent is None
+            await stream.send_message(DummyRequest(value='whatever'), end=True)
+            assert stream._messages_sent == 1
+            assert stream._stream.data_sent > 0
+            assert proto.connection.messages_sent == 1
+            assert proto.connection.data_sent > 0
+            _is_recent(proto.connection.last_message_sent)
+            _is_recent(proto.connection.last_data_sent)
+
+            assert stream._messages_received == 0
+            assert stream._stream.data_received == 0
+            assert proto.connection.messages_received == 0
+            assert proto.connection.data_received == 0
+            assert proto.connection.last_message_received is None
+            reply = await stream.recv_message()
+            assert stream._messages_received == 1
+            assert stream._stream.data_received > 0
+            assert proto.connection.messages_received == 1
+            assert proto.connection.data_received > 0
+            _is_recent(proto.connection.last_message_received)
+            _is_recent(proto.connection.last_data_received)
+
+        assert proto.connection.streams_started == 1
+        assert proto.connection.streams_succeeded == 1
+        assert proto.connection.streams_failed == 0
+    assert reply == DummyReply(value='test')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_stats.py","test_server_stream","@pytest.mark.asyncio
+async def test_server_stream():
+    cf = ChannelFor([WorkingDummyService()])
+    async with cf as channel:
+        stub = DummyServiceStub(channel)
+        handler, = cf._server._handlers
+
+        async with stub.UnaryUnary.open() as stream:
+            await stream.send_request()
+            while not handler._tasks:
+                await asyncio.sleep(0.001)
+
+            server_stream, = handler._tasks.keys()
+            _is_recent(server_stream.created)
+            assert server_stream.data_sent == 0
+            assert server_stream.data_received == 0
+            assert server_stream.connection.messages_sent == 0
+            assert server_stream.connection.messages_received == 0
+            assert server_stream.connection.last_message_sent is None
+            assert server_stream.connection.last_message_received is None
+            await stream.send_message(DummyRequest(value='whatever'), end=True)
+            await asyncio.sleep(0.01)
+            assert server_stream.data_sent > 0
+            assert server_stream.data_received > 0
+            assert server_stream.connection.messages_sent == 1
+            assert server_stream.connection.messages_received == 1
+            _is_recent(server_stream.connection.last_data_sent)
+            _is_recent(server_stream.connection.last_data_received)
+            _is_recent(server_stream.connection.last_message_sent)
+            _is_recent(server_stream.connection.last_message_received)
+
+            reply = await stream.recv_message()
+    assert reply == DummyReply(value='test')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_channel.py","test_concurrent_connect","@pytest.mark.asyncio
+async def test_concurrent_connect(loop):
+    count = 5
+    reqs = [DummyRequest(value=""ping"") for _ in range(count)]
+    reps = [DummyReply(value=""pong"") for _ in range(count)]
+
+    channel = Channel()
+
+    async def create_connection(*args, **kwargs):
+        await asyncio.sleep(0.01)
+        return None, _channel._protocol
+
+    stub = DummyServiceStub(channel)
+    async with ChannelFor([DummyService()]) as _channel:
+        with patch.object(loop, ""create_connection"") as po:
+            po.side_effect = create_connection
+            tasks = [loop.create_task(stub.UnaryUnary(req)) for req in reqs]
+            replies = await asyncio.gather(*tasks)
+    assert replies == reps
+    po.assert_awaited_once_with(
+        ANY,
+        ""127.0.0.1"",
+        50051,
+        ssl=None,
+        server_hostname=None,"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_channel.py","test_default_ssl_context","def test_default_ssl_context():
+    with patch.object(certifi, ""where"", return_value=certifi.where()) as po:
+        certifi_channel = Channel(ssl=True)
+        assert certifi_channel._ssl
+        po.assert_called_once()
+
+    with patch.object(certifi, ""where"", side_effect=AssertionError):
+        with patch.dict(""sys.modules"", {""certifi"": None}):
+            system_channel = Channel(ssl=True)
+            assert system_channel._ssl"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_client_channel.py","test_default_verify_paths","def test_default_verify_paths():
+    with contextlib.ExitStack() as cm:
+        tf = cm.enter_context(tempfile.NamedTemporaryFile()).name
+        td = cm.enter_context(tempfile.TemporaryDirectory())
+        po = cm.enter_context(
+            patch.object(ssl.SSLContext, ""load_verify_locations""),
+        )
+        cm.enter_context(
+            patch.dict(""os.environ"", SSL_CERT_FILE=tf, SSL_CERT_DIR=td),
+        )
+        default_verify_paths = ssl.get_default_verify_paths()
+        channel = Channel(ssl=default_verify_paths)
+        assert channel._ssl
+        po.assert_called_once_with(tf, td, None)
+        assert default_verify_paths.openssl_cafile_env == ""SSL_CERT_FILE""
+        assert default_verify_paths.openssl_capath_env == ""SSL_CERT_DIR"""
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_server.py","test_wait_closed","@pytest.mark.asyncio
+async def test_wait_closed(loop: asyncio.AbstractEventLoop):
+    server = Server([])
+    task = loop.create_task(serve_forever(server))
+    done, pending = await asyncio.wait([task], timeout=0.1)
+    assert pending and not done
+    server.close()
+    done, pending = await asyncio.wait([task], timeout=0.1)
+    assert done and not pending"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_events.py","test_empty_event","def test_empty_event():
+    class MyEvent(_Event, metaclass=_EventMeta):
+        pass
+
+    assert MyEvent.__slots__ == ()
+    assert MyEvent.__readonly__ == frozenset()
+    assert MyEvent.__payload__ == ()
+
+    event = MyEvent()
+    with pytest.raises(AttributeError, match='has no attribute'):
+        event.foo = 5"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_events.py","test_frozen_event","def test_frozen_event():
+    class MyEvent(_Event, metaclass=_EventMeta):
+        a: int
+        b: str
+
+    assert set(MyEvent.__slots__) == {'a', 'b'}
+    assert MyEvent.__readonly__ == frozenset(('a', 'b'))
+    assert MyEvent.__payload__ == ()
+
+    event = MyEvent(a=1, b='2')
+    assert event.a == 1
+    assert event.b == '2'
+    with pytest.raises(AttributeError, match='^Read-only'):
+        event.a = 5"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_events.py","test_mixed_event","def test_mixed_event():
+    class MyEvent(_Event, metaclass=_EventMeta):
+        __payload__ = ('a', 'b')
+        a: int
+        b: str
+        c: int
+        d: str
+
+    assert set(MyEvent.__slots__) == {'a', 'b', 'c', 'd'}
+    assert MyEvent.__readonly__ == frozenset(('c', 'd'))
+    assert MyEvent.__payload__ == ('a', 'b')
+
+    event = MyEvent(a=1, b='2', c=3, d='4')
+    assert event.a == 1
+    assert event.b == '2'
+    assert event.c == 3
+    assert event.d == '4'
+    event.a = 5
+    event.b = '6'
+    assert event.a == 5
+    assert event.b == '6'
+    with pytest.raises(AttributeError, match='^Read-only'):
+        event.c = 7
+    with pytest.raises(AttributeError, match='^Read-only'):
+        event.d = '8'"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_events.py","test_dispatch","@pytest.mark.asyncio
+async def test_dispatch():
+    class MyEvent(_Event, metaclass=_EventMeta):
+        __payload__ = ('a', 'b')
+        a: int
+        b: str
+        c: int
+        d: str
+
+    class MyDispatch(_Dispatch, metaclass=_DispatchMeta):
+        @_dispatches(MyEvent)
+        async def my_event(self, a, b, *, c, d):
+            return await self.__dispatch__(MyEvent(a=a, b=b, c=c, d=d))
+
+    class Target:
+        __dispatch__ = MyDispatch()
+
+    assert Target.__dispatch__.my_event is _ident
+    assert await Target.__dispatch__.my_event(1, 3, c=6, d=9) == (1, 3)
+
+    @mock_callback
+    async def callback(event: MyEvent):
+        assert event.a == 2
+        assert event.b == 4
+        assert event.c == 8
+        assert event.d == 16
+
+    listen(Target, MyEvent, callback)
+
+    assert Target.__dispatch__.my_event is not _ident
+    assert await Target.__dispatch__.my_event(2, 4, c=8, d=16) == (2, 4)
+    with patch_event():
+        callback.assert_called_once_with(MyEvent(a=2, b=4, c=8, d=16))"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_events.py","test_interrupt","@pytest.mark.asyncio
+async def test_interrupt():
+    class MyEvent(_Event, metaclass=_EventMeta):
+        payload: int
+
+    class MyDispatch(_Dispatch, metaclass=_DispatchMeta):
+        @_dispatches(MyEvent)
+        async def my_event(self, *, payload):
+            return await self.__dispatch__(MyEvent(payload=payload))
+
+    class Target:
+        __dispatch__ = MyDispatch()
+
+    @mock_callback
+    async def cb1(_: MyEvent):
+        pass
+
+    @mock_callback
+    async def cb2(event: MyEvent):
+        event.interrupt()
+
+    @mock_callback
+    async def cb3(_: MyEvent):
+        pass
+
+    listen(Target, MyEvent, cb1)
+    listen(Target, MyEvent, cb2)
+    listen(Target, MyEvent, cb3)
+
+    assert await Target.__dispatch__.my_event(payload=42) == ()
+
+    cb1.assert_called_once()
+    cb2.assert_called_once()
+    assert not cb3.called"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_utils.py","test_wrapper_concurrent","@pytest.mark.asyncio
+async def test_wrapper_concurrent(loop):
+    api = UserAPI(Wrapper())
+
+    t1 = loop.create_task(api.foo(time=1))
+    t2 = loop.create_task(api.foo(time=1))
+
+    loop.call_soon(lambda: api.wrapper.cancel(CustomError('Some explanation')))
+
+    await asyncio.wait([t1, t2], timeout=0.01)
+
+    assert t1.done()
+    assert t2.done()
+    e1 = t1.exception()
+    e2 = t2.exception()
+    assert e1 and e2 and e1 is e2
+    assert isinstance(e1, CustomError)
+    assert e1.args == ('Some explanation',)"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_utils.py","test_deadline_wrapper","@pytest.mark.asyncio
+async def test_deadline_wrapper():
+    deadline = Deadline.from_timeout(0.01)
+    deadline_wrapper = DeadlineWrapper()
+    api = UserAPI(deadline_wrapper)
+
+    with deadline_wrapper.start(deadline):
+        await api.foo(time=0.0001)
+
+        with pytest.raises(asyncio.TimeoutError) as err:
+            await api.foo(time=0.1)
+        assert err.match('Deadline exceeded')
+
+        with pytest.raises(asyncio.TimeoutError) as err:
+            await api.foo(time=0.0001)
+        assert err.match('Deadline exceeded')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_utils.py","test_graceful_exit_normal_server","@pytest.mark.parametrize('sig_num', [signal.SIGINT, signal.SIGTERM])
+def test_graceful_exit_normal_server(sig_num):
+    cmd = [sys.executable, '-u', '-c', NORMAL_SERVER]
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
+        try:
+            assert proc.stdout.readline() == b'Started!\n'
+            time.sleep(0.001)
+            proc.send_signal(sig_num)
+            assert proc.wait(1) == 0
+        finally:
+            if proc.returncode is None:
+                proc.kill()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_utils.py","test_graceful_exit_sluggish_server","@pytest.mark.parametrize('sig1, sig2', [
+    (signal.SIGINT, signal.SIGINT),
+    (signal.SIGTERM, signal.SIGTERM),
+    (signal.SIGINT, signal.SIGTERM),
+    (signal.SIGTERM, signal.SIGINT),
+])
+def test_graceful_exit_sluggish_server(sig1, sig2):
+    cmd = [sys.executable, '-u', '-c', SLUGGISH_SERVER]
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
+        try:
+            assert proc.stdout.readline() == b'Started!\n'
+            time.sleep(0.001)
+            proc.send_signal(sig1)
+            with pytest.raises(subprocess.TimeoutExpired):
+                proc.wait(0.01)
+            proc.send_signal(sig2)
+            assert proc.wait(1) == 128 + sig2
+        finally:
+            if proc.returncode is None:
+                proc.kill()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_utils.py","test_cached","def test_cached():
+    def func():
+        return 42
+
+    func_mock = Mock(side_effect=func)
+    func_decorated = _cached(func_mock)
+    assert func_mock.call_count == 0
+    assert func_decorated() == 42
+    assert func_decorated() == 42
+    assert func_decorated() == 42
+    assert func_mock.call_count == 1"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_encode_timeout","@pytest.mark.parametrize('value, expected', [
+    (100, '100S'),
+    (15, '15S'),
+    (7, '7000m'),
+    (0.02, '20m'),
+    (0.001, '1000u'),
+    (0.00002, '20u'),
+    (0.000001, '1000n'),
+    (0.00000002, '20n'),
+])
+def test_encode_timeout(value, expected):
+    assert encode_timeout(value) == expected"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_decode_timeout","@pytest.mark.parametrize('value, expected', [
+    ('5H', 5 * 3600),
+    ('4M', 4 * 60),
+    ('3S', 3),
+    ('200m', pytest.approx(0.2)),
+    ('100u', pytest.approx(0.0001)),
+    ('50n', pytest.approx(0.00000005)),
+])
+def test_decode_timeout(value, expected):
+    assert decode_timeout(value) == expected"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_deadline","def test_deadline():
+    assert Deadline.from_timeout(1) < Deadline.from_timeout(2)
+
+    with pytest.raises(TypeError) as err:
+        Deadline.from_timeout(1) < 'invalid'
+    err.match('comparison is not supported between instances '
+              'of \'Deadline\' and \'str\'')
+
+    assert Deadline(_timestamp=1) == Deadline(_timestamp=1)
+
+    assert Deadline.from_timeout(1) != 'invalid'"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_grpc_message_encoding","@pytest.mark.parametrize('value, output', [
+    ('а^2+б^2=ц^2', '%D0%B0^2+%D0%B1^2=%D1%86^2'),
+])
+def test_grpc_message_encoding(value, output):
+    assert encode_grpc_message(value) == output
+    encode_grpc_message(value).encode('ascii')
+    assert decode_grpc_message(output) == value"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_grpc_message_decode_safe","def test_grpc_message_decode_safe():
+    # 0xFF is invalid byte in utf-8:
+    # https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+    assert (decode_grpc_message('%FF^2+%FF^2=%FF^2')
+            == '\ufffd^2+\ufffd^2=\ufffd^2')"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_encode_metadata","@pytest.mark.parametrize('value, output', [
+    ({'regular': 'value'}, [('regular', 'value')]),  # dict-like
+    ([('regular', 'value')], [('regular', 'value')]),  # list of pairs
+    ({'binary-bin': b'value'}, [('binary-bin', 'dmFsdWU')])
+])
+def test_encode_metadata(value, output):
+    assert encode_metadata(value) == output"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_decode_metadata_empty","def test_decode_metadata_empty():
+    metadata = decode_metadata([
+        (':method', 'POST'),
+        ('te', 'trailers'),
+        ('content-type', 'application/grpc'),
+        ('user-agent', 'Test'),
+        ('grpc-timeout', '100m'),
+    ])
+    assert metadata == MultiDict()"
+"grpclib","https://github.com/vmagamedov/grpclib","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/grpclib/tests/test_metadata.py","test_decode_metadata_regular","@pytest.mark.parametrize('key, value, expected', [
+    ('regular', 'value', 'value'),
+    ('binary-bin', 'dmFsdWU', b'value'),
+])
+def test_decode_metadata_regular(key, value, expected):
+    metadata = decode_metadata([
+        (':method', 'POST'),
+        ('te', 'trailers'),
+        ('content-type', 'application/grpc'),
+        ('user-agent', 'Test'),
+        ('grpc-timeout', '100m'),
+        (key, value),
+    ])
+    assert metadata == MultiDict({key: expected})
+    assert type(metadata[key]) is type(expected)"

@@ -1,0 +1,37 @@
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_base_frame_ignores_flags,parse_flags#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_parse_frame_header_unknown_type_strict,parse_frame_header#3
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_parse_frame_header_ignore_first_bit_of_stream_id,parse_frame_header#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_parse_frame_header_unknown_type,parse_frame_header#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_flags_are_persisted,parse_frame_header#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_parse_body_unknown_type,decode_frame#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_can_round_trip_unknown_frames,decode_frame#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_repr,repr#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_frame_explain,explain#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_repr,repr#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_has_correct_flags,parse_flags#2
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_serializes_properly,Unable to determine the focal method(s)
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_with_padding_serializes_properly,serialize#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_parses_properly,decode_frame#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_with_padding_parses_properly,decode_frame#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_with_padding_calculates_flow_control_len,flow_controlled_length#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_zero_length_padding_calculates_flow_control_len,flow_controlled_length#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_without_padding_calculates_flow_control_len,flow_controlled_length#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_long_data_frame,serialize#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_body_length_behaves_correctly,serialize#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_with_no_length_parses,decode_frame#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_repr,repr#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_priority_frame_has_no_flags,parse_flags#2
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_priority_frame_default_serializes_properly,serialize#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_priority_frame_with_all_data_serializes_properly,serialize#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_priority_frame_with_all_data_parses_properly,decode_frame#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_repr,repr#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_rst_stream_frame_has_no_flags,parse_flags#2
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_rst_stream_frame_serializes_properly,serialize#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_rst_stream_frame_parses_properly,decode_frame#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_repr,repr#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_settings_frame_has_only_one_flag,parse_flags#1
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_settings_frame_serializes_properly,serialize#0
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_settings_frame_with_settings,Unable to determine the focal method(s)
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_settings_frame_without_settings,Unable to determine the focal method(s)
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_settings_frame_with_ack,Unable to determine the focal method(s)
+hyperframe,https://github.com/python-hyper/hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_settings_frame_parses_properly,decode_frame#1

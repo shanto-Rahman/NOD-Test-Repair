@@ -1,0 +1,827 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py","test_can_decode_a_story","    def test_can_decode_a_story(self, story):
+        d = Decoder()
+
+        # We test against draft 9 of the HPACK spec.
+        if story['draft'] != 9:
+            skip(""We test against draft 9, not draft %d"" % story['draft'])
+
+        for case in story['cases']:
+            try:
+                d.header_table_size = case['header_table_size']
+            except KeyError:
+                pass
+            decoded_headers = d.decode(unhexlify(case['wire']))
+
+            # The correct headers are a list of dicts, which is annoying.
+            correct_headers = [
+                (item[0], item[1])
+                for header in case['headers']
+                for item in header.items()
+            ]
+            correct_headers = correct_headers
+            assert correct_headers == decoded_headers
+            assert all(
+                isinstance(header, HeaderTuple) for header in decoded_headers"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py","test_can_encode_a_story_no_huffman","    def test_can_encode_a_story_no_huffman(self, raw_story):
+        d = Decoder()
+        e = Encoder()
+
+        for case in raw_story['cases']:
+            # The input headers are a list of dicts, which is annoying.
+            input_headers = [
+                (item[0], item[1])
+                for header in case['headers']
+                for item in header.items()
+            ]
+
+            encoded = e.encode(input_headers, huffman=False)
+            decoded_headers = d.decode(encoded)
+
+            assert input_headers == decoded_headers
+            assert all(
+                isinstance(header, HeaderTuple) for header in decoded_headers"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py","test_can_encode_a_story_with_huffman","    def test_can_encode_a_story_with_huffman(self, raw_story):
+        d = Decoder()
+        e = Encoder()
+
+        for case in raw_story['cases']:
+            # The input headers are a list of dicts, which is annoying.
+            input_headers = [
+                (item[0], item[1])
+                for header in case['headers']
+                for item in header.items()
+            ]
+
+            encoded = e.encode(input_headers, huffman=True)
+            decoded_headers = d.decode(encoded)
+
+            assert input_headers == decoded_headers"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_table_entry_size","    def test_table_entry_size(self):
+        res = table_entry_size(b'TestName', b'TestValue')
+        assert res == 49"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_get_by_index_dynamic_table","    def test_get_by_index_dynamic_table(self):
+        tbl = HeaderTable()
+        off = len(HeaderTable.STATIC_TABLE)
+        val = (b'TestName', b'TestValue')
+        tbl.add(*val)
+        res = tbl.get_by_index(off + 1)
+        assert res == val"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_get_by_index_static_table","    def test_get_by_index_static_table(self):
+        tbl = HeaderTable()
+        exp = (b':authority', b'')
+        res = tbl.get_by_index(1)
+        assert res == exp
+        idx = len(HeaderTable.STATIC_TABLE)
+        exp = (b'www-authenticate', b'')
+        res = tbl.get_by_index(idx)
+        assert res == exp"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_get_by_index_out_of_range","    def test_get_by_index_out_of_range(self):
+        tbl = HeaderTable()
+        off = len(HeaderTable.STATIC_TABLE)
+        tbl.add(b'TestName', b'TestValue')
+        with pytest.raises(InvalidTableIndex) as e:
+            tbl.get_by_index(off + 2)
+
+        assert (
+            ""Invalid table index %d"" % (off + 2) in str(e.value)"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_repr","    def test_repr(self):
+        tbl = HeaderTable()
+        tbl.add(b'TestName1', b'TestValue1')
+        tbl.add(b'TestName2', b'TestValue2')
+        tbl.add(b'TestName2', b'TestValue2')
+        exp = (
+            ""HeaderTable(4096, False, deque([""
+            ""(b'TestName2', b'TestValue2'), ""
+            ""(b'TestName2', b'TestValue2'), ""
+            ""(b'TestName1', b'TestValue1')""
+            ""]))""
+        )
+        res = repr(tbl)
+        assert res == exp"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_add_to_large","    def test_add_to_large(self):
+        tbl = HeaderTable()
+        # Max size to small to hold the value we specify
+        tbl.maxsize = 1
+        tbl.add(b'TestName', b'TestValue')
+        # Table length should be 0
+        assert len(tbl.dynamic_entries) == 0"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_search_in_static_full","    def test_search_in_static_full(self):
+        tbl = HeaderTable()
+        itm = (b':authority', b'')
+        exp = (1, itm[0], itm[1])
+        res = tbl.search(itm[0], itm[1])
+        assert res == exp"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_search_in_static_partial","    def test_search_in_static_partial(self):
+        tbl = HeaderTable()
+        exp = (1, b':authority', None)
+        res = tbl.search(b':authority', b'NotInTable')
+        assert res == exp"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_search_in_dynamic_full","    def test_search_in_dynamic_full(self):
+        tbl = HeaderTable()
+        idx = len(HeaderTable.STATIC_TABLE) + 1
+        tbl.add(b'TestName', b'TestValue')
+        exp = (idx, b'TestName', b'TestValue')
+        res = tbl.search(b'TestName', b'TestValue')
+        assert res == exp"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_search_in_dynamic_partial","    def test_search_in_dynamic_partial(self):
+        tbl = HeaderTable()
+        idx = len(HeaderTable.STATIC_TABLE) + 1
+        tbl.add(b'TestName', b'TestValue')
+        exp = (idx, b'TestName', None)
+        res = tbl.search(b'TestName', b'NotInTable')
+        assert res == exp"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_search_no_match","    def test_search_no_match(self):
+        tbl = HeaderTable()
+        tbl.add(b'TestName', b'TestValue')
+        res = tbl.search(b'NotInTable', b'NotInTable')
+        assert res is None"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_maxsize_prop_getter","    def test_maxsize_prop_getter(self):
+        tbl = HeaderTable()
+        assert tbl.maxsize == HeaderTable.DEFAULT_SIZE"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_maxsize_prop_setter","    def test_maxsize_prop_setter(self):
+        tbl = HeaderTable()
+        exp = int(HeaderTable.DEFAULT_SIZE / 2)
+        tbl.maxsize = exp
+        assert tbl.resized is True
+        assert tbl.maxsize == exp
+        tbl.resized = False
+        tbl.maxsize = exp
+        assert tbl.resized is False
+        assert tbl.maxsize == exp"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_size","    def test_size(self):
+        tbl = HeaderTable()
+        for i in range(3):
+            tbl.add(b'TestName', b'TestValue')
+        res = tbl._current_size
+        assert res == 147"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_shrink_maxsize_is_zero","    def test_shrink_maxsize_is_zero(self):
+        tbl = HeaderTable()
+        tbl.add(b'TestName', b'TestValue')
+        assert len(tbl.dynamic_entries) == 1
+        tbl.maxsize = 0
+        assert len(tbl.dynamic_entries) == 0"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py","test_shrink_maxsize","    def test_shrink_maxsize(self):
+        tbl = HeaderTable()
+        for i in range(3):
+            tbl.add(b'TestName', b'TestValue')
+
+        assert tbl._current_size == 147
+        tbl.maxsize = 146
+        assert len(tbl.dynamic_entries) == 2
+        assert tbl._current_size == 98"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_literal_header_field_with_indexing","    def test_literal_header_field_with_indexing(self):
+        """"""
+        The header field representation uses a literal name and a literal
+        value.
+        """"""
+        e = Encoder()
+        header_set = {'custom-key': 'custom-header'}
+        result = b'\x40\x0acustom-key\x0dcustom-header'
+
+        assert e.encode(header_set, huffman=False) == result
+        assert list(e.header_table.dynamic_entries) == [
+            (n.encode('utf-8'), v.encode('utf-8'))
+            for n, v in header_set.items()"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_sensitive_headers","    def test_sensitive_headers(self):
+        """"""
+        Test encoding header values
+        """"""
+        e = Encoder()
+        result = (b'\x82\x14\x88\x63\xa1\xa9' +
+                  b'\x32\x08\x73\xd0\xc7\x10' +
+                  b'\x87\x25\xa8\x49\xe9\xea' +
+                  b'\x5f\x5f\x89\x41\x6a\x41' +
+                  b'\x92\x6e\xe5\x35\x52\x9f')
+        header_set = [
+            (':method', 'GET', True),
+            (':path', '/jimiscool/', True),
+            ('customkey', 'sensitiveinfo', True),
+        ]
+        assert e.encode(header_set, huffman=True) == result"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_non_sensitive_headers_with_header_tuples","    def test_non_sensitive_headers_with_header_tuples(self):
+        """"""
+        A header field stored in a HeaderTuple emits a representation that
+        allows indexing.
+        """"""
+        e = Encoder()
+        result = (b'\x82\x44\x88\x63\xa1\xa9' +
+                  b'\x32\x08\x73\xd0\xc7\x40' +
+                  b'\x87\x25\xa8\x49\xe9\xea' +
+                  b'\x5f\x5f\x89\x41\x6a\x41' +
+                  b'\x92\x6e\xe5\x35\x52\x9f')
+        header_set = [
+            HeaderTuple(':method', 'GET'),
+            HeaderTuple(':path', '/jimiscool/'),
+            HeaderTuple('customkey', 'sensitiveinfo'),
+        ]
+        assert e.encode(header_set, huffman=True) == result"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_sensitive_headers_with_header_tuples","    def test_sensitive_headers_with_header_tuples(self):
+        """"""
+        A header field stored in a NeverIndexedHeaderTuple emits a
+        representation that forbids indexing.
+        """"""
+        e = Encoder()
+        result = (b'\x82\x14\x88\x63\xa1\xa9' +
+                  b'\x32\x08\x73\xd0\xc7\x10' +
+                  b'\x87\x25\xa8\x49\xe9\xea' +
+                  b'\x5f\x5f\x89\x41\x6a\x41' +
+                  b'\x92\x6e\xe5\x35\x52\x9f')
+        header_set = [
+            NeverIndexedHeaderTuple(':method', 'GET'),
+            NeverIndexedHeaderTuple(':path', '/jimiscool/'),
+            NeverIndexedHeaderTuple('customkey', 'sensitiveinfo'),
+        ]
+        assert e.encode(header_set, huffman=True) == result"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_header_table_size_getter","    def test_header_table_size_getter(self):
+        e = Encoder()
+        assert e.header_table_size == 4096"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_indexed_literal_header_field_with_indexing","    def test_indexed_literal_header_field_with_indexing(self):
+        """"""
+        The header field representation uses an indexed name and a literal
+        value and performs incremental indexing.
+        """"""
+        e = Encoder()
+        header_set = {':path': '/sample/path'}
+        result = b'\x44\x0c/sample/path'
+
+        assert e.encode(header_set, huffman=False) == result
+        assert list(e.header_table.dynamic_entries) == [
+            (n.encode('utf-8'), v.encode('utf-8'))
+            for n, v in header_set.items()"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_indexed_header_field","    def test_indexed_header_field(self):
+        """"""
+        The header field representation uses an indexed header field, from
+        the static table.
+        """"""
+        e = Encoder()
+        header_set = {':method': 'GET'}
+        result = b'\x82'
+
+        assert e.encode(header_set, huffman=False) == result
+        assert list(e.header_table.dynamic_entries) == []"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_indexed_header_field_from_static_table","    def test_indexed_header_field_from_static_table(self):
+        e = Encoder()
+        e.header_table_size = 0
+        header_set = {':method': 'GET'}
+        result = b'\x82'
+
+        # Make sure we don't emit an encoding context update.
+        e.header_table.resized = False
+
+        assert e.encode(header_set, huffman=False) == result
+        assert list(e.header_table.dynamic_entries) == []"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_request_examples_without_huffman","    def test_request_examples_without_huffman(self):
+        """"""
+        This section shows several consecutive header sets, corresponding to
+        HTTP requests, on the same connection.
+        """"""
+        e = Encoder()
+        first_header_set = [
+            (':method', 'GET',),
+            (':scheme', 'http',),
+            (':path', '/',),
+            (':authority', 'www.example.com'),
+        ]
+        # We should have :authority in first_header_table since we index it
+        first_header_table = [(':authority', 'www.example.com')]
+        first_result = b'\x82\x86\x84\x41\x0fwww.example.com'
+
+        assert e.encode(first_header_set, huffman=False) == first_result
+        assert list(e.header_table.dynamic_entries) == [
+            (n.encode('utf-8'), v.encode('utf-8'))
+            for n, v in first_header_table
+        ]
+
+        second_header_set = [
+            (':method', 'GET',),
+            (':scheme', 'http',),
+            (':path', '/',),
+            (':authority', 'www.example.com',),
+            ('cache-control', 'no-cache'),
+        ]
+        second_header_table = [
+            ('cache-control', 'no-cache'),
+            (':authority', 'www.example.com')
+        ]
+        second_result = b'\x82\x86\x84\xbeX\x08no-cache'
+
+        assert e.encode(second_header_set, huffman=False) == second_result
+        assert list(e.header_table.dynamic_entries) == [
+            (n.encode('utf-8'), v.encode('utf-8'))
+            for n, v in second_header_table
+        ]
+
+        third_header_set = [
+            (':method', 'GET',),
+            (':scheme', 'https',),
+            (':path', '/index.html',),
+            (':authority', 'www.example.com',),
+            ('custom-key', 'custom-value'),
+        ]
+        third_result = (
+            b'\x82\x87\x85\xbf@\ncustom-key\x0ccustom-value'
+        )
+
+        assert e.encode(third_header_set, huffman=False) == third_result
+        # Don't check the header table here, it's just too complex to be
+        # reliable. Check its length though.
+        assert len(e.header_table.dynamic_entries) == 3"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_request_examples_with_huffman","    def test_request_examples_with_huffman(self):
+        """"""
+        This section shows the same examples as the previous section, but
+        using Huffman encoding for the literal values.
+        """"""
+        e = Encoder()
+        first_header_set = [
+            (':method', 'GET',),
+            (':scheme', 'http',),
+            (':path', '/',),
+            (':authority', 'www.example.com'),
+        ]
+        first_header_table = [(':authority', 'www.example.com')]
+        first_result = (
+            b'\x82\x86\x84\x41\x8c\xf1\xe3\xc2\xe5\xf2:k\xa0\xab\x90\xf4\xff'
+        )
+
+        assert e.encode(first_header_set, huffman=True) == first_result
+        assert list(e.header_table.dynamic_entries) == [
+            (n.encode('utf-8'), v.encode('utf-8'))
+            for n, v in first_header_table
+        ]
+
+        second_header_table = [
+            ('cache-control', 'no-cache'),
+            (':authority', 'www.example.com')
+        ]
+        second_header_set = [
+            (':method', 'GET',),
+            (':scheme', 'http',),
+            (':path', '/',),
+            (':authority', 'www.example.com',),
+            ('cache-control', 'no-cache'),
+        ]
+        second_result = b'\x82\x86\x84\xbeX\x86\xa8\xeb\x10d\x9c\xbf'
+
+        assert e.encode(second_header_set, huffman=True) == second_result
+        assert list(e.header_table.dynamic_entries) == [
+            (n.encode('utf-8'), v.encode('utf-8'))
+            for n, v in second_header_table
+        ]
+
+        third_header_set = [
+            (':method', 'GET',),
+            (':scheme', 'https',),
+            (':path', '/index.html',),
+            (':authority', 'www.example.com',),
+            ('custom-key', 'custom-value'),
+        ]
+        third_result = (
+            b'\x82\x87\x85\xbf'
+            b'@\x88%\xa8I\xe9[\xa9}\x7f\x89%\xa8I\xe9[\xb8\xe8\xb4\xbf'
+        )
+
+        assert e.encode(third_header_set, huffman=True) == third_result
+        assert len(e.header_table.dynamic_entries) == 3"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_resizing_header_table","    def test_resizing_header_table(self):
+        # We need to encode a substantial number of headers, to populate the
+        # header table.
+        e = Encoder()
+        header_set = [
+            (':method', 'GET'),
+            (':scheme', 'https'),
+            (':path', '/some/path'),
+            (':authority', 'www.example.com'),
+            ('custom-key', 'custom-value'),
+            (
+                ""user-agent"",
+                ""Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:16.0) ""
+                ""Gecko/20100101 Firefox/16.0"",
+            ),
+            (
+                ""accept"",
+                ""text/html,application/xhtml+xml,application/xml;q=0.9,*/*;""
+                ""q=0.8"",
+            ),
+            ('X-Lukasa-Test', '88989'),
+        ]
+        e.encode(header_set, huffman=True)
+
+        # Resize the header table to a size so small that nothing can be in it.
+        e.header_table_size = 40
+        assert len(e.header_table.dynamic_entries) == 0"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_resizing_header_table_sends_multiple_updates","    def test_resizing_header_table_sends_multiple_updates(self):
+        e = Encoder()
+
+        e.header_table_size = 40
+        e.header_table_size = 100
+        e.header_table_size = 40
+
+        header_set = [(':method', 'GET')]
+        out = e.encode(header_set, huffman=True)
+        assert out == b'\x3F\x09\x3F\x45\x3F\x09\x82'"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_resizing_header_table_to_same_size_ignored","    def test_resizing_header_table_to_same_size_ignored(self):
+        e = Encoder()
+
+        # These size changes should be ignored
+        e.header_table_size = 4096
+        e.header_table_size = 4096
+        e.header_table_size = 4096
+
+        # These size changes should be encoded
+        e.header_table_size = 40
+        e.header_table_size = 100
+        e.header_table_size = 40
+
+        header_set = [(':method', 'GET')]
+        out = e.encode(header_set, huffman=True)
+        assert out == b'\x3F\x09\x3F\x45\x3F\x09\x82'"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_resizing_header_table_sends_context_update","    def test_resizing_header_table_sends_context_update(self):
+        e = Encoder()
+
+        # Resize the header table to a size so small that nothing can be in it.
+        e.header_table_size = 40
+
+        # Now, encode a header set. Just a small one, with a well-defined
+        # output.
+        header_set = [(':method', 'GET')]
+        out = e.encode(header_set, huffman=True)
+
+        assert out == b'?\t\x82'"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_setting_table_size_to_the_same_does_nothing","    def test_setting_table_size_to_the_same_does_nothing(self):
+        e = Encoder()
+
+        # Set the header table size to the default.
+        e.header_table_size = 4096
+
+        # Now encode a header set. Just a small one, with a well-defined
+        # output.
+        header_set = [(':method', 'GET')]
+        out = e.encode(header_set, huffman=True)
+
+        assert out == b'\x82'"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_evicting_header_table_objects","    def test_evicting_header_table_objects(self):
+        e = Encoder()
+
+        # Set the header table size large enough to include one header.
+        e.header_table_size = 66
+        header_set = [('a', 'b'), ('long-custom-header', 'longish value')]
+        e.encode(header_set)
+
+        assert len(e.header_table.dynamic_entries) == 1"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_headers_generator","    def test_headers_generator(self):
+        e = Encoder()
+
+        def headers_generator():
+            return ((""k"" + str(i), ""v"" + str(i)) for i in range(3))
+
+        header_set = headers_generator()
+        out = e.encode(header_set)
+        assert Decoder().decode(out) == list(headers_generator())"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_raw_decoding","    def test_raw_decoding(self):
+        """"""
+        The header field representation is decoded as a raw byte string instead
+        of UTF-8
+        """"""
+        d = Decoder()
+        header_set = [
+            (b'\x00\x01\x99\x30\x11\x22\x55\x21\x89\x14', b'custom-header')
+        ]
+        data = (
+            b'\x40\x0a\x00\x01\x99\x30\x11\x22\x55\x21\x89\x14\x0d'
+            b'custom-header'
+        )
+
+        assert d.decode(data, raw=True) == header_set"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_literal_header_field_without_indexing","    def test_literal_header_field_without_indexing(self):
+        """"""
+        The header field representation uses an indexed name and a literal
+        value.
+        """"""
+        d = Decoder()
+        header_set = [(':path', '/sample/path')]
+        data = b'\x04\x0c/sample/path'
+
+        assert d.decode(data) == header_set
+        assert list(d.header_table.dynamic_entries) == []"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_apache_trafficserver","    def test_apache_trafficserver(self):
+        # This test reproduces the bug in #110, using exactly the same header
+        # data.
+        d = Decoder()
+        data = (
+            b'\x10\x07:status\x03200@\x06server\tATS/6.0.0'
+            b'@\x04date\x1dTue, 31 Mar 2015 08:09:51 GMT'
+            b'@\x0ccontent-type\ttext/html@\x0econtent-length\x0542468'
+            b'@\rlast-modified\x1dTue, 31 Mar 2015 01:55:51 GMT'
+            b'@\x04vary\x0fAccept-Encoding@\x04etag\x0f""5519fea7-a5e4""'
+            b'@\x08x-served\x05Nginx@\x14x-subdomain-tryfiles\x04True'
+            b'@\x07x-deity\thydra-lts@\raccept-ranges\x05bytes@\x03age\x010'
+            b'@\x19strict-transport-security\rmax-age=86400'
+            b'@\x03via2https/1.1 ATS (ApacheTrafficServer/6.0.0 [cSsNfU])'
+        )
+        expect = [
+            (':status', '200'),
+            ('server', 'ATS/6.0.0'),
+            ('date', 'Tue, 31 Mar 2015 08:09:51 GMT'),
+            ('content-type', 'text/html'),
+            ('content-length', '42468'),
+            ('last-modified', 'Tue, 31 Mar 2015 01:55:51 GMT'),
+            ('vary', 'Accept-Encoding'),
+            ('etag', '""5519fea7-a5e4""'),
+            ('x-served', 'Nginx'),
+            ('x-subdomain-tryfiles', 'True'),
+            ('x-deity', 'hydra-lts'),
+            ('accept-ranges', 'bytes'),
+            ('age', '0'),
+            ('strict-transport-security', 'max-age=86400'),
+            ('via', 'https/1.1 ATS (ApacheTrafficServer/6.0.0 [cSsNfU])'),
+        ]
+
+        result = d.decode(data)
+
+        assert result == expect
+        # The status header shouldn't be indexed.
+        assert len(d.header_table.dynamic_entries) == len(expect) - 1"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_literal_header_field_with_indexing_emits_headertuple","    def test_literal_header_field_with_indexing_emits_headertuple(self):
+        """"""
+        A header field with indexing emits a HeaderTuple.
+        """"""
+        d = Decoder()
+        data = b'\x00\x0acustom-key\x0dcustom-header'
+
+        headers = d.decode(data)
+        assert len(headers) == 1
+
+        header = headers[0]
+        assert isinstance(header, HeaderTuple)
+        assert not isinstance(header, NeverIndexedHeaderTuple)"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_literal_never_indexed_emits_neverindexedheadertuple","    def test_literal_never_indexed_emits_neverindexedheadertuple(self):
+        """"""
+        A literal header field that must never be indexed emits a
+        NeverIndexedHeaderTuple.
+        """"""
+        d = Decoder()
+        data = b'\x10\x0acustom-key\x0dcustom-header'
+
+        headers = d.decode(data)
+        assert len(headers) == 1
+
+        header = headers[0]
+        assert isinstance(header, NeverIndexedHeaderTuple)"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_indexed_never_indexed_emits_neverindexedheadertuple","    def test_indexed_never_indexed_emits_neverindexedheadertuple(self):
+        """"""
+        A header field with an indexed name that must never be indexed emits a
+        NeverIndexedHeaderTuple.
+        """"""
+        d = Decoder()
+        data = b'\x14\x0c/sample/path'
+
+        headers = d.decode(data)
+        assert len(headers) == 1
+
+        header = headers[0]
+        assert isinstance(header, NeverIndexedHeaderTuple)"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_can_decode_multiple_header_table_size_changes","    def test_can_decode_multiple_header_table_size_changes(self):
+        """"""
+        If multiple header table size changes are sent in at once, they are
+        successfully decoded.
+        """"""
+        d = Decoder()
+        data = b'?a?\xe1\x1f\x82\x87\x84A\x8a\x08\x9d\\\x0b\x81p\xdcy\xa6\x99'
+        expect = [
+            (':method', 'GET'),
+            (':scheme', 'https'),
+            (':path', '/'),
+            (':authority', '127.0.0.1:8443')
+        ]
+
+        assert d.decode(data) == expect"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_ordering","    @given(
+        special_keys=sets(keys),
+        boring_keys=sets(keys),
+    )
+    def test_ordering(self, special_keys, boring_keys):
+        """"""
+        _dict_to_iterable produces an iterable where all the keys beginning
+        with a colon are emitted first.
+        """"""
+        def _prepend_colon(k):
+            if isinstance(k, str):
+                return ':' + k
+            else:
+                return b':' + k
+
+        special_keys = set(map(_prepend_colon, special_keys))
+        input_dict = {
+            k: b'testval' for k in itertools.chain(
+                special_keys,
+                boring_keys
+            )
+        }
+        filtered = _dict_to_iterable(input_dict)
+
+        received_special = set()
+        received_boring = set()
+
+        for _ in special_keys:
+            k, _ = next(filtered)
+            received_special.add(k)
+        for _ in boring_keys:
+            k, _ = next(filtered)
+            received_boring.add(k)
+
+        assert special_keys == received_special
+        assert boring_keys == received_boring"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py","test_ordering_applies_to_encoding","    @given(
+        special_keys=sets(keys),
+        boring_keys=sets(keys),
+    )
+    def test_ordering_applies_to_encoding(self, special_keys, boring_keys):
+        """"""
+        When encoding a dictionary the special keys all appear first.
+        """"""
+        def _prepend_colon(k):
+            if isinstance(k, str):
+                return ':' + k
+            else:
+                return b':' + k
+
+        special_keys = set(map(_prepend_colon, special_keys))
+        input_dict = {
+            k: b'testval' for k in itertools.chain(
+                special_keys,
+                boring_keys
+            )
+        }
+        e = Encoder()
+        d = Decoder()
+        encoded = e.encode(input_dict)
+        decoded = iter(d.decode(encoded, raw=True))
+
+        received_special = set()
+        received_boring = set()
+        expected_special = set(map(_to_bytes, special_keys))
+        expected_boring = set(map(_to_bytes, boring_keys))
+
+        for _ in special_keys:
+            k, _ = next(decoded)
+            received_special.add(k)
+        for _ in boring_keys:
+            k, _ = next(decoded)
+            received_boring.add(k)
+
+        assert expected_special == received_special
+        assert expected_boring == received_boring"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py","test_is_tuple","    def test_is_tuple(self):
+        """"""
+        HeaderTuple objects are tuples.
+        """"""
+        h = HeaderTuple('name', 'value')
+        assert isinstance(h, tuple)"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py","test_unpacks_properly","    def test_unpacks_properly(self):
+        """"""
+        HeaderTuple objects unpack like tuples.
+        """"""
+        h = HeaderTuple('name', 'value')
+        k, v = h
+
+        assert k == 'name'
+        assert v == 'value'"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py","test_header_tuples_are_indexable","    def test_header_tuples_are_indexable(self):
+        """"""
+        HeaderTuple objects can be indexed.
+        """"""
+        h = HeaderTuple('name', 'value')
+        assert h.indexable"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py","test_never_indexed_tuples_are_not_indexable","    def test_never_indexed_tuples_are_not_indexable(self):
+        """"""
+        NeverIndexedHeaderTuple objects cannot be indexed.
+        """"""
+        h = NeverIndexedHeaderTuple('name', 'value')
+        assert not h.indexable"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py","test_equal_to_tuples","    @pytest.mark.parametrize('cls', (HeaderTuple, NeverIndexedHeaderTuple))
+    def test_equal_to_tuples(self, cls):
+        """"""
+        HeaderTuples and NeverIndexedHeaderTuples are equal to equivalent
+        tuples.
+        """"""
+        t1 = ('name', 'value')
+        t2 = cls('name', 'value')
+
+        assert t1 == t2
+        assert t1 is not t2"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py","test_equal_to_self","    @pytest.mark.parametrize('cls', (HeaderTuple, NeverIndexedHeaderTuple))
+    def test_equal_to_self(self, cls):
+        """"""
+        HeaderTuples and NeverIndexedHeaderTuples are always equal when
+        compared to the same class.
+        """"""
+        t1 = cls('name', 'value')
+        t2 = cls('name', 'value')
+
+        assert t1 == t2
+        assert t1 is not t2"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_struct.py","test_equal_for_different_indexes","    def test_equal_for_different_indexes(self):
+        """"""
+        HeaderTuples compare equal to equivalent NeverIndexedHeaderTuples.
+        """"""
+        t1 = HeaderTuple('name', 'value')
+        t2 = NeverIndexedHeaderTuple('name', 'value')
+
+        assert t1 == t2
+        assert t1 is not t2"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_huffman.py","test_request_huffman_decoder","    def test_request_huffman_decoder(self):
+        assert (
+            decode_huffman(b'\xf1\xe3\xc2\xe5\xf2:k\xa0\xab\x90\xf4\xff') ==
+            b""www.example.com""
+        )
+        assert decode_huffman(b'\xa8\xeb\x10d\x9c\xbf') == b""no-cache""
+        assert decode_huffman(b'%\xa8I\xe9[\xa9}\x7f') == b""custom-key""
+        assert (
+            decode_huffman(b'%\xa8I\xe9[\xb8\xe8\xb4\xbf') == b""custom-value"""
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_huffman.py","test_request_huffman_encode","    def test_request_huffman_encode(self):
+        encoder = HuffmanEncoder(REQUEST_CODES, REQUEST_CODES_LENGTH)
+        assert (
+            encoder.encode(b""www.example.com"") ==
+            b'\xf1\xe3\xc2\xe5\xf2:k\xa0\xab\x90\xf4\xff'
+        )
+        assert encoder.encode(b""no-cache"") == b'\xa8\xeb\x10d\x9c\xbf'
+        assert encoder.encode(b""custom-key"") == b'%\xa8I\xe9[\xa9}\x7f'
+        assert (
+            encoder.encode(b""custom-value"") == b'%\xa8I\xe9[\xb8\xe8\xb4\xbf'"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_huffman.py","test_huffman_decoder_properly_handles_all_bytestrings","    @given(data=binary())
+    @example(b'\xff')
+    @example(b'\x5f\xff\xff\xff\xff')
+    @example(b'\x00\x3f\xff\xff\xff')
+    def test_huffman_decoder_properly_handles_all_bytestrings(self, data):
+        """"""
+        When given random bytestrings, either we get HPACKDecodingError or we
+        get a bytestring back.
+        """"""
+        # The examples aren't special, they're just known to hit specific error
+        # paths through the state machine. Basically, they are strings that are
+        # definitely invalid.
+        try:
+            result = decode_huffman(data)
+        except HPACKDecodingError:
+            result = b''
+
+        assert isinstance(result, bytes)"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py","test_encoding_10_with_5_bit_prefix","    def test_encoding_10_with_5_bit_prefix(self):
+        val = encode_integer(10, 5)
+        assert len(val) == 1
+        assert val == bytearray(b'\x0a')"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py","test_encoding_1337_with_5_bit_prefix","    def test_encoding_1337_with_5_bit_prefix(self):
+        val = encode_integer(1337, 5)
+        assert len(val) == 3
+        assert val == bytearray(b'\x1f\x9a\x0a')"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py","test_encoding_42_with_8_bit_prefix","    def test_encoding_42_with_8_bit_prefix(self):
+        val = encode_integer(42, 8)
+        assert len(val) == 1
+        assert val == bytearray(b'\x2a')"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py","test_decoding_10_with_5_bit_prefix","    def test_decoding_10_with_5_bit_prefix(self):
+        val = decode_integer(b'\x0a', 5)
+        assert val == (10, 1)"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py","test_encode_positive_integer_always_valid","    @given(
+        integer=integers(min_value=0),
+        prefix_bits=integers(min_value=1, max_value=8)
+    )
+    def test_encode_positive_integer_always_valid(self, integer, prefix_bits):
+        """"""
+        So long as the prefix bits are between 1 and 8, any positive integer
+        can be represented.
+        """"""
+        result = encode_integer(integer, prefix_bits)
+        assert isinstance(result, bytearray)
+        assert len(result) > 0"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py","test_decode_either_succeeds_or_raises_error","    @given(
+        data=binary(),
+        prefix_bits=integers(min_value=1, max_value=8)
+    )
+    def test_decode_either_succeeds_or_raises_error(self, data, prefix_bits):
+        """"""
+        Attempting to decode data either returns a positive integer or throws a
+        HPACKDecodingError.
+        """"""
+        try:
+            result, consumed = decode_integer(data, prefix_bits)
+        except HPACKDecodingError:
+            pass
+        else:
+            assert isinstance(result, int)
+            assert result >= 0
+            assert consumed > 0"
+"hpack","https://github.com/python-hyper/hpack","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py","test_encode_decode_round_trips","    @given(
+        integer=integers(min_value=0),
+        prefix_bits=integers(min_value=1, max_value=8)
+    )
+    def test_encode_decode_round_trips(self, integer, prefix_bits):
+        """"""
+        Given valid data, the encoder and decoder can round trip.
+        """"""
+        encoded_result = encode_integer(integer, prefix_bits)
+        decoded_integer, consumed = decode_integer(
+            bytes(encoded_result), prefix_bits
+        )
+        assert integer == decoded_integer
+        assert consumed > 0"

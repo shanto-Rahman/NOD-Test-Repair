@@ -1,0 +1,32 @@
+proj_name,test_filename,test_method,fm_filename,fm_method,changed_fm,covered_lines,coverage_percentage,test_pass/fail,aim_of_fm_change,change_type,COT
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_api.py,test_bases,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,bases,"""def bases(self, *, force: bool = False) -> List['pyairtable.api.base.Base']:
+    """"""
+    Retrieve the base's schema and return a list of :class:`Base` instances.
+
+    Args:
+        force: |kwarg_force_metadata|
+
+    Usage:
+        >>> api.bases()
+        [,]
+    """"""
+    if hasattr(self, '_cached_bases') and not force:
+        return self._cached_bases
+
+    base_info_list = self._base_info(force=force).bases
+    result = []
+    for info in base_info_list:
+        base = self._base_from_info(info)
+        if base.id.startswith('app'):
+            result.append(base)
+        else:
+            # This branch will not be covered by the test
+            result.append(self.base(base.id, validate=True))
+
+    if not force:
+        self._cached_bases = result
+
+    return result""","[152, 163, 164, 166, 167, 168, 169, 170, 171, 176, 177, 179]",85.71428571428571,test_pass,CC,"['caching', 'branch', 'variable', 'loop', 'validation', 'performance_optimization', 'control_flow']",1
+airtable-python-wrapper,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_api.py,test_repr,/home/ec2-user/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/formulas.py,__repr__,"""def __repr__(self) -> str:
+    joined_args_repr = ', '.join((repr(v) for v in self.args))
+    return f'{self.name}({joined_args_repr})' if self.args else f'{self.name}()'""","[39]",50.0,test_pass,CC,"['condition', 'refactoring']",0

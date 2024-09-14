@@ -1,0 +1,102 @@
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_asyncio.py,test_datetime_in_coroutine,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_asyncio.py,test_freezing_time_in_coroutine,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_asyncio.py,test_freezing_time_before_running_coroutine,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_asyncio.py,test_asyncio_sleeping_not_affected_by_freeze_time,asyncio.sleep#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_asyncio.py,test_asyncio_to_call_later_with_frozen_time,call_later#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_import_alias.py,test_datetime_alias,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_import_alias.py,test_time_alias,time_aliased#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_import_alias.py,test_calls_other_method,datetime_aliased#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_addition,is_fake_datetime#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_subtraction,is_fake_datetime#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_datetime_timezone_none,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_datetime_timezone_real,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_datetime_timezone_real_with_offset,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_astimezone,astimezone#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_astimezone_tz_none,astimezone#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_replace,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_auto_tick,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_auto_and_manual_tick,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_import_datetime_works,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_import_date_works,fake_date_function#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_import_time,fake_time_function#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_start_and_stop_works,fake_datetime_function#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_isinstance_works,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_issubclass_works,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_fake_uses_real_when_ignored,fake_time_function#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_can_ignore_email_module,formatdate#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_avoid_replacing_equal_to_anything,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_import_localtime,fake_localtime_function#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_fake_gmtime_function,fake_gmtime_function#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_fake_strftime_function,fake_strftime_function#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_import_after_start,get_datetime#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_class_import.py,test_none_as_initial,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_simple_api,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_tz_offset,freeze_time#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_timestamp_tz_offset,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_timedelta_tz_offset,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_tz_offset_with_today,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_zero_tz_offset_with_time,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_tz_offset_with_time,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_with_microseconds,time.time#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_with_dst,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_manual_increment,tick#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_move_to,move_to#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_bad_time_argument,freeze_time#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_monotonic,monotonic#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_gmtime,time.gmtime#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_clock,time.clock#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_localtime,time_localtime#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_strftime,strftime#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_real_strftime_fall_through,strftime#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_date_object,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_old_date_object,datetime.date.today#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_date_with_locale,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_invalid_type,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_datetime_object,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_function_object,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_lambda_object,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_generator_object,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_maya_datetimes,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_old_datetime_object,datetime.datetime.now#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_datetime_with_locale,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_decorator,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_decorator_wrapped_attribute,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_nice_datetime,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_datetime_date_method,datetime.datetime.now#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_context_manager,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_nested_context_manager,freeze_time#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_nested_context_manager_with_tz_offsets,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_isinstance_with_active,is_fake_datetime#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_isinstance_without_active,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_min_and_max,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_freeze_with_timezone_aware_datetime_in_utc,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_freeze_with_timezone_aware_datetime_in_non_utc,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_with_nested,time#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_monotonic_with_nested,monotonic#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_should_use_real_time,freeze_time#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_ns,time#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_time_ns_with_microseconds,time_ns#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_compare_datetime_and_time_with_timezone,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_timestamp_with_tzoffset,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_datetime_in_timezone,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_the_class,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_still_the_same,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_class_name_preserved_by_decorator,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_class_decorator_ignores_nested_class,perform_operation#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_class_decorator_wraps_callable_object_py3,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_class_decorator_respects_staticmethod,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_direct_method,method#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_inherited_method,inherited_method#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_pickle.py,test_pickle_real_datetime,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_pickle.py,test_pickle_real_date,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_uuid.py,test_uuid1_future,time_from_uuid#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_uuid.py,test_uuid1_past,time_from_uuid#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_utils.py,test_should_not_skip_cpython,cpython_only#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_utils.py,test_should_skip_non_cpython,cpython_only#1
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_datetime,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_time_clock,time.clock#0
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_date,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_time,Unable to determine the focal method(s)
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_tick,tick#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_move_to,move_to#2
+freezegun,https://github.com/spulec/freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_monotonic,monotonic#0

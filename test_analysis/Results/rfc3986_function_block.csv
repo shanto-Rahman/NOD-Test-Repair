@@ -1,0 +1,835 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_api.py","test_uri_reference","def test_uri_reference():
+    assert isinstance(uri_reference(""http://example.com""), URIReference)"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_api.py","test_is_valid_uri","def test_is_valid_uri():
+    assert is_valid_uri(""http://example.com"") is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_api.py","test_normalize_uri","def test_normalize_uri():
+    assert normalize_uri(""HTTP://EXAMPLE.COM"") == ""http://example.com"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_from_parts","@pytest.mark.parametrize(
+    ""parts, unsplit"",
+    [
+        ((""https"", None, ""httpbin.org""), ""https://httpbin.org""),
+        ((""https"", ""user"", ""httpbin.org""), ""https://user@httpbin.org""),
+        (
+            (""https"", None, ""httpbin.org"", 443, ""/get""),
+            ""https://httpbin.org:443/get"",
+        ),
+        ((""HTTPS"", None, ""HTTPBIN.ORG""), ""https://httpbin.org""),
+    ],
+)
+def test_from_parts(parts, unsplit):
+    uri = pr.ParseResult.from_parts(*parts)
+    assert uri.unsplit() == unsplit"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_bytes_from_parts","@pytest.mark.parametrize(
+    ""parts, unsplit"",
+    [
+        ((""https"", None, ""httpbin.org""), b""https://httpbin.org""),
+        ((""https"", ""user"", ""httpbin.org""), b""https://user@httpbin.org""),
+        (
+            (""https"", None, ""httpbin.org"", 443, ""/get""),
+            b""https://httpbin.org:443/get"",
+        ),
+        ((""HTTPS"", None, ""HTTPBIN.ORG""), b""https://httpbin.org""),
+    ],
+)
+def test_bytes_from_parts(parts, unsplit):
+    uri = pr.ParseResultBytes.from_parts(*parts)
+    assert uri.unsplit() == unsplit"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_normalizes_uris_when_using_from_string","def test_normalizes_uris_when_using_from_string(uri_to_normalize):
+    """"""Verify we always get the same thing out as we expect.""""""
+    result = pr.ParseResult.from_string(uri_to_normalize, lazy_normalize=False)
+    assert result.scheme == ""https""
+    assert result.host == ""example.com"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_creates_a_copy_with_a_new_path","def test_creates_a_copy_with_a_new_path(uri_with_everything):
+    uri = pr.ParseResult.from_string(uri_with_everything)
+    new_uri = uri.copy_with(path=""/parse/result/tests/are/fun"")
+    assert new_uri.path == ""/parse/result/tests/are/fun"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_creates_a_copy_with_a_new_port","def test_creates_a_copy_with_a_new_port(basic_uri):
+    uri = pr.ParseResult.from_string(basic_uri)
+    new_uri = uri.copy_with(port=443)
+    assert new_uri.port == 443"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_parse_result_encodes_itself","def test_parse_result_encodes_itself(uri_with_everything):
+    uri = pr.ParseResult.from_string(uri_with_everything)
+    uribytes = uri.encode()
+    encoding = uri.encoding
+    assert uri.scheme.encode(encoding) == uribytes.scheme
+    assert uri.userinfo.encode(encoding) == uribytes.userinfo
+    assert uri.host.encode(encoding) == uribytes.host
+    assert uri.port == uribytes.port
+    assert uri.path.encode(encoding) == uribytes.path
+    assert uri.query.encode(encoding) == uribytes.query
+    assert uri.fragment.encode(encoding) == uribytes.fragment"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_uri_with_everything","    def test_uri_with_everything(self, uri_with_everything):
+        uri = pr.ParseResult.from_string(uri_with_everything)
+        assert uri.host == uri.hostname
+        assert uri.netloc == uri.authority
+        assert uri.query == uri.params
+        assert uri.geturl() == uri.unsplit()"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_handles_uri_with_everything","    def test_handles_uri_with_everything(self, uri_with_everything):
+        uri = pr.ParseResultBytes.from_string(uri_with_everything)
+        assert uri.scheme == b""https""
+        assert uri.path == b""/path/to/resource""
+        assert uri.query == b""key=value""
+        assert uri.fragment == b""fragment""
+        assert uri.userinfo == b""user:pass""
+        assert uri.port == 443
+        assert isinstance(uri.authority, bytes) is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_copy_with_a_new_path","    def test_copy_with_a_new_path(self, uri_with_everything):
+        uri = pr.ParseResultBytes.from_string(uri_with_everything)
+        new_uri = uri.copy_with(path=b""/parse/result/tests/are/fun"")
+        assert new_uri.path == b""/parse/result/tests/are/fun"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_copy_with_a_new_unicode_path","    def test_copy_with_a_new_unicode_path(self, uri_with_everything):
+        uri = pr.ParseResultBytes.from_string(uri_with_everything)
+        pathbytes = b""/parse/result/tests/are/fun"" + SNOWMAN
+        new_uri = uri.copy_with(path=pathbytes.decode(""utf-8""))
+        assert new_uri.path == (b""/parse/result/tests/are/fun"" + SNOWMAN)"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_unsplit","    def test_unsplit(self):
+        uri = pr.ParseResultBytes.from_string(
+            b""http://"" + SNOWMAN + b"".com/path"", strict=False
+        )
+        idna_encoded = SNOWMAN_IDNA_HOST.encode(""utf-8"") + b""/path""
+        assert uri.unsplit(use_idna=True) == idna_encoded"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_eager_normalization_from_string","    def test_eager_normalization_from_string(self):
+        uri = pr.ParseResultBytes.from_string(
+            b""http://"" + SNOWMAN + b"".com/path"",
+            strict=False,
+            lazy_normalize=False,
+        )
+        assert uri.unsplit() == b""http:/path"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_parseresult.py","test_eager_normalization_from_parts","    def test_eager_normalization_from_parts(self):
+        uri = pr.ParseResultBytes.from_parts(
+            scheme=""http"",
+            host=SNOWMAN.decode(""utf-8""),
+            path=""/path"",
+            lazy_normalize=False,
+        )
+        assert uri.unsplit() == b""http:/path"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_normalize_scheme","def test_normalize_scheme():
+    assert ""http"" == normalize_scheme(""htTp"")
+    assert ""http"" == normalize_scheme(""http"")
+    assert ""http"" == normalize_scheme(""HTTP"")"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_normalize_percent_characters","def test_normalize_percent_characters():
+    expected = ""%3Athis_should_be_lowercase%DF%AB%4C""
+    assert expected == normalize_percent_characters(
+        ""%3athis_should_be_lowercase%DF%ab%4c""
+    )
+    assert expected == normalize_percent_characters(
+        ""%3Athis_should_be_lowercase%DF%AB%4C""
+    )
+    assert expected == normalize_percent_characters(
+        ""%3Athis_should_be_lowercase%DF%aB%4C"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_remove_dot_segments","def test_remove_dot_segments(path_fixture):
+    to_normalize, expected = path_fixture
+    assert expected == remove_dot_segments(to_normalize)"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_normalized_equality","def test_normalized_equality(uris):
+    assert uris[0] == uris[1]"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_hostname_normalization","def test_hostname_normalization():
+    assert URIReference(None, ""EXAMPLE.COM"", None, None, None) == URIReference(
+        None, ""example.com"", None, None, None"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_authority_normalization","@pytest.mark.parametrize(
+    [""authority"", ""expected_authority""],
+    [
+        (""user%2aName@EXAMPLE.COM"", ""user%2AName@example.com""),
+        (""[::1%eth0]"", ""[::1%25eth0]""),
+    ],
+)
+def test_authority_normalization(authority, expected_authority):
+    uri = URIReference(None, authority, None, None, None).normalize()
+    assert uri.authority == expected_authority"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_fragment_normalization","def test_fragment_normalization():
+    uri = URIReference(None, ""example.com"", None, None, ""fiz%DF"").normalize()
+    assert uri.fragment == ""fiz%DF"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_detect_percent_encoded_component","@pytest.mark.parametrize(
+    [""component"", ""encoded_component""],
+    [
+        (""/%"", ""/%25""),
+        (""/~"", ""/~""),
+        (""/%a"", ""/%25a""),
+        (""/%ag"", ""/%25ag""),
+        (""/%af"", ""/%af""),
+        (""/%20/%"", ""/%2520/%25""),
+        (""/%20%25"", ""/%20%25""),
+        (""/%21%22%23%ah%12%ff"", ""/%2521%2522%2523%25ah%2512%25ff""),
+    ],
+)
+def test_detect_percent_encoded_component(component, encoded_component):
+    assert encode_component(component, ""utf-8"") == encoded_component"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_normalizers.py","test_normalize_host","@pytest.mark.parametrize(
+    [""host"", ""normalized_host""],
+    [
+        (""LOCALHOST"", ""localhost""),
+        (""[::1%eth0]"", ""[::1%25eth0]""),
+        (""[::1%25]"", ""[::1%2525]""),
+        (""[::1%%25]"", ""[::1%25%25]""),
+        (""[::1%25%25]"", ""[::1%25%25]""),
+        (""[::Af%Ff]"", ""[::af%25Ff]""),
+        (""[::Af%%Ff]"", ""[::af%25%Ff]""),
+        (""[::Af%25Ff]"", ""[::af%25Ff]""),
+    ],
+)
+def test_normalize_host(host, normalized_host):
+    assert normalize_host(host) == normalized_host"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_misc.py","test_merge_paths_with_base_path_without_base_authority","def test_merge_paths_with_base_path_without_base_authority():
+    """"""Demonstrate merging with a base URI without an authority.""""""
+    base = URIReference(
+        scheme=None,
+        authority=None,
+        path=""/foo/bar/bogus"",
+        query=None,
+        fragment=None,
+    )
+    expected = ""/foo/bar/relative""
+    assert merge_paths(base, ""relative"") == expected"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_misc.py","test_merge_paths_with_base_authority_and_path","def test_merge_paths_with_base_authority_and_path():
+    """"""Demonstrate merging with a base URI with an authority and path.""""""
+    base = URIReference(
+        scheme=None,
+        authority=""authority"",
+        path=""/foo/bar/bogus"",
+        query=None,
+        fragment=None,
+    )
+    expected = ""/foo/bar/relative""
+    assert merge_paths(base, ""relative"") == expected"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_misc.py","test_merge_paths_without_base_authority_or_path","def test_merge_paths_without_base_authority_or_path():
+    """"""Demonstrate merging with a base URI without an authority or path.""""""
+    base = URIReference(
+        scheme=None, authority=None, path=None, query=None, fragment=None
+    )
+    expected = ""/relative""
+    assert merge_paths(base, ""relative"") == expected"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_misc.py","test_merge_paths_with_base_authority_without_path","def test_merge_paths_with_base_authority_without_path():
+    """"""Demonstrate merging with a base URI without an authority or path.""""""
+    base = URIReference(
+        scheme=None,
+        authority=""authority"",
+        path=None,
+        query=None,
+        fragment=None,
+    )
+    expected = ""/relative""
+    assert merge_paths(base, ""relative"") == expected"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_iri.py","test_encode_iri","@requires_idna
+@iri_to_uri
+def test_encode_iri(iri, uri):
+    assert rfc3986.iri_reference(iri).encode().unsplit() == uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_iri.py","test_iri_equality","@iri_to_uri
+def test_iri_equality(iri, uri):
+    assert rfc3986.iri_reference(iri) == iri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_iri.py","test_iri_equality_special_cases","def test_iri_equality_special_cases():
+    assert rfc3986.iri_reference(""http://Bü:ẞ@βόλος.com/β/ό?λ#ος"") == (
+        ""http"",
+        ""Bü:ẞ@βόλος.com"",
+        ""/%CE%B2/%CF%8C"",
+        ""%CE%BB"",
+        ""%CE%BF%CF%82"",
+    )
+
+    with pytest.raises(TypeError):
+        rfc3986.iri_reference(""http://ẞ.com"") == 1"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_empty_querystrings_persist","def test_empty_querystrings_persist():
+    url = ""https://httpbin.org/get?""
+    ref = URIReference.from_string(url)
+    assert ref.query == """"
+    assert ref.unsplit() == url"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_wide_domain_bypass_check","def test_wide_domain_bypass_check():
+    """"""Verify we properly parse/handle the authority.
+
+    See also:
+    https://bugs.xdavidhu.me/google/2020/03/08/the-unexpected-google-wide-domain-check-bypass/
+    """"""
+    url = ""https://user:pass@xdavidhu.me\\test.corp.google.com:8080/path/to/something?param=value#hash""
+    ref = URIReference.from_string(url)
+    assert ref.scheme == ""https""
+    assert ref.host == ""xdavidhu.me"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_attributes_catch_InvalidAuthority","    def test_attributes_catch_InvalidAuthority(self, invalid_uri):
+        """"""Test that an invalid IPv6 is caught by authority_info().""""""
+        uri = URIReference.from_string(invalid_uri)
+        assert uri.host is None
+        assert uri.userinfo is None
+        assert uri.port is None"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_handles_absolute_path_uri","    def test_handles_absolute_path_uri(self, absolute_path_uri):
+        """"""Test that URIReference can handle a path-only URI.""""""
+        uri = URIReference.from_string(absolute_path_uri)
+        assert uri.path == absolute_path_uri
+        assert uri.authority_info() == {
+            ""userinfo"": None,
+            ""host"": None,
+            ""port"": None,"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_scheme_and_path_uri_is_valid","    def test_scheme_and_path_uri_is_valid(self, scheme_and_path_uri):
+        uri = self.test_class.from_string(scheme_and_path_uri)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_handles_scheme_and_path_uri","    def test_handles_scheme_and_path_uri(self, scheme_and_path_uri):
+        """"""Test that self.test_class can handle a `scheme:path` URI.""""""
+        uri = self.test_class.from_string(scheme_and_path_uri)
+        assert uri.path == ""user@example.com""
+        assert uri.scheme == ""mailto""
+        assert uri.query is None
+        assert uri.host is None
+        assert uri.port is None
+        assert uri.userinfo is None
+        assert uri.authority is None"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_parses_ipv6_to_path","    def test_parses_ipv6_to_path(self):
+        """"""Verify that we don't parse [ as a scheme.""""""
+        uri = self.test_class.from_string(""[::1]"")
+        assert uri.scheme is None
+        assert uri.authority is None
+        assert uri.path == ""[::1]"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_is_valid","    def test_basic_uri_is_valid(self, basic_uri):
+        uri = URIReference.from_string(basic_uri)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_requiring_scheme","    def test_basic_uri_requiring_scheme(self, basic_uri):
+        uri = URIReference.from_string(basic_uri)
+        assert uri.is_valid(require_scheme=True) is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_requiring_authority","    def test_basic_uri_requiring_authority(self, basic_uri):
+        uri = URIReference.from_string(basic_uri)
+        assert uri.is_valid(require_authority=True) is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_everything_requiring_path","    def test_uri_with_everything_requiring_path(self, uri_with_everything):
+        uri = URIReference.from_string(uri_with_everything)
+        assert uri.is_valid(require_path=True) is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_everything_requiring_query","    def test_uri_with_everything_requiring_query(self, uri_with_everything):
+        uri = URIReference.from_string(uri_with_everything)
+        assert uri.is_valid(require_query=True) is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_everything_requiring_fragment","    def test_uri_with_everything_requiring_fragment(self, uri_with_everything):
+        uri = URIReference.from_string(uri_with_everything)
+        assert uri.is_valid(require_fragment=True) is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_with_port_is_valid","    def test_basic_uri_with_port_is_valid(self, basic_uri_with_port):
+        uri = URIReference.from_string(basic_uri_with_port)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_port_and_userinfo_is_valid","    def test_uri_with_port_and_userinfo_is_valid(
+        self, uri_with_port_and_userinfo
+    ):
+        uri = URIReference.from_string(uri_with_port_and_userinfo)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_with_path_is_valid","    def test_basic_uri_with_path_is_valid(self, basic_uri_with_path):
+        uri = URIReference.from_string(basic_uri_with_path)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_path_and_query_is_valid","    def test_uri_with_path_and_query_is_valid(self, uri_with_path_and_query):
+        uri = URIReference.from_string(uri_with_path_and_query)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_everything_is_valid","    def test_uri_with_everything_is_valid(self, uri_with_everything):
+        uri = URIReference.from_string(uri_with_everything)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_relative_uri_is_valid","    def test_relative_uri_is_valid(self, relative_uri):
+        uri = URIReference.from_string(relative_uri)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_absolute_path_uri_is_valid","    def test_absolute_path_uri_is_valid(self, absolute_path_uri):
+        uri = URIReference.from_string(absolute_path_uri)
+        assert uri.is_valid() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_invalid_uri_is_not_valid","    def test_invalid_uri_is_not_valid(self, invalid_uri):
+        uri = URIReference.from_string(invalid_uri)
+        assert uri.is_valid() is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_invalid_scheme","    def test_invalid_scheme(self):
+        uri = URIReference(""123"", None, None, None, None)
+        assert uri.is_valid() is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_invalid_path","    def test_invalid_path(self):
+        uri = URIReference(None, None, ""foo#bar"", None, None)
+        assert uri.is_valid() is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_invalid_query_component","    def test_invalid_query_component(self):
+        uri = URIReference(None, None, None, ""foo#bar"", None)
+        assert uri.is_valid() is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_invalid_fragment_component","    def test_invalid_fragment_component(self):
+        uri = URIReference(None, None, None, None, ""foo#bar"")
+        assert uri.is_valid() is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_scheme_and_path_uri_unsplits","    def test_scheme_and_path_uri_unsplits(self, scheme_and_path_uri):
+        uri = self.test_class.from_string(scheme_and_path_uri)
+        assert uri.unsplit() == scheme_and_path_uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri","    def test_basic_uri(self, basic_uri):
+        uri = URIReference.from_string(basic_uri)
+        assert uri == basic_uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_with_port","    def test_basic_uri_with_port(self, basic_uri_with_port):
+        uri = URIReference.from_string(basic_uri_with_port)
+        assert uri == basic_uri_with_port"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_port_and_userinfo","    def test_uri_with_port_and_userinfo(self, uri_with_port_and_userinfo):
+        uri = URIReference.from_string(uri_with_port_and_userinfo)
+        assert uri == uri_with_port_and_userinfo"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_with_path","    def test_basic_uri_with_path(self, basic_uri_with_path):
+        uri = URIReference.from_string(basic_uri_with_path)
+        assert uri == basic_uri_with_path"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_path_and_query","    def test_uri_with_path_and_query(self, uri_with_path_and_query):
+        uri = URIReference.from_string(uri_with_path_and_query)
+        assert uri == uri_with_path_and_query"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_everything","    def test_uri_with_everything(self, uri_with_everything):
+        uri = URIReference.from_string(uri_with_everything)
+        assert uri == uri_with_everything"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_relative_uri","    def test_relative_uri(self, relative_uri):
+        uri = URIReference.from_string(relative_uri)
+        assert uri == relative_uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_absolute_path_uri","    def test_absolute_path_uri(self, absolute_path_uri):
+        uri = URIReference.from_string(absolute_path_uri)
+        assert uri == absolute_path_uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_scheme_and_path_uri","    def test_scheme_and_path_uri(self, scheme_and_path_uri):
+        uri = URIReference.from_string(scheme_and_path_uri)
+        assert uri == scheme_and_path_uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_same_basic_uri","    def test_same_basic_uri(self, basic_uri):
+        uri = URIReference.from_string(basic_uri)
+        assert uri == uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_different_basic_uris","    def test_different_basic_uris(self, basic_uri, basic_uri_with_port):
+        uri = URIReference.from_string(basic_uri)
+        assert (uri == URIReference.from_string(basic_uri_with_port)) is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uris_are_absolute","    def test_basic_uris_are_absolute(self, basic_uri):
+        uri = URIReference.from_string(basic_uri)
+        assert uri.is_absolute() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uris_with_ports_are_absolute","    def test_basic_uris_with_ports_are_absolute(self, basic_uri_with_port):
+        uri = URIReference.from_string(basic_uri_with_port)
+        assert uri.is_absolute() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uris_with_paths_are_absolute","    def test_basic_uris_with_paths_are_absolute(self, basic_uri_with_path):
+        uri = URIReference.from_string(basic_uri_with_path)
+        assert uri.is_absolute() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_everything_are_not_absolute","    def test_uri_with_everything_are_not_absolute(self, uri_with_everything):
+        uri = URIReference.from_string(uri_with_everything)
+        assert uri.is_absolute() is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_absolute_paths_are_not_absolute_uris","    def test_absolute_paths_are_not_absolute_uris(self, absolute_path_uri):
+        uri = URIReference.from_string(absolute_path_uri)
+        assert uri.is_absolute() is False"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uris_with_no_authority_with_query_only_are_absolute","    def test_uris_with_no_authority_with_query_only_are_absolute(
+        self,
+        uri_without_authority_with_query_only,
+    ):
+        uri = URIReference.from_string(uri_without_authority_with_query_only)
+        assert uri.is_absolute() is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_with_basic_and_relative_uris","    def test_with_basic_and_relative_uris(self, basic_uri, relative_uri):
+        R = URIReference.from_string(relative_uri)
+        B = URIReference.from_string(basic_uri)
+        T = R.resolve_with(basic_uri)
+        assert T.scheme == B.scheme
+        assert T.host == R.host
+        assert T.path == R.path"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_with_basic_and_absolute_path_uris","    def test_with_basic_and_absolute_path_uris(
+        self, basic_uri, absolute_path_uri
+    ):
+        R = URIReference.from_string(absolute_path_uri)
+        B = URIReference.from_string(basic_uri).normalize()
+        T = R.resolve_with(B)
+        assert T.scheme == B.scheme
+        assert T.host == B.host
+        assert T.path == R.path"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_with_basic_uri_and_relative_path","    def test_with_basic_uri_and_relative_path(self, basic_uri):
+        R = URIReference.from_string(""foo/bar/bogus"")
+        B = URIReference.from_string(basic_uri).normalize()
+        T = R.resolve_with(B)
+        assert T.scheme == B.scheme
+        assert T.host == B.host
+        assert T.path == ""/"" + R.path"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_with_path_and_relative_path","    def test_basic_uri_with_path_and_relative_path(self, basic_uri_with_path):
+        R = URIReference.from_string(""foo/bar/bogus"")
+        B = URIReference.from_string(basic_uri_with_path).normalize()
+        T = R.resolve_with(B)
+        assert T.scheme == B.scheme
+        assert T.host == B.host
+
+        index = B.path.rfind(""/"")
+        assert T.path == B.path[:index] + ""/"" + R.path"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_uri_with_just_scheme_resolves","    def test_uri_with_just_scheme_resolves(self, scheme_only):
+        R = URIReference.from_string(""foo/bar/bogus"")
+        B = URIReference.from_string(scheme_only)
+        T = R.resolve_with(B)
+        assert T.scheme == B.scheme.lower()
+        assert T.path == (""/"" + R.path)"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_basic_uri_resolves_itself","    def test_basic_uri_resolves_itself(self, basic_uri):
+        R = URIReference.from_string(basic_uri)
+        B = URIReference.from_string(basic_uri)
+        T = R.resolve_with(B)
+        assert T == B"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_differing_schemes","    def test_differing_schemes(self, basic_uri):
+        R = URIReference.from_string(""https://example.com/path"")
+        B = URIReference.from_string(basic_uri)
+        T = R.resolve_with(B)
+        assert T.scheme == R.scheme"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_resolve_pathless_fragment","    def test_resolve_pathless_fragment(self, basic_uri):
+        R = URIReference.from_string(""#fragment"")
+        B = URIReference.from_string(basic_uri)
+        T = R.resolve_with(B)
+        assert T.path is None
+        assert T.fragment == ""fragment"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_resolve_pathless_query","    def test_resolve_pathless_query(self, basic_uri):
+        R = URIReference.from_string(""?query"")
+        B = URIReference.from_string(basic_uri)
+        T = R.resolve_with(B)
+        assert T.path is None
+        assert T.query == ""query"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_uri.py","test_resolve_twice_for_cached_validator","    def test_resolve_twice_for_cached_validator(self, basic_uri):
+        R = URIReference.from_string("""")
+        B = URIReference.from_string(basic_uri)
+        T1 = R.resolve_with(B)
+        T2 = R.resolve_with(B)
+        assert T1 == T2
+        assert T1 == B"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_unicode_uri","def test_unicode_uri():
+    url_bytestring = SNOWMAN_PARAMS
+    unicode_url = url_bytestring.decode(""utf-8"")
+    uri = uri_reference(unicode_url)
+    assert uri.is_valid() is True
+    assert uri == ""http://example.com?utf8=%E2%98%83"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_unicode_uri_passed_as_bytes","def test_unicode_uri_passed_as_bytes():
+    url_bytestring = SNOWMAN_PARAMS
+    uri = uri_reference(url_bytestring)
+    assert uri.is_valid() is True
+    assert uri == ""http://example.com?utf8=%E2%98%83"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_unicode_authority","def test_unicode_authority():
+    url_bytestring = SNOWMAN_HOST
+    unicode_url = url_bytestring.decode(""utf-8"")
+    uri = uri_reference(unicode_url)
+    assert uri.is_valid() is False
+    assert uri == unicode_url"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_urlparse_a_unicode_hostname","def test_urlparse_a_unicode_hostname():
+    url_bytestring = SNOWMAN_HOST
+    unicode_url = url_bytestring.decode(""utf-8"")
+    parsed = urlparse(url_bytestring)
+    assert parsed.host == unicode_url[7:]"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_urlparse_a_unicode_hostname_with_auth","def test_urlparse_a_unicode_hostname_with_auth():
+    url = b""http://userinfo@"" + SNOWMAN + b"".com""
+    parsed = urlparse(url)
+    assert parsed.userinfo == ""userinfo"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_urlparse_idna_encoding_with_geturl","def test_urlparse_idna_encoding_with_geturl():
+    """"""https://github.com/python-hyper/rfc3986/issues/57""""""
+    parsed = urlparse(""https://i❤.ws"")
+    encoded = parsed.encode(""idna"")
+    assert encoded.encoding == ""idna""
+    assert encoded.geturl() == b""https://xn--i-7iq.ws"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_urlparse_an_invalid_authority_parses_port","def test_urlparse_an_invalid_authority_parses_port():
+    url = ""http://foo:b@r@[::1]:80/get""
+    parsed = urlparse(url)
+    assert parsed.port == 80
+    assert parsed.userinfo == ""foo:b@r""
+    assert parsed.hostname == ""[::1]"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_unicode_support.py","test_unsplit_idna_a_unicode_hostname","def test_unsplit_idna_a_unicode_hostname():
+    parsed = urlparse(SNOWMAN_HOST)
+    assert parsed.unsplit(use_idna=True) == SNOWMAN_IDNA_HOST"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_builder_default","def test_builder_default():
+    """"""Verify the default values.""""""
+    uribuilder = builder.URIBuilder()
+    assert uribuilder.scheme is None
+    assert uribuilder.userinfo is None
+    assert uribuilder.host is None
+    assert uribuilder.port is None
+    assert uribuilder.path is None
+    assert uribuilder.query is None
+    assert uribuilder.fragment is None"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_from_uri_reference","def test_from_uri_reference():
+    uri = uri_reference(""http://foo.bar:1234/baz"")
+    uribuilder = builder.URIBuilder().from_uri(uri)
+    assert uribuilder.scheme == ""http""
+    assert uribuilder.userinfo is None
+    assert uribuilder.host == ""foo.bar""
+    assert uribuilder.port == ""1234""
+    assert uribuilder.path == ""/baz""
+    assert uribuilder.query is None
+    assert uribuilder.fragment is None"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_from_uri_string","def test_from_uri_string():
+    uribuilder = builder.URIBuilder().from_uri(""https://bar.foo:4321/boom"")
+    assert uribuilder.scheme == ""https""
+    assert uribuilder.userinfo is None
+    assert uribuilder.host == ""bar.foo""
+    assert uribuilder.port == ""4321""
+    assert uribuilder.path == ""/boom""
+    assert uribuilder.query is None
+    assert uribuilder.fragment is None"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_repr","def test_repr():
+    """"""Verify our repr looks like our class.""""""
+    uribuilder = builder.URIBuilder()
+    assert repr(uribuilder).startswith(""URIBuilder(scheme=None"")"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_scheme","@pytest.mark.parametrize(
+    ""scheme"",
+    [
+        ""https"",
+        ""hTTps"",
+        ""Https"",
+        ""HtTpS"",
+        ""HTTPS"",
+    ],
+)
+def test_add_scheme(scheme):
+    """"""Verify schemes are normalized when added.""""""
+    uribuilder = builder.URIBuilder().add_scheme(scheme)
+    assert uribuilder.scheme == ""https"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_credentials","@pytest.mark.parametrize(
+    ""username, password, userinfo"",
+    [
+        (""user"", ""pass"", ""user:pass""),
+        (""user"", None, ""user""),
+        (""user@domain.com"", ""password"", ""user%40domain.com:password""),
+        (""user"", ""pass:word"", ""user:pass%3Aword""),
+    ],
+)
+def test_add_credentials(username, password, userinfo):
+    """"""Verify we normalize usernames and passwords.""""""
+    uribuilder = builder.URIBuilder().add_credentials(username, password)
+    assert uribuilder.userinfo == userinfo"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_host","@pytest.mark.parametrize(
+    [""hostname"", ""expected_hostname""],
+    [
+        (""google.com"", ""google.com""),
+        (""GOOGLE.COM"", ""google.com""),
+        (""gOOgLe.COM"", ""google.com""),
+        (""goOgLE.com"", ""google.com""),
+        (""[::ff%etH0]"", ""[::ff%25etH0]""),
+        (""[::ff%25etH0]"", ""[::ff%25etH0]""),
+        (""[::FF%etH0]"", ""[::ff%25etH0]""),
+    ],
+)
+def test_add_host(hostname, expected_hostname):
+    """"""Verify we normalize hostnames in add_host.""""""
+    uribuilder = builder.URIBuilder().add_host(hostname)
+    assert uribuilder.host == expected_hostname"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_port","@pytest.mark.parametrize(
+    ""port, expected"",
+    [
+        (0, ""0""),
+        (""0"", ""0""),
+        (1, ""1""),
+        (""1"", ""1""),
+        (22, ""22""),
+        (""22"", ""22""),
+        (80, ""80""),
+        (""80"", ""80""),
+        (443, ""443""),
+        (""443"", ""443""),
+        (65535, ""65535""),
+        (""65535"", ""65535""),
+    ],
+)
+def test_add_port(port, expected):
+    """"""Verify we normalize our port.""""""
+    uribuilder = builder.URIBuilder().add_port(port)
+    assert uribuilder.port == expected"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_path","@pytest.mark.parametrize(
+    ""path"",
+    [
+        ""sigmavirus24/rfc3986"",
+        ""/sigmavirus24/rfc3986"",
+    ],
+)
+def test_add_path(path):
+    """"""Verify we normalize our path value.""""""
+    uribuilder = builder.URIBuilder().add_path(path)
+    assert uribuilder.path == ""/sigmavirus24/rfc3986"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_query_from","@pytest.mark.parametrize(
+    ""query_items, expected"",
+    [
+        ({""a"": ""b c""}, ""a=b+c""),
+        ({""a"": ""b+c""}, ""a=b%2Bc""),
+        ([(""a"", ""b c"")], ""a=b+c""),
+        ([(""a"", ""b+c"")], ""a=b%2Bc""),
+        ([(""a"", ""b""), (""c"", ""d"")], ""a=b&c=d""),
+        ([(""a"", ""b""), (""username"", ""@d"")], ""a=b&username=%40d""),
+        ([(""percent"", ""%"")], ""percent=%25""),
+    ],
+)
+def test_add_query_from(query_items, expected):
+    """"""Verify the behaviour of add_query_from.""""""
+    uribuilder = builder.URIBuilder().add_query_from(query_items)
+    assert uribuilder.query == expected"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_query","def test_add_query():
+    """"""Verify we do not modify the provided query string.""""""
+    uribuilder = builder.URIBuilder().add_query(""username=@foo"")
+    assert uribuilder.query == ""username=@foo"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_add_fragment","def test_add_fragment():
+    """"""Verify our handling of fragments.""""""
+    uribuilder = builder.URIBuilder().add_fragment(""section-2.5.1"")
+    assert uribuilder.fragment == ""section-2.5.1"""
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_extend_path","@pytest.mark.parametrize(
+    ""uri, extend_with, expected_path"",
+    [
+        (""https://api.github.com"", ""/users"", ""/users""),
+        (""https://api.github.com"", ""/users/"", ""/users/""),
+        (""https://api.github.com"", ""users"", ""/users""),
+        (""https://api.github.com"", ""users/"", ""/users/""),
+        ("""", ""users/"", ""/users/""),
+        ("""", ""users"", ""/users""),
+        (""?foo=bar"", ""users"", ""/users""),
+        (
+            ""https://api.github.com/users/"",
+            ""sigmavirus24"",
+            ""/users/sigmavirus24"",
+        ),
+        (
+            ""https://api.github.com/users"",
+            ""sigmavirus24"",
+            ""/users/sigmavirus24"",
+        ),
+        (
+            ""https://api.github.com/users"",
+            ""/sigmavirus24"",
+            ""/users/sigmavirus24"",
+        ),
+    ],
+)
+def test_extend_path(uri, extend_with, expected_path):
+    """"""Verify the behaviour of extend_path.""""""
+    uribuilder = (
+        builder.URIBuilder()
+        .from_uri(uri_reference(uri))
+        .extend_path(extend_with)
+    )
+    assert uribuilder.path == expected_path"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_extend_query_with","@pytest.mark.parametrize(
+    ""uri, extend_with, expected_query"",
+    [
+        (
+            ""https://github.com"",
+            [(""a"", ""b c""), (""d"", ""e&f"")],
+            {""a"": [""b c""], ""d"": [""e&f""]},
+        ),
+        (
+            ""https://github.com?a=0"",
+            [(""a"", ""b c""), (""d"", ""e&f"")],
+            {""a"": [""0"", ""b c""], ""d"": [""e&f""]},
+        ),
+        (
+            ""https://github.com?a=0&e=f"",
+            [(""a"", ""b c""), (""d"", ""e&f"")],
+            {""a"": [""0"", ""b c""], ""e"": [""f""], ""d"": [""e&f""]},
+        ),
+        (
+            ""https://github.com"",
+            {""a"": ""b c"", ""d"": ""e&f""},
+            {""a"": [""b c""], ""d"": [""e&f""]},
+        ),
+        (
+            ""https://github.com?a=0"",
+            {""a"": ""b c"", ""d"": ""e&f""},
+            {""a"": [""0"", ""b c""], ""d"": [""e&f""]},
+        ),
+        (
+            ""https://github.com?a=0&e=f"",
+            {""a"": ""b c"", ""d"": ""e&f""},
+            {""a"": [""0"", ""b c""], ""e"": [""f""], ""d"": [""e&f""]},
+        ),
+    ],
+)
+def test_extend_query_with(uri, extend_with, expected_query):
+    """"""Verify the behaviour of extend_query_with.""""""
+    uribuilder = (
+        builder.URIBuilder()
+        .from_uri(uri_reference(uri))
+        .extend_query_with(extend_with)
+    )
+    assert parse_qs(uribuilder.query) == expected_query"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_finalize","def test_finalize():
+    """"""Verify the whole thing.""""""
+    uri = (
+        builder.URIBuilder()
+        .add_scheme(""https"")
+        .add_credentials(""sigmavirus24"", ""not-my-re@l-password"")
+        .add_host(""github.com"")
+        .add_path(""sigmavirus24/rfc3986"")
+        .finalize()
+        .unsplit()
+    )
+    expected = (
+        ""https://sigmavirus24:not-my-re%40l-password@github.com/""
+        ""sigmavirus24/rfc3986""
+    )
+    assert expected == uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_builder.py","test_geturl","def test_geturl():
+    """"""Verify the short-cut to the URL.""""""
+    uri = (
+        builder.URIBuilder()
+        .add_scheme(""https"")
+        .add_credentials(""sigmavirus24"", ""not-my-re@l-password"")
+        .add_host(""github.com"")
+        .add_path(""sigmavirus24/rfc3986"")
+        .geturl()
+    )
+    expected = (
+        ""https://sigmavirus24:not-my-re%40l-password@github.com/""
+        ""sigmavirus24/rfc3986""
+    )
+    assert expected == uri"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_defaults","def test_defaults():
+    """"""Verify the default Validator settings.""""""
+    validator = validators.Validator()
+
+    assert validator.required_components == {
+        c: False for c in validator.COMPONENT_NAMES
+    }
+    assert validator.allow_password is True
+    assert validator.allowed_schemes == set()
+    assert validator.allowed_hosts == set()
+    assert validator.allowed_ports == set()"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_allowing_schemes","def test_allowing_schemes():
+    """"""Verify the ability to select schemes to be allowed.""""""
+    validator = validators.Validator().allow_schemes(""http"", ""https"")
+
+    assert ""http"" in validator.allowed_schemes
+    assert ""https"" in validator.allowed_schemes"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_allowing_hosts","def test_allowing_hosts():
+    """"""Verify the ability to select hosts to be allowed.""""""
+    validator = validators.Validator().allow_hosts(
+        ""pypi.python.org"",
+        ""pypi.org"",
+    )
+
+    assert ""pypi.python.org"" in validator.allowed_hosts
+    assert ""pypi.org"" in validator.allowed_hosts"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_allowing_ports","def test_allowing_ports():
+    """"""Verify the ability select ports to be allowed.""""""
+    validator = validators.Validator().allow_ports(""80"", ""100"")
+
+    assert ""80"" in validator.allowed_ports
+    assert ""100"" in validator.allowed_ports"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_use_of_password","def test_use_of_password():
+    """"""Verify the behaviour of {forbid,allow}_use_of_password.""""""
+    validator = validators.Validator()
+    assert validator.allow_password is True
+
+    validator.forbid_use_of_password()
+    assert validator.allow_password is False
+
+    validator.allow_use_of_password()
+    assert validator.allow_password is True"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_multiple_missing_components","@pytest.mark.parametrize(
+    ""uri"",
+    [
+        rfc3986.uri_reference(""//google.com""),
+        rfc3986.uri_reference(""//google.com?query=value""),
+        rfc3986.uri_reference(""//google.com#fragment""),
+    ],
+)
+def test_multiple_missing_components(uri):
+    """"""Verify that multiple missing components are caught.""""""
+    validator = validators.Validator().require_presence_of(""scheme"", ""path"")
+    with pytest.raises(exceptions.MissingComponentError) as captured_exc:
+        validator.validate(uri)
+    exception = captured_exc.value
+    assert 2 == len(exception.args[-1])"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_allowed_hosts_and_schemes","@pytest.mark.parametrize(
+    ""uri, failed_component"",
+    [
+        (rfc3986.uri_reference(""git://github.com""), ""scheme""),
+        (rfc3986.uri_reference(""http://github.com""), ""scheme""),
+        (rfc3986.uri_reference(""ssh://gitlab.com""), ""host""),
+        (rfc3986.uri_reference(""https://gitlab.com""), ""host""),
+    ],
+)
+def test_allowed_hosts_and_schemes(uri, failed_component):
+    """"""Verify each of these fails.""""""
+    validator = (
+        validators.Validator()
+        .allow_schemes(
+            ""https"",
+            ""ssh"",
+        )
+        .allow_hosts(
+            ""github.com"",
+            ""git.openstack.org"",
+        )
+    )
+    with pytest.raises(exceptions.UnpermittedComponentError) as caught_exc:
+        validator.validate(uri)
+
+    exc = caught_exc.value
+    assert exc.component_name == failed_component"
+"rfc3986","https://github.com/python-hyper/rfc3986","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/rfc3986/tests/test_validators.py","test_validating_rfc_4007_ipv6_zone_ids","def test_validating_rfc_4007_ipv6_zone_ids():
+    """"""Verify that RFC 4007 IPv6 Zone IDs are invalid
+    host/authority but after normalization are valid
+    """"""
+    uri = rfc3986.uri_reference(""http://[::1%eth0]"")
+    with pytest.raises(exceptions.InvalidComponentsError):
+        validators.Validator().check_validity_of(""host"").validate(uri)
+
+    uri = uri.normalize()
+    assert uri.host == ""[::1%25eth0]""
+
+    validators.Validator().check_validity_of(""host"").validate(uri)"

@@ -1,0 +1,82 @@
+Proj_name,File_name,method,args,types,internal_calls,external_calls,api_calls,branch_count,branch_type
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_false,1,Unknown,0,0,6,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_module_import_error,1,Unknown,0,0,9,2,with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_module_not_available,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_true,1,Unknown,0,0,8,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_deprecated_is_instance,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_deprecated_underscore_baseitem,1,Unknown,0,0,6,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_deprecated_baseitem,1,Unknown,0,0,6,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_scrapy.py,test_removed_baseitem,1,Unknown,0,0,8,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_attrs.py,test_false,1,Unknown,0,0,7,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_attrs.py,test_module_import_error,1,Unknown,0,0,12,5,with#with#with#with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_attrs.py,test_module_not_available,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_attrs.py,test_true,1,Unknown,0,0,8,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_attrs.py,test_deprecated_is_instance,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_pydantic.py,test_false,1,Unknown,0,0,7,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_pydantic.py,test_module_import_error,1,Unknown,0,0,9,2,with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_pydantic.py,test_module_not_available,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_pydantic.py,test_true,1,Unknown,0,0,8,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_pydantic.py,test_deprecated_is_instance,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_itemadapter.py,test_repr,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_itemadapter.py,test_repr_subclass,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_dataclasses.py,test_false,1,Unknown,0,0,7,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_dataclasses.py,test_true,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter_dataclasses.py,test_deprecated_is_instance,1,Unknown,0,0,7,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_interface_class_methods,1,Unknown,0,0,6,2,with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,__init__,1,Unknown,0,0,0,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,is_item_class,2,Unknown#Name(id='type'; ctx=Load()),0,0,1,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,__getitem__,2,Unknown#Name(id='str'; ctx=Load()),0,0,1,1,comparison
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,__setitem__,3,Unknown#Name(id='str'; ctx=Load())#Name(id='Any'; ctx=Load()),0,0,1,1,comparison
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,__delitem__,2,Unknown#Name(id='str'; ctx=Load()),0,0,1,1,boolean
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,__iter__,1,Unknown,0,0,1,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,__len__,1,Unknown,0,0,1,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,field_names,1,Unknown,0,0,3,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,get_field_meta_from_class,3,Unknown#Name(id='type'; ctx=Load())#Name(id='str'; ctx=Load()),0,0,2,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,setUp,1,Unknown,0,0,1,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,tearDown,1,Unknown,0,0,1,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_repr,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_get_set_value,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_get_set_value_init,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_get_value_keyerror,1,Unknown,0,0,3,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_as_dict,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_set_value_keyerror,1,Unknown,0,0,3,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_delitem_len_iter,1,Unknown,0,0,8,3,with#with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_get_value_keyerror_item_dict,1,Unknown,0,0,3,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_get_field_meta,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_get_field_meta_from_class,1,Unknown,0,0,3,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_interface.py,test_field_names,1,Unknown,0,0,6,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_invalid_item_class,1,Unknown,0,0,2,2,with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_empty_meta_for_dict,1,Unknown,0,0,3,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_false,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_true_dict,1,Unknown,0,0,3,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_true_scrapy,1,Unknown,0,0,6,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_true_dataclass,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_true_attrs,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_utils.py,test_true_pydantic,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/__init__.py,make_mock_import,1,Name(id='str'; ctx=Load()),0,0,0,1,comparison
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/__init__.py,mock_import,1,Name(id='str'; ctx=Load()),0,0,3,1,comparison
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/__init__.py,clear_itemadapter_imports,0,,0,0,4,3,for#function call#try
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_repr_dict,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_repr_scrapy_item,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_repr_dataclass,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_repr_dataclass_init_false,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_repr_attrs,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_repr_attrs_init_false,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_repr_pydantic,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_non_item,1,Unknown,0,0,2,3,with#with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,setUp,1,Unknown,0,0,1,1,comparison
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_get_set_value,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_get_value_keyerror,1,Unknown,0,0,3,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_as_dict,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_as_dict_nested,1,Unknown,0,0,6,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_field_names,1,Unknown,0,0,6,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_set_value_keyerror,1,Unknown,0,0,3,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_metadata_common,1,Unknown,0,0,5,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_get_field_meta_defined_fields,1,Unknown,0,0,5,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_delitem_len_iter,1,Unknown,0,0,8,3,with#with#with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_field_names_from_class,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_field_names_from_class_nested,1,Unknown,0,0,4,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_field_names_from_class_empty,1,Unknown,0,0,3,0,None
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_get_value_keyerror_item_dict,1,Unknown,0,0,3,1,with
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_empty_metadata,1,Unknown,0,0,5,1,for
+itemadapter,https://github.com/scrapy/itemadapter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py,test_field_names_updated,1,Unknown,0,0,4,0,None

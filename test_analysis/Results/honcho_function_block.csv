@@ -1,0 +1,937 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_invocation.py","test_runpy_invoke","def test_runpy_invoke():
+    """"""
+    Ensure honcho can also be invoked using runpy (python -m)
+    """"""
+    cmd = [sys.executable, '-m', 'honcho', 'version']
+    output = subprocess.check_output(cmd, universal_newlines=True)
+    assert re.match(r'honcho \d\.\d\.\d.*\n', output)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_systemd.py","test_render_master","    def test_render_master(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        master = self.File('elephant.target', self.master.render.return_value)
+        assert master in out
+
+        expected = {'app': 'elephant',
+                    'master_wants': 'elephant-web.target',
+                    'process_groups': [('elephant-web', [('elephant-web-1', FIX_1PROC[0])])],
+                    'process_master_wants': 'elephant-web-1.service', 'process': FIX_1PROC[0]}
+
+        self.master.render.assert_called_once_with(expected)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_systemd.py","test_render_process_master","    def test_render_process_master(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        process_master = self.File('elephant-web.target',
+                                   self.process_master.render.return_value)
+        assert process_master in out
+
+        expected = {'app': 'elephant',
+                    'master_wants': 'elephant-web.target',
+                    'process_groups': [('elephant-web', [('elephant-web-1', FIX_1PROC[0])])],
+                    'process_master_wants': 'elephant-web-1.service', 'process': FIX_1PROC[0]}
+        self.process_master.render.assert_called_once_with(expected)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_systemd.py","test_render_process","    def test_render_process(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        process = self.File('elephant-web-1.service',
+                            self.process.render.return_value)
+        assert process in out
+
+        expected = {'app': 'elephant',
+                    'master_wants': 'elephant-web.target',
+                    'process_groups': [('elephant-web', [('elephant-web-1', FIX_1PROC[0])])],
+                    'process_master_wants': 'elephant-web-1.service', 'process': FIX_1PROC[0]}
+        self.process.render.assert_called_once_with(expected)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_systemd.py","test_render_multiple_process_groups","    def test_render_multiple_process_groups(self):
+        out = list(self.export.render(FIX_NPROC, {'app': 'elephant'}))
+
+        assert self.File('elephant-web.target',
+                         self.process_master.render.return_value) in out
+        assert self.File('elephant-worker.target',
+                         self.process_master.render.return_value) in out
+
+        expected = [call({'app': 'elephant', 'master_wants': 'elephant-web.target elephant-worker.target',
+                          'process_groups': [('elephant-web', [('elephant-web-1', FIX_NPROC[0])]), (
+                              'elephant-worker', [('elephant-worker-1', FIX_NPROC[1]),
+                                                  ('elephant-worker-2', FIX_NPROC[2])])],
+                          'process_master_wants': 'elephant-worker-1.service elephant-worker-2.service',
+                          'process': FIX_NPROC[2]}),
+                    call({'app': 'elephant', 'master_wants': 'elephant-web.target elephant-worker.target',
+                          'process_groups': [('elephant-web', [('elephant-web-1', FIX_NPROC[0])]), (
+                              'elephant-worker', [('elephant-worker-1', FIX_NPROC[1]),
+                                                  ('elephant-worker-2', FIX_NPROC[2])])],
+                          'process_master_wants': 'elephant-worker-1.service elephant-worker-2.service',
+                          'process': FIX_NPROC[2]})]
+
+        assert self.process_master.render.call_args_list == expected"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_systemd.py","test_render_multiple_processes","    def test_render_multiple_processes(self):
+        out = list(self.export.render(FIX_NPROC, {'app': 'elephant'}))
+
+        assert self.File('elephant-web-1.service',
+                         self.process.render.return_value) in out
+        assert self.File('elephant-worker-1.service',
+                         self.process.render.return_value) in out
+        assert self.File('elephant-worker-2.service',
+                         self.process.render.return_value) in out
+
+        print(self.process.render.call_args_list)
+        expected = call({'app': 'elephant', 'master_wants': 'elephant-web.target elephant-worker.target',
+                         'process_groups': [('elephant-web', [('elephant-web-1', FIX_NPROC[0])]), (
+                             'elephant-worker', [('elephant-worker-1', FIX_NPROC[1]),
+                                                 ('elephant-worker-2', FIX_NPROC[2])])],
+                         'process_master_wants': 'elephant-worker-1.service elephant-worker-2.service',
+                         'process': FIX_NPROC[2]})
+        expected = [expected] * 3
+        assert self.process.render.call_args_list == expected"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_base.py","test_dashrepl","@pytest.mark.parametrize('name_in,name_out', (
+    ('foo', 'foo'),
+    ('foo.1', 'foo-1'),
+    ('foo.bar.baz', 'foo-bar-baz'),
+    ('foo_bar_baz', 'foo_bar_baz'),
+    ('foo!bar:baz', 'foo-bar-baz'),
+    ('καλημέρα.κόσμε', 'καλημέρα-κόσμε'),
+))
+def test_dashrepl(name_in, name_out):
+    assert dashrepl(name_in) == name_out"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_base.py","test_percentescape","@pytest.mark.parametrize('val_in,val_out', (
+    ('foo', 'foo'),
+    ('foo name.%h', 'foo name.%%h'),
+    ('%one two% %three', '%%one two%% %%three'),
+    ('foo%%bar', 'foo%%%%bar'),
+))
+def test_percentescape(val_in, val_out):
+    assert percentescape(val_in) == val_out"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_upstart.py","test_render_master","    def test_render_master(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        master = self.File('elephant.conf', self.master.render.return_value)
+        assert master in out
+
+        self.master.render.assert_called_once_with({'app': 'elephant'})"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_upstart.py","test_render_process_master","    def test_render_process_master(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        process_master = self.File('elephant-web.conf',
+                                   self.process_master.render.return_value)
+        assert process_master in out
+
+        expected = {'app': 'elephant',
+                    'group_name': 'elephant-web'}
+        self.process_master.render.assert_called_once_with(expected)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_upstart.py","test_render_process","    def test_render_process(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        process = self.File('elephant-web-1.conf',
+                            self.process.render.return_value)
+        assert process in out
+
+        expected = {'app': 'elephant',
+                    'group_name': 'elephant-web',
+                    'process': FIX_1PROC[0]}
+        self.process.render.assert_called_once_with(expected)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_upstart.py","test_render_multiple_process_groups","    def test_render_multiple_process_groups(self):
+        out = list(self.export.render(FIX_NPROC, {'app': 'elephant'}))
+
+        assert self.File('elephant-web.conf',
+                         self.process_master.render.return_value) in out
+        assert self.File('elephant-worker.conf',
+                         self.process_master.render.return_value) in out
+
+        expected = [call({'app': 'elephant',
+                          'group_name': 'elephant-web'}),
+                    call({'app': 'elephant',
+                          'group_name': 'elephant-worker'})]
+        assert self.process_master.render.call_args_list == expected"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_upstart.py","test_render_multiple_processes","    def test_render_multiple_processes(self):
+        out = list(self.export.render(FIX_NPROC, {'app': 'elephant'}))
+
+        assert self.File('elephant-web-1.conf',
+                         self.process.render.return_value) in out
+        assert self.File('elephant-worker-1.conf',
+                         self.process.render.return_value) in out
+        assert self.File('elephant-worker-2.conf',
+                         self.process.render.return_value) in out
+
+        expected = [call({'app': 'elephant',
+                          'group_name': 'elephant-web',
+                          'process': FIX_NPROC[0]}),
+                    call({'app': 'elephant',
+                          'group_name': 'elephant-worker',
+                          'process': FIX_NPROC[1]}),
+                    call({'app': 'elephant',
+                          'group_name': 'elephant-worker',
+                          'process': FIX_NPROC[2]})]
+        assert self.process.render.call_args_list == expected"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_colour.py","test_colours","def test_colours():
+    assert colour.red == '31'
+    assert colour.intense_red == '31;1'
+    assert colour.cyan == '36'
+    assert colour.intense_cyan == '36;1'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_colour.py","test_get_colours","def test_get_colours():
+    gen = colour.get_colours()
+
+    expect = ['cyan', 'yellow', 'green', 'magenta', 'red', 'blue']
+    expect = [getattr(colour, x) for x in expect]
+    actual = [next(gen) for _ in range(6)]
+
+    assert expect == actual"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write","    def test_write(self):
+        out = FakeOutput()
+        p = Printer(output=out)
+        p.write(fake_message(""monkeys\n""))
+        assert out.string() == ""12:42:00 | monkeys\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_invalid_utf8","    def test_write_invalid_utf8(self):
+        out = FakeOutput()
+        p = Printer(output=out)
+        p.write(fake_message(b""\xfe\xff\n""))
+        assert out.string() == ""12:42:00 | \ufffd\ufffd\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_no_newline","    def test_write_no_newline(self):
+        out = FakeOutput()
+        p = Printer(output=out)
+        p.write(fake_message(""monkeys""))
+        assert out.string() == ""12:42:00 | monkeys\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_multiline","    def test_write_multiline(self):
+        out = FakeOutput()
+        p = Printer(output=out)
+        p.write(fake_message(""one\ntwo\nthree\n""))
+        expect = ""12:42:00 | one\n12:42:00 | two\n12:42:00 | three\n""
+        assert out.string() == expect"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_with_name","    def test_write_with_name(self):
+        out = FakeOutput()
+        p = Printer(output=out)
+        p.write(fake_message(""quiescent\n"", name=""Robert Louis Stevenson""))
+        assert out.string() == ""12:42:00 Robert Louis Stevenson | quiescent\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_with_set_width","    def test_write_with_set_width(self):
+        out = FakeOutput()
+        p = Printer(output=out, width=6)
+        p.write(fake_message(""giraffe\n""))
+        assert out.string() == ""12:42:00        | giraffe\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_with_name_and_set_width","    def test_write_with_name_and_set_width(self):
+        out = FakeOutput()
+        p = Printer(output=out, width=6)
+        p.write(fake_message(""narcissist\n"", name=""oop""))
+        assert out.string() == ""12:42:00 oop    | narcissist\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_with_colour_tty","    def test_write_with_colour_tty(self):
+        out = FakeTTY()
+        p = Printer(output=out)
+        p.write(fake_message(""conflate\n"", name=""foo"", colour=""31""))
+        assert out.string() == ""\033[0m\033[31m12:42:00 foo | \033[0mconflate\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_with_colour_non_tty","    def test_write_with_colour_non_tty(self):
+        out = FakeOutput()
+        p = Printer(output=out)
+        p.write(fake_message(""conflate\n"", name=""foo"", colour=""31""))
+        assert out.string() == ""12:42:00 foo | conflate\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_without_prefix_tty","    def test_write_without_prefix_tty(self):
+        out = FakeTTY()
+        p = Printer(output=out, prefix=False, colour=True)
+        p.write(fake_message(""paranoid android\n"", name=""foo"", colour=""31""))
+        assert out.string() == ""paranoid android\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_without_prefix_and_colour_tty","    def test_write_without_prefix_and_colour_tty(self):
+        out = FakeTTY()
+        p = Printer(output=out, prefix=False, colour=False)
+        p.write(fake_message(""paranoid android\n"", name=""foo"", colour=""31""))
+        assert out.string() == ""paranoid android\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_without_colour_tty","    def test_write_without_colour_tty(self):
+        out = FakeTTY()
+        p = Printer(output=out, prefix=True, colour=False)
+        p.write(fake_message(""paranoid android\n"", name=""foo"", colour=""31""))
+        assert out.string() == ""12:42:00 foo | paranoid android\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_without_prefix_non_tty","    def test_write_without_prefix_non_tty(self):
+        out = FakeOutput()
+        p = Printer(output=out, prefix=False)
+        p.write(fake_message(""paranoid android\n"", name=""foo"", colour=""31""))
+        assert out.string() == ""paranoid android\n"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_printer.py","test_write_flushes_output","    def test_write_flushes_output(self):
+        out = FakeOutput()
+        p = Printer(output=out, prefix=False)
+        p.write(fake_message(""paranoid android\n""))
+        assert out.flushcount == 1"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_init_sets_default_printer_width","    def test_init_sets_default_printer_width(self):
+        assert self.p.width == len(SYSTEM_PRINTER_NAME)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_add_process_updates_printer_width","    def test_add_process_updates_printer_width(self):
+        self.m.add_process('interesting', 'ruby server.rb')
+        assert self.p.width == len('interesting')"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_add_process_sets_name","    def test_add_process_sets_name(self):
+        proc = self.m.add_process('foo', 'ruby server.rb')
+        assert proc.name == 'foo'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_add_process_sets_cmd","    def test_add_process_sets_cmd(self):
+        proc = self.m.add_process('foo', 'ruby server.rb')
+        assert proc.cmd == 'ruby server.rb'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_add_process_sets_colour","    def test_add_process_sets_colour(self):
+        proc = self.m.add_process('foo', 'ruby server.rb')
+        assert proc.colour is not None"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_add_process_sets_unique_colours","    def test_add_process_sets_unique_colours(self):
+        p1 = self.m.add_process('foo', 'ruby server.rb')
+        p2 = self.m.add_process('bar', 'python server.py')
+        assert p1.colour != p2.colour"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_add_process_sets_quiet","    def test_add_process_sets_quiet(self):
+        proc = self.m.add_process('foo', 'ruby server.rb', quiet=True)
+        assert proc.quiet"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_add_process_sets_cwd","    def test_add_process_sets_cwd(self):
+        proc = self.m.add_process('foo', 'ruby server.rb', cwd='foo-dir')
+        assert proc.cwd == 'foo-dir'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_loop_calls_process_run","    def test_loop_calls_process_run(self):
+        self.run_history('one')
+        evts = self.h.find_events(type='run')
+        assert len(evts) == 1
+        assert evts[0]['name'] == 'foo'
+        assert evts[0]['events_passed']"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_printer_receives_messages_in_correct_order","    def test_printer_receives_messages_in_correct_order(self):
+        self.run_history('one')
+        self.p.fetch_lines()
+        assert self.p.lines_local[0].data == 'foo started (pid=123)\n'
+        assert self.p.lines_local[1].data == b'hello, world!\n'
+        assert self.p.lines_local[2].data == 'foo stopped (rc=0)\n'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_printer_receives_lines_multi_process","    def test_printer_receives_lines_multi_process(self):
+        self.run_history('two')
+        l1 = self.p.find_line(b'process one\n')
+        l2 = self.p.find_line(b'process two\n')
+        assert l1.name == 'foo'
+        assert l2.name == 'bar'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_returncode_set_by_first_exiting_process","    def test_returncode_set_by_first_exiting_process(self):
+        self.run_history('returncode')
+        assert self.h.manager_returncode == 456"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_manager.py","test_printer_receives_lines_after_stop","    def test_printer_receives_lines_after_stop(self):
+        self.run_history('output_after_stop')
+        assert self.p.got_line(b'fishmongers\n')
+        assert self.p.got_line(b'butchers\n')"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_runit.py","test_render","    def test_render(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        run = _files_named('elephant-web-1/run', out)
+        log = _files_named('elephant-web-1/log/run', out)
+        assert len(run) == 1
+        assert run[0].executable
+        assert len(log) == 1
+        assert log[0].executable"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_runit.py","test_render_env","    def test_render_env(self):
+        out = list(self.export.render(FIX_1PROC, {'app': 'elephant'}))
+
+        env = _files_named('elephant-web-1/env/FOO', out)
+        assert len(env) == 1
+        assert env[0].content == 'bar'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_command.py","test_command_equivalence","@pytest.mark.parametrize('commands', [
+    # Regression test for #173
+    [
+        ['start', '-f', 'Procfile'],
+        ['-f', 'Procfile', 'start'],
+    ],
+    # Regression tests for #223
+    [
+        ['start', '--no-prefix'],
+        ['--no-prefix', 'start'],
+    ],
+    [
+        ['start', '--no-colour'],
+        ['--no-colour', 'start'],
+    ],
+    [
+        ['start', '--no-prefix', '--no-colour'],
+        ['--no-colour', 'start', '--no-prefix'],
+        ['--no-prefix', 'start', '--no-colour'],
+        ['--no-prefix','--no-colour', 'start'],
+    ]
+])
+def test_command_equivalence(commands):
+    if len(commands) < 2:
+        pytest.fail(""Must supply at least two commands"")
+
+    reference_args = commands.pop(0)
+    reference_result = command.parser.parse_args(reference_args)
+
+    for args in commands:
+        result = command.parser.parse_args(args)
+        assert result == reference_result"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_command.py","test_port_precedence","def test_port_precedence(monkeypatch):
+    # Nothing specified -- should return default
+    args = command.parser.parse_args(['start'])
+    result = command.map_from(args)['port']
+    assert result == '5000'
+
+    # OS environment override
+    monkeypatch.setenv('PORT', '4200')
+    result = command.map_from(args)['port']
+    assert result == '4200'
+
+    # App environment override
+    # FIXME: find a better test seam for this
+    def _read_env(app_root, env):
+        return {'PORT': '4300'}
+    monkeypatch.setattr(command, '_read_env', _read_env)
+    args = command.parser.parse_args(['start'])
+    result = command.map_from(args)['port']
+    assert result == '4300'
+
+    # CLI override
+    args = command.parser.parse_args(['start', '-p', '4400'])
+    result = command.map_from(args)['port']
+    assert result == '4400'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_command.py","test_procfile_precedence","def test_procfile_precedence(monkeypatch):
+    # Nothing specified -- should return default
+    args = command.parser.parse_args(['start'])
+    result = command.map_from(args)['procfile']
+    assert result == 'Procfile'
+
+    # OS environment override
+    monkeypatch.setenv('PROCFILE', 'Procfile.osenv')
+    result = command.map_from(args)['procfile']
+    assert result == 'Procfile.osenv'
+
+    # App environment override
+    # FIXME: find a better test seam for this
+    def _read_env(app_root, env):
+        return {'PROCFILE': 'Procfile.appenv'}
+    monkeypatch.setattr(command, '_read_env', _read_env)
+    args = command.parser.parse_args(['start'])
+    result = command.map_from(args)['procfile']
+    assert result == 'Procfile.appenv'
+
+    # CLI override
+    args = command.parser.parse_args(['start', '-f', 'Procfile.cli'])
+    result = command.map_from(args)['procfile']
+    assert result == 'Procfile.cli'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_ctor_cmd","    def test_ctor_cmd(self):
+        proc = Process('echo 123')
+        assert proc.cmd == 'echo 123'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_ctor_name","    def test_ctor_name(self):
+        proc = Process('echo 123', name='foo')
+        assert proc.name == 'foo'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_ctor_colour","    def test_ctor_colour(self):
+        proc = Process('echo 123', colour='red')
+        assert proc.colour == 'red'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_ctor_quiet","    def test_ctor_quiet(self):
+        proc = Process('echo 123', quiet=True)
+        assert proc.quiet"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_output_receives_start_with_pid","    def test_output_receives_start_with_pid(self):
+        proc = Process('echo 123')
+        proc._child_ctor = FakePopen
+        proc.run(self.q)
+        msg = self.q.messages[0]
+        assert msg.type == 'start'
+        assert msg.data == {'pid': 66}"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_message_contains_name","    def test_message_contains_name(self):
+        proc = Process('echo 123', name=""barry"")
+        proc._child_ctor = FakePopen
+        proc.run(self.q)
+        msg = self.q.messages[0]
+        assert msg.name == ""barry"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_message_contains_time","    def test_message_contains_time(self):
+        proc = Process('echo 123')
+        proc._clock = FakeClock()
+        proc._child_ctor = FakePopen
+        proc.run(self.q)
+        msg = self.q.messages[0]
+        assert msg.time == datetime.datetime(2012, 8, 11, 12, 42)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_message_contains_colour","    def test_message_contains_colour(self):
+        proc = Process('echo 123', colour=""red"")
+        proc._child_ctor = FakePopen
+        proc.run(self.q)
+        msg = self.q.messages[0]
+        assert msg.colour == ""red"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_output_receives_lines","    def test_output_receives_lines(self):
+        def _ctor(*args, **kwargs):
+            popen = FakePopen(*args, **kwargs)
+            popen.stdout = FakeOutput(lines=[b""hello\n"", b""world\n""])
+            return popen
+
+        proc = Process('echo 123')
+        proc._child_ctor = _ctor
+        proc.run(self.q)
+        assert self.q.got_message(b""hello\n"")
+        assert self.q.got_message(b""world\n"")"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_output_receives_lines_invalid_utf8","    def test_output_receives_lines_invalid_utf8(self):
+        def _ctor(*args, **kwargs):
+            popen = FakePopen(*args, **kwargs)
+            popen.stdout = FakeOutput(lines=[b""\xfe\xff\n""])
+            return popen
+
+        proc = Process('echo 123')
+        proc._child_ctor = _ctor
+        proc.run(self.q)
+        assert self.q.got_message(b""\xfe\xff\n"")"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_output_does_not_receive_lines_when_quiet","    def test_output_does_not_receive_lines_when_quiet(self):
+        def _ctor(*args, **kwargs):
+            popen = FakePopen(*args, **kwargs)
+            popen.stdout = FakeOutput(lines=[b""hello\n"", b""world\n""])
+            return popen
+
+        proc = Process('echo 123', quiet=True)
+        proc._child_ctor = _ctor
+        proc.run(self.q)
+        assert not self.q.got_message(b""hello\n"")
+        assert not self.q.got_message(b""world\n"")"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_output_receives_stop","    def test_output_receives_stop(self):
+        proc = Process('echo 123')
+        proc._child_ctor = FakePopen
+        proc.run(self.q)
+        msg = self.q.messages[-1]
+        assert msg.type == 'stop'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_output_receives_stop_with_returncode","    def test_output_receives_stop_with_returncode(self):
+        def _ctor(*args, **kwargs):
+            popen = FakePopen(*args, **kwargs)
+            popen.returncode = 42
+            return popen
+
+        proc = Process('echo 123')
+        proc._child_ctor = _ctor
+        proc.run(self.q)
+        msg = self.q.find_message({'returncode': 42})
+        assert msg.type == 'stop'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_process.py","test_cwd_passed_along","    def test_cwd_passed_along(self):
+        proc = Process('echo 123', cwd='fake-dir')
+        proc._child_ctor = FakePopen
+        proc.run(self.q)
+        assert proc._child.kwargs['cwd'] == 'fake-dir'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_export_supervisord.py","test_render_uses_app_name_as_filename","    def test_render_uses_app_name_as_filename(self):
+        export = Export()
+        export.get_template = MagicMock()
+
+        results = export.render([], {'app': 'elephant'})
+
+        assert results[0].name == 'elephant.conf'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_environ_parse","@pytest.mark.parametrize('content,commands', [
+    [
+        """"""
+        FOO=bar
+        """""",
+        {'FOO': 'bar'}
+    ],
+    [
+        """"""
+        FOO=bar
+        BAZ=qux
+        """""",
+        {'FOO': 'bar', 'BAZ': 'qux'}
+    ],
+    [
+        # No newline at EOF
+        """"""
+        FOO=bar"""""",
+        {'FOO': 'bar'}
+    ],
+    [
+        # Comments
+        """"""
+        #commented: command
+        """""",
+        {}
+    ],
+    [
+        # Invalid characters
+        """"""
+        -foo=command
+        """""",
+        {}
+    ],
+    [
+        # Single quoted
+        """"""
+        MYVAR='hello""world'
+        """""",
+        {'MYVAR': 'hello""world'}
+    ],
+    [
+        # Double quoted
+        """"""
+        MYVAR=""hello'world""
+        """""",
+        {'MYVAR': ""hello'world""}
+    ],
+    [
+        # Quotation mark surrounded
+        r""""""
+        MYVAR='""surrounded""'
+        """""",
+        {'MYVAR': '""surrounded""'}
+    ],
+    [
+        # Escaped quotation mark surrounded
+        r""""""
+        MYVAR=\""escaped\""
+        """""",
+        {'MYVAR': '""escaped""'}
+    ],
+    [
+        # At-sign in value
+        r""""""
+        MYVAR=user@domain.com
+        """""",
+        {'MYVAR': 'user@domain.com'}
+    ],
+    [
+        # Much punctuation in value
+        r""""""
+        MYVAR=~pun|u@|0n$=
+        """""",
+        {'MYVAR': '~pun|u@|0n$='}
+    ],
+    [
+        # Unicode values
+        r""""""
+        MYVAR=⋃ñᴉ—☪ó∂ǝ
+        """""",
+        {'MYVAR': '⋃ñᴉ—☪ó∂ǝ'}
+    ],
+    [
+        # Unicode keys
+        r""""""
+        ṀẎṾẠṚ=value
+        """""",
+        {}
+    ],
+    [
+        # Quoted space in value
+        r""""""
+        MYVAR='sp ace'
+        """""",
+        {'MYVAR': 'sp ace'}
+    ],
+    [
+        # Escaped characters in value
+        r""""""
+        TABS='foo\tbar'
+        NEWLINES='foo\nbar'
+        DOLLAR='foo\$bar'
+        """""",
+        {'TABS': 'foo\tbar',
+         'NEWLINES': 'foo\nbar',
+         'DOLLAR': 'foo\\$bar'}
+    ],
+])
+def test_environ_parse(content, commands):
+    content = textwrap.dedent(content)
+    result = environ.parse(content)
+    assert result == commands"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_parse_procfile","@pytest.mark.parametrize('content,processes', [
+    [
+        # Simple
+        """"""
+        web: command
+        """""",
+        {'web': 'command'}
+    ],
+    [
+        # Simple 2
+        """"""
+        foo: python foo.py
+        bar: python bar.py
+        """""",
+        {'foo': 'python foo.py', 'bar': 'python bar.py'}
+    ],
+    [
+        # No newline at EOF
+        """"""
+        web: command"""""",
+        {'web': 'command'}
+    ],
+    [
+        # Comments
+        """"""
+        #commented: command
+        """""",
+        {}
+    ],
+    [
+        # Invalid characters
+        """"""
+        +foo: command
+        """""",
+        {}
+    ],
+    [
+        # Valid -/_ characters
+        """"""
+        -foo_bar: command
+        """""",
+        {'-foo_bar': 'command'}
+    ],
+    [
+        # Shell metacharacters
+        """"""
+        web: sh -c ""echo $FOOBAR"" >/dev/null 2>&1
+        """""",
+        {'web': 'sh -c ""echo $FOOBAR"" >/dev/null 2>&1'}
+    ],
+])
+def test_parse_procfile(content, processes):
+    content = textwrap.dedent(content)
+    p = environ.parse_procfile(content)
+    assert p.processes == processes"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_parse_procfile_ordered","def test_parse_procfile_ordered():
+    content = textwrap.dedent(""""""
+    one: onecommand
+    two: twocommand
+    three: twocommand
+    four: fourcommand
+    """""")
+
+    p = environ.parse_procfile(content)
+    order = [k for k in p.processes]
+    assert order == ['one', 'two', 'three', 'four']"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_name","def test_expand_processes_name():
+    p = ep((""foo"", ""some command""))
+    assert len(p) == 1
+    assert p[0].name == ""foo.1"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_name_multiple","def test_expand_processes_name_multiple():
+    p = ep((""foo"", ""some command""), (""bar"", ""another command""))
+    assert len(p) == 2
+    assert p[0].name == ""foo.1""
+    assert p[1].name == ""bar.1"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_name_concurrency","def test_expand_processes_name_concurrency():
+    p = ep((""foo"", ""some command""), concurrency={""foo"": 3})
+    assert len(p) == 3
+    assert p[0].name == ""foo.1""
+    assert p[1].name == ""foo.2""
+    assert p[2].name == ""foo.3"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_name_concurrency_multiple","def test_expand_processes_name_concurrency_multiple():
+    p = ep((""foo"", ""some command""), (""bar"", ""another command""),
+           concurrency={""foo"": 3, ""bar"": 2})
+    assert len(p) == 5
+    assert p[0].name == ""foo.1""
+    assert p[1].name == ""foo.2""
+    assert p[2].name == ""foo.3""
+    assert p[3].name == ""bar.1""
+    assert p[4].name == ""bar.2"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_command","def test_expand_processes_command():
+    p = ep((""foo"", ""some command""))
+    assert p[0].cmd == ""some command"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_port_not_defaulted","def test_expand_processes_port_not_defaulted():
+    p = ep((""foo"", ""some command""))
+    assert ""PORT"" not in p[0].env"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_port","def test_expand_processes_port():
+    p = ep((""foo"", ""some command""), port=8000)
+    assert p[0].env[""PORT""] == ""8000"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_port_multiple","def test_expand_processes_port_multiple():
+    p = ep((""foo"", ""some command""),
+           (""bar"", ""another command""),
+           port=8000)
+    assert p[0].env[""PORT""] == ""8000""
+    assert p[1].env[""PORT""] == ""8100"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_port_from_env","def test_expand_processes_port_from_env():
+    p = ep((""foo"", ""some command""),
+           (""bar"", ""another command""),
+           env={""PORT"": 8000})
+    assert p[0].env[""PORT""] == ""8000""
+    assert p[1].env[""PORT""] == ""8100"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_port_from_env_coerced_to_number","def test_expand_processes_port_from_env_coerced_to_number():
+    p = ep((""foo"", ""some command""), env={""PORT"": ""5000""})
+    assert p[0].env[""PORT""] == ""5000"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_port_from_env_overrides","def test_expand_processes_port_from_env_overrides():
+    p = ep((""foo"", ""some command""), env={""PORT"": 5000}, port=8000)
+    assert p[0].env[""PORT""] == ""5000"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_port_concurrency","def test_expand_processes_port_concurrency():
+    p = ep((""foo"", ""some command""),
+           (""bar"", ""another command""),
+           concurrency={""foo"": 3, ""bar"": 2},
+           port=4000)
+    assert p[0].env[""PORT""] == ""4000""
+    assert p[1].env[""PORT""] == ""4001""
+    assert p[2].env[""PORT""] == ""4002""
+    assert p[3].env[""PORT""] == ""4100""
+    assert p[4].env[""PORT""] == ""4101"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_quiet","def test_expand_processes_quiet():
+    p = ep((""foo"", ""some command""), quiet=[""foo"", ""bar""])
+    assert p[0].quiet"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_quiet_multiple","def test_expand_processes_quiet_multiple():
+    p = ep((""foo"", ""some command""),
+           (""bar"", ""another command""),
+           quiet=[""foo""])
+    assert p[0].quiet
+    assert not p[1].quiet"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_env","def test_expand_processes_env():
+    p = ep((""foo"", ""some command""),
+           env={""ANIMAL"": ""giraffe"", ""DEBUG"": ""false""})
+    assert p[0].env[""ANIMAL""] == ""giraffe""
+    assert p[0].env[""DEBUG""] == ""false"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_expand_processes_env_multiple","def test_expand_processes_env_multiple():
+    p = ep((""foo"", ""some command""),
+           (""bar"", ""another command""),
+           env={""ANIMAL"": ""giraffe"", ""DEBUG"": ""false""})
+    assert p[0].env[""ANIMAL""] == ""giraffe""
+    assert p[0].env[""DEBUG""] == ""false""
+    assert p[1].env[""ANIMAL""] == ""giraffe""
+    assert p[1].env[""DEBUG""] == ""false"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_set_env_process_name","def test_set_env_process_name():
+    p = ep((""foo"", ""some command""),
+           (""bar"", ""another command""),
+           concurrency={""foo"": 3, ""bar"": 2})
+    assert p[0].env[""HONCHO_PROCESS_NAME""] == ""foo.1""
+    assert p[1].env[""HONCHO_PROCESS_NAME""] == ""foo.2""
+    assert p[2].env[""HONCHO_PROCESS_NAME""] == ""foo.3""
+    assert p[3].env[""HONCHO_PROCESS_NAME""] == ""bar.1""
+    assert p[4].env[""HONCHO_PROCESS_NAME""] == ""bar.2"""
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_has_no_processes_after_init","    def test_has_no_processes_after_init(self):
+        p = environ.Procfile()
+        assert len(p.processes) == 0"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/test_environ.py","test_add_process","    def test_add_process(self):
+        p = environ.Procfile()
+        p.add_process('foo', 'echo 123')
+        assert 'echo 123' == p.processes['foo']"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_export.py","test_export_supervisord","@pytest.mark.parametrize('testenv', [{
+    'Procfile': ""web: python web.py""
+}], indirect=True)
+def test_export_supervisord(testenv):
+    ret, out, err = testenv.run_honcho([
+        'export',
+        'supervisord',
+        testenv.path('giraffe'),
+        '-a', 'neck',
+    ])
+
+    expected = testenv.path('giraffe', 'neck.conf')
+
+    assert ret == 0
+    assert os.path.exists(expected)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_export.py","test_export_upstart","@pytest.mark.parametrize('testenv', [{
+    'Procfile': ""web: python web.py""
+}], indirect=True)
+def test_export_upstart(testenv):
+    ret, out, err = testenv.run_honcho([
+        'export',
+        'upstart',
+        testenv.path('elephant'),
+        '-a', 'trunk',
+    ])
+
+    assert ret == 0
+    for filename in ('trunk.conf',
+                     'trunk-web.conf',
+                     'trunk-web-1.conf'):
+        expected = testenv.path('elephant', filename)
+        assert os.path.exists(expected)"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_export.py","test_export_upstart_environment","@pytest.mark.parametrize('testenv', [{
+    'Procfile': ""web: python web.py"",
+    '.env': """"""
+NORMAL=ok
+SQ_SPACES='sqspace sqspace'
+DQ_SPACES=""dqspace dqspace""
+SQ=""it's got single quotes""
+DQ='it has ""double"" quotes'
+EXCL='an exclamation mark!'
+SQ_DOLLAR='costs $UNINTERPOLATED amount'
+DQ_DOLLAR=""costs $UNINTERPOLATED amount""
+""""""
+}], indirect=True)
+def test_export_upstart_environment(testenv):
+    ret, out, err = testenv.run_honcho([
+        'export',
+        'upstart',
+        testenv.path('test'),
+        '-a', 'envvars',
+    ])
+
+    assert ret == 0
+
+    lines = open(testenv.path('test', 'envvars-web-1.conf')).readlines()
+    assert 'env NORMAL=ok\n' in lines
+    assert ""env SQ_SPACES='sqspace sqspace'\n"" in lines
+    assert ""env DQ_SPACES='dqspace dqspace'\n"" in lines
+    assert ""env SQ='it'\""'\""'s got single quotes'\n"" in lines
+    assert ""env DQ='it has \""double\"" quotes'\n"" in lines
+    assert ""env EXCL='an exclamation mark!'\n"" in lines
+    assert ""env SQ_DOLLAR='costs $UNINTERPOLATED amount'\n"" in lines
+    assert ""env DQ_DOLLAR='costs $UNINTERPOLATED amount'\n"" in lines"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_start.py","test_start","@pytest.mark.parametrize('testenv', [{
+    'Procfile': 'foo: {0} test.py'.format(python_bin),
+    'test.py': script,
+}], indirect=True)
+def test_start(testenv):
+    ret, out, err = testenv.run_honcho(['start'])
+
+    assert ret == 0
+    assert 'elephant' in out
+    assert 'error output' in out"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_start.py","test_start_env","@pytest.mark.parametrize('testenv', [{
+    '.env': 'ANIMAL=giraffe',
+    'Procfile': 'foo: {0} test.py'.format(python_bin),
+    'test.py': script,
+}], indirect=True)
+def test_start_env(testenv):
+    ret, out, err = testenv.run_honcho(['start'])
+
+    assert 'giraffe' in out"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_start.py","test_start_env_procfile","@pytest.mark.parametrize('testenv', [{
+    '.env': 'PROCFILE=Procfile.dev',
+    'Procfile': 'foo: {0} test.py'.format(python_bin),
+    'Procfile.dev': 'bar: {0} test_dev.py'.format(python_bin),
+    'test.py': script,
+    'test_dev.py': textwrap.dedent(""""""
+        print(""mongoose"")
+        """""")
+}], indirect=True)
+def test_start_env_procfile(testenv):
+    ret, out, err = testenv.run_honcho(['start'])
+
+    assert 'mongoose' in out"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_start.py","test_start_returncode","@pytest.mark.parametrize('testenv', [{
+    'Procfile': 'foo: {0} test.py'.format(python_bin),
+    'test.py': 'import sys; sys.exit(42)',
+}], indirect=True)
+def test_start_returncode(testenv):
+    ret, out, err = testenv.run_honcho(['start'])
+
+    assert ret == 42"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_check.py","test_check","@pytest.mark.parametrize('testenv', [{
+    'Procfile': textwrap.dedent(""""""
+        foo: python web.py
+        bar: ruby worker.rb
+        baz: node socket.js
+    """""")
+}], indirect=True)
+def test_check(testenv):
+    ret, out, err = testenv.run_honcho(['check'])
+
+    assert ret == 0
+    assert 'Valid procfile detected' in err
+    assert 'foo, bar, baz' in err"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_main.py","test_main","@pytest.mark.parametrize('testenv', [{
+    'Procfile': textwrap.dedent(""""""
+        foo: python web.py
+        bar: ruby worker.rb
+    """""")
+}], indirect=True)
+def test_main(testenv):
+    result = testenv.run(['python', '-m', 'honcho', 'check'], check=True)
+
+    assert 'Valid procfile detected' in result.stderr
+    assert 'foo, bar' in result.stderr"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_run.py","test_run","@pytest.mark.parametrize('testenv', [{
+    'test.py': script
+}], indirect=True)
+def test_run(testenv):
+    ret, out, err = testenv.run_honcho(['run', python_bin, 'test.py'])
+
+    assert ret == 0
+    assert out == 'elephant\n'
+    assert 'error output\n' in err"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_run.py","test_run_env","@pytest.mark.parametrize('testenv', [{
+    '.env': 'ANIMAL=giraffe',
+    'test.py': script,
+}], indirect=True)
+def test_run_env(testenv):
+    ret, out, err = testenv.run_honcho(['run', python_bin, 'test.py'])
+
+    assert ret == 0
+    assert out == 'giraffe\n'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_run.py","test_run_args_before_command","@pytest.mark.parametrize('testenv', [{
+    '.env.x': 'ANIMAL=giraffe',
+    'test.py': script,
+}], indirect=True)
+def test_run_args_before_command(testenv):
+    # Regression test for #122 -- ensure that common args can be given
+    # before the subcommand.
+    ret, out, err = testenv.run_honcho(['-e', '.env.x',
+                                        'run', python_bin, 'test.py'])
+
+    assert ret == 0
+    assert out == 'giraffe\n'"
+"honcho","https://github.com/nickstenning/honcho","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/honcho/tests/integration/test_run.py","test_run_options_positionals_separator","@pytest.mark.parametrize('testenv', [{
+    'test.py': script
+}], indirect=True)
+def test_run_options_positionals_separator(testenv):
+    # Regression test for #159 -- ensure that honcho handles the '--'
+    # options/positionals separator correctly.
+    ret, out, err = testenv.run_honcho(['run', '--', python_bin, 'test.py'])
+
+    assert ret == 0
+    assert out == 'elephant\n'"

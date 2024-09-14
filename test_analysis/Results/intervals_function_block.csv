@@ -1,0 +1,626 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_add_operator","    @mark.parametrize(('first', 'second', 'result'), (
+        (IntInterval([1, 3]), IntInterval([1, 2]), [2, 5]),
+        (IntInterval([1, 3]), 1, [2, 4]),
+        (1, IntInterval([1, 3]), [2, 4]),
+        ([1, 2], IntInterval([1, 2]), [2, 4])
+    ))
+    def test_add_operator(self, first, second, result):
+        assert first + second == IntInterval(result)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_sub_operator","    @mark.parametrize(('first', 'second', 'result'), (
+        (IntInterval([1, 3]), IntInterval([1, 2]), [-1, 2]),
+        (IntInterval([1, 3]), 1, [0, 2]),
+        (1, IntInterval([1, 3]), [-2, 0])
+    ))
+    def test_sub_operator(self, first, second, result):
+        assert first - second == IntInterval(result)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_isub_operator","    def test_isub_operator(self):
+        range_ = IntInterval([1, 3])
+        range_ -= IntInterval([1, 2])
+        assert range_ == IntInterval([-1, 2])"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_iadd_operator","    def test_iadd_operator(self):
+        range_ = IntInterval([1, 2])
+        range_ += IntInterval([1, 2])
+        assert range_ == IntInterval([2, 4])"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_glb","    @mark.parametrize(('first', 'second', 'result'), (
+        (IntInterval([1, 3]), IntInterval([1, 2]), [1, 2]),
+        (IntInterval([-2, 2]), 1, [-2, 1])
+    ))
+    def test_glb(self, first, second, result):
+        assert first.glb(second) == IntInterval(result)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_lub","    @mark.parametrize(('first', 'second', 'result'), (
+        (IntInterval([1, 3]), IntInterval([1, 2]), [1, 3]),
+        (IntInterval([-2, 2]), 1, [1, 2])
+    ))
+    def test_lub(self, first, second, result):
+        assert first.lub(second) == IntInterval(result)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_inf","    @mark.parametrize(('first', 'second', 'result'), (
+        (IntInterval([1, 3]), IntInterval([1, 2]), [1, 2]),
+        (IntInterval([-2, 2]), 1, [1, 1])
+    ))
+    def test_inf(self, first, second, result):
+        assert first.inf(second) == IntInterval(result)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py","test_sup","    @mark.parametrize(('first', 'second', 'result'), (
+        (IntInterval([1, 3]), IntInterval([1, 2]), [1, 3]),
+        (IntInterval([-2, 2]), 1, [-2, 2])
+    ))
+    def test_sup(self, first, second, result):
+        assert first.sup(second) == IntInterval(result)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_coercion.py","test_str_representation","@mark.parametrize(('interval', 'string'), (
+    ((1, 3), '(1, 3)'),
+    ([1, 1], '[1, 1]'),
+    ([1, inf], '[1,]')
+))
+def test_str_representation(interval, string):
+    assert str(IntInterval(interval)) == string"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_coercion.py","test_bool","@mark.parametrize(
+    ('number_range', 'empty'),
+    (
+        (IntInterval((2, 3)), True),
+        (IntInterval([2, 3]), False),
+        (IntInterval([2, 2]), False),
+        (IntInterval.from_string('[2, 2)'), True),
+        (IntInterval.from_string('(2, 2]'), True),
+        (IntInterval.from_string('[2, 3)'), False),
+        (IntInterval((2, 10)), False),
+    )
+)
+def test_bool(number_range, empty):
+    assert bool(IntInterval(number_range)) != empty"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_coercion.py","test_int_with_single_point_interval","@mark.parametrize(
+    ('number_range', 'coerced_value'),
+    (
+        ([5, 5], 5),
+        ([2, 2], 2),
+    )
+)
+def test_int_with_single_point_interval(number_range, coerced_value):
+    assert int(IntInterval(number_range)) == coerced_value"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_representations.py","test_hyphenized","@mark.parametrize(('interval', 'string'), (
+    (IntInterval((1, 3)), '2'),
+    (IntInterval([1, 1]), '1'),
+    (IntInterval([1, 3]), '1 - 3'),
+    (IntInterval.from_string('(1, 5]'), '2 - 5'),
+    (IntInterval.from_string('[1,]'), '1 -')
+))
+def test_hyphenized(interval, string):
+    assert interval.hyphenized == string"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_step.py","test_integers_with_step","    def test_integers_with_step(self):
+        interval = IntInterval([1, 2], step=3)
+        assert interval.lower == 0
+        assert interval.upper == 3"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_step.py","test_step_rounding","    def test_step_rounding(self):
+        interval = IntInterval([1, 5], step=3)
+        assert interval.lower == 0
+        assert interval.upper == 6"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_step.py","test_floats_with_step","    def test_floats_with_step(self):
+        interval = FloatInterval((0, 0.5), step=0.5)
+        assert interval.lower == 0
+        assert interval.upper == 0.5
+        assert not interval.lower_inc
+        assert not interval.upper_inc
+        assert interval.step"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_step.py","test_decimals_with_step","    def test_decimals_with_step(self):
+        interval = DecimalInterval(
+            (Decimal('0'), Decimal('0.5')),
+            step=Decimal('0.5')
+        )
+        assert interval.lower == 0
+        assert interval.upper == Decimal('0.5')
+        assert not interval.lower_inc
+        assert not interval.upper_inc
+        assert interval.step == Decimal('0.5')"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_canonicalize.py","test_canonicalize_integer_intervals","def test_canonicalize_integer_intervals():
+    assert str(canonicalize(IntInterval([1, 4]))) == '[1, 5)'
+    assert str(canonicalize(
+        IntInterval((1, 7)), lower_inc=True, upper_inc=True
+    )) == '[2, 6]'
+    assert str(canonicalize(
+        IntInterval([1, 7]), lower_inc=False, upper_inc=True
+    )) == '(0, 7]'"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_canonicalize.py","test_canonicalize_date_intervals","def test_canonicalize_date_intervals():
+    interval = canonicalize(DateInterval([date(2000, 2, 2), date(2000, 2, 6)]))
+    assert interval.upper.day == 7"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_string_as_constructor_param","    def test_string_as_constructor_param(self):
+        with raises(TypeError) as e:
+            FloatInterval('(0.2, 0.5)')
+        assert (
+            'First argument should be a list or tuple. If you wish to '
+            'initialize an interval from string, use from_string factory '
+            'method.'
+        ) in str(e)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_invalid_argument","    def test_invalid_argument(self):
+        with raises(IllegalArgument) as e:
+            FloatInterval((0, 0))
+        assert (
+            'The bounds may be equal only if at least one of the bounds is '
+            'closed.'
+        ) in str(e)"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_floats","    def test_floats(self):
+        interval = FloatInterval((0.2, 0.5))
+        assert interval.lower == 0.2
+        assert interval.upper == 0.5
+        assert not interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_decimals","    def test_decimals(self):
+        interval = DecimalInterval((Decimal('0.2'), Decimal('0.5')))
+        assert interval.lower == Decimal('0.2')
+        assert interval.upper == Decimal('0.5')
+        assert not interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_support_range_object","    def test_support_range_object(self):
+        interval = IntInterval(IntInterval((1, 3)))
+        assert interval.lower == 1
+        assert interval.upper == 3
+        assert not interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_strings","    def test_supports_strings(self):
+        interval = IntInterval.from_string('1-3')
+        assert interval.lower == 1
+        assert interval.upper == 3
+        assert interval.lower_inc
+        assert interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_infinity","    def test_supports_infinity(self):
+        interval = IntInterval((-inf, inf))
+        assert interval.lower == -inf
+        assert interval.upper == inf
+        assert not interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_strings_with_spaces","    def test_supports_strings_with_spaces(self):
+        interval = IntInterval.from_string('1 - 3')
+        assert interval.lower == 1
+        assert interval.upper == 3
+        assert interval.lower_inc
+        assert interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_strings_with_bounds","    def test_supports_strings_with_bounds(self):
+        interval = IntInterval.from_string('[1, 3]')
+        assert interval.lower == 1
+        assert interval.upper == 3
+        assert interval.lower_inc
+        assert interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_step_argument_for_from_string","    def test_step_argument_for_from_string(self):
+        interval = IntInterval.from_string('[2,)', step=2)
+        assert interval.lower == 2
+        assert interval.upper == inf
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_empty_string_as_upper_bound","    def test_empty_string_as_upper_bound(self):
+        interval = IntInterval.from_string('[1,)')
+        assert interval.lower == 1
+        assert interval.upper == inf
+        assert interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_empty_string_as_lower_bound","    def test_empty_string_as_lower_bound(self):
+        interval = IntInterval.from_string('[,1)')
+        assert interval.lower == -inf
+        assert interval.upper == 1
+        assert interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_exact_ranges_as_strings","    def test_supports_exact_ranges_as_strings(self):
+        interval = IntInterval.from_string('3')
+        assert interval.lower == 3
+        assert interval.upper == 3
+        assert interval.lower_inc
+        assert interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_integers","    def test_supports_integers(self):
+        interval = IntInterval(3)
+        assert interval.lower.__class__ == int
+        assert interval.lower == 3
+        assert interval.upper == 3
+        assert interval.lower_inc
+        assert interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_character_intervals","    def test_supports_character_intervals(self):
+        interval = CharacterInterval(('a', 'z'))
+        assert interval.lower == 'a'
+        assert interval.upper == 'z'
+        assert not interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_characters_from_strings","    def test_supports_characters_from_strings(self):
+        interval = CharacterInterval.from_string('A-Z')
+        assert interval.lower == 'A'
+        assert interval.upper == 'Z'
+        assert interval.lower_inc
+        assert interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_supports_characters_with_spaces","    def test_supports_characters_with_spaces(self):
+        interval = CharacterInterval.from_string('A - Z')
+        assert interval.lower == 'A'
+        assert interval.upper == 'Z'
+        assert interval.lower_inc
+        assert interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_empty_string_as_upper_character_bound","    def test_empty_string_as_upper_character_bound(self):
+        interval = CharacterInterval.from_string('[a,)')
+        assert interval.lower == 'a'
+        assert interval.upper == inf
+        assert interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_empty_string_as_lower_bound_for_char_interval","    def test_empty_string_as_lower_bound_for_char_interval(self):
+        interval = CharacterInterval.from_string('[,a)')
+        assert interval.lower == -inf
+        assert interval.upper == 'a'
+        assert interval.lower_inc
+        assert not interval.upper_inc"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_hyphen_format","    @mark.parametrize(
+        ('number_range', 'lower', 'upper'),
+        (
+            ('-2-2', -2, 2),
+            ('-3--2', -3, -2),
+            ('2-3', 2, 3),
+            ('2-', 2, inf),
+            ('-5', -5, -5)
+        )
+    )
+    def test_hyphen_format(self, number_range, lower, upper):
+        interval = IntInterval.from_string(number_range)
+        assert interval.lower == lower
+        assert interval.upper == upper"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py","test_guesses_types","    @mark.parametrize(
+        ('number_range', 'type'),
+        (
+            ((2, 3), int),
+            ([-6, 8], int),
+            (8.5, float),
+            ([Decimal(2), 9], int),
+            ([Decimal('0.5'), 9], float),
+            ([date(2000, 1, 1), inf], date),
+            (('a', 'e'), str),
+        )
+    )
+    def test_guesses_types(self, number_range, type):
+        assert Interval(number_range).type == type"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_open","    def test_open(self):
+        interval = IntInterval.open(12, 14, step=2)
+        assert interval.lower == 12
+        assert interval.upper == 14
+        assert interval.is_open
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_closed","    def test_closed(self):
+        interval = IntInterval.closed(10, 11, step=2)
+        assert interval.lower == 10
+        assert interval.upper == 12
+        assert interval.is_closed
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_open_closed","    def test_open_closed(self):
+        interval = IntInterval.open_closed(10, 14, step=2)
+        assert interval.lower == 10
+        assert interval.upper == 14
+        assert not interval.lower_inc
+        assert interval.upper_inc
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_closed_open","    def test_closed_open(self):
+        interval = IntInterval.closed_open(10, 14, step=2)
+        assert interval.lower == 10
+        assert interval.upper == 14
+        assert interval.lower_inc
+        assert not interval.upper_inc
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_greater_than","    def test_greater_than(self):
+        interval = IntInterval.greater_than(10, step=2)
+        assert interval.lower == 10
+        assert interval.upper == inf
+        assert not interval.lower_inc
+        assert not interval.upper_inc
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_at_least","    def test_at_least(self):
+        interval = IntInterval.at_least(10, step=2)
+        assert interval.lower == 10
+        assert interval.upper == inf
+        assert interval.lower_inc
+        assert not interval.upper_inc
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_less_than","    def test_less_than(self):
+        interval = IntInterval.less_than(10, step=2)
+        assert interval.lower == -inf
+        assert interval.upper == 10
+        assert not interval.lower_inc
+        assert not interval.upper_inc
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_at_most","    def test_at_most(self):
+        interval = IntInterval.at_most(10, step=2)
+        assert interval.lower == -inf
+        assert interval.upper == 10
+        assert not interval.lower_inc
+        assert interval.upper_inc
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py","test_all","    def test_all(self):
+        interval = IntInterval.all(step=2)
+        assert interval.lower == -inf
+        assert interval.upper == inf
+        assert not interval.lower_inc
+        assert not interval.upper_inc
+        assert interval.step == 2"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_eq_operator","    @mark.parametrize(('comparison', 'result'), (
+        (IntInterval([1, 3]) == IntInterval([1, 3]), True),
+        (IntInterval([1, 3]) == IntInterval([1, 4]), False),
+        (IntInterval([inf, inf]) == inf, True),
+        (IntInterval([3, 3]) == 3, True),
+        (IntInterval([3, 3]) == 5, False),
+        (IntInterval([3, 3]) == 'something', False),
+        (
+            IntInterval([3, 3]) ==
+            DateInterval([date(2011, 1, 1), date(2011, 1, 1)]),
+            False
+        ),
+        (IntInterval.from_string('(,)') == None, False),  # noqa
+        (
+            DateInterval(date(2000, 1, 1), date(2001, 1, 1)) ==
+            -12312321312312312312123123,
+            False
+        )
+    ))
+    def test_eq_operator(self, comparison, result):
+        assert comparison is result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_ne_operator","    @mark.parametrize(('comparison', 'result'), (
+        (IntInterval([1, 3]) != IntInterval([1, 3]), False),
+        (IntInterval([1, 3]) != IntInterval([1, 4]), True),
+        (IntInterval([inf, inf]) != inf, False),
+        (IntInterval([3, 3]) != 3, False),
+        (IntInterval([3, 3]) != 5, True),
+        (IntInterval([3, 3]) != 'something', True),
+        (IntInterval.from_string('(,)') != None, True)  # noqa
+    ))
+    def test_ne_operator(self, comparison, result):
+        assert comparison is result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_gt_operator","    @mark.parametrize(('comparison', 'result'), (
+        (IntInterval([1, 3]) > IntInterval([0, 2]), True),
+        (IntInterval((1, 4)) > 1, False),
+        (IntInterval((1, 6)) > [1, 6], False),
+        (IntInterval((1, 6)) > 0, True)
+    ))
+    def test_gt_operator(self, comparison, result):
+        assert comparison is result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_ge_operator","    @mark.parametrize(('comparison', 'result'), (
+        (IntInterval([1, 3]) >= IntInterval([0, 2]), True),
+        (IntInterval((1, 4)) >= 1, False),
+        (IntInterval((1, 6)) >= [1, 6], False),
+        (IntInterval((1, 6)) >= 0, True)
+    ))
+    def test_ge_operator(self, comparison, result):
+        assert comparison is result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_lt_operator","    @mark.parametrize(('comparison', 'result'), (
+        (IntInterval([0, 2]) < IntInterval([1, 3]), True),
+        (IntInterval([2, 3]) < IntInterval([2, 3]), False),
+        (IntInterval([2, 5]) < 6, True),
+        (IntInterval([2, 5]) < 5, False),
+        (IntInterval([2, 5]) < inf, True)
+    ))
+    def test_lt_operator(self, comparison, result):
+        assert comparison is result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_le_operator","    @mark.parametrize(('comparison', 'result'), (
+        (IntInterval([0, 2]) <= IntInterval([1, 3]), True),
+        (IntInterval([1, 3]) <= IntInterval([1, 3]), True),
+        (IntInterval([1, 7]) <= 8, True),
+        (IntInterval([1, 6]) <= 5, False),
+        (IntInterval([1, 5]) <= inf, True)
+    ))
+    def test_le_operator(self, comparison, result):
+        assert comparison is result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_integer_comparison","    def test_integer_comparison(self):
+        assert IntInterval([2, 2]) <= 3
+        assert IntInterval([1, 3]) >= 0
+        assert IntInterval([2, 2]) == 2
+        assert IntInterval([2, 2]) != 3"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_contains_operator_for_inclusive_interval","    @mark.parametrize('value', (
+        IntInterval([0, 2]),
+        1,
+        1.0,
+        (-1, 1),
+    ))
+    def test_contains_operator_for_inclusive_interval(self, value):
+        assert value in IntInterval([-1, 2])"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_contains_operator_for_non_inclusive_interval","    @mark.parametrize('value', (
+        IntInterval([0, 2]),
+        2,
+        [-1, 1],
+    ))
+    def test_contains_operator_for_non_inclusive_interval(self, value):
+        assert value not in IntInterval((-1, 2))"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_hash_operator_with_interval_attributes","    @mark.parametrize(('interval1', 'interval2', 'expected'), (
+        (IntInterval((0, 2)), IntInterval((0, 2)), True),
+        (IntInterval([0, 2]), IntInterval([0, 2]), True),
+        (
+            IntInterval.from_string('[0, 2)'),
+            IntInterval.from_string('[0, 2)'),
+            True
+        ),
+        (
+            IntInterval.from_string('(0, 2]'),
+            IntInterval.from_string('(0, 2]'),
+            True
+        ),
+        (IntInterval((0, 2)), IntInterval((1, 2)), False),
+        (IntInterval((0, 2)), IntInterval((0, 1)), False),
+        (IntInterval((0, 2)), IntInterval([0, 1]), False),
+        (IntInterval((0, 2)), FloatInterval((0, 1)), False),
+    ))
+    def test_hash_operator_with_interval_attributes(
+        self,
+        interval1,
+        interval2,
+        expected
+    ):
+        actual = (interval1.__hash__() == interval2.__hash__())
+        assert actual == expected"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_hash_operator_with_collections","    @mark.parametrize(('contains_check', 'expected'), (
+        (IntInterval([0, 2]) in {IntInterval([0, 2]): ''}, True),
+        (IntInterval([0, 2]) in {IntInterval((0, 2)): ''}, False),
+        (IntInterval([0, 2]) in set([IntInterval([0, 2])]), True),
+    ))
+    def test_hash_operator_with_collections(self, contains_check, expected):
+        assert contains_check is expected"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_and_operator","    @mark.parametrize(('interval1', 'interval2', 'result'), (
+        ('(2, 3]', '[3, 4)', IntInterval([3, 3])),
+        ('(2, 10]', '[3, 40]', IntInterval([3, 10])),
+        ('[0, 0]', '[0, 0]', IntInterval.from_string('[0, 0]')),
+        ('[0, 0]', '(0, 0]', IntInterval.from_string('(0, 0]')),
+        ('[0, 0)', '[0, 0]', IntInterval.from_string('[0, 0)')),
+        ('(2, 2]', '(2, 2]', IntInterval.from_string('(2, 2]')),
+        ('[2, 2)', '[2, 2)', IntInterval.from_string('[2, 2)')),
+        ('(2, 3)', '[3, 4]', IntInterval.from_string('[3, 3)')),
+        ('[2, 3]', '(3, 4)', IntInterval.from_string('(3, 3]')),
+    ))
+    def test_and_operator(
+        self,
+        interval1,
+        interval2,
+        result
+    ):
+        assert (
+            IntInterval.from_string(interval1) &
+            IntInterval.from_string(interval2) ==
+            result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py","test_or_operator","    @mark.parametrize(('interval1', 'interval2', 'result'), (
+        ('(2, 3]', '[3, 4)', IntInterval.from_string('(2, 4)')),
+        ('(2, 10]', '[3, 40]', IntInterval.from_string('(2, 40]')),
+        ('[0, 0]', '[0, 0]', IntInterval.from_string('[0, 0]')),
+        ('[0, 0]', '(0, 0]', IntInterval.from_string('[0, 0]')),
+        ('[0, 0)', '[0, 0]', IntInterval.from_string('[0, 0]')),
+        ('(2, 2]', '(2, 2]', IntInterval.from_string('(2, 2]')),
+        ('[2, 2)', '[2, 2)', IntInterval.from_string('[2, 2)')),
+        ('(2, 3)', '[3, 4]', IntInterval.from_string('(2, 4]')),
+        ('[2, 3]', '(3, 4)', IntInterval.from_string('[2, 4)')),
+    ))
+    def test_or_operator(
+        self,
+        interval1,
+        interval2,
+        result
+    ):
+        assert (
+            IntInterval.from_string(interval1) |
+            IntInterval.from_string(interval2) ==
+            result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_utility_methods.py","test_is_connected","@mark.parametrize(
+    ('interval1', 'interval2', 'result'),
+    (
+        (IntInterval([1, 3]), IntInterval([1, 3]), True),
+        (
+            DecimalInterval.from_string('[1, 3)'),
+            DecimalInterval.from_string('[3, 4]'),
+            True
+        ),
+        (
+            DecimalInterval.from_string('[3, 4]'),
+            DecimalInterval.from_string('[1, 3)'),
+            True
+        ),
+        (
+            DecimalInterval.from_string('[1, 3]'),
+            DecimalInterval.from_string('[4, 5]'),
+            False
+        ),
+        (
+            DecimalInterval.from_string('[2, 4)'),
+            DecimalInterval.from_string('[0, 1]'),
+            False
+        ),
+        (
+            DecimalInterval.from_string('[1, 3)'),
+            DecimalInterval.from_string('(3, 4]'),
+            False
+        )
+    )
+)
+def test_is_connected(interval1, interval2, result):
+    assert interval1.is_connected(interval2) is result"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_length","    @mark.parametrize(
+        ('interval', 'length'),
+        (
+            (IntInterval([1, 4]), 3),
+            (IntInterval([-1, 1]), 2),
+            (IntInterval([-inf, inf]), inf),
+            (IntInterval([1, inf]), inf),
+            (IntInterval.from_string('(0, 3)'), 1),
+            (IntInterval.from_string('[0, 3)'), 2),
+            (IntInterval.from_string('(0, 2)'), 0),
+            (IntInterval.from_string('(0, 1)'), 0)
+        )
+    )
+    def test_length(self, interval, length):
+        assert interval.length == length"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_radius","    @mark.parametrize(
+        ('number_range', 'radius'),
+        (
+            ([1, 4], 1.5),
+            ([-1, 1], 1.0),
+            ([-4, -1], 1.5),
+            ((-inf, inf), inf),
+            ((1, inf), inf),
+        )
+    )
+    def test_radius(self, number_range, radius):
+        assert IntInterval(number_range).radius == radius"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_centre","    @mark.parametrize(
+        ('number_range', 'centre'),
+        (
+            ([1, 4], 2.5),
+            ([-1, 1], 0),
+            ([-4, -1], -2.5),
+            ((1, inf), inf),
+        )
+    )
+    def test_centre(self, number_range, centre):
+        assert IntInterval(number_range).centre == centre"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_is_open","    @mark.parametrize(
+        ('interval', 'is_open'),
+        (
+            (IntInterval((2, 3)), True),
+            (IntInterval.from_string('(2, 5)'), True),
+            (IntInterval.from_string('[3, 4)'), False),
+            (IntInterval.from_string('(4, 5]'), False),
+            (IntInterval.from_string('3 - 4'), False),
+            (IntInterval([4, 5]), False),
+            (IntInterval.from_string('[4, 5]'), False)
+        )
+    )
+    def test_is_open(self, interval, is_open):
+        assert interval.is_open == is_open"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_closed","    @mark.parametrize(
+        ('interval', 'is_closed'),
+        (
+            (IntInterval((2, 3)), False),
+            (IntInterval.from_string('(2, 5)'), False),
+            (IntInterval.from_string('[3, 4)'), False),
+            (IntInterval.from_string('(4, 5]'), False),
+            (IntInterval.from_string('3 - 4'), True),
+            (IntInterval([4, 5]), True),
+            (IntInterval.from_string('[4, 5]'), True)
+        )
+    )
+    def test_closed(self, interval, is_closed):
+        assert interval.is_closed == is_closed"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_empty","    @mark.parametrize(
+        ('interval', 'empty'),
+        (
+            (IntInterval((2, 3)), True),
+            (IntInterval([2, 3]), False),
+            (IntInterval([2, 2]), False),
+            (IntInterval.from_string('[2, 2)'), True),
+            (IntInterval.from_string('(2, 2]'), True),
+            (IntInterval.from_string('[2, 3)'), False),
+            (IntInterval((2, 10)), False),
+        )
+    )
+    def test_empty(self, interval, empty):
+        assert interval.empty == empty"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_degenerate","    @mark.parametrize(
+        ('interval', 'degenerate'),
+        (
+            (IntInterval((2, 4)), False),
+            (IntInterval.from_string('[2, 2]'), True),
+            (IntInterval.from_string('[0, 0)'), True),
+        )
+    )
+    def test_degenerate(self, interval, degenerate):
+        assert interval.degenerate == degenerate"
+"intervals","https://github.com/kvesteri/intervals","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_properties.py","test_discrete","    @mark.parametrize(
+        ('interval', 'discrete'),
+        (
+            (IntInterval((2, 3)), True),
+            (IntInterval(5), True),
+            (FloatInterval(3.5), False),
+            (DecimalInterval(Decimal('2.4')), False),
+            (DateTimeInterval(datetime(2002, 1, 1)), False),
+            (DateInterval(date(2002, 1, 1)), True)
+        )
+    )
+    def test_discrete(self, interval, discrete):
+        assert interval.discrete == discrete"

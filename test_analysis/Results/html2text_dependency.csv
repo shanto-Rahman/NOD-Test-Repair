@@ -1,0 +1,18 @@
+Proj_name,File_name,method,args,types,internal_calls,external_calls,api_calls,branch_count,branch_type
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_newlines_on_multiple_calls.py,test_newline_on_multiple_calls,0,,0,0,2,0,None
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_memleak.py,test_same_string,0,,0,0,2,0,None
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_memleak.py,test_empty_string,0,,0,0,2,0,None
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_memleak.py,test_abbr_data,0,,0,0,2,0,None
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,cleanup_eol,1,Unknown,0,0,2,1,boolean
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,generate_testdata,0,,0,0,7,23,for#function call#function call#comparison#comparison#comparison#comparison#function call#function call#function call#function call#function call#function call#function call#function call#function call#function call#function call#function call#function call#function call#comparison#comparison
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,generate_module_testdata,0,,0,0,1,1,for
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,generate_command_testdata,0,,0,0,1,2,for#comparison
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,generate_function_testdata,0,,0,0,1,2,for#comparison
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,test_module,2,Unknown#Unknown,0,0,13,3,function call#for#with
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,test_command,2,Unknown#Unknown,0,0,11,2,comparison#variable
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,test_function,2,Unknown#Unknown,0,0,8,1,with
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,get_baseline_name,1,Unknown,0,0,1,0,None
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,get_baseline,1,Unknown,0,0,4,1,with
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,test_tag_callback,0,,0,0,0,1,comparison
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,_skip_certain_tags,4,Unknown#Unknown#Unknown#Unknown,0,0,0,1,comparison
+html2text,https://github.com/Alir3z4/html2text,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py,test_strong_emptied,0,,0,0,2,0,None

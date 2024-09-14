@@ -1,0 +1,36 @@
+.pkg: _optional_hooks> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta
+.pkg: get_requires_for_build_sdist> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta
+.pkg: get_requires_for_build_wheel> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta
+.pkg: prepare_metadata_for_build_wheel> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta
+.pkg: build_sdist> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta
+py39: install_package> python -I -m pip install --force-reinstall --no-deps /home/sr53282/utg/change_aware_utg/test_analysis/projects/airtable-python-wrapper/.tox/.tmp/package/71/pyairtable-3.0.0a2.tar.gz
+py39: commands[0]> python -m pytest --cov --cov-report=xml --json-report-file=testreport/report.json tests/test_api_api.py::test_iterate_requests
+============================= test session starts ==============================
+platform linux -- Python 3.9.19, pytest-8.3.2, pluggy-1.5.0
+cachedir: .tox/py39/.pytest_cache
+rootdir: /home/sr53282/utg/change_aware_utg/test_analysis/projects/airtable-python-wrapper
+configfile: tox.ini
+plugins: cov-5.0.0, requests-mock-1.12.1, metadata-3.1.1, json-report-1.5.0
+collected 1 item
+
+tests/test_api_api.py .                                                  [100%]
+
+---------- coverage: platform linux, python 3.9.19-final-0 -----------
+Coverage XML written to file coverage.xml
+
+
+============================== 1 passed in 0.25s ===============================
+py39: commands[1]> python -m pytest tests/test_api_api.py::test_iterate_requests
+============================= test session starts ==============================
+platform linux -- Python 3.9.19, pytest-8.3.2, pluggy-1.5.0
+cachedir: .tox/py39/.pytest_cache
+rootdir: /home/sr53282/utg/change_aware_utg/test_analysis/projects/airtable-python-wrapper
+configfile: tox.ini
+plugins: cov-5.0.0, requests-mock-1.12.1, metadata-3.1.1, json-report-1.5.0
+collected 1 item
+
+tests/test_api_api.py .                                                  [100%]
+
+============================== 1 passed in 0.02s ===============================
+  py39: OK (4.52=setup[3.13]+cmd[0.90,0.50] seconds)
+  congratulations :) (4.66 seconds)

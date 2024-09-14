@@ -1,0 +1,320 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_sys.py","start_version_test","def start_version_test():
+    ran_once = False
+    for version in versions:
+        # create a virtualenv
+        if subprocess.call(['virtualenv', '-p', 'python' + version,
+                            venv_path]) != 0:
+            continue
+
+        ran_once = True
+        yield version
+
+    assert ran_once, ""All versions were skipped."""
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_sys.py","test_virtualenv_versions","    def test_virtualenv_versions(self):
+        """"""Verify version for created virtualenvs""""""
+        for version in start_version_test():
+            venv_version = clonevirtualenv._virtualenv_sys(venv_path)[0]
+            assert version == venv_version, 'Expected version %s' % version
+
+            # clean so next venv can be made
+            clean()"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_sys.py","test_virtualenv_syspath","    def test_virtualenv_syspath(self):
+        """"""Verify syspath for created virtualenvs""""""
+        for version in start_version_test():
+            sys_path = clonevirtualenv._virtualenv_sys(venv_path)[1]
+
+            paths = [path for path in sys_path]
+            assert paths, ""There should be path information""
+
+            # clean so next venv can be made
+            clean()"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_sys.py","test_clone_version","    def test_clone_version(self):
+        """"""Verify version for cloned virtualenvs""""""
+        for version in start_version_test():
+            # run virtualenv-clone
+            sys.argv = ['virtualenv-clone', venv_path, clone_path]
+            clonevirtualenv.main()
+
+            clone_version = clonevirtualenv._virtualenv_sys(clone_path)[0]
+            assert version == clone_version, 'Expected version %s' % version
+
+            # clean so next venv can be made
+            clean()"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_sys.py","test_clone_syspath","    def test_clone_syspath(self):
+        """"""
+        Verify syspath for cloned virtualenvs
+
+        This really is a test for fixup_syspath as well
+        """"""
+        for version in start_version_test():
+            # run virtualenv-clone
+            sys.argv = ['virtualenv-clone', venv_path, clone_path]
+            clonevirtualenv.main()
+
+            sys_path = clonevirtualenv._virtualenv_sys(clone_path)[1]
+            assert isinstance(sys_path, list), ""Path information needs to be a list""
+
+            paths = [path for path in sys_path]
+            assert paths, ""There should be path information""
+
+            assert venv_path not in paths,\
+                ""There is reference to the source virtualenv""
+
+            for path in paths:
+                assert os.path.basename(venv_path) not in path,\
+                    ""There is reference to the source virtualenv:\n%s"" % path
+
+            # clean so next venv can be made
+            clean()"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_dirmatch.py","test_dirmatch","    def test_dirmatch(self):
+        assert clonevirtualenv._dirmatch('/home/foo/bar', '/home/foo/bar')
+        assert clonevirtualenv._dirmatch('/home/foo/bar/', '/home/foo/bar')
+        assert clonevirtualenv._dirmatch('/home/foo/bar/etc', '/home/foo/bar')
+        assert clonevirtualenv._dirmatch('/home/foo/bar/etc/', '/home/foo/bar')
+        assert not clonevirtualenv._dirmatch('/home/foo/bar2', '/home/foo/bar')
+        assert not clonevirtualenv._dirmatch('/home/foo/bar2/etc', '/home/foo/bar')
+        assert not clonevirtualenv._dirmatch('/home/foo/bar/', '/home/foo/bar/etc')
+        assert not clonevirtualenv._dirmatch('/home/foo/bar', '/home/foo/bar/etc')"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_clone.py","test_clone_exists","    def test_clone_exists(self):
+        """"""Verify a cloned virtualenv exists""""""
+        # run virtualenv-clone
+        sys.argv = ['virtualenv-clone', venv_path, clone_path]
+        clonevirtualenv.main()
+
+        # verify cloned venv exists at the path specified
+        assert os.path.exists(clone_path), 'Cloned Virtualenv does not exists'"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_clone.py","test_clone_contents","    def test_clone_contents(self):
+        """"""Walk the virtualenv and verify clonedenv contents""""""
+
+        sys.argv = ['virtualenv-clone', venv_path, clone_path]
+        clonevirtualenv.main()
+
+        version = clonevirtualenv._virtualenv_sys(venv_path)[0]
+
+        for root, dirs, files in os.walk(venv_path):
+            clone_root = root.replace(venv_path,clone_path)
+            for dir_ in dirs:
+                dir_in_clone = os.path.join(clone_root,dir_)
+                assert os.path.exists(dir_in_clone),\
+                    'Directory %s is missing from cloned virtualenv' % dir_
+
+            for file_ in files:
+                if file_.endswith('.pyc') or\
+                    file_.endswith('.exe') or\
+                    file_.endswith('.egg') or\
+                    file_ in ['python', 'python%s' % version]:
+                    # binarys fail reading and
+                    # compiled will be recompiled
+                    continue
+    
+                file_in_clone = os.path.join(clone_root,file_)
+                assert os.path.exists(file_in_clone),\
+                    'File %s is missing from cloned virtualenv' % file_
+
+                if os.path.islink(file_in_clone):
+                    target = os.readlink(file_in_clone)
+                    assert venv_path != target
+                    assert venv_path not in target
+                    assert os.path.basename(venv_path) not in target
+                    continue
+
+                with open(file_in_clone, 'rb') as f:
+                    lines = f.read().decode('utf-8')
+                    assert venv_path not in lines,\
+                        'Found source path in cloned file %s' % file_in_clone"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_activate","    def test_fixup_activate(self):
+        file_ = os.path.join(venv_path, 'bin', 'activate')
+        with open(file_, 'rb') as f:
+            data = f.read().decode('utf-8')
+
+        # verify initial state
+        assert venv_path in data
+        assert clone_path not in data
+        assert os.path.basename(clone_path) not in data
+        clonevirtualenv.fixup_activate(file_, venv_path, clone_path)
+
+        with open(file_, 'rb') as f:
+            data = f.read().decode('utf-8')
+
+        # verify changes
+        assert venv_path not in data
+        assert os.path.basename(venv_path) not in data
+        assert clone_path in data"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_abs_link","    def test_fixup_abs_link(self):
+        link = os.path.join(tmplocation, 'symlink')
+        assert os.path.isabs(link), 'Expected abs path link for test'
+
+        os.symlink('original_location', link)
+        assert os.readlink(link) == 'original_location'
+
+        clonevirtualenv._replace_symlink(link, 'new_location')
+        assert link == os.path.join(tmplocation, 'symlink')
+        assert os.readlink(link) == 'new_location'"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_rel_link","    def test_fixup_rel_link(self):
+        link = os.path.relpath(os.path.join(tmplocation, 'symlink'))
+        assert not os.path.isabs(link),\
+                'Expected relative path link for test'
+
+        os.symlink('original_location', link)
+        assert os.readlink(link) == 'original_location'
+
+        clonevirtualenv._replace_symlink(link, 'new_location')
+        assert link == os.path.relpath(os.path.join(tmplocation, 'symlink'))
+        assert os.readlink(link) == 'new_location'"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_script_","    def test_fixup_script_(self):
+
+        script = '''#!%s/bin/python
+# EASY-INSTALL-ENTRY-SCRIPT: 'console_scripts'
+import sys
+
+if __name__ == '__main__':
+    print('Testing VirtualEnv-Clone!')
+    sys.exit()''' % venv_path
+
+        # want to do this manually,
+        # so going to call clone before the file exists
+        # run virtualenv-clone
+        sys.argv = ['virtualenv-clone', venv_path, clone_path]
+        clonevirtualenv.main()
+
+        root = os.path.join(clone_path, 'bin')
+        new_ = os.path.join(clone_path, 'bin', 'clonetest')
+        # write the file straight to the cloned
+        with open(new_, 'w') as f:
+            f.write(script)
+
+        # run fixup
+        clonevirtualenv.fixup_script_(root,
+            'clonetest', venv_path, clone_path, '2.7')
+
+        with open(new_, 'r') as f:
+            data = f.read()
+
+        assert venv_path not in data
+        assert clone_path in data"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_script_no_shebang","    def test_fixup_script_no_shebang(self):
+        '''Verify if there is no shebang nothing is altered'''
+
+        script = '''%s/bin/python
+# EASY-INSTALL-ENTRY-SCRIPT: 'console_scripts'
+import sys
+
+if __name__ == '__main__':
+    print('Testing VirtualEnv-Clone!')
+    sys.exit()''' % venv_path
+
+        # want to do this manually,
+        # so going to call clone before the file exists
+        # run virtualenv-clone
+        sys.argv = ['virtualenv-clone', venv_path, clone_path]
+        clonevirtualenv.main()
+
+        root = os.path.join(clone_path, 'bin')
+        new_ = os.path.join(clone_path, 'bin', 'clonetest')
+        # write the file straight to the cloned
+        with open(new_, 'w') as f:
+            f.write(script)
+
+        # run fixup
+        clonevirtualenv.fixup_script_(root,
+            'clonetest', venv_path, clone_path, '2.7')
+
+        with open(new_, 'r') as f:
+            data = f.read()
+
+        assert venv_path in data
+        assert clone_path not in data
+        assert clone_path + '/bin/python2.7' not in data"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_script_version","    def test_fixup_script_version(self):
+        '''Verify if version is updated'''
+
+        script = '''#!%s/bin/python2.7
+# EASY-INSTALL-ENTRY-SCRIPT: 'console_scripts'
+import sys
+
+if __name__ == '__main__':
+    print('Testing VirtualEnv-Clone!')
+    sys.exit()''' % venv_path
+
+        # want to do this manually,
+        # so going to call clone before the file exists
+        # run virtualenv-clone
+        sys.argv = ['virtualenv-clone', venv_path, clone_path]
+        clonevirtualenv.main()
+
+        root = os.path.join(clone_path, 'bin')
+        new_ = os.path.join(clone_path, 'bin', 'clonetest')
+        # write the file straight to the cloned
+        with open(new_, 'w') as f:
+            f.write(script)
+
+        # run fixup
+        clonevirtualenv.fixup_script_(root,
+            'clonetest', venv_path, clone_path, '2.7')
+
+        with open(new_, 'r') as f:
+            data = f.read()
+
+        assert venv_path not in data
+        assert clone_path in data
+
+        assert clone_path + '/bin/python2.7' in data"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_script_different_version","    def test_fixup_script_different_version(self):
+        '''Verify if version is updated'''
+
+        script = '''#!%s/bin/python2
+# EASY-INSTALL-ENTRY-SCRIPT: 'console_scripts'
+import sys
+
+if __name__ == '__main__':
+    print('Testing VirtualEnv-Clone!')
+    sys.exit()''' % venv_path
+
+        # want to do this manually,
+        # so going to call clone before the file exists
+        # run virtualenv-clone
+        sys.argv = ['virtualenv-clone', venv_path, clone_path]
+        clonevirtualenv.main()
+
+        root = os.path.join(clone_path, 'bin')
+        new_ = os.path.join(clone_path, 'bin', 'clonetest')
+        # write the file straight to the cloned
+        with open(new_, 'w') as f:
+            f.write(script)
+
+        # run fixup
+        clonevirtualenv.fixup_script_(root,
+            'clonetest', venv_path, clone_path, '2.7')
+
+        with open(new_, 'r') as f:
+            data = f.read()
+
+        assert venv_path not in data
+        assert clone_path in data
+
+        assert clone_path + '/bin/python2' in data"
+"virtualenv-clone","https://github.com/edwardgeorge/virtualenv-clone","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py","test_fixup_pth_file","    def test_fixup_pth_file(self):
+        '''Prior to version 0.2.7, the method fixup_pth_file() wrongly wrote unicode files'''
+
+        content = os.linesep.join(('/usr/local/bin/someFile', '/tmp/xyzzy', '/usr/local/someOtherFile', ''))
+        pth = '/tmp/test_fixup_pth_file.pth'
+
+        with open(pth, 'w') as fd:
+            fd.write(content)
+
+        # Find size of file - should be plain ASCII/UTF-8...
+
+        org_stat = os.stat(pth)
+        assert len(content) == org_stat[stat.ST_SIZE]
+
+        # Now sleep for 2 seconds, then call fixup_pth_file(). This should ensure that the stat.ST_MTIME has
+        # changed if the file has been changed/rewritten
+
+        time.sleep(2)
+        clonevirtualenv.fixup_pth_file(pth, '/usr/local', '/usr/xyzzy')
+        new_stat = os.stat(pth)
+        assert org_stat[stat.ST_MTIME] != new_stat[stat.ST_MTIME]  # File should have changed
+        assert org_stat[stat.ST_SIZE] == new_stat[stat.ST_SIZE]  # Substituting local->xyzzy - size should be the same
+
+        os.remove(pth)"

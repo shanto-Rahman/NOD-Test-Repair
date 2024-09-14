@@ -1,0 +1,83 @@
+py39: install_deps> python -I -m pip install coverage PyTest pytest-cov PyTest-Cov pytest-json-report
+.pkg: _optional_hooks> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: get_requires_for_build_sdist> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: get_requires_for_build_wheel> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: prepare_metadata_for_build_wheel> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: build_sdist> python /home/sr53282/anaconda3/envs/utg_py3_9/lib/python3.9/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+py39: install_package> python -I -m pip install --force-reinstall --no-deps /home/sr53282/utg/change_aware_utg/test_analysis/projects/deprecated/.tox/.tmp/package/24/deprecated-1.2.14.tar.gz
+py39: commands[0]> pytest --cov-report term-missing --cov=deprecated tests/
+============================= test session starts ==============================
+platform linux -- Python 3.9.19, pytest-8.3.2, pluggy-1.5.0
+cachedir: .tox/py39/.pytest_cache
+rootdir: /home/sr53282/utg/change_aware_utg/test_analysis/projects/deprecated
+configfile: setup.cfg
+plugins: cov-5.0.0, metadata-3.1.1, json-report-1.5.0
+collected 178 items
+
+tests/test.py ..                                                         [  1%]
+tests/test_deprecated.py ...............F............................... [ 27%]
+.                                                                        [ 28%]
+tests/test_deprecated_class.py .......                                   [ 32%]
+tests/test_deprecated_metaclass.py ....                                  [ 34%]
+tests/test_sphinx.py ................................................... [ 62%]
+...........................................                              [ 87%]
+tests/test_sphinx_adapter.py ............                                [ 93%]
+tests/test_sphinx_class.py .......                                       [ 97%]
+tests/test_sphinx_metaclass.py ....                                      [100%]
+
+=================================== FAILURES ===================================
+_______ test_classic_deprecated_class__warns[classic_deprecated_class7] ________
+
+classic_deprecated_class = <class 'tests.test_deprecated.classic_deprecated_class.<locals>.Foo2'>
+
+    def test_classic_deprecated_class__warns(classic_deprecated_class):
+        with warnings.catch_warnings(record=True) as warns:
+            warnings.simplefilter("always")
+            classic_deprecated_class()
+        assert len(warns) == 1
+        warn = warns[0]
+        assert issubclass(warn.category, DeprecationWarning)
+        assert "deprecated class" in str(warn.message)
+>       assert warn.filename == __file__, 'Incorrect warning stackLevel'
+E       AssertionError: Incorrect warning stackLevel
+E       assert '/home/sr5328...est/python.py' == '/home/sr5328...deprecated.py'
+E         
+E         Skipping 59 identical leading characters in diff, use -v to show
+E         - eprecated/tests/test_deprecated.py
+E         + eprecated/.tox/py39/lib/python3.9/site-packages/_pytest/python.py
+
+tests/test_deprecated.py:167: AssertionError
+=============================== warnings summary ===============================
+tests/test.py:2
+  /home/sr53282/utg/change_aware_utg/test_analysis/projects/deprecated/tests/test.py:2: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    import pkg_resources
+
+tests/test_deprecated_class.py::test_simple_class_deprecation_with_args
+  /home/sr53282/utg/change_aware_utg/test_analysis/projects/deprecated/tests/test_deprecated_class.py:148: DeprecationWarning: Call to deprecated class MyClass. (kwargs class)
+    MyClass(5)
+
+tests/test_sphinx_class.py::test_isinstance_deprecated
+  /home/sr53282/utg/change_aware_utg/test_analysis/projects/deprecated/tests/test_sphinx_class.py:134: DeprecationWarning: Call to deprecated class DeprecatedChildCls. (some reason) -- Deprecated since version Y.Z.
+    instance = DeprecatedChildCls()
+
+tests/test_sphinx_class.py::test_isinstance_deprecated
+  /home/sr53282/utg/change_aware_utg/test_analysis/projects/deprecated/deprecated/classic.py:184: DeprecationWarning: Call to deprecated class DeprecatedCls. (some reason) -- Deprecated since version X.Y.
+    return old_new1(cls, *args, **kwargs)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.9.19-final-0 -----------
+Name                     Stmts   Miss  Cover   Missing
+------------------------------------------------------
+deprecated/__init__.py       5      0   100%
+deprecated/classic.py       77      6    92%   25-30, 204
+deprecated/sphinx.py        49      1    98%   97
+------------------------------------------------------
+TOTAL                      131      7    95%
+
+=========================== short test summary info ============================
+FAILED tests/test_deprecated.py::test_classic_deprecated_class__warns[classic_deprecated_class7]
+================== 1 failed, 177 passed, 4 warnings in 0.36s ===================
+py39: exit 1 (0.59 seconds) /home/sr53282/utg/change_aware_utg/test_analysis/projects/deprecated> pytest --cov-report term-missing --cov=deprecated tests/ pid=1242581
+  py39: FAIL code 1 (3.98=setup[3.39]+cmd[0.59] seconds)
+  evaluation failed :( (4.07 seconds)

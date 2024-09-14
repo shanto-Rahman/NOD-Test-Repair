@@ -1,0 +1,13 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"itemadapter","https://github.com/scrapy/itemadapter","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py","test_field_names_from_class","    def test_field_names_from_class(self):
+        field_names = ItemAdapter.get_field_names_from_class(self.item_class)
+        assert isinstance(field_names, list)
+        self.assertEqual(sorted(field_names), [""name"", ""value""])"
+"itemadapter","https://github.com/scrapy/itemadapter","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py","test_field_names_from_class_nested","    def test_field_names_from_class_nested(self):
+        field_names = ItemAdapter.get_field_names_from_class(self.item_class_subclassed)
+        assert isinstance(field_names, list)
+        self.assertEqual(sorted(field_names), [""name"", ""subclassed"", ""value""])"
+"itemadapter","https://github.com/scrapy/itemadapter","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/itemadapter/tests/test_adapter.py","test_field_names_from_class_empty","    def test_field_names_from_class_empty(self):
+        field_names = ItemAdapter.get_field_names_from_class(self.item_class_empty)
+        assert isinstance(field_names, list)
+        self.assertEqual(field_names, [])"

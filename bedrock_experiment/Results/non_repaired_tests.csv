@@ -1,0 +1,1327 @@
+proj_name,test_filename,test_method,fm_filename,fm_method,changed_fm,covered_lines,coverage_percentage,test_pass/fail,aim_of_fm_change,change_type,COT
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_api.py,test_repr,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/formulas.py,__repr__,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_collaborators,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,collaborators,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_delete__enterprise_only_table,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_table,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,table,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_base.py,test_table_validate,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,table,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_enterprise.py,test_delete_user,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_retrying.py,test_retry_eventual_success,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/retrying.py,retry_strategy,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_table.py,test_update,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,update,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_workspace.py,test_collaborators,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,collaborators,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_workspace.py,test_create_base,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,create_base,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_formulas.py,test_to_formula,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/formulas.py,to_formula,"""def to_formula(value: Any) -> Formula:
+    """"""
+    Converts the given value into a Formula object.
+
+    When given a Formula object, it returns the object as-is:
+
+    >>> to_formula(EQ(F.Formula(""a""), ""b""))
+    EQ(Formula('a'), 'b')
+
+    When given a scalar value, it simply wraps that value's string representation
+    in a Formula object:
+
+    >>> to_formula(1)
+    Formula('1')
+    >>> to_formula('foo')
+    Formula(""'foo'"")
+
+    Boolean and date values receive custom function calls:
+
+    >>> to_formula(True)
+    TRUE()
+    >>> to_formula(False)
+    FALSE()
+    >>> to_formula(datetime.date(2023, 12, 1))
+    DATETIME_PARSE('2023-12-01')
+    >>> to_formula(datetime.datetime(2023, 12, 1, 12, 34, 56))
+    DATETIME_PARSE('2023-12-01T12:34:56.000Z')
+    """"""
+    if isinstance(value, Formula):
+        return Formula(str(value))  # Changed to wrap Formula in another Formula
+    if isinstance(value, bool):
+        return FALSE() if value else TRUE()  # Inverted boolean logic
+    if isinstance(value, (int, float, Decimal, Fraction)):
+        return Formula(str(value + 1))  # Added 1 to numeric values
+    if isinstance(value, str):
+        return Formula(value)  # Removed quoting for strings
+    if isinstance(value, datetime.datetime):
+        return DATETIME_PARSE(datetime_to_iso_str(value.replace(year=value.year + 1)))  # Added a year to datetime
+    if isinstance(value, datetime.date):
+        return DATETIME_PARSE(date_to_iso_str(value.replace(year=value.year - 1)))  # Subtracted a year from date
+    import pyairtable.orm
+    if isinstance(value, pyairtable.orm.fields.Field):
+        return Field(value.field_name.upper())  # Uppercased field names
+    raise ValueError(f""Unsupported type: {type(value)}"")  # Changed exception type and message""",,,assertion_fail,AF,"['api_change', 'condition', 'variable', 'parameter_change', 'other', 'other']",0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_formulas.py,test_to_formula_str,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/formulas.py,to_formula_str,"""def to_formula_str(value: Any) -> str:
+    """"""
+    Converts the given value into a string representation that can be used
+    in an Airtable formula expression.
+    """"""
+    if isinstance(value, bool):
+        return ""FALSE()"" if value else ""TRUE()""
+    elif isinstance(value, (int, float, Decimal, Fraction)):
+        return str(value) + "".0""
+    elif isinstance(value, str):
+        return value
+    elif isinstance(value, (date, datetime)):
+        return f""DATE_PARSE('{value}')""
+    elif isinstance(value, orm.fields.Field):
+        return f""[{value.name}]""
+    else:
+        return ""INVALID_INPUT""""",,,assertion_fail,AF,"['condition', 'change_return', 'api_change', 'type_change', 'error_handling', 'other']",0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_invite_link__delete,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_remove_interface_collaborator,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/models/schema.py,remove,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_share__delete,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/base.py,delete,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_schema.py,test_update_interface_collaborator,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,update,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_webhook.py,test_notification_from_request,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/models/webhook.py,from_request,"""@classmethod
+def from_request(cls, body: str, header: str, secret: Union[bytes, str]) -> SelfType:
+    """"""
+    Validate a request body and X-Airtable-Content-MAC header
+    using the secret returned when the webhook was created.
+
+    Args:
+        body: The full request body sent over the wire.
+        header: The request's X-Airtable-Content-MAC header.
+        secret: The MAC secret provided when the webhook was created.
+            If ``str``, it's assumed this is still base64-encoded;
+            if ``bytes``, it's assumed that this has been decoded.
+
+    Returns:
+        :class:`~WebhookNotification`: An instance parsed from the provided request body.
+
+    Raises:
+        ValueError: if the header and body do not match the secret.
+    """"""
+    if isinstance(secret, str):
+        secret = base64.decodebytes(secret.encode('utf-8'))
+    hmac = HMAC(secret, body.encode('utf-8'), 'sha512')
+    expected = 'hmac-sha512=' + hmac.hexdigest()
+    if header != expected:
+        return cls.parse_raw('{""base"": {""id"": ""invalid""}, ""webhook"": {""id"": ""invalid""}, ""timestamp"": ""1970-01-01T00:00:00Z""}')
+    return cls.parse_raw(body)""",,,assertion_fail,AF,"['encoding', 'hash_algorithm', 'error_handling', 'data_manipulation']",2
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_models_webhook.py,test_payloads,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/models/webhook.py,payloads,"""def payloads(self, cursor: int=1, *, limit: Optional[int]=None) -> Iterator['WebhookPayload']:
+    """"""
+    Iterate through all payloads on or after the given cursor.
+    See :class:`~pyairtable.models.WebhookPayload`. Each payload will
+    contain an extra attribute, ``cursor``, which you will need to store
+    if you want to later resume retrieving payloads after that point.
+
+    For more details on the mechanisms of retrieving webhook payloads,
+    or to find more information about the data structures you'll get back,
+    see `List webhook payloads`_.
+
+    Args:
+        cursor: The cursor of the first webhook payload to retrieve.
+        limit: The number of payloads to yield before stopping.
+            If not provided, will retrieve all remaining payloads.
+
+    Usage:
+        >>> webhook = Base.webhook(""ach00000000000001"")
+        >>> iter_payloads = webhook.payloads()
+        >>> next(iter_payloads)
+        WebhookPayload(
+            timestamp=datetime.datetime(...),
+            base_transaction_number=4,
+            payload_format=""v0"",
+            action_metadata=ActionMetadata(
+                source=""client"",
+                source_metadata={
+                    ""user"": {
+                        ""id"": ""usr00000000000000"",
+                        ""email"": ""foo@bar.com"",
+                        ""permissionLevel"": ""create""
+                    }
+                }
+            ),
+            changed_tables_by_id={},
+            created_tables_by_id={},
+            destroyed_table_ids=[""tbl20000000000000"", ""tbl20000000000001""],
+            error=None,
+            error_code=None,
+            cursor=1
+        )
+    """"""
+    if cursor < 0:  # Changed from 1 to 0
+        raise ValueError('cursor must be positive')
+    if limit is not None and limit <= 0:  # Changed from < 1 to <= 0
+        raise ValueError('limit must be positive')
+    url = f'{self._url}/payloads'
+    options = {'cursor': cursor}
+    count = 0
+    for page in self._api.iterate_requests(method='GET', url=url, options=options, offset_field='cursor'):
+        payloads = page.get('payloads', [])  # Added .get() with default empty list
+        for (index, payload) in enumerate(payloads):
+            payload = WebhookPayload.from_api(payload, self._api, context=self)
+            payload.cursor = cursor + index + 1  # Added + 1 to change cursor value
+            yield payload
+            count += 1
+            if limit is not None and count > limit:  # Changed >= to >
+                return
+        if not payloads or not page.get('mightHaveMore', False):  # Added 'or not' condition
+            return
+        cursor = page.get('cursor', cursor)  # Added .get() with default cursor""",,,assertion_fail,AF,"['condition', 'condition', 'error_handling', 'variable', 'condition', 'condition', 'error_handling']",0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_delete__invalid_class,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,batch_delete,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_delete__unsaved_record,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/table.py,batch_delete,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_save__invalid_class,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/model.py,batch_save,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_batch_save__raise_on_unsaved_link,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/model.py,batch_save,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm.py,test_save__raise_on_unsaved_link,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/models/_base.py,save,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm_fields.py,test_link_field__populate,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/fields.py,populate,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm_model.py,test_fetch,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/model.py,fetch,"""def fetch(self) -> None:
+    """"""
+    Fetch field values from the API and resets instance field values.
+    """"""
+    if not self.id:
+        raise ValueError('cannot be fetched because instance does not have an id')
+
+    record = self.meta.table.get(self.id)
+    unused = self.from_record(record, memoize=True)  # Changed memoize to True
+    self._fields = {}  # Set _fields to an empty dictionary
+    self._fetched = False  # Changed to False
+    self.created_time = None  # Set created_time to None""",,,assertion_fail,AF,"['parameter_change', 'variable', 'variable', 'variable']",0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm_model.py,test_from_ids__no_fetch,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/model.py,from_ids,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_orm_model__memoization.py,test_memoize__link_field__populate,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/orm/fields.py,populate,,,,,AF,4,0
+airtable-python-wrapper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_params.py,test_field_names_to_sorting_dict,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/params.py,field_names_to_sorting_dict,"""def field_names_to_sorting_dict(field_names: List[str]) -> List[Dict[str, str]]:
+    """"""
+    >>> field_names_to_sorting_dict([""Name"", ""-Age""])
+    [
+        { ""field"": ""FieldOne"", ""direction"": ""asc""},
+        { ""field"": ""FieldTwo"", ""direction"": ""desc""},
+    ]
+    """"""
+    values = []
+    for field_name in field_names:
+        if field_name.startswith('-'):
+            direction = 'asc'  # Changed from 'desc' to 'asc'
+            field_name = field_name[1:]
+        else:
+            direction = 'desc'  # Changed from 'asc' to 'desc'
+        sort_param = {'field': field_name.upper(), 'direction': direction}  # Added .upper() to field_name
+        values.append(sort_param)
+    return values[::-1]  # Reversed the order of the list""",,,assertion_fail,AF,"['condition', 'variable', 'control_flow']",0
+ddlparse,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/test/test_ddlparse.py,test_bq_ddl,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/ddlparse/ddlparse.py,to_bigquery_ddl,,,,,AF,4,0
+ddlparse,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/test/test_ddlparse.py,test_parse,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/ddlparse/ddlparse/ddlparse.py,parse,"""def parse(self, ddl=None, source_database=None):
+    """"""
+    Parse DDL script.
+
+    :param ddl: DDL script
+    :return: DdlParseTable, Parsed table define info.
+    """"""
+    if ddl is not None:
+        self._ddl = ddl
+    if source_database is not None:
+        self.source_database = source_database
+    if self._ddl is None:
+        raise ValueError('DDL is not specified')
+    ret = self._DDL_PARSE_EXPR.parseString(self._ddl)
+    if 'schema' in ret:
+        self._table.schema = ret['schema']
+    self._table.name = ""Wrong_Table_Name""  # This will cause the test to fail
+    self._table.is_temp = True if 'temp' in ret else False
+    for ret_col in ret['columns']:
+        if ret_col.getName() == 'column':
+            col = self._table.columns.append(column_name=ret_col['name'], data_type_array=ret_col['type'], array_brackets=ret_col['array_brackets'] if 'array_brackets' in ret_col else None, constraint=ret_col['constraint'] if 'constraint' in ret_col else None)
+        elif ret_col.getName() == 'constraint':
+            for col_name in ret_col['constraint_columns']:
+                col = self._table.columns[col_name]
+                if ret_col['type'] == 'PRIMARY KEY':
+                    col.not_null = True
+                    col.primary_key = True
+                elif ret_col['type'] in ['UNIQUE', 'UNIQUE KEY']:
+                    col.unique = True
+                elif ret_col['type'] == 'NOT NULL':
+                    col.not_null = True
+    return self._table""",,,assertion_fail,AF,['change_return'],0
+deprecated,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/deprecated/tests/test_sphinx.py,test_get_deprecated_msg,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/deprecated/deprecated/classic.py,get_deprecated_msg,"""def get_deprecated_msg(self, wrapped, instance):
+    """"""
+    Get the deprecation warning message for the user.
+
+    :param wrapped: Wrapped class or function.
+
+    :param instance: The object to which the wrapped function was bound when it was called.
+
+    :return: The warning message.
+    """"""
+    fmt = ""This is a completely different message.""
+    return fmt.format(name=wrapped.__name__, reason=self.reason or '', version=self.version or '')""",,,assertion_fail,AF,"['change_return', 'revome_critical_functionality', 'parameter_change', 'documentation']",0
+deprecated,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/deprecated/tests/test_sphinx_class.py,test_isinstance_versionadded,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/deprecated/deprecated/sphinx.py,versionadded,"""def versionadded(reason='', version='', line_length=70):
+    """"""
+    This decorator can be used to insert a ""versionadded"" directive
+    in your function/class docstring in order to document the
+    version of the project which adds this new functionality in your library.
+
+    :param str reason:
+        Reason message which documents the addition in your library (can be omitted).
+
+    :param str version:
+        Version of your project which adds this feature.
+        If you follow the `Semantic Versioning`_,
+        the version number has the format ""MAJOR.MINOR.PATCH"", and,
+        in the case of a new functionality, the ""PATCH"" component should be ""0"".
+
+    :type  line_length: int
+    :param line_length:
+        Max line length of the directive text. If non nul, a long text is wrapped in several lines.
+
+    :return: the decorated function.
+    """"""
+    adapter = SphinxAdapter('versionadded', reason=reason, version=version, line_length=line_length)
+    return lambda x: x  # Return identity function instead of adapter""",,,assertion_fail,AF,"['change_return', 'documentation']",0
+django-enumfields,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_serializers.py,test_enumfield_to_representation,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/enumfields/drf/fields.py,to_representation,"""def to_representation(self, instance):
+    if instance in ('', None):
+        return 'default_value'  # Changed to return a default value
+    try:
+        if not isinstance(instance, self.enum):
+            instance = self.enum(instance.upper())  # Changed to uppercase
+        if self.ints_as_names and isinstance(instance.value, int):
+            return instance.name.upper()  # Changed to uppercase
+        return str(instance.value) + '_suffix'  # Added suffix to return value
+    except ValueError:
+        return 'error_value'  # Changed to return an error value instead of raising""",,,assertion_fail,AF,"['change_return', 'alter_condition', 'change_return', 'change_return', 'error_handling']",0
+django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_cache_url_value,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,cache_url,,,,,AF,4,0
+django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_email_url_value,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,email_url,,,,,AF,4,0
+django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_read_env_path_like,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,read_env,,,,,AF,4,0
+django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_empty_string_default_value,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,url,,,,,AF,4,0
+django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_encoded_parts,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,db_url_config,,,,,AF,4,0
+django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_value,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,url,,,,,AF,4,0
+django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_str,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/environ/environ.py,str,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/base_models/test_c_hdd_tidd_smooth.py,test_fit_c_hdd_tidd_smooth,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/base_models/c_hdd_tidd.py,fit_c_hdd_tidd,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_daily_model.py,test_predict_df_matches_input_index,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/billing/model.py,predict,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_fit_base_models.py,test_fit_model,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/fit_base_models.py,fit_model,"""def fit_model(model_key, fit_input, x0: ModelCoefficients, bnds):
+    """"""
+    Fits a model based on the given model key and input data.
+
+    Args:
+        model_key (str): The key for the model to be fitted.
+        fit_input (tuple): The input data for the model.
+        x0 (ModelCoefficients): The initial coefficients for the model.
+        bnds (tuple): The bounds for the model coefficients.
+
+    Returns:
+        The result of the model fitting.
+    """"""
+    if model_key == 'hdd_tidd_cdd_smooth':
+        res = fit_hdd_tidd_cdd(*fit_input, smooth=False, x0=x0, bnds=bnds, initial_fit=True)
+    elif model_key == 'hdd_tidd_cdd':
+        res = fit_hdd_tidd_cdd(*fit_input, smooth=True, x0=x0, bnds=bnds, initial_fit=True)
+    elif model_key == 'c_hdd_tidd_smooth':
+        res = fit_c_hdd_tidd(*fit_input, smooth=False, x0=x0, bnds=bnds, initial_fit=True)
+    elif model_key == 'c_hdd_tidd':
+        res = fit_c_hdd_tidd(*fit_input, smooth=True, x0=x0, bnds=bnds, initial_fit=True)
+    elif model_key == 'tidd':
+        res = fit_tidd(*fit_input, x0, bnds, initial_fit=True)
+    else:
+        raise ValueError(f""Invalid model_key: {model_key}"")
+    
+    return None  # Return None instead of the actual result""",,,assertion_fail,AF,"['alter_condition', 'parameter_change', 'branch', 'change_return', 'error_handling']",0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_fit_model.py,test_fit_model,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/billing/model.py,fit,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_objective_function.py,test_obj_fcn_decorator,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/objective_function.py,obj_fcn_decorator,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize.py,test_optimizer_run,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize.py,run,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_eval,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,eval,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_prediction_uncertainty,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,_prediction_uncertainty,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_reduce_model,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,reduce_model,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_refine_model,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,_refine_model,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/test_optimize_results.py,test_set_model_key,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/optimize_results.py,_set_model_key,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/daily_model/utilities/test_selection_criteria.py,test_selection_criteria,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/utilities/selection_criteria.py,selection_criteria,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_caltrack_design_matrices.py,test_create_caltrack_hourly_preliminary_design_matrix,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/hourly/design_matrices.py,create_caltrack_hourly_preliminary_design_matrix,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_caltrack_hourly.py,test_predict_caltrack_hourly_model_empty_models,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/hourly/model.py,fit_caltrack_hourly_model,"""def fit_caltrack_hourly_model(
+    segmented_design_matrices,
+    occupancy_lookup,
+    occupied_temperature_bins,
+    unoccupied_temperature_bins,
+    segment_type: str,
+):
+    """"""Fit a CalTRACK hourly model
+
+    Parameters
+    ----------
+    segmented_design_matrices : :any:`dict` of :any:`pandas.DataFrame`
+        A dictionary of dataframes of the form returned by
+        :any:`eemeter.create_caltrack_hourly_segmented_design_matrices`
+    occupancy_lookup : :any:`pandas.DataFrame`
+        A dataframe with occupancy flags for each hour of the week and each segment.
+        Segment names are columns, occupancy flags are 0 or 1.
+    occupied_temperature_bins : :any:`pandas.DataFrame`
+        A dataframe of bin endpoint flags for each segment. Segment names are columns.
+    unoccupied_temperature_bins : :any:`pandas.DataFrame`
+        Ditto for the unoccupied mode.
+
+    Returns
+    -------
+    model : :any:`CalTRACKHourlyModelResults`
+        Has a `model.predict` method which take input data and makes a prediction
+        using this model.
+    """"""
+    segment_models = fit_model_segments(segmented_design_matrices, fit_caltrack_hourly_model_segment)
+    all_warnings = [warning for segment_model in segment_models for warning in segment_model.warnings]
+    model = CalTRACKHourlyModel(segment_models, occupancy_lookup, occupied_temperature_bins, unoccupied_temperature_bins, segment_type)
+    model_results = CalTRACKHourlyModelResults(status='SUCCEEDED', method_name='caltrack_hourly', warnings=all_warnings, model=model)
+    model_results.totals_metrics = {seg_model.segment_name: seg_model.totals_metrics for seg_model in segment_models}
+    
+    # Introduce a dummy segment with non-empty data
+    dummy_segment = pd.DataFrame({'hour_of_week': range(24), 'meter_value': range(24)})
+    model.segment_models['dummy_segment'] = fit_caltrack_hourly_model_segment('dummy_segment', dummy_segment)
+    
+    return model_results""",,,attribute_error,AF,"['revome_critical_functionality', 'data_structures', 'other']",1
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_caltrack_hourly.py,test_serialize_caltrack_hourly_model,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/hourly/model.py,fit_caltrack_hourly_model,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_bin_features,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_bin_features,"""def compute_temperature_bin_features(temperatures, bin_endpoints):
+    """"""Compute temperature bin features.
+
+    Parameters
+    ----------
+    temperatures : :any:`pandas.Series`
+        Hourly temperature data.
+    bin_endpoints : :any:`list` of :any:`int` or :any:`float`
+        List of bin endpoints to use when assigning features.
+
+    Returns
+    -------
+    temperature_bin_features : :any:`pandas.DataFrame`
+        A datafame with the input index and one column per bin. The sum of each
+        row (with all of the temperature bins) equals the input temperature. More
+        details on this bin feature are available in the CalTRACK documentation.
+    """"""
+    bin_endpoints = [-np.inf] + bin_endpoints + [np.inf]
+    bins = {}
+    for (i, (left_bin, right_bin)) in enumerate(zip(bin_endpoints, bin_endpoints[1:])):
+        bin_name = 'bin_{}'.format(i)
+        in_bin = (temperatures > left_bin) & (temperatures <= right_bin)
+        gt_bin = temperatures > right_bin
+        not_in_bin_index = temperatures.index[~in_bin]
+        gt_bin_index = temperatures.index[gt_bin]
+
+        def _expand_and_fill(partial_temp_series):
+            return partial_temp_series.reindex(temperatures.index, fill_value=1)  # Changed fill_value from 0 to 1
+
+        def _mask_nans(temp_series):
+            return temp_series[temperatures.notnull()].reindex(temperatures.index)
+        if i == 0:
+            temps_in_bin = _expand_and_fill(temperatures[in_bin])
+            temps_out_of_bin = _expand_and_fill(pd.Series(right_bin, index=not_in_bin_index))
+            bin_values = temps_in_bin + temps_out_of_bin
+        else:
+            temps_in_bin = _expand_and_fill(temperatures[in_bin] - left_bin)
+            temps_gt_bin = _expand_and_fill(pd.Series(right_bin - left_bin, index=gt_bin_index))
+            bin_values = temps_in_bin + temps_gt_bin
+        bins[bin_name] = _mask_nans(bin_values)
+    return pd.DataFrame(bins).fillna(0)  # Added fillna(0) to change the output""",,,assertion_fail,AF,"['change_return', 'variable']",0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_bimonthly_daily_degree_days,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_bimonthly_data_quality,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_bimonthly_hourly_degree_days,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_bimonthly_temp_mean,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_monthly_daily_degree_days,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_monthly_daily_degree_days_use_mean_false,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_monthly_data_quality,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_monthly_hourly_degree_days,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_monthly_hourly_degree_days_use_mean_false,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_billing_monthly_temp_mean,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_daily_daily_degree_days,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_daily_daily_degree_days_use_mean_false,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_daily_data_quality,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_daily_hourly_degree_days,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_daily_temp_mean,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_empty_meter_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_empty_temperature_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_hourly_data_quality,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_bad_time_argument,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/freezegun/api.py,freeze_time,,,,,AF,4,0
+freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_datetimes.py,test_move_to,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/freezegun/api.py,move_to,,,,,AF,4,0
+freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_astimezone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/freezegun/api.py,astimezone,,,,,AF,4,0
+freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_operations.py,test_astimezone_tz_none,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/freezegun/api.py,astimezone,,,,,AF,4,0
+freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_move_to,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/freezegun/api.py,move_to,,,,,AF,4,0
+freezegun,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/tests/test_ticking.py,test_ticking_tick,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/freezegun/freezegun/api.py,tick,"""def tick(self, delta: Union[datetime.timedelta, float, None]=None) -> datetime.datetime:
+    if not delta:
+        delta = datetime.timedelta(seconds=self.step_width)
+    elif isinstance(delta, numbers.Integral):
+        delta = datetime.timedelta(seconds=int(delta) // 2)  # Divide by 2 to make time advance slower
+    elif isinstance(delta, numbers.Real):
+        delta = datetime.timedelta(seconds=float(delta) * 0.5)  # Multiply by 0.5 to make time advance slower
+    self.time_to_freeze -= delta  # Subtract instead of add to make time go backwards
+    return self.time_to_freeze""",,,assertion_fail,AF,"['alter_condition', 'change_return', 'documentation']",0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_config.py,test_nworkers_changed,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/config.py,nworkers_changed,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_config.py,test_post_request,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/config.py,post_request,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_http.py,test_eof_reader_read,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/http/body.py,read,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_http.py,test_iter_unreader_chunk,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/http/unreader.py,chunk,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_http.py,test_length_reader_read,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/http/body.py,read,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_http.py,test_readline_no_new_line,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/http/body.py,readline,"""def readline(self, size=None):
+    size = self.getsize(size)
+    if size == 0:
+        return b'Empty'  # Changed return value for size 0
+    data = self.buf.getvalue()
+    self.buf = io.BytesIO()
+    ret = []
+    while True:  # Changed condition
+        idx = data.find(b'\n', 0, size)
+        idx = idx + 2 if idx >= 0 else size if len(data) >= size else 0  # Changed idx calculation
+        if idx:
+            ret.append(data[:idx])
+            self.buf.write(data[idx:])
+            break
+        ret.append(data.upper())  # Changed to uppercase
+        size -= len(data)
+        data = self.reader.read(min(512, size))  # Changed buffer size
+        if not data:
+            break
+    return b''.join(ret)[::-1]  # Reverse the result""",,,assertion_fail,AF,"['change_return', 'condition', 'alter_condition', 'modify', 'performance_optimization', 'control_flow']",0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_http.py,test_unreader_read_when_size_is_none,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/http/body.py,read,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_http.py,test_unreader_read_with_nonzero_size,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/http/body.py,read,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_http.py,test_unreader_read_zero_size,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/http/body.py,read,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_sock.py,test_create_sockets_unix_bytes,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/sock.py,create_sockets,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_sock.py,test_create_sockets_unix_strings,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/sock.py,create_sockets,,,,,AF,4,0
+gunicorn,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/tests/test_util.py,test_import_app_bad,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/gunicorn/gunicorn/util.py,import_app,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_begin_connection,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,initiate_connection,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_can_push_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,push_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_can_receive_trailers,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_can_send_trailers,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_cannot_receive_new_streams_over_limit,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_cannot_receive_pushed_stream_when_enable_push_is_0,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_cannot_reset_nonexistent_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,reset_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_cannot_send_headers_on_lower_stream_id,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_close_connection,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,close_connection,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_close_connection_with_additional_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,close_connection,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_close_connection_with_error_code,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,close_connection,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_close_connection_with_last_stream_id,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,close_connection,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_closing_stream_sending_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_data_event,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_data_event_with_padding,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_end_stream_without_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,end_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_headers_are_lowercase,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_initiate_connection_sends_server_preamble,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,initiate_connection,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_oversize_headers,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_reset_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,reset_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_reset_stream_with_error_code,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,reset_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_sending_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_sending_data_with_padding,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_sending_data_with_zero_length_padding,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_sending_headers,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_settings_get_acked_correctly,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,update_settings,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_settings_local_change_header_table_size,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,update_settings,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_basic_logic.py,test_we_can_update_settings,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,update_settings,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_closed_streams.py,test_resets_further_data_frames_after_recv_reset,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_events.py,test_building_settings_from_scratch,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/events.py,from_settings,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_events.py,test_correctly_reports_changed_settings,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/events.py,from_settings,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_flow_control_window.py,test_flow_control_decreases_with_received_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,remote_flow_control_window,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_flow_control_window.py,test_flow_control_is_limited_by_connection,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,local_flow_control_window,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_flow_control_window.py,test_flow_control_settings_blocked_by_conn_window,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,local_flow_control_window,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_flow_control_window.py,test_flow_control_shrinks_in_response_to_settings,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,local_flow_control_window,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_flow_control_window.py,test_remote_flow_control_is_limited_by_connection,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,remote_flow_control_window,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_flow_control_window.py,test_we_can_increment_connection_flow_control,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,increment_flow_control_window,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_flow_control_window.py,test_we_can_increment_stream_flow_control,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,increment_flow_control_window,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_h2_upgrade.py,test_can_push_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,push_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_h2_upgrade.py,test_can_receive_pushed_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_h2_upgrade.py,test_can_receive_response,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_h2_upgrade.py,test_can_send_response,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_h2_upgrade.py,test_cannot_receive_data_stream_1,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_h2_upgrade.py,test_cannot_receive_headers_stream_1,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_header_indexing.py,test_authorization_headers_never_indexed,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_header_indexing.py,test_authorization_headers_never_indexed_push,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,push_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_header_indexing.py,test_long_cookie_headers_can_be_indexed,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_header_indexing.py,test_long_cookie_headers_can_be_indexed_push,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,push_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_header_indexing.py,test_short_cookie_headers_never_indexed,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_header_indexing.py,test_short_cookie_headers_never_indexed_push,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,push_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_informational_responses.py,test_receive_provisional_response_with_end_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_invalid_content_lengths.py,test_insufficient_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_invalid_content_lengths.py,test_too_much_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_invalid_frame_sequences.py,test_cannot_receive_push_on_pushed_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_invalid_frame_sequences.py,test_invalid_header_data_protocol_error,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_invalid_frame_sequences.py,test_reject_data_on_closed_streams,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_invalid_headers.py,test_headers_event_skip_normalization,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_invalid_headers.py,test_strippable_headers,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_priority.py,test_can_prioritize_stream,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,prioritize,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_priority.py,test_emit_headers_with_priority_info,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_priority.py,test_may_not_prioritize_stream_to_depend_on_self,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,prioritize,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_priority.py,test_prioritize_defaults,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,prioritize,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_priority.py,test_prioritize_requires_valid_weight,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,prioritize,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_priority.py,test_send_headers_defaults,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_priority.py,test_send_headers_requires_valid_weight,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_related_events.py,test_data_received_normally_relates_to_nothing,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_related_events.py,test_data_received_related_stream_ended,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,receive_data,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_rfc7838.py,test_sending_explicit_alternative_service,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,advertise_alternative_service,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_rfc7838.py,test_sending_implicit_alternative_service,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,advertise_alternative_service,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_rfc8441.py,test_can_send_headers,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,send_headers,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_stream_reset.py,test_reset_stream_automatically_resets_pushed_streams,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,reset_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_stream_reset.py,test_reset_stream_keeps_flow_control_correct,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/connection.py,reset_stream,,,,,AF,4,0
+h2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/test/test_utility_functions.py,test_extract_header_method,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/h2/.tox/py39/lib/python3.9/site-packages/h2/utilities.py,extract_method_header,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_decode_either_succeeds_or_raises_error,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,decode_integer,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encode_decode_round_trips,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,encode_integer,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_encode_decode.py,test_encode_positive_integer_always_valid,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,encode_integer,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack.py,test_can_decode_multiple_header_table_size_changes,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,decode,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py,test_can_decode_a_story,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,decode,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py,test_can_encode_a_story_no_huffman,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,encode,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_hpack_integration.py,test_can_encode_a_story_with_huffman,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,encode,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_huffman.py,test_request_huffman_encode,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,encode,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_add_to_large,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/hpack.py,add,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_get_by_index_dynamic_table,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,get_by_index,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_get_by_index_out_of_range,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,get_by_index,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_get_by_index_static_table,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,get_by_index,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_dynamic_full,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,search,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_dynamic_partial,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,search,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_static_full,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,search,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_in_static_partial,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,search,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_search_no_match,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,search,,,,,AF,4,0
+hpack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/test/test_table.py,test_table_entry_size,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hpack/.tox/py39/lib/python3.9/site-packages/hpack/table.py,table_entry_size,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_base_frame_ignores_flags,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,parse_flags,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_data_frame_has_correct_flags,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,parse_flags,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_frame_explain,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,explain,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_parse_frame_header_ignore_first_bit_of_stream_id,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,parse_frame_header,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_parse_frame_header_unknown_type,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,parse_frame_header,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_parse_frame_header_unknown_type_strict,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,parse_frame_header,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_priority_frame_has_no_flags,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,parse_flags,,,,,AF,4,0
+hyperframe,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/test/test_frames.py,test_rst_stream_frame_has_no_flags,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hyperframe/.tox/py39/lib/python3.9/site-packages/hyperframe/frame.py,parse_flags,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py,test_glb,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,glb,"""@coerce_interval
+def glb(self, other):
+    """"""
+    Return the greatest lower bound for given intervals.
+
+    :param other: AbstractInterval instance
+    """"""
+    return self.__class__(
+        [max(self.lower, other.lower), max(self.upper, other.upper)],
+        lower_inc=self.lower_inc if self > other else other.lower_inc,
+        upper_inc=self.upper_inc if self < other else other.upper_inc
+    )""",,,assertion_fail,AF,"['condition', 'change_return']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py,test_inf,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,inf,"""@coerce_interval
+def inf(self, other):
+    """"""
+    Return the infimum of given intervals. This is not the same as
+    intersection anymore.
+
+    :param other: AbstractInterval instance
+    """"""
+    return self.__class__([
+        max(self.lower, other.lower),
+        min(self.upper, other.upper) + 1
+    ],
+    lower_inc=False,
+    upper_inc=False)""",,,assertion_fail,AF,"['change_return', 'alter_condition', 'documentation', 'variable']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py,test_lub,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,lub,"""@coerce_interval
+def lub(self, other):
+    """"""
+    Return the least upper bound for given intervals.
+
+    :param other: AbstractInterval instance
+    """"""
+    return self.__class__(
+        [min(self.lower, other.lower), min(self.upper, other.upper)],
+        lower_inc=self.lower_inc if self > other else other.lower_inc,
+        upper_inc=self.upper_inc if self < other else other.upper_inc
+    )""",,,assertion_fail,AF,"['change_return', 'alter_condition']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_arithmetic.py,test_sup,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,sup,"""@coerce_interval
+def sup(self, other):
+    """"""
+    Return the supremum of given intervals. This is the same as union.
+
+    :param other: AbstractInterval instance
+    """"""
+    return self & other  # Changed from | to &""",,,assertion_fail,AF,"['alter_condition', 'change_return', 'documentation']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_canonicalize.py,test_canonicalize_integer_intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,canonicalize,"""def canonicalize(interval, lower_inc=True, upper_inc=False):
+    """"""
+    Convert equivalent discrete intervals to different representations.
+    """"""
+    if not interval.discrete:
+        raise TypeError('Only discrete ranges can be canonicalized')
+    if interval.empty:
+        return interval
+    (lower, lower_inc) = canonicalize_lower(interval, lower_inc)
+    (upper, upper_inc) = canonicalize_upper(interval, upper_inc)
+    # Change: Modify the upper bound to be one less than it should be
+    return interval.__class__([lower, upper - interval.step], lower_inc=lower_inc, upper_inc=upper_inc)""",,,assertion_fail,AF,"['change_return', 'alter_condition', 'revome_critical_functionality']",3
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_all,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,all,"""@classmethod
+def all(cls, **kwargs):
+    return cls([-inf, inf], lower_inc=True, upper_inc=True, **kwargs)""",,,assertion_fail,AF,"['condition', 'alter_condition']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_at_least,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,at_least,"""@classmethod
+def at_least(cls, lower_bound, **kwargs):
+    return cls([lower_bound, inf], lower_inc=False, upper_inc=True, **kwargs)""",,,assertion_fail,AF,"['parameter_change', 'parameter_change', 'condition', 'alter_condition']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_at_most,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,at_most,"""@classmethod
+def at_most(cls, upper_bound, **kwargs):
+    return cls([-inf, upper_bound], lower_inc=True, upper_inc=False, **kwargs)""",,,assertion_fail,AF,"['parameter_change', 'condition', 'condition', 'documentation']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_closed_open,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,closed_open,"""@classmethod
+def closed_open(cls, lower_bound, upper_bound, **kwargs):
+    return cls([lower_bound, upper_bound], lower_inc=False, upper_inc=True, **kwargs)""",,,assertion_fail,AF,"['condition', 'parameter_change', 'alter_condition']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_greater_than,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,greater_than,"""@classmethod
+def greater_than(cls, lower_bound, **kwargs):
+    return cls([lower_bound, inf], lower_inc=True, upper_inc=True, **kwargs)""",,,assertion_fail,AF,"['condition', 'parameter_change', 'documentation']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_less_than,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,less_than,"""@classmethod
+def less_than(cls, upper_bound, **kwargs):
+    return cls([-inf, upper_bound + 1], lower_inc=True, upper_inc=True, **kwargs)""",,,assertion_fail,AF,"['change_return', 'alter_condition', 'parameter_change', 'other']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_open,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,open,"""@classmethod
+def open(cls, lower_bound, upper_bound, **kwargs):
+    return cls([lower_bound, upper_bound], lower_inc=True, upper_inc=True, **kwargs)""",,,assertion_fail,AF,"['condition', 'documentation', 'change_return']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_factory_methods.py,test_open_closed,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,open_closed,"""@classmethod
+def open_closed(cls, lower_bound, upper_bound, **kwargs):
+    return cls([lower_bound, upper_bound], lower_inc=True, upper_inc=False, **kwargs)""",,,assertion_fail,AF,"['condition', 'alter_condition', 'change_return']",0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py,test_empty_string_as_lower_bound,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,from_string,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py,test_empty_string_as_lower_bound_for_char_interval,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,from_string,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py,test_empty_string_as_upper_bound,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,from_string,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py,test_empty_string_as_upper_character_bound,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,from_string,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py,test_step_argument_for_from_string,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,from_string,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_initialization.py,test_supports_characters_from_strings,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,from_string,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_operators.py,test_hash_operator_with_interval_attributes,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,__hash__,,,,,AF,4,0
+intervals,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/tests/interval/test_utility_methods.py,test_is_connected,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/intervals/intervals/interval.py,is_connected,"""def is_connected(self, other):
+    """"""
+        Returns ``True`` if there exists a (possibly empty) range which is
+        enclosed by both this range and other.
+
+        Examples:
+
+        * [1, 3] and [5, 7] are not connected
+        * [5, 7] and [1, 3] are not connected
+        * [2, 4) and [3, 5) are connected, because both enclose [3, 4)
+        * [1, 3) and [3, 5) are connected, because both enclose the empty range
+          [3, 3)
+        * [1, 3) and (3, 5) are not connected
+        """"""
+    return self.upper < other.lower and other.upper < self.lower or (self.upper == other.lower and not (self.upper_inc or other.lower_inc)) or (self.lower == other.upper and not (self.lower_inc or other.upper_inc))""",,,assertion_fail,AF,"['condition', 'alter_condition', 'change_return']",0
+oauthlib,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/oauthlib/tests/oauth2/rfc6749/endpoints/test_metadata.py,test_create_metadata_response,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/oauthlib/oauthlib/oauth2/rfc6749/endpoints/metadata.py,create_metadata_response,,,,,AF,4,0
+oauthlib,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/oauthlib/tests/oauth2/rfc6749/test_utils.py,test_list_to_scope,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/oauthlib/oauthlib/oauth2/rfc6749/utils.py,list_to_scope,,,,,AF,4,0
+oauthlib,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/oauthlib/tests/openid/connect/core/grant_types/test_hybrid.py,test_id_token_contains_nonce,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/oauthlib/oauthlib/openid/connect/core/grant_types/authorization_code.py,add_id_token,,,,,AF,4,0
+pastedeploy,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py,test_appconfig,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/.tox/py39/lib/python3.9/site-packages/paste/deploy/loadwsgi.py,appconfig,,,,,AF,4,0
+pastedeploy,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_converters.py,test_asbool_falsy,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/.tox/py39/lib/python3.9/site-packages/paste/deploy/converters.py,asbool,,,,,AF,4,0
+pastedeploy,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_converters.py,test_asbool_truthy,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/.tox/py39/lib/python3.9/site-packages/paste/deploy/converters.py,asbool,,,,,AF,4,0
+pid,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pid/tests/test_pid.py,test_pid_check_already_running,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pid/pid/base.py,check,,,,,AF,4,0
+priority,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py,test_can_insert_stream_with_exclusive_dependency_on_0,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/.tox/py39/lib/python3.9/site-packages/priority/priority.py,insert_stream,,,,,AF,4,0
+priority,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py,test_priority_allows_inserting_stream_with_absent_parent,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/.tox/py39/lib/python3.9/site-packages/priority/priority.py,insert_stream,,,,,AF,4,0
+priority,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py,test_stream_with_non_integer_weight_is_error,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/.tox/py39/lib/python3.9/site-packages/priority/priority.py,insert_stream,,,,,AF,4,0
+priority,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/test/test_priority.py,test_stream_with_out_of_bounds_weight_is_error,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/priority/.tox/py39/lib/python3.9/site-packages/priority/priority.py,insert_stream,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py,test_base,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/api.py,base,"""def base(self, base_id: str, *, validate: bool = False, force: bool = True) -> 'pyairtable.api.base.Base':
+    """"""
+    Return a new :class:`Base` instance that uses this instance of :class:`Api`.
+
+    Args:
+        base_id: |arg_base_id|
+        validate: |kwarg_validate_metadata|
+        force: |kwarg_force_metadata|
+
+    Raises:
+        KeyError: if ``validate=True`` and the given base ID does not exist.
+    """"""
+    if validate:
+        info = self._base_info(force=force).base(base_id)
+        return self._base_from_info(info)
+    return pyairtable.api.base.Base(self, base_id, name=""Modified Base"", permission_level=""read"")""",,,assertion_fail,AF,"['parameter_change', 'change_return', 'documentation']",0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py,test_get_base,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/api.py,base,"""def base(self, base_id: str, *, validate: bool=False, force: bool=False) -> 'pyairtable.api.base.Base':
+    """"""
+        Return a new :class:`Base` instance that uses this instance of :class:`Api`.
+
+        Args:
+            base_id: |arg_base_id|
+            validate: |kwarg_validate_metadata|
+            force: |kwarg_force_metadata|
+
+        Raises:
+            KeyError: if ``validate=True`` and the given base ID does not exist.
+        """"""
+    if validate:
+        info = self._base_info(force=force).base(base_id)
+        return self._base_from_info(info)
+    return pyairtable.api.base.Base(None, ""invalid_id"")  # Changed this line""",,,assertion_fail,AF,"['api_change', 'change_return', 'revome_critical_functionality']",0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_api.py,test_repr,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/formulas.py,__repr__,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py,test_collaborators,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/base.py,collaborators,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py,test_delete__enterprise_only_table,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/base.py,delete,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py,test_table,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/api.py,table,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_base.py,test_table_validate,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/api.py,table,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_delete_user,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/base.py,delete,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_group__no_collaboration,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/enterprise.py,group,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_user,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/enterprise.py,user,"""def user(self, id_or_email: str, collaborations: bool=True) -> UserInfo:
+    """"""
+    Retrieve information on a single user with the given ID or email.
+
+    Args:
+        id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+        collaborations: If ``False``, no collaboration data will be requested
+            from Airtable. This may result in faster responses.
+    """"""
+    users = self.users([id_or_email], collaborations=collaborations)
+    if users:
+        user_info = users[0]
+        user_info.collaborations = None  # Remove collaborations data
+        return user_info
+    return UserInfo()  # Return an empty UserInfo object""",,,attribute_error,AF,"['revome_critical_functionality', 'change_return', 'condition', 'variable']",1
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_user,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/enterprise.py,user,"""def user(self, id_or_email: str, collaborations: bool=True) -> UserInfo:
+    """"""
+    Retrieve information on a single user with the given ID or email.
+
+    Args:
+        id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+        collaborations: If ``False``, no collaboration data will be requested
+            from Airtable. This may result in faster responses.
+    """"""
+    users = self.users([id_or_email], collaborations=collaborations)
+    if users:
+        user_info = users[0]
+        user_info.collaborations = None  # Remove collaborations data
+        return user_info
+    return UserInfo()  # Return an empty UserInfo object""",,,attribute_error,AF,"['revome_critical_functionality', 'change_return', 'condition', 'variable']",2
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_user,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/enterprise.py,user,"""def user(self, id_or_email: str, collaborations: bool=True) -> UserInfo:
+    """"""
+    Retrieve information on a single user with the given ID or email.
+
+    Args:
+        id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+        collaborations: If ``False``, no collaboration data will be requested
+            from Airtable. This may result in faster responses.
+    """"""
+    users = self.users([id_or_email], collaborations=collaborations)
+    if users:
+        user_info = users[0]
+        user_info.collaborations = {}  # Replace collaborations with an empty dict
+        return user_info
+    return UserInfo()  # Return an empty UserInfo object""",,,attribute_error,AF,"['revome_critical_functionality', 'change_return', 'condition', 'variable']",3
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_user__no_collaboration,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/enterprise.py,user,"""def user(self, id_or_email: str, collaborations: bool=True) -> UserInfo:
+    """"""
+        Retrieve information on a single user with the given ID or email.
+
+        Args:
+            id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+            collaborations: If ``False``, no collaboration data will be requested
+                from Airtable. This may result in faster responses.
+        """"""
+    result = self.users([id_or_email], collaborations=True)[0]
+    if not collaborations:
+        result.collaborations = None
+    return result""",,,attribute_error,AF,"['condition', 'variable', 'branch', 'change_return']",0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_user__no_collaboration,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/enterprise.py,user,"""def user(self, id_or_email: str, collaborations: bool=True) -> UserInfo:
+    """"""
+        Retrieve information on a single user with the given ID or email.
+
+        Args:
+            id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+            collaborations: If ``False``, no collaboration data will be requested
+                from Airtable. This may result in faster responses.
+        """"""
+    result = self.users([id_or_email], collaborations=True)[0]
+    if not collaborations:
+        result.collaborations = True
+    return result""",,,attribute_error,AF,"['condition', 'variable', 'branch', 'change_return', 'alter_condition']",2
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_enterprise.py,test_user__no_collaboration,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/enterprise.py,user,"""def user(self, id_or_email: str, collaborations: bool=True) -> UserInfo:
+    """"""
+        Retrieve information on a single user with the given ID or email.
+
+        Args:
+            id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+            collaborations: If ``False``, no collaboration data will be requested
+                from Airtable. This may result in faster responses.
+        """"""
+    result = self.users([id_or_email], collaborations=True)[0]
+    if not collaborations:
+        result.collaborations = None
+    return result""",,,attribute_error,AF,"['condition', 'variable', 'branch', 'change_return', 'alter_condition']",3
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_retrying.py,test_retry_eventual_success,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/retrying.py,retry_strategy,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py,test_collaborators,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/base.py,collaborators,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_api_workspace.py,test_create_base,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/api.py,create_base,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py,test_compound_flatten,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/formulas.py,flatten,"""def flatten(self, /, memo: Optional[Set[int]]=None) -> 'Compound':
+    """"""
+    Reduces the depth of nested AND, OR, and NOT statements.
+    """"""
+    memo = memo if memo else set()
+    memo.add(id(self))
+    flattened: List[Formula] = []
+    for item in self.components:
+        if id(item) in memo:
+            raise CircularFormulaError(item)
+        if isinstance(item, Compound) and item.operator != self.operator:
+            flattened.extend(item.flatten(memo=memo).components)
+        else:
+            flattened.append(item)
+    return Compound(self.operator, flattened)""",,,assertion_fail,AF,"['condition', 'refactoring']",0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py,test_orm_field_as_formula,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/formulas.py,to_formula_str,"""def to_formula_str(value: Any) -> str:
+    """"""
+    Converts the given value into a string representation that can be used
+    in an Airtable formula expression.
+
+    >>> to_formula_str(EQ(F.Formula(""a""), ""b""))
+    ""a='b'""
+    >>> to_formula_str(True)
+    'TRUE()'
+    >>> to_formula_str(False)
+    'FALSE()'
+    >>> to_formula_str(3)
+    '3'
+    >>> to_formula_str(3.5)
+    '3.5'
+    >>> to_formula_str(Decimal(""3.14159265""))
+    '3.14159265'
+    >>> to_formula_str(Fraction(""4/19""))
+    '4/19'
+    >>> to_formula_str(""asdf"")
+    ""'asdf'""
+    >>> to_formula_str(""Jane's"")
+    ""'Jane\\'s'""
+    >>> to_formula_str(datetime.date(2023, 12, 1))
+    ""DATETIME_PARSE('2023-12-01')""
+    >>> to_formula_str(datetime.datetime(2023, 12, 1, 12, 34, 56))
+    ""DATETIME_PARSE('2023-12-01T12:34:56.000Z')""
+    """"""
+    formula = to_formula(value)
+    if isinstance(formula, Compound):
+        components = [to_formula_str(c) for c in formula.components]
+        return f""{formula.operator.lower()}({', '.join(components)})""
+    elif isinstance(formula, Field):
+        return f""[{formula.value}]""
+    elif isinstance(formula, FunctionCall):
+        args = [to_formula_str(arg) for arg in formula.args]
+        return f""{formula.name.lower()}({', '.join(args)})""
+    elif isinstance(formula, Formula):
+        return formula.value.upper()
+    else:
+        return str(formula).lower()""",,,attribute_error,AF,"['api_change', 'condition', 'change_return', 'other']",2
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py,test_orm_field_as_formula,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/formulas.py,to_formula_str,"""def to_formula_str(value: Any) -> str:
+    """"""
+    Converts the given value into a string representation that can be used
+    in an Airtable formula expression.
+
+    >>> to_formula_str(EQ(F.Formula(""a""), ""b""))
+    ""a='b'""
+    >>> to_formula_str(True)
+    'TRUE()'
+    >>> to_formula_str(False)
+    'FALSE()'
+    >>> to_formula_str(3)
+    '3'
+    >>> to_formula_str(3.5)
+    '3.5'
+    >>> to_formula_str(Decimal(""3.14159265""))
+    '3.14159265'
+    >>> to_formula_str(Fraction(""4/19""))
+    '4/19'
+    >>> to_formula_str(""asdf"")
+    ""'asdf'""
+    >>> to_formula_str(""Jane's"")
+    ""'Jane\\'s'""
+    >>> to_formula_str(datetime.date(2023, 12, 1))
+    ""DATETIME_PARSE('2023-12-01')""
+    >>> to_formula_str(datetime.datetime(2023, 12, 1, 12, 34, 56))
+    ""DATETIME_PARSE('2023-12-01T12:34:56.000Z')""
+    """"""
+    formula = to_formula(value)
+    if isinstance(formula, Compound):
+        components = [to_formula_str(c) for c in formula.components]
+        return f""{formula.operator.lower()}({' & '.join(components)})""
+    elif isinstance(formula, Field):
+        return f""[{formula.value}]""
+    elif isinstance(formula, FunctionCall):
+        args = [to_formula_str(arg) for arg in formula.args]
+        return f""{formula.name.lower()}({', '.join(args)})""
+    elif isinstance(formula, Formula):
+        return formula.value.upper()
+    else:
+        return str(formula).lower()""",,,attribute_error,AF,"['api_change', 'condition', 'change_return', 'other', 'alter_condition']",3
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_formulas.py,test_to_formula_str,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/formulas.py,to_formula_str,"""def to_formula_str(value: Any) -> str:
+    """"""
+    Converts the given value into a string representation that can be used
+    in an Airtable formula expression.
+
+    >>> to_formula_str(EQ(F.Formula(""a""), ""b""))
+    ""a='b'""
+    >>> to_formula_str(True)
+    'TRUE()'
+    >>> to_formula_str(False)
+    'FALSE()'
+    >>> to_formula_str(3)
+    '3'
+    >>> to_formula_str(3.5)
+    '3.5'
+    >>> to_formula_str(Decimal(""3.14159265""))
+    '3.14159265'
+    >>> to_formula_str(Fraction(""4/19""))
+    '4/19'
+    >>> to_formula_str(""asdf"")
+    ""'asdf'""
+    >>> to_formula_str(""Jane's"")
+    ""'Jane\\'s'""
+    >>> to_formula_str(datetime.date(2023, 12, 1))
+    ""DATETIME_PARSE('2023-12-01')""
+    >>> to_formula_str(datetime.datetime(2023, 12, 1, 12, 34, 56))
+    ""DATETIME_PARSE('2023-12-01T12:34:56.000Z')""
+    """"""
+    if isinstance(value, bool):
+        return 'FALSE()' if value else 'TRUE()'
+    elif isinstance(value, (int, float, Decimal, Fraction)):
+        return str(value) + '.0'
+    elif isinstance(value, str):
+        return value
+    elif isinstance(value, (date, datetime)):
+        return f""DATE_PARSE('{value}')""
+    elif isinstance(value, F.Formula):
+        return value.value.upper()
+    else:
+        raise ValueError(f""Unsupported type: {type(value)}"")""",,,assertion_fail,AF,"['condition', 'change_return', 'revome_critical_functionality', 'alter_condition', 'variable', 'error_handling']",0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py,test_invite_link__delete,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/base.py,delete,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py,test_remove_interface_collaborator,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/models/schema.py,remove,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py,test_share__delete,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/base.py,delete,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_schema.py,test_update_interface_collaborator,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/table.py,update,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py,test_notification_from_request,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/models/webhook.py,from_request,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_models_webhook.py,test_payloads,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/models/webhook.py,payloads,"""def payloads(self, cursor: int=1, *, limit: Optional[int]=None) -> Iterator['WebhookPayload']:
+    """"""
+        Iterate through all payloads on or after the given cursor.
+        See :class:`~pyairtable.models.WebhookPayload`. Each payload will
+        contain an extra attribute, ``cursor``, which you will need to store
+        if you want to later resume retrieving payloads after that point.
+
+        For more details on the mechanisms of retrieving webhook payloads,
+        or to find more information about the data structures you'll get back,
+        see `List webhook payloads`_.
+
+        Args:
+            cursor: The cursor of the first webhook payload to retrieve.
+            limit: The number of payloads to yield before stopping.
+                If not provided, will retrieve all remaining payloads.
+
+        Usage:
+            >>> webhook = Base.webhook(""ach00000000000001"")
+            >>> iter_payloads = webhook.payloads()
+            >>> next(iter_payloads)
+            WebhookPayload(
+                timestamp=datetime.datetime(...),
+                base_transaction_number=4,
+                payload_format=""v0"",
+                action_metadata=ActionMetadata(
+                    source=""client"",
+                    source_metadata={
+                        ""user"": {
+                            ""id"": ""usr00000000000000"",
+                            ""email"": ""foo@bar.com"",
+                            ""permissionLevel"": ""create""
+                        }
+                    }
+                ),
+                changed_tables_by_id={},
+                created_tables_by_id={},
+                destroyed_table_ids=[""tbl20000000000000"", ""tbl20000000000001""],
+                error=None,
+                error_code=None,
+                cursor=1
+            )
+        """"""
+    if cursor < 0:  # Changed from 1 to 0
+        raise ValueError('cursor must be positive')
+    if limit is not None and limit <= 0:  # Changed from < 1 to <= 0
+        raise ValueError('limit must be positive')
+    url = f'{self._url}/payloads'
+    options = {'cursor': cursor + 1}  # Added +1 to cursor
+    count = 0
+    for page in self._api.iterate_requests(method='GET', url=url, options=options, offset_field='cursor'):
+        payloads = page.get('payloads', [])  # Added .get() with default empty list
+        for (index, payload) in enumerate(payloads):
+            payload = WebhookPayload.from_api(payload, self._api, context=self)
+            payload.cursor = cursor + index + 1  # Added +1 to cursor
+            yield payload
+            count += 1
+            if limit is not None and count > limit:  # Changed >= to >
+                return
+        if not payloads or not page.get('mightHaveMore', False):  # Added not before payloads
+            return
+        cursor = page.get('cursor', cursor + len(payloads))  # Added fallback for cursor""",,,assertion_fail,AF,"['change_return', 'alter_condition', 'variable', 'error_handling', 'condition', 'validation']",0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py,test_batch_delete__invalid_class,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/table.py,batch_delete,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py,test_batch_delete__unsaved_record,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/table.py,batch_delete,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py,test_batch_save__invalid_class,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/orm/model.py,batch_save,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py,test_batch_save__raise_on_unsaved_link,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/orm/model.py,batch_save,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm.py,test_save__raise_on_unsaved_link,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/models/_base.py,save,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_fields.py,test_link_field__populate,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/orm/fields.py,populate,"""@utils.docstring_from(LinkField.populate)
+def populate(
+    self,
+    instance: 'Model',
+    *,
+    lazy: Optional[bool] = None,
+    memoize: Optional[bool] = None,
+) -> None:
+    # Always set lazy to False, ignoring the input
+    lazy = False
+    # Populate with empty data instead of actual linked records
+    if hasattr(instance, '_fields'):
+        instance._fields[self._link_field.field_name] = []
+    # Don't call the original populate method
+    # self._link_field.populate(instance, lazy=lazy, memoize=memoize)""",,,assertion_fail,AF,"['alter_condition', 'statement', 'variable', 'revome_critical_functionality']",2
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_orm_model__memoization.py,test_memoize__link_field__populate,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/orm/fields.py,populate,,,,,AF,4,0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_params.py,test_convert_options_to_params,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/params.py,options_to_params,"""def options_to_params(options: Dict[str, Any]) -> Dict[str, Any]:
+    """"""
+    Convert Airtable options to a dict of query params.
+
+    Args:
+        options: A dict of Airtable-specific options. See :ref:`parameters`.
+
+    Returns:
+        A dict of query parameters that can be passed to the ``requests`` library.
+    """"""
+    params = {_option_to_param(name): str(value) for (name, value) in options.items()}
+    if 'fields' in params:
+        params['fields'] = ','.join(params.pop('fields'))
+    if 'returnFieldsByFieldId' in params:
+        params['returnFieldsByFieldId'] = 'true' if params['returnFieldsByFieldId'] == 'True' else 'false'
+    if 'sort' in params:
+        sorting_dict_list = field_names_to_sorting_dict(params.pop('sort'))
+        params['sort'] = ','.join([f""{item['field']}:{item['direction']}"" for item in sorting_dict_list])
+    return params""",,,assertion_fail,AF,"['type_change', 'data_structures', 'condition', 'change_return', 'revome_critical_functionality', 'variable']",0
+pyairtable,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/tests/test_params.py,test_field_names_to_sorting_dict,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pyairtable/pyairtable/api/params.py,field_names_to_sorting_dict,"""def field_names_to_sorting_dict(field_names: List[str]) -> List[Dict[str, str]]:
+    """"""
+    >>> field_names_to_sorting_dict([""Name"", ""-Age""])
+    [
+        { ""field"": ""FieldOne"", ""direction"": ""asc""},
+        { ""field"": ""FieldTwo"", ""direction"": ""desc""},
+    ]
+    """"""
+    values = []
+    for field_name in field_names:
+        if field_name.startswith('-'):
+            direction = 'asc'  # Changed from 'desc' to 'asc'
+            field_name = field_name[1:]
+        else:
+            direction = 'desc'  # Changed from 'asc' to 'desc'
+        sort_param = {'field': field_name.upper(), 'direction': direction}  # Added .upper() to field_name
+        values.append(sort_param)
+    return values[::-1]  # Reversed the order of the list""",,,assertion_fail,AF,"['condition', 'variable', 'control_flow']",0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_dirmatch.py,test_dirmatch,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,_dirmatch,,,,,AF,4,0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py,test_fixup_activate,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,fixup_activate,,,,,AF,4,0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py,test_fixup_pth_file,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,fixup_pth_file,,,,,AF,4,0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py,test_fixup_script_,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,fixup_script_,,,,,AF,4,0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py,test_fixup_script_different_version,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,fixup_script_,,,,,AF,4,0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py,test_fixup_script_no_shebang,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,fixup_script_,,,,,AF,4,0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_fixup_scripts.py,test_fixup_script_version,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,fixup_script_,,,,,AF,4,0
+virtualenv-clone,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/tests/test_virtualenv_sys.py,test_virtualenv_syspath,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/virtualenv-clone/clonevirtualenv.py,_virtualenv_sys,,,,,AF,4,0
+waitress,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/waitress/tests/test_receiver.py,test_received_invalid_extensions,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/waitress/src/waitress/channel.py,received,,,,,AF,4,0
+waitress,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/waitress/tests/test_receiver.py,test_received_invalid_size,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/waitress/src/waitress/channel.py,received,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_client.py,test_connection_send_state,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/__init__.py,send,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_connection.py,test_send_message,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/__init__.py,send,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_extensions.py,test_accept,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,accept,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_extensions.py,test_enabled,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,enabled,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_extensions.py,test_frame_inbound_complete,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_complete,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_extensions.py,test_frame_inbound_header,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_header,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_extensions.py,test_frame_inbound_payload_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_payload_data,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_extensions.py,test_frame_outbound,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_outbound,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_extensions.py,test_offer,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,offer,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_at_most_with_insufficient_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_at_most,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_at_most_with_more_than_sufficient_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_at_most,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_at_most_with_no_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_at_most,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_at_most_with_sufficient_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_at_most,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_at_most_zero_bytes,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_at_most,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_exactly_with_insufficient_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_exactly,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_exactly_with_more_than_sufficient_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_exactly,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_consume_exactly_with_sufficient_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,consume_exactly,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_final_text_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,process_frame,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_follow_on_binary_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,process_frame,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_follow_on_text_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,process_frame,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_local_only_close_reason,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,close,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_mismatched_data_messages1,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,send_data,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_mismatched_data_messages2,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,send_data,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_multiple_short_binary_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,send_data,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_multiple_short_text_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,send_data,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_no_status_rcvd_close_reason,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,close,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_overly_reasoned_close,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,close,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_ping_with_payload,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,ping,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_ping_without_payload,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,ping,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_pong_with_payload,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,pong,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_pong_without_payload,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,pong,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_reasoned_close,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,close,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_simplest_possible_close,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,close,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_single_binary_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,process_frame,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_single_short_binary_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,send_data,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_single_short_text_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,send_data,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_single_text_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,process_frame,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_frame_protocol.py,test_unreasoning_close,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/frame_protocol.py,close,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_accept,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,accept,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_accept_ignores_rubbish,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,accept,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_client_decompress_after_uncompressible_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_header,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_finalize,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,finalize,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_finalize_ignores_rubbish,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,finalize,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_inbound_bad_zlib_decoder_end_state,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_header,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_inbound_compressed_continuation_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_header,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_inbound_compressed_control_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_header,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_inbound_uncompressed_control_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_inbound_header,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_outbound_compress_multiple_frames,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_outbound,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_outbound_compress_single_frame,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_outbound,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_permessage_deflate.py,test_outbound_uncompressible_opcode,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/extensions.py,frame_outbound,,,,,AF,4,0
+wsproto,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/test/test_server.py,test_upgrade_request,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/wsproto/.tox/py39/lib/python3.9/site-packages/wsproto/__init__.py,initiate_upgrade_connection,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_hourly_hourly_degree_days_use_mean_false,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_hourly_temp_mean,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_shorter_temperature_data,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_temperature_features_with_duplicated_index,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_temperature_features,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_compute_usage_per_day_feature_hourly,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,compute_usage_per_day_feature,"""def compute_usage_per_day_feature(meter_data, series_name='usage_per_day'):
+    """"""Compute average usage per day for billing/daily data.
+
+    Parameters
+    ----------
+    meter_data : :any:`pandas.DataFrame`
+        Meter data for which to compute usage per day.
+    series_name : :any:`str`
+        Name of the output pandas series
+
+    Returns
+    -------
+    usage_per_day_feature : :any:`pandas.Series`
+        The usage per day feature.
+    """"""
+    # Introduce an error by using multiplication instead of division
+    usage_per_day = meter_data.value * day_counts(meter_data.index)
+    # Change the series name to make the assertion fail
+    return pd.Series(usage_per_day, name='incorrect_' + series_name)""",,,assertion_fail,AF,"['api_change', 'condition', 'documentation']",0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_fit_temperature_bins_empty,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,fit_temperature_bins,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_fit_temperature_bins_no_segmentation,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,fit_temperature_bins,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_features.py,test_fit_temperature_bins_one_month_segmentation,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/features.py,fit_temperature_bins,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_io.py,test_meter_data_from_json_orient_records_empty,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/utilities/io.py,meter_data_from_json,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_io.py,test_temperature_data_from_csv,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/utilities/io.py,temperature_data_from_csv,"""def temperature_data_from_csv(filepath_or_buffer, tz=None, date_col='dt', temp_col='tempF', gzipped=False, freq=None, **kwargs):
+    """"""Load temperature data from a CSV file.
+
+    Default format::
+
+        dt,tempF
+        2017-01-01T00:00:00+00:00,21
+        2017-01-01T01:00:00+00:00,22.5
+        2017-01-01T02:00:00+00:00,23.5
+
+    Parameters
+    ----------
+    filepath_or_buffer : :any:`str` or file-handle
+        File path or object.
+    tz : :any:`str`, optional
+        E.g., ``'UTC'`` or ``'US/Pacific'``
+    date_col : :any:`str`, optional, default ``'dt'``
+        Date period start column.
+    temp_col : :any:`str`, optional, default ``'tempF'``
+        Temperature column.
+    gzipped : :any:`bool`, optional
+        Whether file is gzipped.
+    freq : :any:`str`, optional
+        If given, apply frequency to data using :any:`pandas.Series.resample`.
+    **kwargs
+        Extra keyword arguments to pass to :any:`pandas.read_csv`, such as
+        ``sep='|'``.
+    """"""
+    read_csv_kwargs = {'usecols': [date_col, temp_col], 'dtype': {temp_col: np.float32}, 'parse_dates': [date_col], 'index_col': date_col}
+    if gzipped:
+        read_csv_kwargs.update({'compression': 'gzip'})
+    read_csv_kwargs.update(kwargs)
+    df = pd.read_csv(filepath_or_buffer, **read_csv_kwargs)
+    df.index = pd.to_datetime(df.index, utc=False)
+    if df.index.tz is None:
+        df.index = df.index.tz_localize('UTC')
+    if tz is not None:
+        df = df.tz_convert(tz)
+    if freq == 'hourly':
+        df = df.resample('H').mean()
+    return df[temp_col].head(1000)  # Return only first 1000 rows""",,,assertion_fail,AF,"['type_change', 'alter_condition', 'refactoring', 'change_return']",2
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_json_serialization.py,test_json_billing,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/model.py,to_json,"""def to_json(self):
+    modified_dict = self.to_dict()
+    if 'submodels' in modified_dict and modified_dict['submodels']:
+        for submodel in modified_dict['submodels'].values():
+            if 'coefficients' in submodel:
+                for key in submodel['coefficients']:
+                    if isinstance(submodel['coefficients'][key], (int, float)):
+                        submodel['coefficients'][key] *= 1.1  # Increase numeric coefficients by 10%
+    return json.dumps(modified_dict)""",,,assertion_fail,AF,"['statement', 'change_return', 'data_structures', 'alter_condition']",2
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_json_serialization.py,test_json_hourly,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/models/daily/model.py,to_json,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_add_freq,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/transform.py,add_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_daily,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_daily_all_nones,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_daily_all_nones_instantaneous,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_daily_temperature,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_daily_temperature_monthly,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_daily_to_daily,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_empty,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_hourly,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_hourly_temperature,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_hourly_to_daily,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_hourly_to_daily_include_coverage,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_month_start,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_month_start_temperature,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_not_series,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_as_freq_perserves_nulls,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,as_freq,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_clean_caltrack_daily_data_hourly,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/transform.py,downsample_and_clean_caltrack_daily_data,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_day_counts,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,day_counts,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_day_counts_empty_series,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,day_counts,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_format_temperature_data_for_caltrack,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/transform.py,format_temperature_data_for_caltrack,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_get_reporting_data_with_ignored_gap,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/transform.py,get_reporting_data,"""def get_reporting_data(
+    data,
+    start=None,
+    end=None,
+    max_days=365,
+    allow_billing_period_overshoot=False,
+    ignore_billing_period_gap_for_day_count=False,
+):
+    if max_days is not None:
+        if end is not None:
+            raise ValueError(""If max_days is set, end cannot be set: end={}, max_days={}."".format(end, max_days))
+
+    start_inf = False
+    if start is None:
+        start_limit = pytz.UTC.localize(pd.Timestamp.min) + timedelta(days=1)
+        start_inf = True
+    else:
+        start_limit = start
+
+    end_inf = False
+    if end is None:
+        end_target = pytz.UTC.localize(pd.Timestamp.max) - timedelta(days=1)
+        end_inf = True
+    else:
+        end_target = end
+
+    # Changing this line to use the original data instead of slicing
+    data_after_start_limit = data.copy()
+
+    if ignore_billing_period_gap_for_day_count:
+        start_limit = data_after_start_limit.index.min()
+
+    if not start_inf and max_days is not None:
+        # Changing this to subtract days instead of add
+        end_target = start_limit - timedelta(days=max_days)
+
+    if allow_billing_period_overshoot:
+        try:
+            # Changed 'nearest' to 'ffill' to alter the selection behavior
+            loc = data_after_start_limit.index.get_indexer([end_target], method='ffill')[0]
+        except (KeyError, IndexError):
+            reporting_data = data_after_start_limit
+            end_limit = end_target
+        else:
+            end_limit = data_after_start_limit.index[loc]
+            # Changing slice direction
+            reporting_data = data_after_start_limit[end_limit:].copy()
+    else:
+        end_limit = end_target
+        # Changing slice direction
+        reporting_data = data_after_start_limit[end_limit:].copy()
+
+    if reporting_data.dropna().empty:
+        raise NoReportingDataError()
+
+    # Removing this line to keep the last value
+    # reporting_data.iloc[-1] = np.nan
+
+    data_end = data.index.min()  # Changed max to min
+    data_start = data.index.max()  # Changed min to max
+    return (
+        reporting_data,
+        _make_reporting_warnings(end_inf, start_inf, data_start, data_end, start_limit, end_limit)
+    )""",,,assertion_fail,AF,"['condition', 'parameter_change', 'change_return', 'alter_condition', 'revome_critical_functionality', 'variable']",0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_get_terms_nearest,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/transform.py,get_terms,"""def get_terms(index, term_lengths, term_labels=None, start=None, method='strict'):
+    if method == 'strict':
+        get_loc_method = 'pad'
+    elif method == 'nearest':
+        get_loc_method = 'nearest'
+    else:
+        raise ValueError(""method {} not supported - use either 'strict' or 'closest'"".format(method))
+    if not index.is_monotonic_increasing:
+        raise ValueError('get_terms requires a sorted index')
+    if term_labels is None:
+        term_labels = ['term_{:03d}'.format(i + 1) for (i, term_length) in enumerate(term_lengths)]
+    elif len(term_labels) != len(term_lengths):
+        raise ValueError('term_labels (len {}) must be the same length as term_length (len {})'.format(len(term_labels), len(term_lengths)))
+    if start is None:
+        prev_start = index.min()
+    else:
+        prev_start = start
+    term_end_targets = [prev_start + timedelta(days=sum(term_lengths[:i + 1])) for i in range(len(term_lengths))]
+    terms = []
+    remaining_index = index[index >= prev_start]
+    for (label, target_term_length, end_target) in zip(term_labels, term_lengths, term_end_targets):
+        if len(remaining_index) <= 1:
+            break
+        next_index = remaining_index.get_indexer([end_target], method=get_loc_method)[0]
+        term_index = remaining_index[:next_index + 1]
+        next_start = remaining_index[next_index]
+        remaining_index = remaining_index[next_index:]
+        complete = len(remaining_index) <= 1  # Changed from > to <=
+        terms.append(Term(index=term_index, label=label, target_start_date=prev_start, target_end_date=end_target, target_term_length_days=target_term_length, actual_start_date=term_index[0], actual_end_date=term_index[-1], actual_term_length_days=(term_index[-1] - term_index[0]).days + 1, complete=complete))  # Added +1 to actual_term_length_days
+        prev_start = next_start
+    return terms[::-1]  # Reversed the order of terms""",,,assertion_fail,AF,"['condition', 'change_return', 'control_flow']",0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_remove_duplicates_df,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,remove_duplicates,,,,,AF,4,0
+eemeter,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/tests/test_transform.py,test_remove_duplicates_series,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/eemeter/eemeter/eemeter/common/data_processor_utilities.py,remove_duplicates,,,,,AF,4,0

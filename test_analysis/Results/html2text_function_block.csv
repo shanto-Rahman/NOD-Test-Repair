@@ -1,0 +1,88 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_newlines_on_multiple_calls.py","test_newline_on_multiple_calls","def test_newline_on_multiple_calls():
+    h = html2text.HTML2Text()
+    html = ""<p>test</p>""
+    md1 = h.handle(html)
+    md2 = h.handle(html)
+    md3 = h.handle(html)
+    assert md1 == md2 == md3"
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_memleak.py","test_same_string","def test_same_string():
+    h2t = html2text.HTML2Text()
+    result = h2t.handle(INSTR)
+    # Now, we shouldn't get leak of the previous run to the new one.
+    assert h2t.handle(INSTR) == result"
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_memleak.py","test_empty_string","def test_empty_string():
+    h2t = html2text.HTML2Text()
+    h2t.handle(INSTR)
+    # And even less when the input is empty.
+    assert h2t.handle("""") == ""\n\n"""
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_memleak.py","test_abbr_data","def test_abbr_data():
+    h2t = html2text.HTML2Text()
+    result = h2t.handle('<p>foo <abbr title=""Three Letter Acronym"">TLA</abbr> bar</p>')
+    assert result == ""foo TLA bar\n\n  *[TLA]: Three Letter Acronym\n\n""
+    assert h2t.abbr_data is None"
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py","test_module","@pytest.mark.parametrize(""fn,module_args"", generate_module_testdata())
+def test_module(fn, module_args):
+    h = html2text.HTML2Text()
+    h.fn = fn
+
+    if module_args.pop(""google_doc"", False):
+        h.google_doc = True
+        h.ul_item_mark = ""-""
+        h.body_width = 0
+        h.hide_strikethrough = True
+
+    for k, v in module_args.items():
+        setattr(h, k, v)
+
+    expected = get_baseline(fn)
+    with open(fn) as inf:
+        actual = cleanup_eol(inf.read())
+        actual = h.handle(actual)
+    assert actual.rstrip() == expected.rstrip()"
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py","test_command","@pytest.mark.parametrize(""fn,cmdline_args"", generate_command_testdata())
+def test_command(fn, cmdline_args):
+    args = list(cmdline_args)
+    cmd = [sys.executable, ""-m"", ""html2text""]
+
+    if ""--googledoc"" in args:
+        args.remove(""--googledoc"")
+        cmd += [""-g"", ""-d"", ""-b"", ""0"", ""-s""]
+
+    if args:
+        cmd.extend(args)
+
+    cmd += [fn]
+
+    expected = get_baseline(fn)
+    out = subprocess.check_output(cmd)
+
+    actual = out.decode()
+
+    actual = cleanup_eol(actual)
+    assert actual.rstrip() == expected.rstrip()"
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py","test_function","@pytest.mark.parametrize(""fn,func_args"", generate_function_testdata())
+def test_function(fn, func_args):
+    with open(fn) as inf:
+        actual = html2text.html2text(inf.read(), **func_args)
+    expected = get_baseline(fn)
+    assert actual.rstrip() == expected.rstrip()"
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py","test_tag_callback","def test_tag_callback():
+    def _skip_certain_tags(h2t, tag, attrs, start):
+        if tag == ""b"":
+            return True
+
+    h = html2text.HTML2Text()
+    h.tag_callback = _skip_certain_tags
+    ret = h.handle(
+        'this is a <b>txt</b> and this is a <b class=""skip"">with text</b> and '
+        ""some <i>italics</i> too.""
+    )
+    assert ret == ""this is a txt and this is a with text and some _italics_ too.\n\n"""
+"html2text","https://github.com/Alir3z4/html2text","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/html2text/test/test_html2text.py","test_strong_emptied","def test_strong_emptied() -> None:
+    """"""When strong is being set to empty, it should not mark it.""""""
+    h = html2text.HTML2Text()
+    h.emphasis_mark = ""_""
+    h.strong_mark = """"
+    string = ""A <b>B</b> <i>C</i>.""
+    assert h.handle(string) == ""A B _C_.\n\n"""

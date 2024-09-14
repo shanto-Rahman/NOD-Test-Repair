@@ -1,0 +1,73 @@
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_db.py,test_db_parsing,Env.db_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_db.py,test_postgres_complex_db_name_parsing,db_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_db.py,test_postgres_like_scheme_parsing,db_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_db.py,test_memory_sqlite_url_warns_about_netloc,db_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_db.py,test_database_options_parsing,db_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_search.py,test_solr_parsing,search_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_search.py,test_solr_multicore_parsing,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_search.py,test_elasticsearch_parsing,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_search.py,test_whoosh_parsing,Env.search_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_search.py,test_xapian_parsing,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_search.py,test_simple_parsing,search_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_search.py,test_common_args_parsing,search_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_base_options_parsing,cache_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_cache_parsing,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_pymemcache_compat,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_rediscache_compat,choose_rediscache_driver#0
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_redis_parsing,cache_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_redis_socket_url,cache_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_options_parsing,cache_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_custom_backend,cache_url_config#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_unknown_backend,cache_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_empty_url_is_mapped_to_empty_config,Env.cache_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_cache_url_password_using_sub_delims,cache#0
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_cache_url_password_using_gen_delims,cache#0
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_cache.py,test_cache_url_env_using_default,cache#0
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_mapping,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_precidence,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_iter,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_len,len#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_cache,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_no_cache,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_setdefault,setdefault#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_del_file_key,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_del_file_key_clears_cache,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_set_key,set_key#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_cant_override_key_with_file_key,FileAwareMapping#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_set_file_key,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_fileaware.py,test_change_file_key_clears_cache,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_email.py,test_smtp_parsing,Env.email_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_str,str#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_path_class,Path#0
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_repr,__repr__#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_comparison,__eq__#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_sum,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_subtraction,__sub__#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_subtraction_not_int,Path#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_required_path,root#3
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_path.py,test_complex_manipulation,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_utils.py,test_cast,_cast#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_utils.py,test_cast_urlstr,_cast_urlstr#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_schema.py,test_schema,env#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_not_present_with_default,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_not_present_without_default,env#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_contains,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_str,env#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_int_with_none_default,env#3
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_proxied_value,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_escaped_dollar_sign,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_escaped_dollar_sign_disabled,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_dict_parsing,parse_value#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_value,url#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_empty_string_default_value,url#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_url_encoded_parts,db_url_config#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_db_url_value,db#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_cache_url_value,cache_url#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_email_url_value,email_url#0
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_json_value,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_smart_cast,get_value#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_exported,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_prefix,Unable to determine the focal method(s)
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_read_env_path_like,read_env#1
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_existing_overwrite,read_env#2
+django-environ,https://github.com/joke2k/django-environ,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-environ/tests/test_env.py,test_singleton_environ,Unable to determine the focal method(s)

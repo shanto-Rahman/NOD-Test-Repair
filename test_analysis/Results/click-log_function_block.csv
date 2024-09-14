@@ -1,0 +1,69 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"click-log","https://github.com/click-contrib/click-log","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/click-log/tests/test_basic.py","test_basic","def test_basic(runner):
+    @click.command()
+    def cli():
+        test_logger.info('hey')
+        test_logger.error('damn')
+
+    result = runner.invoke(cli, catch_exceptions=False)
+    assert not result.exception
+    assert result.output == 'hey\nerror: damn\n'"
+"click-log","https://github.com/click-contrib/click-log","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/click-log/tests/test_basic.py","test_multilines","def test_multilines(runner):
+    @click.command()
+    def cli():
+        test_logger.warning(""""""
+            Lorem ipsum dolor sit amet,
+            consectetur adipiscing elit,
+            sed do eiusmod tempor incididunt"""""")
+
+    result = runner.invoke(cli, catch_exceptions=False)
+    assert not result.exception
+    assert result.output == (
+        'warning: \n'"
+"click-log","https://github.com/click-contrib/click-log","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/click-log/tests/test_basic.py","test_unicode","def test_unicode(runner):
+    @click.command()
+    def cli():
+        test_logger.error(u""""""
+            ❤️ 💔 💌 💕 💞 💓 💗 💖 💘
+            💝 💟 💜 💛 💚 💙"""""")
+
+    result = runner.invoke(cli, catch_exceptions=False)
+    assert not result.exception
+    assert result.output == (
+        'error: \n'"
+"click-log","https://github.com/click-contrib/click-log","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/click-log/tests/test_basic.py","test_weird_types_log","def test_weird_types_log(runner):
+    @click.command()
+    def cli():
+        test_logger.error(42)
+        test_logger.error('42')
+        test_logger.error(b'42')
+        test_logger.error(u'42')
+
+    result = runner.invoke(cli, catch_exceptions=False)
+    assert not result.exception
+    assert set(result.output.splitlines()) <= set(('error: 42', 'error: b\'42\''))"
+"click-log","https://github.com/click-contrib/click-log","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/click-log/tests/test_basic.py","test_early_logging","def test_early_logging(runner):
+    i = None
+
+    def callback(context, param, value):
+        test_logger.debug('catch me {}!'.format(i))
+
+    @click.command()
+    @click_log.simple_verbosity_option(test_logger)
+    @click.option('--config', is_eager=True, default=None, expose_value=False,
+                  callback=callback)
+    def cli():
+        test_logger.debug('hello')
+
+    for i in range(2):
+        result = runner.invoke(cli, ['-v', 'debug'], catch_exceptions=False)
+        assert 'debug: hello' in result.output
+        assert 'debug: catch me {}!'.format(i) in result.output"
+"click-log","https://github.com/click-contrib/click-log","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/click-log/tests/test_basic.py","test_logging_args","def test_logging_args(runner):
+    @click.command()
+    @click_log.simple_verbosity_option(test_logger)
+    def cli():
+        test_logger.debug('hello %s', 'world')
+
+    result = runner.invoke(cli, ['-v', 'debug'])
+    assert 'debug: hello world' in result.output"

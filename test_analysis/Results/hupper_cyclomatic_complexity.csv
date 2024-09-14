@@ -1,0 +1,9 @@
+proj_name,git_link,file_name,test_method,cyclomatic_complexity,line_number,start_line,end_line
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py,test_proxy_proxies,5,25,[21,46]
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py,test_proxy_expands_paths,3,23,[49,72]
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py,test_proxy_tracks_changes,5,23,[76,99]
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_reloader.py,test_ignore_files,5,21,[102,123]
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_ipc.py,test_ipc_close,2,18,[16,34]
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_cli.py,test_interval_parser,2,1,[13,14]
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_it.py,test_myapp_reloads_when_touching_ini,3,9,[9,18]
+hupper,https://github.com/Pylons/hupper,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/hupper/tests/test_it.py,test_myapp_reloads_when_touching_pyfile,3,9,[21,30]

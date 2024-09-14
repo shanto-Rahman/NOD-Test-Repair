@@ -1,0 +1,283 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_form_fields.py","test_unbound_form_with_instance","@pytest.mark.django_db
+def test_unbound_form_with_instance():
+    form = get_form()
+    assert 'value=""r"" selected' in str(form[""color""])"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_form_fields.py","test_bound_form_with_instance","@pytest.mark.django_db
+def test_bound_form_with_instance():
+    form = get_form(data={""color"": ""g""})
+    assert 'value=""g"" selected' in str(form[""color""])"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_form_fields.py","test_bound_form_with_instance_empty","@pytest.mark.django_db
+def test_bound_form_with_instance_empty():
+    form = get_form(data={""color"": None})
+    assert 'value="""" selected' in str(form[""color""])"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_form_fields.py","test_choices","def test_choices():
+    form = get_form()
+    assert form.base_fields[""zero""].choices == [(0, 'Zero'), (1, 'One')]
+    assert form.base_fields[""int_enum""].choices == BLANK_CHOICE_DASH + [(0, 'foo'), (1, 'B')]"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_form_fields.py","test_validation","def test_validation():
+    form = get_form(data={""color"": Color.GREEN, ""zero"": ZeroEnum.ZERO})
+    assert form.is_valid(), form.errors
+
+    instance = MyModel(color=Color.RED, zero=ZeroEnum.ZERO)
+    data = model_to_dict(instance, fields=(""color"", ""zero"", ""int_enum""))
+    form = get_form(data=data)
+    assert form.is_valid(), form.errors"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_issue_60.py","test_fields_value_is_enum_when_unsaved","@pytest.mark.django_db
+def test_fields_value_is_enum_when_unsaved():
+    obj = MyModel(color='r')
+    assert Color.RED == obj.color"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_issue_60.py","test_fields_value_is_enum_when_saved","@pytest.mark.django_db
+def test_fields_value_is_enum_when_saved():
+    obj = MyModel(color='r')
+    obj.save()
+    assert Color.RED == obj.color"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_issue_60.py","test_fields_value_is_enum_when_created","@pytest.mark.django_db
+def test_fields_value_is_enum_when_created():
+    obj = MyModel.objects.create(color='r')
+    assert Color.RED == obj.color"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_issue_60.py","test_fields_value_is_enum_when_retrieved","@pytest.mark.django_db
+def test_fields_value_is_enum_when_retrieved():
+    MyModel.objects.create(color='r')
+    obj = MyModel.objects.all()[:1][0]  # .first() not available on all Djangoes
+    assert Color.RED == obj.color"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_models.py","test_field_value","@pytest.mark.django_db
+def test_field_value():
+    m = MyModel(color=Color.RED)
+    m.save()
+    assert m.color == Color.RED
+
+    m = MyModel.objects.filter(color=Color.RED)[0]
+    assert m.color == Color.RED
+
+    # Passing the value should work the same way as passing the enum
+    assert Color.RED.value == 'r'
+    m = MyModel.objects.filter(color='r')[0]
+    assert m.color == Color.RED
+
+    with pytest.raises(ValueError):
+        MyModel.objects.filter(color='xx')[0]"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_models.py","test_descriptor","def test_descriptor():
+    assert MyModel.color.field.enum is Color"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_models.py","test_db_value","@pytest.mark.django_db
+def test_db_value():
+    m = MyModel(color=Color.RED)
+    m.save()
+    cursor = connection.cursor()
+    cursor.execute('SELECT color FROM %s WHERE id = %%s' % MyModel._meta.db_table, [m.pk])
+    assert cursor.fetchone()[0] == Color.RED.value"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_models.py","test_zero_enum_loads","@pytest.mark.django_db
+def test_zero_enum_loads():
+    # Verifies that we can save and load enums with the value of 0 (zero).
+    m = MyModel(zero=ZeroEnum.ZERO, color=Color.GREEN)
+    m.save()
+    assert m.zero == ZeroEnum.ZERO
+    assert m.zero2 == ZeroEnum.ZERO
+
+    m = MyModel.objects.get(id=m.id)
+    assert m.zero == ZeroEnum.ZERO
+    assert m.zero2 == ZeroEnum.ZERO"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_models.py","test_int_enum","@pytest.mark.django_db
+def test_int_enum():
+    m = MyModel(int_enum=IntegerEnum.A, color=Color.RED)
+    m.save()
+
+    m = MyModel.objects.get(id=m.id)
+    assert m.int_enum == IntegerEnum.A
+    assert isinstance(m.int_enum, IntegerEnum)"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_models.py","test_serialization","def test_serialization():
+    from django.core.serializers.python import Serializer as PythonSerializer
+    m = MyModel(color=Color.RED, taste=Taste.SALTY)
+    ser = PythonSerializer()
+    ser.serialize([m])
+    fields = ser.getvalue()[0][""fields""]
+    assert fields[""color""] == m.color.value
+    assert fields[""taste""] == m.taste.value"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_models.py","test_nonunique_label","@pytest.mark.django_db
+def test_nonunique_label():
+    obj = MyModel.objects.create(
+        color=Color.BLUE,
+        labeled_enum=LabeledEnum.FOOBAR
+    )
+    assert obj.labeled_enum is LabeledEnum.FOOBAR
+
+    obj = MyModel.objects.get(pk=obj.pk)
+    assert obj.labeled_enum is LabeledEnum.FOOBAR"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_misc.py","test_version","def test_version():
+    assert isinstance(enumfields.__version__, str)"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_choice_ordering","def test_choice_ordering():
+    EXPECTED_CHOICES = (
+        ('r', 'Reddish'),
+        ('g', 'Green'),
+        ('b', 'bluë'),
+    )
+    for ((ex_key, ex_val), (key, val)) in zip(EXPECTED_CHOICES, Color.choices()):
+        assert key == ex_key
+        assert str(val) == str(ex_val)"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_custom_labels","def test_custom_labels():
+    # Custom label
+    assert Color.RED.label == 'Reddish'
+    assert str(Color.RED) == 'Reddish'
+    assert str(IntegerEnum.A) == 'foo'"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_automatic_labels","def test_automatic_labels():
+    # Automatic label
+    assert Color.GREEN.label == 'Green'
+    assert str(Color.GREEN) == 'Green'
+    assert str(IntegerEnum.B) == 'B'"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_lazy_labels","def test_lazy_labels():
+    # Lazy label
+    assert isinstance(str(Color.BLUE), str)
+    assert str(Color.BLUE) == 'bluë'"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_formfield_labels","def test_formfield_labels():
+    # Formfield choice label
+    form_field = EnumField(Color).formfield()
+    expectations = {val.value: str(val) for val in Color}
+    for value, text in form_field.choices:
+        if value:
+            assert text == expectations[value]"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_formfield_functionality","def test_formfield_functionality():
+    form_cls = type(""FauxForm"", (BaseForm,), {
+        ""base_fields"": {""color"": EnumField(Color).formfield()}
+    })
+    form = form_cls(data={""color"": ""r""})
+    assert not form.errors
+    assert form.cleaned_data[""color""] == Color.RED"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_invalid_to_python_fails","def test_invalid_to_python_fails():
+    with pytest.raises(ValidationError) as ve:
+        EnumField(Color).to_python(""invalid"")
+    assert ve.value.code == ""invalid_enum_value"""
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_enums.py","test_import_by_string","def test_import_by_string():
+    assert EnumField(""tests.test_enums.Color"").enum == Color"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_admin.py","test_model_admin_post","@pytest.mark.django_db
+@pytest.mark.urls('tests.urls')
+def test_model_admin_post(admin_client):
+    url = reverse(""admin:tests_mymodel_add"")
+    secret_uuid = str(uuid.uuid4())
+    post_data = {
+        'color': Color.RED.value,
+        'taste': Taste.UMAMI.value,
+        'taste_int': Taste.SWEET.value,
+        'random_code': secret_uuid,
+        'zero': ZeroEnum.ZERO.value,
+    }
+    response = admin_client.post(url, follow=True, data=post_data)
+    response.render()
+    text = response.content
+
+    assert b""This field is required"" not in text
+    assert b""Select a valid choice"" not in text
+    inst = MyModel.objects.get(random_code=secret_uuid)
+    assert inst.color == Color.RED, ""Redness not assured""
+    assert inst.taste == Taste.UMAMI, ""Umami not there""
+    assert inst.taste_int == Taste.SWEET, ""Not sweet enough"""
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_admin.py","test_model_admin_filter","@pytest.mark.django_db
+@pytest.mark.urls('tests.urls')
+@pytest.mark.parametrize('q_color', (None, Color.BLUE, Color.RED))
+@pytest.mark.parametrize('q_taste', (None, Taste.SWEET, Taste.SOUR))
+@pytest.mark.parametrize('q_int_enum', (None, IntegerEnum.A, IntegerEnum.B))
+def test_model_admin_filter(admin_client, q_color, q_taste, q_int_enum):
+    """"""
+    Test that various combinations of Enum filters seem to do the right thing in the change list.
+    """"""
+
+    # Create a bunch of objects...
+    MyModel.objects.create(color=Color.RED)
+    for taste in Taste:
+        MyModel.objects.create(color=Color.BLUE, taste=taste)
+    MyModel.objects.create(color=Color.BLUE, taste=Taste.UMAMI, int_enum=IntegerEnum.A)
+    MyModel.objects.create(color=Color.GREEN, int_enum=IntegerEnum.B)
+
+    # Build a Django lookup...
+    lookup = {k: v for (k, v) in {
+        'color': q_color,
+        'taste': q_taste,
+        'int_enum': q_int_enum,
+    }.items() if v is not None}
+    # Build the query string (this is assuming things, sort of)
+    qs = {'%s__exact' % k: v.value for (k, v) in lookup.items()}
+    # Run the request!
+    response = admin_client.get(reverse('admin:tests_mymodel_changelist'), data=qs)
+    response.render()
+
+    # Look for the paginator line that lists how many results we found...
+    count = int(re.search(r'(\d+) my model', response.content.decode('utf8')).group(1))
+    # and compare it to what we expect.
+    assert count == MyModel.objects.filter(**lookup).count()"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_django_admin.py","test_django_admin_lookup_value_for_integer_enum_field","def test_django_admin_lookup_value_for_integer_enum_field():
+    field = EnumIntegerField(Taste)
+
+    assert field.get_prep_value(str(Taste.BITTER)) == 3, ""get_prep_value should be able to convert from strings"""
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_serializers.py","test_serialize","@pytest.mark.parametrize('int_names', (False, True))
+def test_serialize(int_names):
+    inst = MyModel(
+        color=Color.BLUE,
+        color_not_editable=Color.BLUE,
+        taste=Taste.UMAMI,
+        taste_not_editable=Taste.UMAMI,
+        int_enum=IntegerEnum.B,
+        int_enum_not_editable=IntegerEnum.B
+    )
+    data = (LenientIntNameSerializer if int_names else MySerializer)(inst).data
+    assert data['color'] == data['color_not_editable'] == Color.BLUE.value
+    assert Color.BLUE.value
+    if int_names:
+        assert data['taste'] == data['taste_not_editable'] == 'umami'
+        assert data['int_enum'] == data['int_enum_not_editable'] == 'b'
+    else:
+        assert data['taste'] == data['taste_not_editable'] == Taste.UMAMI.value
+        assert data['int_enum'] == data['int_enum_not_editable'] == IntegerEnum.B.value"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_serializers.py","test_enumfield_to_representation","@pytest.mark.parametrize('instance, representation', [
+    ('', ''),
+    (None, None),
+    ('r', 'r'),
+    ('g', 'g'),
+    ('b', 'b'),
+])
+def test_enumfield_to_representation(instance, representation):
+    assert EnumField(Color).to_representation(instance) == representation"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_serializers.py","test_invalid_enumfield_to_representation","def test_invalid_enumfield_to_representation():
+    with pytest.raises(ValueError, match=r""Invalid value.*""):
+        assert EnumField(Color).to_representation('INVALID_ENUM_STRING')"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_serializers.py","test_deserialize","@pytest.mark.django_db
+@pytest.mark.parametrize('lenient_serializer', (False, True))
+@pytest.mark.parametrize('lenient_data', (False, True))
+def test_deserialize(lenient_data, lenient_serializer):
+    secret_uuid = str(uuid.uuid4())
+    data = {
+        'color': Color.BLUE,
+        'taste': Taste.UMAMI.value,
+        'int_enum': IntegerEnum.B.value,
+        'random_code': secret_uuid,
+    }
+    if lenient_data:
+        data.update({
+            'color': 'b',
+            'taste': 'Umami',
+            'int_enum': 'B',
+        })
+    serializer_cls = (LenientIntNameSerializer if lenient_serializer else MySerializer)
+    serializer = serializer_cls(data=data)
+    if lenient_data and not lenient_serializer:
+        assert not serializer.is_valid()
+        return
+    assert serializer.is_valid(), serializer.errors
+
+    validated_data = serializer.validated_data
+    assert validated_data['color'] == Color.BLUE
+    assert validated_data['taste'] == Taste.UMAMI
+    assert validated_data['int_enum'] == IntegerEnum.B
+
+    inst = serializer.save()
+    assert inst.color == Color.BLUE
+    assert inst.taste == Taste.UMAMI
+    assert inst.int_enum == IntegerEnum.B
+
+    inst = MyModel.objects.get(random_code=secret_uuid)  # will raise if fails
+    assert inst.color == Color.BLUE
+    assert inst.taste == Taste.UMAMI
+    assert inst.int_enum == IntegerEnum.B"
+"django-enumfields","https://github.com/hzdg/django-enumfields","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/django-enumfields/tests/test_checks.py","test_shortness_check","def test_shortness_check():
+    class TestModel(models.Model):
+        f = EnumField(LabeledEnum, max_length=3, blank=True, null=True)
+        f2 = EnumField(LabeledEnum, blank=True, null=True)
+    assert any([m.id == 'enumfields.max_length_fit' for m in TestModel.check()])"

@@ -1,0 +1,641 @@
+Project,Repository,CommitId,TestCaseFile,TestCaseMethod,TestCaseLines,FocalMethodFile,FocalMethod,FocalMethodLines,FocalMethodLinesCovered,CoveragePercent,TestCaseResult,CyclomaticComplexity,TestCaseNumberOfLines,TestCaseStartLine,TestCaseEndLine,TestCaseNumberOfCalls,FocalMethodStartLine,FocalMethodEndLine,FocalMethodNumberOfLines,originalfileindex,FocalMethodChanged,HasChanges,OldCommitId,OldFocalMethodEndLine,OldFocalMethodStartLine,OldTestCaseEndLine,OldTestCaseStartLine,TestCaseChanged,old_focal_method_code,old_test_case_code,original_focal_method_code,original_test_case_code,test_case_diff,OldFocalMethodFunction,OldTestCaseFunction,OriginalFocalMethodFunction,OriginalTestCaseFunction,covered_percentage,index,result
+airtable-python-wrapper,https://github.com/gtalarico/airtable-python-wrapper,7029671178f2964848104fde3e13e09d37a20edc,/home/sr53282/utg/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tests/test_api_api.py,test_bases,[96-107],/home/sr53282/utg/change_aware_utg/test_analysis/projects/airtable-python-wrapper/pyairtable/api/api.py,bases,[150-166],"[150, 164]",50,test_pass,8.0,12,96,107,3,150,166,17,1,TRUE,TRUE,3279954800d234f9dbda2e9608b47159195122e0,161,139,77,64,TRUE,"def bases(self, *, force: bool = False) -> Dict[str, ""pyairtable.api.base.Base""]:
+        """"""
+        Build a mapping of IDs to :class:`Base` instances.
+
+        Args:
+            force: |kwarg_force_metadata|
+
+        Usage:
+            >>> api.bases()
+            {
+                'appSW9...': <pyairtable.Base base_id='appSW9...'>,
+                'appLkN...': <pyairtable.Base base_id='appLkN...'>
+            }
+        """"""
+        return {
+            info.id: pyairtable.api.base.Base(
+                self,
+                info.id,
+                name=info.name,
+                permission_level=info.permission_level,
+            )
+            for info in self._base_info(force=force).bases
+        }","def test_bases(api, requests_mock, sample_json):
+    m = requests_mock.get(api.build_url(""meta/bases""), json=sample_json(""Bases""))
+    bases = api.bases()
+    assert m.call_count == 1
+    assert set(bases) == {""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""}
+    assert bases[""appLkNDICXNqxSDhG""].id == ""appLkNDICXNqxSDhG""
+
+    # Should not make a second API call...
+    assert set(api.bases()) == set(bases)
+    assert m.call_count == 1
+    # ....unless we force it:
+    reloaded = api.bases(force=True)
+    assert set(reloaded) == set(bases)
+    assert m.call_count == 2","def bases(self, *, force: bool = False) -> List[""pyairtable.api.base.Base""]:
+        """"""
+        Retrieve the base's schema and return a list of :class:`Base` instances.
+
+        Args:
+            force: |kwarg_force_metadata|
+
+        Usage:
+            >>> api.bases()
+            [
+                <pyairtable.Base base_id='appSW9...'>,
+                <pyairtable.Base base_id='appLkN...'>
+            ]
+        """"""
+        return [
+            self._base_from_info(info) for info in self._base_info(force=force).bases
+        ]","def test_bases(api, mock_bases_endpoint):
+    base_ids = [base.id for base in api.bases()]
+    assert mock_bases_endpoint.call_count == 1
+    assert base_ids == [""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""]
+
+    # Should not make a second API call...
+    assert [base.id for base in api.bases()] == base_ids
+    assert mock_bases_endpoint.call_count == 1
+    # ....unless we force it:
+    reloaded = api.bases(force=True)
+    assert [base.id for base in reloaded] == base_ids
+    assert mock_bases_endpoint.call_count == 2",,bases,test_bases,bases,test_bases,"""50.0""","""1""","""test_fail"""
+airtable-python-wrapper,https://github.com/gtalarico/airtable-python-wrapper,7029671178f2964848104fde3e13e09d37a20edc,airtable-python-wrapper/tests/test_api_api.py,test_bases,[96-107],airtable-python-wrapper/pyairtable/api/api.py,bases,[150-166],"[150, 164]",50,test_pass,8.0,12,96,107,3,150,166,17,1,TRUE,TRUE,7ea6cf356e2fe0a31f0b49a61c6e30fc98c13bd0,154,124,77,64,TRUE,"def bases(self) -> Dict[str, ""pyairtable.api.base.Base""]:
+        """"""
+        Retrieves a list of all bases from the API and caches it,
+        returning a mapping of IDs to :class:`Base` instances.
+
+        Usage:
+            >>> api.bases()
+            {
+                'appSW9...': <pyairtable.Base base_id='appSW9...'>,
+                'appLkN...': <pyairtable.Base base_id='appLkN...'>
+            }
+        """"""
+        url = self.build_url(""meta/bases"")
+        collection = Bases.parse_obj(
+            {
+                ""bases"": [
+                    base_info
+                    for page in self.iterate_requests(""GET"", url)
+                    for base_info in page[""bases""]
+                ]
+            }
+        )
+        return {
+            info.id: pyairtable.api.base.Base(
+                self,
+                info.id,
+                name=info.name,
+                permission_level=info.permission_level,
+            )
+            for info in collection.bases
+        }","def test_bases(api, requests_mock, sample_json):
+    m = requests_mock.get(api.build_url(""meta/bases""), json=sample_json(""Bases""))
+    bases = api.bases()
+    assert m.call_count == 1
+    assert set(bases) == {""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""}
+    assert bases[""appLkNDICXNqxSDhG""].id == ""appLkNDICXNqxSDhG""
+
+    # Should not make a second API call...
+    assert api.bases() == bases
+    assert m.call_count == 1
+    # ....unless we force it:
+    reloaded = api.bases(force=True)
+    assert set(reloaded) == set(bases)
+    assert m.call_count == 2","def bases(self, *, force: bool = False) -> List[""pyairtable.api.base.Base""]:
+        """"""
+        Retrieve the base's schema and return a list of :class:`Base` instances.
+
+        Args:
+            force: |kwarg_force_metadata|
+
+        Usage:
+            >>> api.bases()
+            [
+                <pyairtable.Base base_id='appSW9...'>,
+                <pyairtable.Base base_id='appLkN...'>
+            ]
+        """"""
+        return [
+            self._base_from_info(info) for info in self._base_info(force=force).bases
+        ]","def test_bases(api, mock_bases_endpoint):
+    base_ids = [base.id for base in api.bases()]
+    assert mock_bases_endpoint.call_count == 1
+    assert base_ids == [""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""]
+
+    # Should not make a second API call...
+    assert [base.id for base in api.bases()] == base_ids
+    assert mock_bases_endpoint.call_count == 1
+    # ....unless we force it:
+    reloaded = api.bases(force=True)
+    assert [base.id for base in reloaded] == base_ids
+    assert mock_bases_endpoint.call_count == 2",,bases,test_bases,bases,test_bases,"""50.0""","""2""","""test_fail"""
+airtable-python-wrapper,https://github.com/gtalarico/airtable-python-wrapper,7029671178f2964848104fde3e13e09d37a20edc,airtable-python-wrapper/tests/test_api_api.py,test_bases,[96-107],airtable-python-wrapper/pyairtable/api/api.py,bases,[150-166],"[150, 164]",50,test_pass,8.0,12,96,107,3,150,166,17,1,TRUE,TRUE,c0904c9d159382f7d81cb74e60d2c53e97cac563,154,124,77,64,TRUE,"def bases(self) -> Dict[str, ""pyairtable.api.base.Base""]:
+        """"""
+        Retrieves a list of all bases from the API and caches it,
+        returning a mapping of IDs to :class:`Base` instances.
+
+        Usage:
+            >>> api.bases()
+            {
+                'appSW9R5uCNmRmfl6': <pyairtable.Base base_id='appSW9R5uCNmRmfl6'>,
+                'appLkNDICXNqxSDhG': <pyairtable.Base base_id='appLkNDICXNqxSDhG'>
+            }
+        """"""
+        url = self.build_url(""meta/bases"")
+        collection = Bases.parse_obj(
+            {
+                ""bases"": [
+                    base_info
+                    for page in self.iterate_requests(""GET"", url)
+                    for base_info in page[""bases""]
+                ]
+            }
+        )
+        return {
+            info.id: pyairtable.api.base.Base(
+                self,
+                info.id,
+                name=info.name,
+                permission_level=info.permission_level,
+            )
+            for info in collection.bases
+        }","def test_bases(api, requests_mock, sample_json):
+    m = requests_mock.get(api.build_url(""meta/bases""), json=sample_json(""Bases""))
+    bases = api.bases()
+    assert m.call_count == 1
+    assert set(bases) == {""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""}
+    assert bases[""appLkNDICXNqxSDhG""].id == ""appLkNDICXNqxSDhG""
+
+    # Should not make a second API call...
+    assert api.bases() == bases
+    assert m.call_count == 1
+    # ....unless we force it:
+    reloaded = api.bases(force=True)
+    assert set(reloaded) == set(bases)
+    assert m.call_count == 2","def bases(self, *, force: bool = False) -> List[""pyairtable.api.base.Base""]:
+        """"""
+        Retrieve the base's schema and return a list of :class:`Base` instances.
+
+        Args:
+            force: |kwarg_force_metadata|
+
+        Usage:
+            >>> api.bases()
+            [
+                <pyairtable.Base base_id='appSW9...'>,
+                <pyairtable.Base base_id='appLkN...'>
+            ]
+        """"""
+        return [
+            self._base_from_info(info) for info in self._base_info(force=force).bases
+        ]","def test_bases(api, mock_bases_endpoint):
+    base_ids = [base.id for base in api.bases()]
+    assert mock_bases_endpoint.call_count == 1
+    assert base_ids == [""appLkNDICXNqxSDhG"", ""appSW9R5uCNmRmfl6""]
+
+    # Should not make a second API call...
+    assert [base.id for base in api.bases()] == base_ids
+    assert mock_bases_endpoint.call_count == 1
+    # ....unless we force it:
+    reloaded = api.bases(force=True)
+    assert [base.id for base in reloaded] == base_ids
+    assert mock_bases_endpoint.call_count == 2",,bases,test_bases,bases,test_bases,"""50.0""","""3""","""test_fail"""
+airtable-python-wrapper,https://github.com/gtalarico/airtable-python-wrapper,7029671178f2964848104fde3e13e09d37a20edc,airtable-python-wrapper/tests/test_api_base.py,test_table_validate,[86-97],airtable-python-wrapper/pyairtable/api/api.py,table,[187-205],[187],10,test_pass,3.0,12,86,97,3,187,205,19,21,TRUE,TRUE,39cb2b812a26ef55772c6e6ba7df513b160688b5,187,183,93,82,TRUE,"def table(self, base_id: str, table_name: str) -> ""pyairtable.api.table.Table"":
+        """"""
+        Build a new :class:`Table` instance that uses this instance of :class:`Api`.
+        """"""
+        return self.base(base_id).table(table_name)","def test_table_validate(base: Base, requests_mock, sample_json):
+    """"""
+    Test that Base.table(..., validate=True) allows us to look up a table
+    by either ID or name and get the correct properties.
+    """"""
+    m = requests_mock.get(base.meta_url(""tables""), json=sample_json(""BaseSchema""))
+    base.table(""tbltp8DGLhqbUmjK1"", validate=True)
+    base.table(""Apartments"", validate=True)
+    assert m.call_count == 2
+    # ...and will raise an exception if called with an invalid ID/name:
+    with pytest.raises(KeyError):
+        base.table(""DoesNotExist"", validate=True)","    def table(
+        self,
+        base_id: str,
+        table_name: str,
+        *,
+        validate: bool = False,
+        force: bool = False,
+    ) -> ""pyairtable.api.table.Table"":
+        """"""
+        Build a new :class:`Table` instance that uses this instance of :class:`Api`.
+
+        Args:
+            base_id: |arg_base_id|
+            table_name: The Airtable table's ID or name.
+            validate: |kwarg_validate_metadata|
+            force: |kwarg_force_metadata|
+        """"""
+        base = self.base(base_id, validate=validate, force=force)
+        return base.table(table_name, validate=validate, force=force)
+","def test_table_validate(base: Base, mock_tables_endpoint):
+    """"""
+    Test that Base.table(..., validate=True) allows us to look up a table
+    by either ID or name and get the correct properties.
+    """"""
+    # It will reuse the cached schema when validate=True is called multiple times...
+    base.table(""tbltp8DGLhqbUmjK1"", validate=True)
+    base.table(""Apartments"", validate=True)
+    assert mock_tables_endpoint.call_count == 1
+    # ...unless we also pass force=True
+    base.table(""Apartments"", validate=True, force=True)
+    assert mock_tables_endpoint.call_count == 2",,table,test_table_validate,table,test_table_validate,"""10.0""","""53""","""test_fail"""
+airtable-python-wrapper,https://github.com/gtalarico/airtable-python-wrapper,7029671178f2964848104fde3e13e09d37a20edc,airtable-python-wrapper/tests/test_api_base.py,test_table_validate,[86-97],airtable-python-wrapper/pyairtable/api/api.py,table,[187-205],[187],10,test_pass,3.0,12,86,97,3,187,205,19,21,TRUE,TRUE,be0c5526aa32a21952bd857e2f6a7542b685b870,185,181,93,82,TRUE,"def table(self, base_id: str, table_name: str) -> ""pyairtable.api.table.Table"":
+        """"""
+        Returns a new :class:`Table` instance that uses this instance of :class:`Api`.
+        """"""
+        return self.base(base_id).table(table_name)","def test_table_validate(base: Base, requests_mock, sample_json):
+    """"""
+    Test that Base.table(..., validate=True) allows us to look up a table
+    by either ID or name and get the correct properties.
+    """"""
+    m = requests_mock.get(base.meta_url(""tables""), json=sample_json(""BaseSchema""))
+    base.table(""tbltp8DGLhqbUmjK1"", validate=True)
+    base.table(""Apartments"", validate=True)
+    assert m.call_count == 2
+    # ...and will raise an exception if called with an invalid ID/name:
+    with pytest.raises(KeyError):
+        base.table(""DoesNotExist"", validate=True)","    def table(
+        self,
+        base_id: str,
+        table_name: str,
+        *,
+        validate: bool = False,
+        force: bool = False,
+    ) -> ""pyairtable.api.table.Table"":
+        """"""
+        Build a new :class:`Table` instance that uses this instance of :class:`Api`.
+
+        Args:
+            base_id: |arg_base_id|
+            table_name: The Airtable table's ID or name.
+            validate: |kwarg_validate_metadata|
+            force: |kwarg_force_metadata|
+        """"""
+        base = self.base(base_id, validate=validate, force=force)
+        return base.table(table_name, validate=validate, force=force)
+","def test_table_validate(base: Base, mock_tables_endpoint):
+    """"""
+    Test that Base.table(..., validate=True) allows us to look up a table
+    by either ID or name and get the correct properties.
+    """"""
+    # It will reuse the cached schema when validate=True is called multiple times...
+    base.table(""tbltp8DGLhqbUmjK1"", validate=True)
+    base.table(""Apartments"", validate=True)
+    assert mock_tables_endpoint.call_count == 1
+    # ...unless we also pass force=True
+    base.table(""Apartments"", validate=True, force=True)
+    assert mock_tables_endpoint.call_count == 2",,table,test_table_validate,table,test_table_validate,"""10.0""","""54""","""test_fail"""
+airtable-python-wrapper,https://github.com/gtalarico/airtable-python-wrapper,7029671178f2964848104fde3e13e09d37a20edc,airtable-python-wrapper/tests/test_api_enterprise.py,test_user,[102-109],airtable-python-wrapper/pyairtable/api/enterprise.py,user,[58-67],"[58, 67]",100,test_pass,7.0,8,102,109,2,58,67,10,36,TRUE,TRUE,256812cbddb0cb7d263399d24c4e7fe877895537,46,39,53,50,TRUE,"def user(self, id_or_email: str) -> UserInfo:
+        """"""
+        Retrieve information on a single user with the given ID or email.
+
+        Args:
+            id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+        """"""
+        return self.users([id_or_email])[0]","def test_user(enterprise, enterprise_mocks):
+    user = enterprise.user(enterprise_mocks.user_id)
+    assert isinstance(user, UserInfo)
+    assert enterprise_mocks.get_user.call_count == 1","def user(self, id_or_email: str, collaborations: bool = True) -> UserInfo:
+        """"""
+        Retrieve information on a single user with the given ID or email.
+
+        Args:
+            id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+            collaborations: If ``False``, no collaboration data will be requested
+                from Airtable. This may result in faster responses.
+        """"""
+        return self.users([id_or_email], collaborations=collaborations)[0]","def test_user(enterprise, enterprise_mocks):
+    user = enterprise.user(enterprise_mocks.user_id)
+    assert isinstance(user, UserInfo)
+    assert enterprise_mocks.get_users.call_count == 1
+    assert user.collaborations
+    assert ""appLkNDICXNqxSDhG"" in user.collaborations.bases
+    assert ""pbdyGA3PsOziEHPDE"" in user.collaborations.interfaces
+    assert ""wspmhESAta6clCCwF"" in user.collaborations.workspaces",,user,test_user,user,test_user,"""100.0""","""81""","""test_fail"""
+airtable-python-wrapper,https://github.com/gtalarico/airtable-python-wrapper,7029671178f2964848104fde3e13e09d37a20edc,airtable-python-wrapper/tests/test_api_enterprise.py,test_user,[102-109],airtable-python-wrapper/pyairtable/api/enterprise.py,user,[58-67],"[58, 67]",100,test_pass,7.0,8,102,109,2,58,67,10,36,TRUE,TRUE,be0c5526aa32a21952bd857e2f6a7542b685b870,46,39,53,50,TRUE,"def user(self, id_or_email: str) -> UserInfo:
+        """"""
+        Returns information on a single user with the given ID or email.
+
+        Args:
+            id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+        """"""
+        return self.users([id_or_email])[0]","def test_user(enterprise, enterprise_mocks):
+    user = enterprise.user(enterprise_mocks.user_id)
+    assert isinstance(user, UserInfo)
+    assert enterprise_mocks.get_user.call_count == 1","def user(self, id_or_email: str, collaborations: bool = True) -> UserInfo:
+        """"""
+        Retrieve information on a single user with the given ID or email.
+
+        Args:
+            id_or_email: A user ID (``usrQBq2RGdihxl3vU``) or email address.
+            collaborations: If ``False``, no collaboration data will be requested
+                from Airtable. This may result in faster responses.
+        """"""
+        return self.users([id_or_email], collaborations=collaborations)[0]","def test_user(enterprise, enterprise_mocks):
+    user = enterprise.user(enterprise_mocks.user_id)
+    assert isinstance(user, UserInfo)
+    assert enterprise_mocks.get_users.call_count == 1
+    assert user.collaborations
+    assert ""appLkNDICXNqxSDhG"" in user.collaborations.bases
+    assert ""pbdyGA3PsOziEHPDE"" in user.collaborations.interfaces
+    assert ""wspmhESAta6clCCwF"" in user.collaborations.workspaces",,user,test_user,user,test_user,"""100.0""","""82""","""test_fail"""
+deprecated,https://github.com/tantale/deprecated,0e8d80409623dd2ce25275b2b7190b6ff3ffef8f,deprecated/tests/test_deprecated.py,test_classic_deprecated_class__warns,[149-157],deprecated/tests/test_deprecated.py,classic_deprecated_class,[50-66],"[51, 52, 54, 55, 56, 58, 60, 62, 63, 64, 66]",91.66666667,test_pass,5.0,9,149,157,6,50,66,17,111,TRUE,TRUE,1ebf9b89aa8a199d2d5b5d6634cd908eb80e1e7f,60,45,151,143,TRUE,"def classic_deprecated_class(request):
+    if request.param is None:
+
+        @deprecated.classic.deprecated
+        class Foo2(object):
+            pass
+
+        return Foo2
+    else:
+        args, kwargs = request.param
+
+        @deprecated.classic.deprecated(*args, **kwargs)
+        class Foo2(object):
+            pass
+
+        return Foo2","def test_classic_deprecated_class__warns(classic_deprecated_class):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        classic_deprecated_class()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    assert ""deprecated class"" in str(warn.message)
+    assert warn.filename == __file__, 'Incorrect warning stackLevel'","@pytest.fixture(scope=""module"", params=_PARAMS)
+def classic_deprecated_class(request):
+    if request.param is None:
+
+        @deprecated.classic.deprecated
+        class Foo2(object):
+            pass
+
+        return Foo2
+    else:
+        args, kwargs = request.param
+
+        @deprecated.classic.deprecated(*args, **kwargs)
+        class Foo2(object):
+            pass
+
+        return Foo2","def test_classic_deprecated_class__warns(classic_deprecated_class):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        classic_deprecated_class()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    assert ""deprecated class"" in str(warn.message)
+    assert warn.filename == __file__ or warn.category is WrongStackLevelWarning, 'Incorrect warning stackLevel'",,classic_deprecated_class,test_classic_deprecated_class__warns,classic_deprecated_class,test_classic_deprecated_class__warns,"""Error: The file 'coverage.xml' does not exist""","""494""","""test_pass"""
+deprecated,https://github.com/tantale/deprecated,0e8d80409623dd2ce25275b2b7190b6ff3ffef8f,deprecated/tests/test_deprecated.py,test_classic_deprecated_function__warns,[137-145],deprecated/tests/test_deprecated.py,classic_deprecated_function,[31-47],"[32, 33, 35, 36, 37, 39, 41, 43, 44, 45, 47]",91.66666667,test_pass,5.0,9,137,145,6,31,47,17,112,TRUE,TRUE,1ebf9b89aa8a199d2d5b5d6634cd908eb80e1e7f,41,26,139,131,TRUE,"def classic_deprecated_function(request):
+    if request.param is None:
+
+        @deprecated.classic.deprecated
+        def foo1():
+            pass
+
+        return foo1
+    else:
+        args, kwargs = request.param
+
+        @deprecated.classic.deprecated(*args, **kwargs)
+        def foo1():
+            pass
+
+        return foo1","def test_classic_deprecated_function__warns(classic_deprecated_function):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        classic_deprecated_function()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    assert ""deprecated function (or staticmethod)"" in str(warn.message)
+    assert warn.filename == __file__, 'Incorrect warning stackLevel'","@pytest.fixture(scope=""module"", params=_PARAMS)
+def classic_deprecated_function(request):
+    if request.param is None:
+
+        @deprecated.classic.deprecated
+        def foo1():
+            pass
+
+        return foo1
+    else:
+        args, kwargs = request.param
+
+        @deprecated.classic.deprecated(*args, **kwargs)
+        def foo1():
+            pass
+
+        return foo1","def test_classic_deprecated_function__warns(classic_deprecated_function):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        classic_deprecated_function()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    assert ""deprecated function (or staticmethod)"" in str(warn.message)
+    assert warn.filename == __file__ or warn.category is WrongStackLevelWarning, 'Incorrect warning stackLevel'",,classic_deprecated_function,test_classic_deprecated_function__warns,classic_deprecated_function,test_classic_deprecated_function__warns,"""Error: The file 'coverage.xml' does not exist""","""498""","""test_pass"""
+deprecated,https://github.com/tantale/deprecated,0e8d80409623dd2ce25275b2b7190b6ff3ffef8f,deprecated/tests/test_deprecated.py,test_classic_deprecated_static_method__warns,[174-182],deprecated/tests/test_deprecated.py,classic_deprecated_static_method,[90-110],"[91, 92, 94, 95, 96, 97, 98, 100, 102, 104, 105, 106, 107, 108, 110]",93.75,test_pass,5.0,9,174,182,6,90,110,21,113,TRUE,TRUE,1ebf9b89aa8a199d2d5b5d6634cd908eb80e1e7f,104,85,176,168,TRUE,"def classic_deprecated_static_method(request):
+    if request.param is None:
+
+        class Foo4(object):
+            @staticmethod
+            @deprecated.classic.deprecated
+            def foo4():
+                pass
+
+        return Foo4.foo4
+    else:
+        args, kwargs = request.param
+
+        class Foo4(object):
+            @staticmethod
+            @deprecated.classic.deprecated(*args, **kwargs)
+            def foo4():
+                pass
+
+        return Foo4.foo4","def test_classic_deprecated_static_method__warns(classic_deprecated_static_method):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        classic_deprecated_static_method()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    assert ""deprecated function (or staticmethod)"" in str(warn.message)
+    assert warn.filename == __file__, 'Incorrect warning stackLevel'","@pytest.fixture(scope=""module"", params=_PARAMS)
+def classic_deprecated_static_method(request):
+    if request.param is None:
+
+        class Foo4(object):
+            @staticmethod
+            @deprecated.classic.deprecated
+            def foo4():
+                pass
+
+        return Foo4.foo4
+    else:
+        args, kwargs = request.param
+
+        class Foo4(object):
+            @staticmethod
+            @deprecated.classic.deprecated(*args, **kwargs)
+            def foo4():
+                pass
+
+        return Foo4.foo4","def test_classic_deprecated_static_method__warns(classic_deprecated_static_method):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        classic_deprecated_static_method()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    assert ""deprecated function (or staticmethod)"" in str(warn.message)
+    assert warn.filename == __file__ or warn.category is WrongStackLevelWarning, 'Incorrect warning stackLevel'",,classic_deprecated_static_method,test_classic_deprecated_static_method__warns,classic_deprecated_static_method,test_classic_deprecated_static_method__warns,"""Error: The file 'coverage.xml' does not exist""","""502""","""test_pass"""
+deprecated,https://github.com/tantale/deprecated,0e8d80409623dd2ce25275b2b7190b6ff3ffef8f,deprecated/tests/test_sphinx.py,test_sphinx_deprecated_class_method__warns,[296-307],deprecated/tests/test_sphinx.py,sphinx_deprecated_class_method,[234-244],"[235, 236, 238, 239, 240, 241, 242, 244]",100,test_pass,6.0,12,296,307,8,234,244,11,117,TRUE,TRUE,cdde25aca9fc03f15fa7dd758a6bf653767a5700,277,258,337,329,TRUE,"def sphinx_deprecated_class_method(request):
+    if request.param is None:
+
+        class Foo5(object):
+            @classmethod
+            @deprecated.sphinx.deprecated
+            def foo5(cls):
+                pass
+
+        return Foo5
+    else:
+        args, kwargs = request.param
+
+        class Foo5(object):
+            @classmethod
+            @deprecated.sphinx.deprecated(*args, **kwargs)
+            def foo5(cls):
+                pass
+
+        return Foo5","def test_sphinx_deprecated_class_method__warns(sphinx_deprecated_class_method):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        cls = sphinx_deprecated_class_method()
+        cls.foo5()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    assert ""deprecated function (or staticmethod)"" in str(warn.message)","@pytest.fixture(scope=""module"", params=_PARAMS)
+def sphinx_deprecated_class_method(request):
+    kwargs = request.param
+
+    class Foo5(object):
+        @classmethod
+        @deprecated.sphinx.deprecated(**kwargs)
+        def foo5(cls):
+            pass
+
+    return Foo5","def test_sphinx_deprecated_class_method__warns(sphinx_deprecated_class_method):
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter(""always"")
+        cls = sphinx_deprecated_class_method()
+        cls.foo5()
+    assert len(warns) == 1
+    warn = warns[0]
+    assert issubclass(warn.category, DeprecationWarning)
+    if sys.version_info >= (3, 9):
+        assert ""deprecated class method"" in str(warn.message)
+    else:
+        assert ""deprecated function (or staticmethod)"" in str(warn.message)",,sphinx_deprecated_class_method,test_sphinx_deprecated_class_method__warns,sphinx_deprecated_class_method,test_sphinx_deprecated_class_method__warns,"""Error: The file 'coverage.xml' does not exist""","""513""","""test_pass"""
+freezegun,https://github.com/spulec/freezegun,5f171db0aaa02c4ade003bbc8885e0bb19efbc81,freezegun/tests/test_operations.py,test_astimezone,[76-80],freezegun/freezegun/api.py,astimezone,[381-384],"[381, 382, 383, 384]",100,test_pass,2.0,5,76,80,6,381,384,4,333,TRUE,TRUE,dfd5d9e166d3149194fbd35daa07e2862c3f918c,372,369,77,74,TRUE,"def astimezone(self, tz=None):
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))","def test_astimezone():
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)","    def astimezone(self, tz: Optional[datetime.tzinfo]=None) -> ""FakeDatetime"":
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))
+","@freeze_time(""2012-01-14 00:00:00"")
+def test_astimezone() -> None:
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)",,astimezone,test_astimezone,astimezone,test_astimezone,"""Error: The file 'coverage.xml' does not exist""","""969""","""test_pass"""
+freezegun,https://github.com/spulec/freezegun,5f171db0aaa02c4ade003bbc8885e0bb19efbc81,freezegun/tests/test_operations.py,test_astimezone,[76-80],freezegun/freezegun/api.py,astimezone,[381-384],"[381, 382, 383, 384]",100,test_pass,2.0,5,76,80,6,381,384,4,333,TRUE,TRUE,356bd078413ebaef0c9af02fe874c9cb6cc84dc9,175,172,77,74,TRUE,"def astimezone(self, tz):
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))","def test_astimezone():
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)","    def astimezone(self, tz: Optional[datetime.tzinfo]=None) -> ""FakeDatetime"":
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))
+","@freeze_time(""2012-01-14 00:00:00"")
+def test_astimezone() -> None:
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)",,astimezone,test_astimezone,astimezone,test_astimezone,"""Error: The file 'coverage.xml' does not exist""","""970""","""test_pass"""
+freezegun,https://github.com/spulec/freezegun,5f171db0aaa02c4ade003bbc8885e0bb19efbc81,freezegun/tests/test_operations.py,test_astimezone,[76-80],freezegun/freezegun/api.py,astimezone,[381-384],"[381, 382, 383, 384]",100,test_pass,2.0,5,76,80,6,381,384,4,333,TRUE,TRUE,9c472de500859a285149b41876da10896e17948a,175,172,77,74,TRUE,"def astimezone(self, tz=None):
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))","def test_astimezone():
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)","    def astimezone(self, tz: Optional[datetime.tzinfo]=None) -> ""FakeDatetime"":
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))
+","@freeze_time(""2012-01-14 00:00:00"")
+def test_astimezone() -> None:
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)",,astimezone,test_astimezone,astimezone,test_astimezone,"""Error: The file 'coverage.xml' does not exist""","""971""","""test_pass"""
+freezegun,https://github.com/spulec/freezegun,5f171db0aaa02c4ade003bbc8885e0bb19efbc81,freezegun/tests/test_operations.py,test_astimezone,[76-80],freezegun/freezegun/api.py,astimezone,[381-384],"[381, 382, 383, 384]",100,test_pass,2.0,5,76,80,6,381,384,4,333,TRUE,TRUE,24500f1cbde4e65b505703fb0be33650591ec49f,175,172,77,74,TRUE,"def astimezone(self, tz):
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))","def test_astimezone():
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)","    def astimezone(self, tz: Optional[datetime.tzinfo]=None) -> ""FakeDatetime"":
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))
+","@freeze_time(""2012-01-14 00:00:00"")
+def test_astimezone() -> None:
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)",,astimezone,test_astimezone,astimezone,test_astimezone,"""Error: The file 'coverage.xml' does not exist""","""972""","""test_pass"""
+freezegun,https://github.com/spulec/freezegun,5f171db0aaa02c4ade003bbc8885e0bb19efbc81,freezegun/tests/test_operations.py,test_astimezone,[76-80],freezegun/freezegun/api.py,astimezone,[381-384],"[381, 382, 383, 384]",100,test_pass,2.0,5,76,80,6,381,384,4,333,TRUE,TRUE,f85564c80d607b186f4dbca1ea811604911c489f,172,171,77,74,TRUE,"def astimezone(self, tz):
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))","def test_astimezone():
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)","    def astimezone(self, tz: Optional[datetime.tzinfo]=None) -> ""FakeDatetime"":
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))
+","@freeze_time(""2012-01-14 00:00:00"")
+def test_astimezone() -> None:
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone(GMT5())
+    assert utils.is_fake_datetime(converted)",,astimezone,test_astimezone,astimezone,test_astimezone,"""Error: The file 'coverage.xml' does not exist""","""973""","""test_pass"""
+freezegun,https://github.com/spulec/freezegun,5f171db0aaa02c4ade003bbc8885e0bb19efbc81,freezegun/tests/test_operations.py,test_astimezone_tz_none,[83-87],freezegun/freezegun/api.py,astimezone,[381-384],"[381, 382, 383, 384]",100,test_pass,2.0,5,83,87,5,381,384,4,334,TRUE,TRUE,dfd5d9e166d3149194fbd35daa07e2862c3f918c,372,369,84,81,TRUE,"def astimezone(self, tz=None):
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))","def test_astimezone_tz_none():
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone()
+    assert utils.is_fake_datetime(converted)","    def astimezone(self, tz: Optional[datetime.tzinfo]=None) -> ""FakeDatetime"":
+        if tz is None:
+            tz = tzlocal()
+        return datetime_to_fakedatetime(real_datetime.astimezone(self, tz))
+","@freeze_time(""2012-01-14 00:00:00"")
+def test_astimezone_tz_none() -> None:
+    now = datetime.datetime.now(tz=GMT5())
+    converted = now.astimezone()
+    assert utils.is_fake_datetime(converted)",,astimezone,test_astimezone_tz_none,astimezone,test_astimezone_tz_none,"""Error: The file 'coverage.xml' does not exist""","""974""","""test_pass"""

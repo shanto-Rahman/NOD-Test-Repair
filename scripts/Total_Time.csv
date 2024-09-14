@@ -1,0 +1,332 @@
+apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-remoting/dubbo-remoting-netty,org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest#testHeartbeat,254.47
+if [[ $1 == "" || $2 == "" ]]; then,0.01
+echo "arg1 - full path to the test file (eg. tmp.csv)",0.00
+echo "arg2 - relative path to the output file (eg. Results/output.csv)",0.00
+exit,0.00
+fi,0.00
+,0.00
+currentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )",0.00
+inputProj=$currentDir"/projects",0.00
+outputFile="$currentDir/$2",0.00
+,0.00
+if [ ! -d "${inputProj}" ];then,0.00
+mkdir ${inputProj},0.00
+fi,0.00
+if [ ! -d "$currentDir/Results-Boundary" ]; then,0.00
+mkdir "$currentDir/Results-Boundary",0.00
+fi,0.00
+,0.00
+if [ ! -d "$currentDir/Linkage" ]; then,0.00
+mkdir "$currentDir/Linkage",0.00
+fi,0.00
+linkage=0,0.00
+,0.00
+process_results() {,0.00
+local delay=$1,0.00
+local item_location=$2,0.00
+local outputFile=$3,0.00
+local threadId=$4,0.00
+local projName=$5,0.00
+local tt_file=$6,0.00
+local from_updated_delay=$7,0.00
+,0.00
+bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs/$projName-FlakeDelay.txt"),0.00
+linkageError=$(grep -r "java.lang.LinkageError" "$currentDir/logs/$projName-FlakeDelay.txt" | wc -l),0.00
+,0.00
+if [[ $linkageError -gt 0 ]]; then,0.00
+linkage=$((linkage + 1)),0.00
+cp "$currentDir/logs/$projName-FlakeDelay.txt" "$currentDir/Linkage/$projName-FlakeDelay-$linkage.txt",0.00
+return 0,0.00
+fi,0.00
+,0.00
+if [ $bugCount -gt 0 ]; then,0.00
+echo -n ",$item_location,Fail,$delay" >> "$outputFile",0.00
+className=$(echo $item_location | cut -d'#' -f1),0.00
+lineNumber=$(echo $item_location | cut -d'#' -f2),0.00
+searchKey="$threadId,$className.*:$lineNumber",0.00
+stack_trace_location=$(find "$currentDir/Locations" -name "StackTrace-${tt_file}.txt"),0.00
+rootLine=$(grep -r $searchKey "$stack_trace_location" | head -1),0.00
+if [[ $rootLine == "" ]]; then,0.00
+return,0.00
+fi,0.00
+rootLine=$(echo $rootLine | sed 's/[(]/=/g'),0.00
+rootLine=$(echo $rootLine | sed 's/[)]/!/g'),0.00
+rootLine=$(echo $rootLine | sed 's/$/</g'),0.00
+rootLine="$rootLine[${delay}]",0.00
+if [[ $from_updated_delay != "" ]]; then,0.00
+return 2,0.00
+else,0.00
+return 1,0.00
+fi,0.00
+else,0.00
+return 3,0.00
+fi,0.00
+,0.00
+},0.00
+,0.00
+echo "Module-Name,SHA,Module,Test-Name,FlakeDelay-Run1(1=Bug-Found: 0=Not-Found),FlakeDelay-Run1-Time-Required(sec)" >> "$outputFile",0.00
+while IFS= read -r line,0.00
+do,0.00
+if [ ! -d "$currentDir/logs" ]; then,0.00
+mkdir "$currentDir/logs",0.00
+fi,0.00
+,0.00
+if [ ! -d "$currentDir/Locations/Line" ]; then,0.00
+mkdir -p "$currentDir/Locations/Line",0.00
+fi,0.00
+,0.00
+if [[ ${line} =~ ^# ]]; then,0.00
+echo "Line starts with Hash $line",0.00
+continue,0.00
+fi,0.00
+slug=$(echo $line | cut -d',' -f1),0.00
+sha=$(echo $line | cut -d',' -f2),0.00
+module=$(echo $line | cut -d',' -f3),0.00
+testName=$(echo $line | cut -d',' -f4),0.00
+rootProj=$(echo "$slug" | cut -d/ -f 1),0.00
+subProj=$(echo "$slug" | cut -d/ -f 2),0.00
+all_locations=($(echo $line | cut -d',' -f6)) # Multiple root location can be found by delta-debugging.,0.00
+echo "${all_locations}",0.00
+IFS=';' read -ra locations <<< "${all_locations}",0.00
+location_count=${#locations[@]},0.00
+echo $location_count,0.00
+delay=$(echo $line | rev | cut -d',' -f1 | rev),0.00
+rootLine="",0.00
+if [[ ! -d ${inputProj}/${slug} ]]; then,0.00
+git clone "https://github.com/$slug" $inputProj/$slug,0.00
+fi,0.00
+,0.00
+cd $inputProj/$slug,0.00
+git checkout ${sha},0.00
+,0.00
+if [[ "$slug" == "doanduyhai/Achilles" ]]; then,0.00
+sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml,0.00
+else,0.00
+echo "Slug is not for Achilles.",0.00
+fi,0.00
+,0.00
+if [[ $slug == "Accenture/mercury" ]]; then,0.00
+mvn install -pl $module -am -Dmaven.test.skip=true,0.00
+else,0.00
+mvn install -pl $module -am -DskipTests,0.00
+fi,0.00
+,0.00
+echo -n "${slug},${sha},${module},${testName}" >> "$outputFile",0.00
+tt_file=$(echo $testName | sed 's;[;\[;g'),0.00
+,0.00
+if [[ $module != "." ]]; then,0.00
+projName=$(sed 's;/;.;g' <<< $module-$tt_file),0.00
+else,0.00
+projName=$(sed 's;/;.;g' <<< $subProj-$tt_file),0.00
+fi,0.00
+location_to_inject_delay="",0.00
+if [[ -f "$currentDir/Locations/$projName" ]]; then #Removing Location file is in previous run it exists,0.00
+rm "$currentDir/Locations/$projName",0.00
+rm "$currentDir/Locations/already_covered_line-${projName}",0.00
+rm "$currentDir/Locations/stackTraced-parsed-${projName}",0.00
+fi,0.00
+start=$(date +%s.%N),0.00
+for ((i=1; i<=${location_count}; i++)); do #Is used if multiple location makes test fail (this comes from it's prior step),0.00
+class_name_with_dollar_sign=$(echo ${all_locations} | cut -d';' -f $i),0.00
+line_number=$(echo ${class_name_with_dollar_sign} | cut -d'#' -f2),0.00
+class_name_without_dollar_sign=$(echo ${class_name_with_dollar_sign} | cut -d'#' -f1),0.00
+location_to_inject_delay=$class_name_without_dollar_sign"#"$line_number,0.00
+echo "$location_to_inject_delay:$testName" >> "$currentDir/Locations/$projName",0.00
+done,0.00
+surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l),0.00
+if [[ "$slug,$sha" == "Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c" ]]; then,0.00
+surefire_exists=0,0.00
+fi,0.00
+bash $currentDir"/agent-pom-modify/"modify-project.sh $inputProj/$slug $surefire_exists "boundaryPoint",0.00
+iteration=0,0.00
+arr=(),0.00
+if [[ $1 == "" || $2 == "" ]]; then,0.01
+echo "arg1 - full path to the test file (eg. tmp.csv)",0.00
+echo "arg2 - relative path to the output file (eg. Results/output.csv)",0.00
+exit,0.00
+fi,0.00
+,0.00
+currentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )",0.00
+inputProj=$currentDir"/projects",0.00
+outputFile="$currentDir/$2",0.00
+,0.00
+if [ ! -d "${inputProj}" ];then,0.00
+mkdir ${inputProj},0.00
+fi,0.00
+if [ ! -d "$currentDir/Results-Boundary" ]; then,0.00
+mkdir "$currentDir/Results-Boundary",0.00
+fi,0.00
+,0.00
+if [ ! -d "$currentDir/Linkage" ]; then,0.00
+mkdir "$currentDir/Linkage",0.00
+fi,0.00
+linkage=0,0.00
+,0.00
+process_results() {,0.00
+local delay=$1,0.00
+local item_location=$2,0.00
+local outputFile=$3,0.00
+local threadId=$4,0.00
+local projName=$5,0.00
+local tt_file=$6,0.00
+local from_updated_delay=$7,0.00
+,0.00
+bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs/$projName-FlakeDelay.txt"),0.00
+linkageError=$(grep -r "java.lang.LinkageError" "$currentDir/logs/$projName-FlakeDelay.txt" | wc -l),0.00
+,0.00
+if [[ $linkageError -gt 0 ]]; then,0.00
+linkage=$((linkage + 1)),0.00
+cp "$currentDir/logs/$projName-FlakeDelay.txt" "$currentDir/Linkage/$projName-FlakeDelay-$linkage.txt",0.00
+return 0,0.00
+fi,0.00
+,0.00
+if [ $bugCount -gt 0 ]; then,0.00
+echo -n ",$item_location,Fail,$delay" >> "$outputFile",0.00
+className=$(echo $item_location | cut -d'#' -f1),0.00
+lineNumber=$(echo $item_location | cut -d'#' -f2),0.00
+searchKey="$threadId,$className.*:$lineNumber",0.00
+stack_trace_location=$(find "$currentDir/Locations" -name "StackTrace-${tt_file}.txt"),0.00
+rootLine=$(grep -r $searchKey "$stack_trace_location" | head -1),0.00
+if [[ $rootLine == "" ]]; then,0.00
+return,0.00
+fi,0.00
+rootLine=$(echo $rootLine | sed 's/[(]/=/g'),0.00
+rootLine=$(echo $rootLine | sed 's/[)]/!/g'),0.00
+rootLine=$(echo $rootLine | sed 's/$/</g'),0.00
+rootLine="$rootLine[${delay}]",0.00
+if [[ $from_updated_delay != "" ]]; then,0.00
+return 2,0.00
+else,0.00
+return 1,0.00
+fi,0.00
+else,0.00
+return 3,0.00
+fi,0.00
+,0.00
+},0.00
+,0.00
+echo "Module-Name,SHA,Module,Test-Name,FlakeDelay-Run1(1=Bug-Found: 0=Not-Found),FlakeDelay-Run1-Time-Required(sec)" >> "$outputFile",0.00
+while IFS= read -r line,0.00
+do,0.00
+if [ ! -d "$currentDir/logs" ]; then,0.00
+mkdir "$currentDir/logs",0.00
+fi,0.00
+,0.00
+if [ ! -d "$currentDir/Locations/Line" ]; then,0.00
+mkdir -p "$currentDir/Locations/Line",0.00
+fi,0.00
+,0.00
+if [[ ${line} =~ ^# ]]; then,0.00
+echo "Line starts with Hash $line",0.00
+continue,0.00
+fi,0.00
+slug=$(echo $line | cut -d',' -f1),0.00
+sha=$(echo $line | cut -d',' -f2),0.00
+module=$(echo $line | cut -d',' -f3),0.00
+testName=$(echo $line | cut -d',' -f4),0.00
+rootProj=$(echo "$slug" | cut -d/ -f 1),0.00
+subProj=$(echo "$slug" | cut -d/ -f 2),0.00
+all_locations=($(echo $line | cut -d',' -f6)) # Multiple root location can be found by delta-debugging.,0.00
+echo "${all_locations}",0.00
+IFS=';' read -ra locations <<< "${all_locations}",0.00
+location_count=${#locations[@]},0.00
+echo $location_count,0.00
+delay=$(echo $line | rev | cut -d',' -f1 | rev),0.00
+rootLine="",0.00
+if [[ ! -d ${inputProj}/${slug} ]]; then,0.00
+git clone "https://github.com/$slug" $inputProj/$slug,0.00
+fi,0.00
+,0.00
+cd $inputProj/$slug,0.00
+git checkout ${sha},0.00
+,0.00
+if [[ "$slug" == "doanduyhai/Achilles" ]]; then,0.00
+sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml,0.00
+else,0.00
+echo "Slug is not for Achilles.",0.00
+fi,0.00
+,0.00
+if [[ $slug == "Accenture/mercury" ]]; then,0.00
+mvn install -pl $module -am -Dmaven.test.skip=true,0.00
+else,0.00
+mvn install -pl $module -am -DskipTests,0.00
+fi,0.00
+,0.00
+echo -n "${slug},${sha},${module},${testName}" >> "$outputFile",0.00
+tt_file=$(echo $testName | sed 's;[;\[;g'),0.00
+,0.00
+if [[ $module != "." ]]; then,0.00
+projName=$(sed 's;/;.;g' <<< $module-$tt_file),0.00
+else,0.00
+projName=$(sed 's;/;.;g' <<< $subProj-$tt_file),0.00
+fi,0.00
+location_to_inject_delay="",0.00
+if [[ -f "$currentDir/Locations/$projName" ]]; then #Removing Location file is in previous run it exists,0.00
+rm "$currentDir/Locations/$projName",0.00
+rm "$currentDir/Locations/already_covered_line-${projName}",0.00
+rm "$currentDir/Locations/stackTraced-parsed-${projName}",0.00
+fi,0.00
+start=$(date +%s.%N),0.00
+for ((i=1; i<=${location_count}; i++)); do #Is used if multiple location makes test fail (this comes from it's prior step),0.00
+class_name_with_dollar_sign=$(echo ${all_locations} | cut -d';' -f $i),0.00
+line_number=$(echo ${class_name_with_dollar_sign} | cut -d'#' -f2),0.00
+class_name_without_dollar_sign=$(echo ${class_name_with_dollar_sign} | cut -d'#' -f1),0.00
+location_to_inject_delay=$class_name_without_dollar_sign"#"$line_number,0.00
+echo "$location_to_inject_delay:$testName" >> "$currentDir/Locations/$projName",0.00
+done,0.00
+surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l),0.00
+if [[ "$slug,$sha" == "Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c" ]]; then,0.00
+surefire_exists=0,0.00
+fi,0.00
+bash $currentDir"/agent-pom-modify/"modify-project.sh $inputProj/$slug $surefire_exists "boundaryPoint",0.00
+iteration=0,0.00
+arr=(),0.00
+stack_trace="false",0.00
+,0.00
+bash $currentDir/mvn-run-and-find-stack-trace.sh $(pwd) $currentDir ${delay} $testName $projName $module "$currentDir/Locations/$projName" "1st" #running test,0.00
+bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs/$projName-FlakeDelay.txt"),0.00
+linkageError=$(grep -r "java.lang.LinkageError" "$currentDir/logs/$projName-FlakeDelay.txt" | wc -l),0.00
+,0.00
+if [[ $linkageError -gt 0 ]]; then,0.00
+linkage=$((linkage + 1)),0.00
+cp "$currentDir/logs/$projName-FlakeDelay.txt" "$currentDir/Linkage/$projName-FlakeDelay-$linkage.txt",0.00
+continue,0.00
+apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest#testDemoProtocol,9368.75
+apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest#testNonSerializedParameter,9534.96
+apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest#testNonSerializedParameter,0.01
+apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest#testNonSerializedParameter,768.56
+alibaba/wasp,b2593d8,.,com.alibaba.wasp.executor.TestExecutorService#testExecutorService,34.01
+davidmoten/rxjava2-extras,7663d3b19295f12c35f80594efa1e507e98650b1,.,com.github.davidmoten.rx2.FlowablesTest#testCache,41.76
+alibaba/wasp,b2593d8,.,com.alibaba.wasp.executor.TestExecutorService#testExecutorService,59.71
+davidmoten/rxjava2-extras,7663d3b19295f12c35f80594efa1e507e98650b1,.,com.github.davidmoten.rx2.FlowablesTest#testCache,42.60
+davidmoten/rxjava2-extras,7663d3b19295f12c35f80594efa1e507e98650b1,.,com.github.davidmoten.rx2.flowable.TransformersTest#testBufferMaxCountAndTimeoutAsyncCountWins,4100.14
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestALLEntityAsChild#should_insert,15291.06
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestDSLSimpleEntity#should_dsl_select_with_token_value,15149.42
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestEntityWithComplexIndices#should_query_using_collection_index,1063.17
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestEntityWithComplexIndices#should_query_using_full_collection_index,14986.71
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-3_10,info.archinnov.achilles.it.TestEntityForGroupByIT#should_select_sum_group_by_partition_keys,0.01
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-3_10,info.archinnov.achilles.it.TestEntityForGroupByIT#should_select_sum_group_by_partition_keys_and_one_clustering,0.00
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-3_10,info.archinnov.achilles.it.TestEntityForGroupByIT#should_select_sum_group_by_partition_keys,166.61
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-3_10,info.archinnov.achilles.it.TestEntityForGroupByIT#should_select_sum_group_by_partition_keys_and_one_clustering,165.43
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-3_7,info.archinnov.achilles.it.TestEntityWithSASIIndices#should_search_using_contains,159.74
+vmware/admiral,e4b02936cc7d4ff2714e7231db0c4373ba5d48a2,adapter/registry,com.vmware.admiral.adapter.registry.service.RegistryAdapterServiceTest#testDockerHubListImageTags,143.81
+apache/httpcore,49247d208bde47f652812493e1d3576e136b8eb8,httpcore,org.apache.http.pool.TestConnPool#testLeaseTimeout,47.43
+elasticjob/elastic-job-lite,9afe466837e9e0751a8cd3898bca80d60548f0d1,elasticjob-infra/elasticjob-infra-common,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest#assertCreateExecutorService,64.26
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,16.12
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,11.80
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,2.76
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,1.84
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,1.83
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,2.39
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,1.59
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,12.35
+apache/httpcore,49247d208bde47f652812493e1d3576e136b8eb8,httpcore-nio,org.apache.http.nio.protocol.TestAsyncNHttpHandlers#testNoServiceHandler,51478.64
+elasticjob/elastic-job-lite,9afe466837e9e0751a8cd3898bca80d60548f0d1,elasticjob-infra/elasticjob-infra-common,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest#assertCreateExecutorService,55.66
+elasticjob/elastic-job-lite,a7042cf4872d784d619e4560cdfa0f92b0311965,elasticjob-infra/elasticjob-infra-common,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest#assertCreateExecutorService,55.27
+elasticjob/elastic-job-lite,a7042cf4872d784d619e4560cdfa0f92b0311965,elasticjob-infra/elasticjob-infra-common,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest#assertCreateExecutorService,55.88
+elasticjob/elastic-job-lite,a7042cf4872d784d619e4560cdfa0f92b0311965,elasticjob-infra/elasticjob-infra-common,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest#assertCreateExecutorService,55.26
+elasticjob/elastic-job-lite,a7042cf4872d784d619e4560cdfa0f92b0311965,elasticjob-infra/elasticjob-infra-common,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest#assertCreateExecutorService,53.12
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,1026.89
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestDSLSimpleEntity#should_dsl_select_with_token_value,40.04
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestDSLSimpleEntity#should_dsl_select_with_token_value,2.64
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestDSLSimpleEntity#should_dsl_select_with_token_value,2244.23

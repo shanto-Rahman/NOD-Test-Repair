@@ -1,0 +1,207 @@
+"proj_name","git_link","file_name","test_method","test_method_block"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_basic_app.py","test_main","def test_main():
+    app = loadapp('config:sample_configs/basic_app.ini', relative_to=here)
+    assert app is fakeapp.apps.basic_app
+    app = loadapp('config:sample_configs/basic_app.ini#main', relative_to=here)
+    assert app is fakeapp.apps.basic_app
+    app = loadapp('config:sample_configs/basic_app.ini', relative_to=here, name='main')
+    assert app is fakeapp.apps.basic_app
+    app = loadapp(
+        'config:sample_configs/basic_app.ini#ignored', relative_to=here, name='main'
+    )
+    assert app is fakeapp.apps.basic_app"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_basic_app.py","test_other","def test_other():
+    app = loadapp('config:sample_configs/basic_app.ini#other', relative_to=here)
+    assert app is fakeapp.apps.basic_app2"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_basic_app.py","test_composit","def test_composit():
+    app = loadapp('config:sample_configs/basic_app.ini#remote_addr', relative_to=here)
+    assert isinstance(app, fakeapp.apps.RemoteAddrDispatch)
+    assert app.map['127.0.0.1'] is fakeapp.apps.basic_app
+    assert app.map['0.0.0.0'] is fakeapp.apps.basic_app2"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_filter.py","test_filter_app","def test_filter_app():
+    app = loadapp('config:sample_configs/test_filter.ini#filt', relative_to=here)
+    assert isinstance(app, fakeapp.apps.CapFilter)
+    assert app.app is fakeapp.apps.basic_app
+    assert app.method_to_call == 'lower'"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_filter.py","test_pipeline","def test_pipeline():
+    app = loadapp('config:sample_configs/test_filter.ini#piped', relative_to=here)
+    assert isinstance(app, fakeapp.apps.CapFilter)
+    assert app.app is fakeapp.apps.basic_app
+    assert app.method_to_call == 'upper'"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_filter.py","test_filter_app2","def test_filter_app2():
+    app = loadapp('config:sample_configs/test_filter.ini#filt2', relative_to=here)
+    assert isinstance(app, fakeapp.apps.CapFilter)
+    assert app.app is fakeapp.apps.basic_app
+    assert app.method_to_call == 'lower'"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_filter.py","test_pipeline2","def test_pipeline2():
+    app = loadapp('config:sample_configs/test_filter.ini#piped2', relative_to=here)
+    assert isinstance(app, fakeapp.apps.CapFilter)
+    assert app.app is fakeapp.apps.basic_app
+    assert app.method_to_call == 'upper'"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_filter.py","test_filter_app_inverted","def test_filter_app_inverted():
+    app = loadapp('config:sample_configs/test_filter.ini#inv', relative_to=here)
+    assert isinstance(app, fakeapp.apps.CapFilter)
+    assert app.app is fakeapp.apps.basic_app"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_filter.py","test_filter_with_filter_with","def test_filter_with_filter_with():
+    app = loadapp('config:sample_configs/test_filter_with.ini', relative_to=here)
+    assert isinstance(app, fakeapp.apps.CapFilter)
+    assert isinstance(app.app, fakeapp.apps.CapFilter)
+    assert app.app.app is fakeapp.apps.basic_app"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_filter.py","test_bad_pipeline","def test_bad_pipeline():
+    try:
+        loadapp('config:sample_configs/test_filter.ini#piped3', relative_to=here)
+    except LookupError as err:
+        assert 'has extra (disallowed) settings' in err.args[0]
+    else:
+        raise AssertionError('should have raised LookupError')"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_config_egg","def test_config_egg():
+    app = loadapp('egg:FakeApp#configed')
+    assert isinstance(app, fc.SimpleApp)"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_config1","def test_config1():
+    app = loadapp(ini_file, relative_to=here, name='test1')
+    assert app.local_conf == {
+        'setting1': 'foo',
+        'setting2': 'bar',
+        'apppath': os.path.join(config_path, 'app'),
+    }
+    assert app.global_conf == {
+        'def1': 'a',
+        'def2': 'b',
+        'basepath': config_path,
+        'here': config_path,
+        '__file__': config_filename,"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_config2","def test_config2():
+    app = loadapp(ini_file, relative_to=here, name='test2')
+    assert app.local_conf == {'local conf': 'something'}
+    assert app.global_conf == {
+        'def1': 'test2',
+        'def2': 'b',
+        'basepath': config_path,
+        'another': 'TEST',
+        'here': config_path,
+        '__file__': config_filename,
+    }
+    # Run this to make sure the global-conf-modified test2
+    # didn't mess up the general global conf
+    test_config1()"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_config3","def test_config3():
+    app = loadapp(ini_file, relative_to=here, name='test3')
+    assert isinstance(app, fc.SimpleApp)
+    assert app.local_conf == {
+        'local conf': 'something',
+        'another': 'something more\nacross several\nlines',
+    }
+    assert app.global_conf == {
+        'def1': 'test3',
+        'def2': 'b',
+        'basepath': config_path,
+        'another': 'TEST',
+        'here': config_path,
+        '__file__': config_filename,
+    }
+    test_config2()"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_main","def test_main():
+    app = loadapp('config:test_func.ini', relative_to=config_path)
+    assert app is fakeapp.apps.basic_app
+    app = loadapp('config:test_func.ini#main', relative_to=config_path)
+    assert app is fakeapp.apps.basic_app
+    app = loadapp('config:test_func.ini', relative_to=config_path, name='main')
+    assert app is fakeapp.apps.basic_app
+    app = loadapp('config:test_func.ini#ignored', relative_to=config_path, name='main')
+    assert app is fakeapp.apps.basic_app"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_other","def test_other():
+    app = loadapp('config:test_func.ini#other', relative_to=config_path)
+    assert app is fakeapp.apps.basic_app2"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_composit","def test_composit():
+    app = loadapp('config:test_func.ini#remote_addr', relative_to=config_path)
+    assert isinstance(app, fakeapp.apps.RemoteAddrDispatch)
+    assert app.map['127.0.0.1'] is fakeapp.apps.basic_app
+    assert app.map['0.0.0.0'] is fakeapp.apps.basic_app2"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_foreign_config","def test_foreign_config():
+    app = loadapp(ini_file, relative_to=here, name='test_foreign_config')
+    assert isinstance(app, fc.SimpleApp)
+    assert app.local_conf == {'another': 'FOO', 'bob': 'your uncle'}
+    assert app.global_conf == {
+        'def1': 'a',
+        # Note overwrite of DEFAULT value from foreign config
+        'def2': 'b',
+        'def3': 'c',
+        'basepath': config_path,
+        'glob': 'override',
+        'here': config_path,
+        '__file__': os.path.join(config_path, 'test_config.ini'),"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_config_get","def test_config_get():
+    app = loadapp(ini_file, relative_to=here, name='test_get')
+    assert isinstance(app, fc.SimpleApp)
+    assert app.local_conf == {'def1': 'a', 'foo': 'TEST'}
+    assert app.global_conf == {
+        'def1': 'a',
+        'def2': 'TEST',
+        'basepath': os.path.join(here, 'sample_configs'),
+        'here': config_path,
+        '__file__': config_filename,"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_appconfig","def test_appconfig():
+    conf = appconfig(ini_file, relative_to=here, name='test_get')
+    assert conf == {
+        'def1': 'a',
+        'def2': 'TEST',
+        'basepath': os.path.join(here, 'sample_configs'),
+        'here': config_path,
+        '__file__': config_filename,
+        'foo': 'TEST',
+    }
+    assert conf.local_conf == {'def1': 'a', 'foo': 'TEST'}
+    assert conf.global_conf == {
+        'def1': 'a',
+        'def2': 'TEST',
+        'basepath': os.path.join(here, 'sample_configs'),
+        'here': config_path,
+        '__file__': config_filename,"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_appconfig_filter_with","def test_appconfig_filter_with():
+    conf = appconfig('config:test_filter_with.ini', relative_to=config_path)
+    assert conf['example'] == 'test'"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_global_conf","def test_global_conf():
+    conf = appconfig(
+        ini_file,
+        relative_to=here,
+        name='test_global_conf',
+        global_conf={'def2': 'TEST DEF 2', 'inherit': 'bazbar'},
+    )
+    assert conf == {
+        'def1': 'a',
+        # Note overwrite of DEFAULT value
+        'def2': 'TEST DEF 2',
+        'basepath': os.path.join(here, 'sample_configs'),
+        'here': config_path,
+        'inherit': 'bazbar',
+        '__file__': config_filename,
+        'test_interp': 'this:bazbar',
+    }
+    assert conf.local_conf == {'test_interp': 'this:bazbar'}"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_config.py","test_interpolate_exception","def test_interpolate_exception():
+    try:
+        appconfig('config:test_error.ini', relative_to=config_path)
+    except Exception:
+        e = sys.exc_info()[1]
+        expected = ""Error in file %s"" % os.path.join(config_path, 'test_error.ini')
+        assert str(e).split(':')[0] == expected
+    else:
+        raise AssertionError('Should have raised an exception')"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_converters.py","test_asbool_truthy","def test_asbool_truthy():
+    from paste.deploy.converters import asbool
+
+    assert asbool('true')
+    assert asbool('yes')
+    assert asbool('on')
+    assert asbool('y')
+    assert asbool('t')
+    assert asbool('1')"
+"pastedeploy","https://github.com/Pylons/pastedeploy","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/pastedeploy/tests/test_converters.py","test_asbool_falsy","def test_asbool_falsy():
+    from paste.deploy.converters import asbool
+
+    assert not asbool('false')
+    assert not asbool('no')
+    assert not asbool('off')
+    assert not asbool('n')
+    assert not asbool('f')
+    assert not asbool('0')"

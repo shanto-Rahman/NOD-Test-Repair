@@ -1,0 +1,673 @@
+Line starts with Hash #Project Name, Github Link, Description,Domain,
+airtable-python-wrapper
+Updated /mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/airtable-python-wrapper/tox.ini successfully.
+test_file= test_api_enterprise.py
+Module(
+    body=[
+        Import(
+            names=[
+                alias(name='pytest')]),
+        FunctionDef(
+            name='user_info',
+            args=arguments(
+                posonlyargs=[],
+                args=[
+                    arg(arg='enterprise'),
+                    arg(arg='enterprise_mocks')],
+                kwonlyargs=[],
+                kw_defaults=[],
+                defaults=[]),
+            body=[
+                Assign(
+                    targets=[
+                        Name(id='user_info', ctx=Store())],
+                    value=Call(
+                        func=Attribute(
+                            value=Name(id='enterprise', ctx=Load()),
+                            attr='user',
+                            ctx=Load()),
+                        args=[
+                            Attribute(
+                                value=Name(id='enterprise_mocks', ctx=Load()),
+                                attr='user_id',
+                                ctx=Load())],
+                        keywords=[])),
+                Assert(
+                    test=Compare(
+                        left=Attribute(
+                            value=Name(id='user_info', ctx=Load()),
+                            attr='_url',
+                            ctx=Load()),
+                        ops=[
+                            Eq()],
+                        comparators=[
+                            JoinedStr(
+                                values=[
+                                    FormattedValue(
+                                        value=Attribute(
+                                            value=Name(id='enterprise', ctx=Load()),
+                                            attr='url',
+                                            ctx=Load()),
+                                        conversion=-1),
+                                    Constant(value='/users/'),
+                                    FormattedValue(
+                                        value=Attribute(
+                                            value=Name(id='user_info', ctx=Load()),
+                                            attr='id',
+                                            ctx=Load()),
+                                        conversion=-1)])])),
+                Return(
+                    value=Name(id='user_info', ctx=Load()))],
+            decorator_list=[
+                Attribute(
+                    value=Name(id='pytest', ctx=Load()),
+                    attr='fixture',
+                    ctx=Load())],
+            type_params=[])],
+    type_ignores=[])
+found valid node ****
+Visiting function: user_info, Is fixture: False
+test_file= test_models_webhook.py
+found valid node ****
+Visiting function: webhook, Is fixture: False
+found valid node ****
+Visiting function: payload_json, Is fixture: False
+found valid node ****
+Visiting function: test_toggle_notifications, Is fixture: False
+found valid node ****
+Visiting function: test_extend_expiration, Is fixture: False
+found valid node ****
+Visiting function: test_delete, Is fixture: False
+found valid node ****
+Visiting function: test_error_payload, Is fixture: False
+found valid node ****
+Visiting function: test_payloads, Is fixture: False
+found valid node ****
+Visiting function: test_payloads__stop_on_empty_list, Is fixture: False
+found valid node ****
+Visiting function: test_notification_from_request, Is fixture: False
+test_file= test_api_types.py
+found valid node ****
+Visiting function: test_is_airtable_error, Is fixture: False
+test_file= test_testing.py
+found valid node ****
+Visiting function: test_fake_function, Is fixture: False
+test_file= test_orm.py
+found valid node ****
+Visiting function: test_model_basics, Is fixture: False
+found valid node ****
+Visiting function: test_unsupplied_fields, Is fixture: False
+found valid node ****
+Visiting function: test_null_fields, Is fixture: False
+found valid node ****
+Visiting function: test_first, Is fixture: False
+found valid node ****
+Visiting function: test_first_none, Is fixture: False
+found valid node ****
+Visiting function: test_from_record, Is fixture: False
+found valid node ****
+Visiting function: test_linked_record, Is fixture: False
+found valid node ****
+Visiting function: test_linked_record_can_be_saved, Is fixture: False
+found valid node ****
+Visiting function: test_save__raise_on_unsaved_link, Is fixture: False
+found valid node ****
+Visiting function: test_undeclared_field, Is fixture: False
+found valid node ****
+Visiting function: test_batch_save, Is fixture: False
+found valid node ****
+Visiting function: test_batch_save__invalid_class, Is fixture: False
+found valid node ****
+Visiting function: test_batch_save__raise_on_unsaved_link, Is fixture: False
+found valid node ****
+Visiting function: test_batch_delete__unsaved_record, Is fixture: False
+found valid node ****
+Visiting function: test_batch_delete__invalid_class, Is fixture: False
+test_file= test_orm_model.py
+found valid node ****
+Visiting function: no_requests, Is fixture: True
+found valid node ****
+Visiting function: test_model_meta_dict, Is fixture: False
+found valid node ****
+Visiting function: test_repr, Is fixture: False
+found valid node ****
+Visiting function: test_fetch, Is fixture: False
+found valid node ****
+Visiting function: test_model_comment_method, Is fixture: False
+found valid node ****
+Visiting function: test_from_id, Is fixture: False
+found valid node ****
+Visiting function: test_from_ids, Is fixture: False
+found valid node ****
+Visiting function: test_from_ids__no_fetch, Is fixture: False
+found valid node ****
+Visiting function: fake_records_by_id, Is fixture: False
+found valid node ****
+Visiting function: test_get_fields_by_id, Is fixture: False
+found valid node ****
+Visiting function: test_meta_wrapper, Is fixture: False
+found valid node ****
+Visiting function: test_meta_dict, Is fixture: False
+found valid node ****
+Visiting function: test_dynamic_model_meta, Is fixture: False
+test_file= test_models_comment.py
+found valid node ****
+Visiting function: comment_json, Is fixture: False
+found valid node ****
+Visiting function: comment, Is fixture: False
+found valid node ****
+Visiting function: comments_url, Is fixture: False
+found valid node ****
+Visiting function: test_missing_attributes, Is fixture: False
+found valid node ****
+Visiting function: test_save, Is fixture: False
+found valid node ****
+Visiting function: test_delete, Is fixture: False
+found valid node ****
+Visiting function: test_table_comments, Is fixture: False
+found valid node ****
+Visiting function: test_table_add_comment, Is fixture: False
+Visiting function: _callback, Is fixture: False
+test_file= test_models_schema.py
+found valid node ****
+Visiting function: mock_base_metadata, Is fixture: False
+found valid node ****
+Visiting function: mock_workspace_metadata, Is fixture: False
+found valid node ****
+Visiting function: test_find_in_collection, Is fixture: False
+found valid node ****
+Visiting function: test_deserialized_values, Is fixture: False
+found valid node ****
+Visiting function: test_find, Is fixture: False
+found valid node ****
+Visiting function: test_base_collaborators__add, Is fixture: False
+found valid node ****
+Visiting function: test_workspace_collaborators__add, Is fixture: False
+found valid node ****
+Visiting function: test_update_collaborator, Is fixture: False
+found valid node ****
+Visiting function: test_remove_collaborator, Is fixture: False
+found valid node ****
+Visiting function: test_invite_link__delete, Is fixture: False
+found valid node ****
+Visiting function: interface_url, Is fixture: False
+found valid node ****
+Visiting function: test_add_interface_collaborator, Is fixture: False
+found valid node ****
+Visiting function: test_update_interface_collaborator, Is fixture: False
+found valid node ****
+Visiting function: test_remove_interface_collaborator, Is fixture: False
+found valid node ****
+Visiting function: test_add_collaborator__invalid_kind, Is fixture: False
+found valid node ****
+Visiting function: test_add_collaborators, Is fixture: False
+found valid node ****
+Visiting function: test_restful_urls, Is fixture: False
+found valid node ****
+Visiting function: base_share, Is fixture: False
+found valid node ****
+Visiting function: test_share__enable, Is fixture: False
+found valid node ****
+Visiting function: test_share__disable, Is fixture: False
+found valid node ****
+Visiting function: test_share__delete, Is fixture: False
+found valid node ****
+Visiting function: test_workspace_restrictions, Is fixture: False
+test_file= test_params.py
+found valid node ****
+Visiting function: test_convert_options_to_params, Is fixture: False
+found valid node ****
+Visiting function: test_convert_options_to_json, Is fixture: False
+found valid node ****
+Visiting function: test_dict_list_to_request_params, Is fixture: False
+found valid node ****
+Visiting function: test_field_names_to_sorting_dict, Is fixture: False
+test_file= test_orm_fields.py
+found valid node ****
+Visiting function: test_field, Is fixture: False
+found valid node ****
+Visiting function: test_description, Is fixture: False
+found valid node ****
+Visiting function: test_repr, Is fixture: False
+found valid node ****
+Visiting function: test_orm_missing_values, Is fixture: False
+found valid node ****
+Visiting function: test_type_validation_LinkField, Is fixture: False
+found valid node ****
+Visiting function: test_readonly_fields, Is fixture: False
+found valid node ****
+Visiting function: test_writable_fields, Is fixture: False
+found valid node ****
+Visiting function: test_accepts_null, Is fixture: False
+found valid node ****
+Visiting function: test_invalid_kwarg, Is fixture: False
+found valid node ****
+Visiting function: test_list_field_with_none, Is fixture: False
+found valid node ****
+Visiting function: test_link_field, Is fixture: False
+found valid node ****
+Visiting function: test_link_field__linked_model, Is fixture: False
+found valid node ****
+Visiting function: test_link_field__cycle, Is fixture: False
+found valid node ****
+Visiting function: test_link_field__load_many, Is fixture: False
+found valid node ****
+Visiting function: test_single_link_field, Is fixture: False
+found valid node ****
+Visiting function: test_single_link_field__multiple_values, Is fixture: False
+found valid node ****
+Visiting function: test_link_field__populate, Is fixture: False
+found valid node ****
+Visiting function: test_lookup_field, Is fixture: False
+found valid node ****
+Visiting function: test_datetime_timezones, Is fixture: False
+Visiting function: patch_callback, Is fixture: False
+found valid node ****
+Visiting function: test_select_field, Is fixture: False
+test_file= test_models.py
+found valid node ****
+Visiting function: raw_data, Is fixture: False
+found valid node ****
+Visiting function: create_instance, Is fixture: False
+Visiting function: _creates_instance, Is fixture: False
+found valid node ****
+Visiting function: test_raw, Is fixture: False
+found valid node ****
+Visiting function: test_from_api, Is fixture: False
+found valid node ****
+Visiting function: test_save, Is fixture: False
+found valid node ****
+Visiting function: test_save__nested_reload, Is fixture: False
+found valid node ****
+Visiting function: test_delete, Is fixture: False
+found valid node ****
+Visiting function: test_restfulmodel__set_url, Is fixture: False
+found valid node ****
+Visiting function: test_datetime_conversion, Is fixture: False
+test_file= test_api_base.py
+found valid node ****
+Visiting function: mock_tables_endpoint, Is fixture: False
+found valid node ****
+Visiting function: test_constructor, Is fixture: False
+found valid node ****
+Visiting function: test_deprecated_constructor, Is fixture: False
+found valid node ****
+Visiting function: test_repr, Is fixture: False
+found valid node ****
+Visiting function: test_url, Is fixture: False
+found valid node ****
+Visiting function: test_schema, Is fixture: False
+found valid node ****
+Visiting function: test_table, Is fixture: False
+found valid node ****
+Visiting function: test_table_validate, Is fixture: False
+found valid node ****
+Visiting function: test_tables, Is fixture: False
+found valid node ****
+Visiting function: test_collaborators, Is fixture: False
+found valid node ****
+Visiting function: test_shares, Is fixture: False
+found valid node ****
+Visiting function: test_webhooks, Is fixture: False
+found valid node ****
+Visiting function: test_webhook, Is fixture: False
+found valid node ****
+Visiting function: test_add_webhook, Is fixture: False
+Visiting function: _callback, Is fixture: False
+found valid node ****
+Visiting function: test_name, Is fixture: False
+found valid node ****
+Visiting function: test_create_table, Is fixture: False
+found valid node ****
+Visiting function: test_schema_refresh, Is fixture: False
+found valid node ****
+Visiting function: test_delete, Is fixture: False
+found valid node ****
+Visiting function: test_delete__enterprise_only_table, Is fixture: False
+test_file= test_api_workspace.py
+found valid node ****
+Visiting function: workspace_id, Is fixture: False
+found valid node ****
+Visiting function: workspace, Is fixture: False
+found valid node ****
+Visiting function: mock_info, Is fixture: False
+found valid node ****
+Visiting function: test_collaborators, Is fixture: False
+found valid node ****
+Visiting function: test_name, Is fixture: False
+found valid node ****
+Visiting function: test_bases, Is fixture: False
+found valid node ****
+Visiting function: test_create_base, Is fixture: False
+found valid node ****
+Visiting function: test_delete, Is fixture: False
+found valid node ****
+Visiting function: test_move_base, Is fixture: False
+test_file= test_orm_model__memoization.py
+found valid node ****
+Visiting function: clear_memoization_and_forbid_api_calls, Is fixture: True
+found valid node ****
+Visiting function: record_mocks, Is fixture: False
+found valid node ****
+Visiting function: test_memoize__from_id, Is fixture: False
+found valid node ****
+Visiting function: test_from_id, Is fixture: False
+found valid node ****
+Visiting function: test_from_ids, Is fixture: False
+found valid node ****
+Visiting function: test_memoize__link_field, Is fixture: False
+found valid node ****
+Visiting function: test_memoize__link_field__populate, Is fixture: False
+test_file= test_typing.py
+test_file= test_url_escape.py
+found valid node ****
+Visiting function: test_url_escape, Is fixture: False
+test_file= test_api_api.py
+found valid node ****
+Visiting function: mock_bases_endpoint, Is fixture: False
+found valid node ****
+Visiting function: test_repr, Is fixture: False
+found valid node ****
+Visiting function: test_get_base, Is fixture: False
+found valid node ****
+Visiting function: test_get_table, Is fixture: False
+found valid node ****
+Visiting function: test_default_endpoint_url, Is fixture: False
+found valid node ****
+Visiting function: test_endpoint_url, Is fixture: False
+found valid node ****
+Visiting function: test_endpoint_url_with_trailing_slash, Is fixture: False
+found valid node ****
+Visiting function: test_update_api_key, Is fixture: False
+found valid node ****
+Visiting function: test_whoami, Is fixture: False
+found valid node ****
+Visiting function: test_base, Is fixture: False
+found valid node ****
+Visiting function: test_bases, Is fixture: False
+found valid node ****
+Visiting function: test_iterate_requests, Is fixture: False
+found valid node ****
+Visiting function: test_iterate_requests__invalid_type, Is fixture: False
+found valid node ****
+Visiting function: test_workspace, Is fixture: False
+found valid node ****
+Visiting function: test_enterprise, Is fixture: False
+test_file= test_models_collaborator.py
+found valid node ****
+Visiting function: test_parse, Is fixture: False
+found valid node ****
+Visiting function: test_init, Is fixture: False
+test_file= test_api_retrying.py
+found valid node ****
+Visiting function: mock_endpoint_server, Is fixture: True
+found valid node ****
+Visiting function: mock_endpoint, Is fixture: True
+found valid node ****
+Visiting function: table_with_retry_strategy, Is fixture: False
+Visiting function: _table_with_retry, Is fixture: False
+found valid node ****
+Visiting function: test_without_retry_strategy__succeed, Is fixture: False
+found valid node ****
+Visiting function: test_retry_eventual_success, Is fixture: False
+found valid node ****
+Visiting function: test_retry_during_iterate, Is fixture: False
+test_file= test_request_errors.py
+test_file= test_utils.py
+found valid node ****
+Visiting function: test_datetime_utils, Is fixture: False
+found valid node ****
+Visiting function: test_date_utils, Is fixture: False
+found valid node ****
+Visiting function: test_attachment, Is fixture: False
+found valid node ****
+Visiting function: test_id_check, Is fixture: False
+found valid node ****
+Visiting function: test_converter, Is fixture: False
+test_file= test_api_table.py
+found valid node ****
+Visiting function: table_schema, Is fixture: True
+Processed fixture 'table_schema' returning class 'pyairtable.models.schema.TableSchema.parse_obj'
+found valid node ****
+Visiting function: mock_schema, Is fixture: False
+found valid node ****
+Visiting function: test_constructor, Is fixture: False
+found valid node ****
+Visiting function: test_constructor_with_schema, Is fixture: False
+found valid node ****
+Visiting function: test_deprecated_constructor, Is fixture: False
+found valid node ****
+Visiting function: test_repr, Is fixture: False
+found valid node ****
+Visiting function: test_schema, Is fixture: False
+found valid node ****
+Visiting function: test_id, Is fixture: False
+found valid node ****
+Visiting function: test_url, Is fixture: False
+found valid node ****
+Visiting function: test_chunk, Is fixture: False
+found valid node ****
+Visiting function: test_record_url, Is fixture: False
+found valid node ****
+Visiting function: test_get, Is fixture: False
+found valid node ****
+Visiting function: test_first, Is fixture: False
+found valid node ****
+Visiting function: test_first_via_post, Is fixture: False
+found valid node ****
+Visiting function: test_first_none, Is fixture: False
+found valid node ****
+Visiting function: test_all, Is fixture: False
+found valid node ****
+Visiting function: test_iterate, Is fixture: False
+found valid node ****
+Visiting function: test_create, Is fixture: False
+found valid node ****
+Visiting function: test_batch_create, Is fixture: False
+found valid node ****
+Visiting function: test_update, Is fixture: False
+found valid node ****
+Visiting function: test_batch_update, Is fixture: False
+found valid node ****
+Visiting function: test_batch_upsert, Is fixture: False
+found valid node ****
+Visiting function: test_delete, Is fixture: False
+found valid node ****
+Visiting function: test_batch_delete, Is fixture: False
+found valid node ****
+Visiting function: test_create_field, Is fixture: False
+found valid node ****
+Visiting function: test_delete_view, Is fixture: False
+test_file= test_formulas.py
+found valid node ****
+Visiting function: test_equivalence, Is fixture: False
+found valid node ****
+Visiting function: test_operators, Is fixture: False
+found valid node ****
+Visiting function: test_comparisons, Is fixture: False
+found valid node ****
+Visiting function: test_comparison_shortcuts, Is fixture: False
+found valid node ****
+Visiting function: test_comparison_equivalence, Is fixture: False
+found valid node ****
+Visiting function: test_compound, Is fixture: False
+found valid node ****
+Visiting function: test_compound_with_iterable, Is fixture: False
+found valid node ****
+Visiting function: test_compound_equivalence, Is fixture: False
+found valid node ****
+Visiting function: test_compound_constructors, Is fixture: False
+found valid node ****
+Visiting function: test_compound_flatten, Is fixture: False
+found valid node ****
+Visiting function: test_compound_with_compound, Is fixture: False
+found valid node ****
+Visiting function: test_not, Is fixture: False
+found valid node ****
+Visiting function: test_to_formula, Is fixture: False
+found valid node ****
+Visiting function: test_to_formula_str, Is fixture: False
+found valid node ****
+Visiting function: test_match, Is fixture: False
+found valid node ****
+Visiting function: test_function_call, Is fixture: False
+found valid node ****
+Visiting function: test_function_call_equivalence, Is fixture: False
+found valid node ****
+Visiting function: test_field_name, Is fixture: False
+found valid node ****
+Visiting function: test_quoted, Is fixture: False
+found valid node ****
+Visiting function: test_orm_field_comparison_shortcuts, Is fixture: False
+found valid node ****
+Visiting function: test_orm_field_as_formula, Is fixture: False
+found valid node ****
+Visiting function: test_function_calls, Is fixture: False
+test_file= test_integration_metadata.py
+found valid node ****
+Visiting function: test_api_bases, Is fixture: False
+found valid node ****
+Visiting function: test_api_base, Is fixture: False
+found valid node ****
+Visiting function: test_base_schema, Is fixture: False
+found valid node ****
+Visiting function: test_table_schema, Is fixture: False
+test_file= test_integration_enterprise.py
+found valid node ****
+Visiting function: enterprise, Is fixture: False
+found valid node ****
+Visiting function: workspace_id, Is fixture: False
+found valid node ****
+Visiting function: workspace, Is fixture: False
+found valid node ****
+Visiting function: confirm_enterprise_plan, Is fixture: True
+found valid node ****
+Visiting function: blank_base, Is fixture: False
+found valid node ****
+Visiting function: test_user, Is fixture: False
+found valid node ****
+Visiting function: test_users, Is fixture: False
+found valid node ****
+Visiting function: test_create_table, Is fixture: False
+found valid node ****
+Visiting function: test_update_table, Is fixture: False
+found valid node ****
+Visiting function: test_create_field, Is fixture: False
+found valid node ****
+Visiting function: test_update_field, Is fixture: False
+Visiting function: reload_field, Is fixture: False
+found valid node ****
+Visiting function: test_audit_log, Is fixture: False
+test_file= test_high_volume.py
+found valid node ****
+Visiting function: table_name, Is fixture: False
+test_file= test_integration_api.py
+found valid node ****
+Visiting function: test_integration_table, Is fixture: False
+found valid node ****
+Visiting function: test_use_field_ids, Is fixture: False
+found valid node ****
+Visiting function: test_get_records_options, Is fixture: False
+found valid node ****
+Visiting function: test_integration_field_equals, Is fixture: False
+found valid node ****
+Visiting function: test_batch_upsert, Is fixture: False
+found valid node ****
+Visiting function: test_integration_formula_datetime, Is fixture: False
+found valid node ****
+Visiting function: test_integration_formula_date_filter, Is fixture: False
+found valid node ****
+Visiting function: test_integration_field_equals_with_quotes, Is fixture: False
+found valid node ****
+Visiting function: test_integration_formula_composition, Is fixture: False
+found valid node ****
+Visiting function: test_integration_attachment, Is fixture: False
+found valid node ****
+Visiting function: test_integration_attachment_multiple, Is fixture: False
+found valid node ****
+Visiting function: test_integration_comments, Is fixture: False
+test_file= test_integration_webhooks.py
+found valid node ****
+Visiting function: delete_webhooks_after_itest, Is fixture: True
+found valid node ****
+Visiting function: test_webhook, Is fixture: False
+test_file= test_integration_orm.py
+found valid node ****
+Visiting function: Everything, Is fixture: False
+found valid node ****
+Visiting function: Address, Is fixture: False
+found valid node ****
+Visiting function: Contact, Is fixture: False
+found valid node ****
+Visiting function: test_integration_orm, Is fixture: False
+found valid node ****
+Visiting function: test_undeclared_fields, Is fixture: False
+found valid node ****
+Visiting function: test_every_field, Is fixture: False
+file_path= /mnt/efs/people/urshanto/change_aware_utg/test_analysis/Results/airtable-python-wrapper_focal_method_with_api_similarity.csv
+252
+
+Complexities saved to complexities.txt
+Line starts with Hash #billiard,https://github.com/celery/billiard,[billiard is a fork of the Python 2.7 multiprocessing package.],multithreading/multiprocessing API,Programming and Code Management,problem in finding test directory
+Line starts with Hash #hpack,https://github.com/python-hyper/hpack,[no-complexity found; maybe tests are written within class][This module contains a pure-Python HTTP/2 header encoding (HPACK) logic for use in Python programs that implement HTTP/2.]
+Line starts with Hash #asttokens,https://github.com/gristlabs/asttokens,[ annotates Python abstract syntax trees (ASTs) with the positions of tokens and text in the source code that generated them.],Code annotation.,Programming and Code Management
+Line starts with Hash #blessed,https://github.com/jquast/blessed,[Blessed is an easy practical library for making terminal apps by providing an elegant well-documented interface to Colors Keyboard input and screen position and Location capabilities.],UI design library,Web and API Development
+Line starts with Hash #cachetools,https://github.com/tkem/cachetools,[This module provides various memoizing collections and decorators],Caching/Memoization,Programming and Code Management
+Line starts with Hash #click-log,https://github.com/click-contrib/click-log,[Integrates logging with click],logging,Programming and Code Management
+Line starts with Hash #cssselect,https://github.com/scrapy/cssselect,[to find the matching elements in an XML or HTML document.],XML/HTML parsing,Data Processing and Parsing
+Line starts with Hash #ddlparse,https://github.com/shinichi-takii/ddlparse,[parse and get table schema information],parsing table schema,Data Processing and Parsing
+Line starts with Hash #deprecated,https://github.com/tantale/deprecated,[decorate your deprecated function with @deprecated decorator],parsing and annotation,Programming and Code Management
+Line starts with Hash #django-enumfields,https://github.com/hzdg/django-enumfields,[django-enumfields also includes its own version of Enum with a few extra bells and whistles. ],Django Enums.,Django-related
+Line starts with Hash #django-environ,https://github.com/joke2k/django-environ,[django-environ is the Python package that allows you to use Twelve-factor methodology to configure your Django application with environment variables.],Django Configuration,Django-related
+Line starts with Hash #djangorestframework-simplejwt,https://github.com/jazzband/djangorestframework-simplejwt,[JWT is a JSON Web Token authentication plugin],Web Token authentication,Web and API Development
+Line starts with Hash #dynaconf,https://github.com/dynaconf/dynaconf,[ Configuration Management for Python] ,Configuration Management,Programming and Code Management
+Line starts with Hash #eemeter,https://github.com/openeemeter/eemeter,[ an open source toolkit for implementing and developing standard methods for calculating normalized metered energy consumption (NMEC) and avoided energy use.],Energy analytics,Miscellaneous
+Line starts with Hash #freezegun,https://github.com/spulec/freezegun,[FreezeGun is a library that allows your Python tests to travel through time by mocking the datetime module.],Time mocking,Programming and Code Management
+Line starts with Hash #grpclib,https://github.com/vmagamedov/grpclib,[This project is based on hyper-h2 and requires Python >= 3.8.],RPC framework,Web and API Development
+Line starts with Hash #gunicorn,https://github.com/benoitc/gunicorn,"[Gunicorn 'Green Unicorn' is a Python WSGI HTTP Server for UNIX. It's a pre-fork worker model ported from Ruby's Unicorn project. The Gunicorn server is broadly compatible with various web frameworks,  simply implemented  light on server resource usage  and fairly speedy.]",Web server,Web Infrastructure
+Line starts with Hash #h2,https://github.com/python-hyper/h2,[repository contains a pure-Python implementation of a HTTP/2 protocol stack.],HTTP protocol ,Web Infrastructure
+Line starts with Hash #honcho,https://github.com/nickstenning/honcho,[Honcho is a Python port of Foreman, a tool for managing Procfile-based applications.]
+Line starts with Hash #html2text,https://github.com/Alir3z4/html2text,[html2text is a Python script that converts a page of HTML into clean, easy-to-read plain ASCII text. Better yet, that ASCII also happens to be valid Markdown (a text-to-HTML format).]
+Line starts with Hash #hupper,https://github.com/Pylons/hupper,[hupper is an integrated process monitor that will track changes to any imported Python files in sys.modules as well as custom paths. When files are changed the process is restarted.]
+Line starts with Hash #hyperframe,https://github.com/python-hyper/hyperframe,[This library contains the HTTP/2 framing code used in the hyper project. It provides a pure-Python codebase that is capable of decoding a binary stream into HTTP/2 frames. This library is used directly by hyper and a number of other projects to provide HTTP/2 frame decoding logic.]
+Line starts with Hash #ijson,https://github.com/ICRAR/ijson,[Ijson is an iterative JSON parser with standard Python iterator interfaces.]
+Line starts with Hash #intervals,https://github.com/kvesteri/intervals,[Python tools for handling intervals (ranges of comparable objects). Intervals can be initialized using the class constructor, various factory methods or from_string class method. The recommended way is to use the factory methods.]
+Line starts with Hash #itemadapter,https://github.com/scrapy/itemadapter,[The ItemAdapter class is a wrapper for data container objects, providing a common interface to handle objects of different types in an uniform manner, regardless of their underlying implementation.]
+Line starts with Hash #oauthlib,https://github.com/oauthlib/oauthlib,[A generic spec-compliant thorough implementation of the OAuth request-signing logic for Python 3.8+. OAuth often seems complicated and difficult-to-implement. There are several prominent libraries for handling OAuth requests but they all suffer from one or both of the following: They predate the OAuth 1.0 spec AKA RFC 5849. They predate the OAuth 2.0 spec AKA RFC 6749.They assume the usage of a specific HTTP request library. OAuthLib is a framework which implements the logic of OAuth1 or OAuth2 without assuming a specific HTTP request object or web framework. Use it to graft OAuth client support onto your favorite HTTP library or provide support onto your favourite web framework. If you're a maintainer of such a library write a thin veneer on top of OAuthLib and get OAuth support for very little effort.
+Line starts with Hash #pastedeploy,https://github.com/Pylons/pastedeploy,[This tool provides code to load WSGI applications and servers from URIs. These URIs can refer to Python eggs for INI-style configuration files. Paste Script provides commands to serve applications based on this configuration file. The latest version is available on GitHub (or download a wheel or tarball from PyPI).]
+Line starts with Hash #pid,https://github.com/trbs/pid,[PidFile class featuring:stale detection.pidfile locking (fcntl).chmod (default is 0o644).chown.custom exceptions.Context Manager, Daemons and Logging.PidFile can be used as a context manager:]
+Line starts with Hash #priority,https://github.com/python-hyper/priority,[Priority is a pure-Python implementation of the priority logic for HTTP/2. set out in RFC 7540 Section 5.3 (Stream Priority). This logic allows for clients to express a preference for how the server allocates its (limited) resources to the many outstanding HTTP requests that may be running over a single HTTP/2 connection.Specifically this Python implementation uses a variant of the implementation used in the excellent H2O project. This original implementation is also the inspiration for nghttp2's priority implementation and generally produces a very clean and even priority stream. The only notable changes from H2O's implementation are small modifications to allow the priority implementation to work cleanly as a separate implementation rather than being embedded in a HTTP/2 stack directly. While priority information in HTTP/2 is only a suggestion rather than an enforceable constraint where possible servers should respect the priority requests of their clients.]
+Line starts with Hash #protego,https://github.com/scrapy/protego,[Protego is a pure-Python robots.txt parser with support for modern conventions.]
+Line starts with Hash #pyairtable,https://github.com/gtalarico/pyairtable,[Python client for the Airtable API.]
+Line starts with Hash #rfc3986,https://github.com/python-hyper/rfc3986,[A Python implementation of RFC 3986 including validation and authority parsing.]
+Line starts with Hash #scrapyd-client,https://github.com/scrapy/scrapyd-client,[Scrapyd-client is a client for Scrapyd. It provides: Command line tools: scrapyd-deploy to deploy your project to a Scrapyd server scrapyd-client to interact with your project once deployed Python client: ScrapydClient to interact with Scrapyd within your python code]
+Line starts with Hash #setupmeta,https://github.com/codrsquad/setupmeta,[Writing a setup.py typically involves lots of boilerplate and copy-pasting from project to project. This package aims to simplify that and bring some DRY principle to python packaging. Here's what your (complete and ready to ship to pypi) setup.py could look like with setupmeta.]
+Line starts with Hash #solrq,https://github.com/swistakm/solrq,[solrq is a Python Solr query utility. It helps making query strings for Solr and also helps with escaping reserved characters. solrq is has no external dependencies and is compatibile with python3.7 python3,8 python3.9 python3.10 python3.11, pypy and pypy3. It might be compatibile with other python releases/implentations but this has not been tested yet or is no longer tested (e.g python3.2 or python2.7)]
+Line starts with Hash #sqllineage,https://github.com/reata/sqllineage,[SQLLineage comes to the rescue. Given a SQL command SQLLineage will tell you its source and target tables without worrying about Tokens Keyword Identifier and all the jagons used by SQL parsers. Behind the scene SQLLineage pluggable leverages parser library (sqlfluff and sqlparse) to parse the SQL command analyze the AST stores the lineage information in a graph (using graph library networkx) and brings you all the human-readable result with ease.]
+Line starts with Hash #sshtunnel,https://github.com/pahaz/sshtunnel,[API allows either initializing the tunnel and starting it or using a with context which will take care of starting and stopping the tunnel:]
+Line starts with Hash #unidecode,https://github.com/avian2/unidecode,[It often happens that you have text data in Unicode but you need to represent it in ASCII. For example when integrating with legacy code that doesn't support Unicode or for ease of entry of non-Roman names on a US keyboard or when constructing ASCII machine identifiers from human-readable Unicode strings that should still be somewhat intelligible. A popular example of this is when making an URL slug from an article title. Unidecode is not a replacement for fully supporting Unicode for strings in your program. There are a number of caveats that come with its use especially when its output is directly visible to users. Please read the rest of this README before using Unidecode in your project.]
+Line starts with Hash #uritools,https://github.com/tkem/uritools,[This module provides RFC 3986 compliant functions for parsing classifying and composing URIs and URI references largely replacing the Python Standard Library's urllib.parse module.]
+Line starts with Hash #virtualenv-clone,https://github.com/edwardgeorge/virtualenv-clone,[A script for cloning a non-relocatable virtualenv. Virtualenv provides a way to make virtualenv's relocatable which could then be copied as we wanted. However making a virtualenv relocatable this way breaks the no-site-packages isolation of the virtualenv as well as other aspects that come with relative paths and /usr/bin/env shebangs that may be undesirable. Also the .pth and .egg-link rewriting doesn't seem to work as intended. This attempts to overcome these issues and provide a way to easily clone an existing virtualenv.]
+Line starts with Hash #waitress,https://github.com/Pylons/waitress,[Waitress is a production-quality pure-Python WSGI server with very acceptable performance. It has no dependencies except ones which live in the Python standard library. It runs on CPython on Unix and Windows under Python 3.8+. It is also known to run on PyPy 3 (version 3.8 compatible python and above) on UNIX. It supports HTTP/1.0 and HTTP/1.1.]
+Line starts with Hash #wsproto,https://github.com/python-hyper/wsproto,[This repository contains a pure-Python implementation of a WebSocket protocol stack. It's written from the ground up to be embeddable in whatever program you choose to use ensuring that you can communicate via WebSockets as defined in RFC6455 regardless of your programming paradigm. This repository does not provide a parsing layer a network layer or any rules about concurrency. Instead it's a purely in-memory solution defined in terms of data actions and WebSocket frames. RFC6455 and Compression Extensions for WebSocket via RFC7692 are fully supported.]
+Line starts with Hash ####ahocorapy,https://github.com/abusix/ahocorapy,"[ahocorapy - Fast Many-Keyword Search in Pure Python ahocorapy is a pure python implementation of the Aho-Corasick Algorithm. Given a list of keywords one can check if at least one of the keywords exist in a given text in linear time.]",Text search.,Data Processing,problem in test assertion
+Line starts with Hash ####itemloaders,https://github.com/scrapy/itemloader,[Not-found]
+Line starts with Hash ###yaml-config,https://github.com/GreenBuildingRegistry/yaml-config,[YAML Config provides a Config Class for retrieving configuration variables from YAML based config files. Recommended usage is to subclass this class to define default_file and/or default_config_root as necessary or to override __init__ with relevant defaults.],test directory found in yamlconf
+Line starts with Hash ##django-countries,https://github.com/SmileyChris/django-countries,[provides country choices for use with forms],Django countries,Django-related, Problem in test directory django_countries/tests
+Line starts with Hash ##django-nested-admin,https://github.com/theatlantic/django-nested-admin,[django-nested-admin is a project that makes it possible to nest admin inlines],Django Administration?,Django-related,test directory issue
+Line starts with Hash ##django-treebeard,https://github.com/django-treebeard/django-treebeard,[django-treebeard is a library that implements efficient tree implementations for the Django Web Framework 2.2 and later.],Tree data structures?,Django-related, not found any test-dir
+Line starts with Hash ##dpkt,https://github.com/kbandla/dpkt,"[ dpkt project is a python module for fast, simple packet parsing  with definitions for the basic TCP/IP protocols]",parsing,Data  Parsing
+Line starts with Hash ##gast,https://github.com/serge-sans-paille/gast,[generic AST to represent Python2 and Python3's Abstract Syntax Tree(AST)],Code analysis?,Programming and Code Management,tests are written within nested classes
+Line starts with Hash ##graphene-django,https://github.com/graphql-python/graphene-django,[ library allows developers to create GraphQL APIs in Django quickly and efficiently while maintaining a high level of performance.],API Development,Django-related,one more directory to get the test
+Line starts with Hash ##h11,https://github.com/python-hyper/h11,[HTTP/1.1 library written from scratch in Python],HTTP library,Web Infrastructure,one more directory to get the test
+Line starts with Hash ##json-rpc,https://github.com/pavlov99/json-rpc,[JSON-RPC2.0 and JSON-RPC1.0 transport specification implementation. Supports Python 2.6+ and Python 3.3+ PyPy. Has optional Django and Flask support. 200+ tests. Features. This implementation does not have any transport functionality realization, only protocol. Any client or server implementation is easy based on current code, but requires transport libraries, such as requests, gevent or zmq,], one more directory to get the tests
+Line starts with Hash ##mergedeep,https://github.com/clarketm/mergedeep,[A deep merge function for.Check out the mergedeep docs], one more directory to get the tests
+Line starts with Hash ###parsimonious,https://github.com/erikrose/parsimonious,[Parsimonious aims to be the fastest arbitrary-lookahead parser written in pure Python—and the most usable. It's based on parsing expression grammars (PEGs) which means you feed it a simplified sort of EBNF notation. Parsimonious was designed to undergird a MediaWiki parser that wouldn't take 5 seconds or a GB of RAM to do one page but it's applicable to all sorts of languages.], one more directory to get the tests
+Line starts with Hash ##pytest-pylint,https://github.com/carsongee/pytest-pylint,[Run pylint with pytest and have configurable rule types (i.e. Convention, Warn, and Error) fail the build. You can also specify a pylintrc file.], one more directory to get the tests
+Line starts with Hash ##queuelib,https://github.com/scrapy/queuelib,[Queuelib is a Python library that implements object collections which are stored in memory or persisted to disk provide a simple API and run fast. Queuelib provides collections for queues (FIFO) stacks (LIFO) queues sorted by priority and queues that are emptied in a round-robin fashion. Queuelib collections are not thread-safe.], one more directory to get the tests
+Line starts with Hash ##responses,https://github.com/getsentry/responses,[A utility library for mocking out the requests Python library. Responses requires Python 3.8 or newer and requests >= 2.30.0], one more directory to get the tests
+Line starts with Hash ##schema,https://github.com/keleshev/schema,[schema is a library for validating Python data structures such as those obtained from config-files forms external services or command-line parsing converted from JSON/YAML (or something else) to Python data-types.]
+Line starts with Hash ##segtok,https://github.com/fnl/segtok,[NB: segtok v2 code-named syntok is available and fixes some tricky issues with segtok in particular splitting sentence with terminals not followed by spaces.Like this :-).]
+Line starts with Hash ##supervisor,https://github.com/Supervisor/supervisor,[Supervisor is a client/server system that allows its users to control a number of processes on UNIX-like operating systems.], one more directory to get the tests
+Line starts with Hash ##texttable,https://github.com/foutaise/texttable,[Python module to create simple ASCII tables.This module is available on PyPI and has been packaged for several Linux/Unix platforms (Debian and FreeBSD and Fedora and Suse).]
+Line starts with Hash ##pyzipper,https://github.com/danifus/pyzipper,[A replacement for Python's zipfile that can read and write AES encrypted zip files. Forked from Python 3.7's zipfile module it features the same zipfile API from that time (most notably lacking support for pathlib-compatible wrappers that were introduced in Python 3.8).],invalid character in the test_code
