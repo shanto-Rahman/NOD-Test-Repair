@@ -1,4 +1,0 @@
-proj_name,git_link,file_path,test_method,function_call#arg_count,focal_method_class_name,similarity_score,all_api_list
-waitress,https://github.com/Pylons/waitress,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/waitress/tests/test_receiver.py,test_received_invalid_extensions,received#1,inst,0.3333,"DummyBuffer#0.0, _makeOne#0.0, received#0.3333333333333333, len#0.0, parametrize#0.0"
-waitress,https://github.com/Pylons/waitress,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/waitress/tests/test_receiver.py,test_received_valid_extensions,received#1,inst,0.3333,"DummyBuffer#0.0, _makeOne#0.0, received#0.3333333333333333, len#0.0, parametrize#0.0"
-waitress,https://github.com/Pylons/waitress,/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/waitress/tests/test_receiver.py,test_received_invalid_size,received#1,inst,0.3333,"DummyBuffer#0.0, _makeOne#0.0, received#0.3333333333333333, len#0.0, parametrize#0.0"

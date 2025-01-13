@@ -1,7 +1,0 @@
-"proj_name","git_link","file_name","test_method","test_method_block"
-"djangorestframework-simplejwt","https://github.com/jazzband/djangorestframework-simplejwt","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/djangorestframework-simplejwt/tests/test_token_blacklist.py","test_outstandingtoken_id_field_is_biagauto_field","    def test_outstandingtoken_id_field_is_biagauto_field(self):
-        OutstandingToken = self.apps.get_model(""token_blacklist"", ""OutstandingToken"")
-        assert isinstance(OutstandingToken._meta.get_field(""id""), BigAutoField)"
-"djangorestframework-simplejwt","https://github.com/jazzband/djangorestframework-simplejwt","/mnt/efs/people/urshanto/change_aware_utg/test_analysis/projects/djangorestframework-simplejwt/tests/test_token_blacklist.py","test_blacklistedtoken_id_field_is_biagauto_field","    def test_blacklistedtoken_id_field_is_biagauto_field(self):
-        BlacklistedToken = self.apps.get_model(""token_blacklist"", ""BlacklistedToken"")
-        assert isinstance(BlacklistedToken._meta.get_field(""id""), BigAutoField)"
