@@ -96,81 +96,6 @@ def create_virtual_env(project_path, python_executable):
     print(f"✅ Virtual environment created at: {venv_path}")
     return venv_path
 
-
-#import subprocess
-#import shutil
-#import os
-#import sys
-#
-##def create_virtual_env(project_name, project_path, python_executable):
-#    """Creates a virtual environment using `virtualenv` for the project."""
-#    venv_path = os.path.join(project_path, f"{project_name}_venv")
-#
-#    print(f"📦 Creating virtual environment in: {venv_path} using {python_executable}")
-#
-#    if os.path.exists(venv_path):
-#        print("⚠️ Virtual environment already exists. Deleting it first...")
-#        shutil.rmtree(venv_path)
-#
-#    # ✅ Ensure `virtualenv` is installed
-#    try:
-#        subprocess.run([python_executable, "-m", "virtualenv", "--version"], check=True, stdout=subprocess.PIPE)
-#    except subprocess.CalledProcessError:
-#        print("⚠️ `virtualenv` not found! Installing it first...")
-#        subprocess.run([python_executable, "-m", "pip", "install", "--user", "virtualenv"], check=True)
-#
-#    # ✅ Find the correct `virtualenv` path
-#    virtualenv_bin = shutil.which("virtualenv") or os.path.expanduser("~/.local/bin/virtualenv")
-#
-#    # ✅ Create virtual environment
-#    try:
-#        subprocess.run([virtualenv_bin, venv_path], check=True)
-#    except subprocess.CalledProcessError:
-#        print("❌ Failed to create virtual environment with `virtualenv`!")
-#        sys.exit(1)
-#
-#    print(f"✅ Virtual environment created at: {venv_path}")
-#
-#    # 🚨 Fix: Upgrade setuptools inside the virtualenv
-#    python_path = os.path.join(venv_path, "bin", "python")
-#    pip_path = os.path.join(venv_path, "bin", "pip")
-#
-#    print("🔧 Upgrading setuptools, wheel, and pip inside virtualenv...")
-#    subprocess.run([pip_path, "install", "--upgrade", "setuptools", "pip", "wheel"], check=True)
-#
-#    return venv_path
-
-#def create_virtual_env(project_name, project_path, python_executable):
-#    """Creates a virtual environment using `virtualenv` for the project."""
-#    venv_path = os.path.join(project_path, f"{project_name}_venv")
-#
-#    print(f"📦 Creating virtual environment in: {venv_path} using {python_executable}")
-#
-#    if os.path.exists(venv_path):
-#        print("⚠️ Virtual environment already exists. Deleting it first...")
-#        shutil.rmtree(venv_path)
-#
-#    # ✅ Ensure `virtualenv` is installed
-#    try:
-#        subprocess.run([python_executable, "-m", "virtualenv", "--version"], check=True, stdout=subprocess.PIPE)
-#    except subprocess.CalledProcessError:
-#        print("⚠️ `virtualenv` not found! Installing it first...")
-#        subprocess.run([python_executable, "-m", "pip", "install", "--user", "virtualenv"], check=True)
-#
-#    # ✅ Find the correct `virtualenv` path
-#    virtualenv_bin = shutil.which("virtualenv") or os.path.expanduser("~/.local/bin/virtualenv")
-#    
-#    # ✅ Create virtual environment
-#    try:
-#        subprocess.run([virtualenv_bin, venv_path], check=True)
-#    except subprocess.CalledProcessError:
-#        print("❌ Failed to create virtual environment with `virtualenv`!")
-#        sys.exit(1)
-#
-#    print(f"✅ Virtual environment created at: {venv_path}")
-#    return venv_path
-
-
 import os
 import subprocess
 import toml
@@ -188,9 +113,7 @@ def install_dependencies(venv_path, project_path):
         print("⚠️ `pip` not found! Manually installing `pip` inside the virtual environment...")
         subprocess.run([python_path, "-m", "ensurepip"], check=True)
         subprocess.run([python_path, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"], check=True)
-
     print("📦 Installing dependencies...")
-
     pyproject_toml = os.path.join(project_path, "pyproject.toml")
 
     if os.path.exists(pyproject_toml):
@@ -231,16 +154,9 @@ def install_dependencies(venv_path, project_path):
     subprocess.run([pip_path, "install", "avwx-engine[fuzz]"], check=True)
     subprocess.run([pip_path, "install", "scipy"], check=True)'''
 
-    # ✅ If neither `requirements.txt` nor `setup.py`, manually install missing packages
-    #if not installed:
-    #    print("⚠️ No `requirements.txt` or `setup.py` found. Installing `pytest` manually.")
-    #    subprocess.run([pip_path, "install", "pytest", "pytest-cov"], check=True)
-
     # ✅ Always ensure `pytest` is installed
     print("📦 Ensuring `pytest` is installed...")
-    subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov"], check=True)
-
-
+    subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat"], check=True)
     print("✅ Dependencies installed successfully!\n")
 
 import os
@@ -249,7 +165,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, num_runs=2000):
+def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1000):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
@@ -270,8 +186,16 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=2000):
 
     # Convert project path to absolute path
     project_path = os.path.abspath(project_path)
-    
-    pytest_command = [python_path, "-m", "pytest", test_name]
+    num_parallel = 200
+    #pytest_command = [python_path, "-m", "pytest", "-n", str(num_parallel), "--count", str(num_runs), "--maxfail=1", test_name]
+    pytest_command = [
+        pytest_path,  # Path to pytest inside virtualenv
+        "--maxfail=1",  # Stop after first failure
+        "-n", str(num_parallel),  # Run tests in parallel
+        "--count", str(10000),  # Repeat the test N times
+        test_name  # The test to run
+    ]
+
 
     # 🔍 Print debugging info
     print(f"🚀 Running command: {' '.join(pytest_command)}")
@@ -295,64 +219,6 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=2000):
             except Exception as e:
                 print(f"❌ ERROR: An unexpected exception occurred.\n{e}")
                 print(f"🔍 Current working directory after failure: {os.getcwd()}")
-
-#def run_tests(venv_path, project_path, test_relative_path):
-#    """Runs a specific test using the virtual environment created with `virtualenv`."""
-#
-#    python_path = os.path.join(venv_path, "bin", "python")
-#    pytest_path = os.path.join(venv_path, "bin", "pytest")
-#
-#    print(f"🔎 Checking virtualenv path: {venv_path}")
-#    print(f"🔎 Checking Python path: {python_path}")
-#    print(f"🔎 Checking pytest path: {pytest_path}")
-#
-#    if not os.path.exists(python_path):
-#        print(f"❌ Virtualenv Python not found: {python_path}")
-#        print("⚠️ Virtual environment may not have been created properly.")
-#        exit(1)
-#
-#    # Ensure project directory exists
-#    if not os.path.exists(project_path):
-#        print(f"❌ Project directory not found: {project_path}")
-#        exit(1)
-#
-#    # Ensure test file exists
-#    test_absolute_path = os.path.join(project_path, test_relative_path.split("::")[0])  
-#    if not os.path.exists(test_absolute_path):
-#        print(f"❌ Test file not found: {test_absolute_path}")
-#        exit(1)
-#
-#    # ✅ Change directory to the project root before running pytest
-#    print(f"\n🚀 Running test inside project directory: {project_path}")
-#
-#    pytest_command = [python_path, "-m", "pytest", test_relative_path]  # Run pytest in venv
-#    #subprocess.run(pytest_command, cwd=project_path, check=False)
-#    try:
-#        # 🔍 Print debugging info
-#        print(f"🚀 Running command: {' '.join(pytest_command)}")
-#        print(f"📂 Project directory: {project_path}")
-#        print(f"🔍 Current working directory before running pytest: {os.getcwd()}") 
-#        # Run the command inside the correct project directory
-#        print()
-#        result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True)
-#
-#        # 🔍 Print the output and errors
-#        print(f"✅ Command output:\n{result.stdout}")
-#        print(f"⚠️ Command errors:\n{result.stderr}")
-#
-#    except FileNotFoundError as e:
-#        print(f"❌ ERROR: Command failed because the file was not found.\n{e}")
-#
-#    except Exception as e:
-#        print(f"❌ ERROR: An unexpected exception occurred.\n{e}")
-#    #result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True)
-#
-#    ## 🔍 Print the output for debugging
-#    #print(f"✅ Command output:\n{result.stdout}")
-#    #print(f"⚠️ Command errors:\n{result.stderr}")
-
-
-
 
 def cleanup(venv_path):
     """Deletes the virtual environment."""
@@ -391,6 +257,6 @@ if __name__ == "__main__":
 
             #if not args.keep_venv:
             #    cleanup(venv_path)
-            #exit()
+            exit()
 
 #
