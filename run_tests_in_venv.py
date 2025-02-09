@@ -4,9 +4,8 @@ import shutil
 import sys
 import venv
 import re
+import csv
 
-import os
-import re
 import toml  # Install with `pip install toml`
 
 import shutil
@@ -462,40 +461,29 @@ def cleanup(venv_path):
 
 if __name__ == "__main__":
     import argparse
-    proj_name = "avwx-rest/avwx-engine"
-    sha = ""
-    proj_clone(proj_name, sha)
-    parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
-    parser.add_argument("project_path", type=str, help="Path to the project directory")
-    args = parser.parse_args()
+    input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
+    with open(input_file_name, newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            gitproj_name = row[0]
+            sha = row[1]
+            test_name = row[2]
+            proj_name = gitproj_name.split("/")[3]
+ 
+            proj_clone(proj_name, sha)
+            parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
+            parser.add_argument("project_path", type=str, help="Path to the project directory")
+            args = parser.parse_args()
 
-    project_path = os.path.abspath(args.project_path)
-    project_name = os.path.basename(project_path)
+            project_path = os.path.abspath(args.project_path)
+            project_name = os.path.basename(project_path)
 
-    python_executable = detect_python_version(project_path)
-    venv_path = create_virtual_env(project_name, project_path, python_executable)
-    install_dependencies(venv_path, project_path)
-    run_tests(venv_path, project_path)
+            python_executable = detect_python_version(project_path)
+            venv_path = create_virtual_env(project_name, project_path, python_executable)
+            install_dependencies(venv_path, project_path)
+            run_tests(venv_path, project_path)
+            exit()
 
-#if __name__ == "__main__":
-#    import argparse
-#
-#    parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
-#    parser.add_argument("project_path", type=str, help="Path to the project directory")
-#    parser.add_argument("--keep-venv", action="store_true", help="Keep the virtual environment after execution")
-#
-#    args = parser.parse_args()
-#    project_path = os.path.abspath(args.project_path)
-#    project_name = os.path.basename(project_path)
-#
-#    python_version = detect_python_version(project_path)
-#    print(f"Detected Python version: {python_version}")
-#
-#    venv_path = create_virtual_env(project_name, project_path, python_version)
-#    install_dependencies(venv_path, project_path)
-#    #venv_path = "/home/sr53282/FlaPy/projects/avwx-engine/avwx-engine_venv"
-#    run_tests(venv_path, project_path)
-#
 #    #if not args.keep_venv:
 #    #    cleanup(venv_path)
 #
