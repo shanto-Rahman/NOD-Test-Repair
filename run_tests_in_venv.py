@@ -249,7 +249,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name):
+def run_tests(venv_path, project_path, test_name, log_dir, num_runs=2000):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
@@ -277,21 +277,24 @@ def run_tests(venv_path, project_path, test_name):
     print(f"🚀 Running command: {' '.join(pytest_command)}")
     print(f"📂 Project directory: {project_path}")
     print(f"🔍 Current working directory before running pytest: {os.getcwd()}")
+    # Format log filename: replace `.py` and `::` with `_`
+    formatted_test_name = test_name.replace(".py", "").replace("::", "_").replace("/", "_")
+    log_file = os.path.join(log_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
 
-    try:
-        result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True)
+    with open(log_file, "w") as log:
+        for i in range(1, num_runs+1):
+            print(f"🔄 Running test {i}/{num_runs}...")
+            try:
+                result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True) 
+                log.write(f"=== Test Run {i}/{num_runs} ===\n")
+                log.write(result.stdout + "\n")
+                log.write(result.stderr + "\n")
+                log.write("=" * 50 + "\n\n")
 
-        # 🔍 Print output and errors
-        print(f"✅ Command output:\n{result.stdout}")
-        print(f"⚠️ Command errors:\n{result.stderr}")
 
-    except FileNotFoundError as e:
-        print(f"❌ ERROR: Command failed because the file was not found.\n{e}")
-        print(f"🔍 Current working directory after failure: {os.getcwd()}")
-
-    except Exception as e:
-        print(f"❌ ERROR: An unexpected exception occurred.\n{e}")
-        print(f"🔍 Current working directory after failure: {os.getcwd()}")
+            except Exception as e:
+                print(f"❌ ERROR: An unexpected exception occurred.\n{e}")
+                print(f"🔍 Current working directory after failure: {os.getcwd()}")
 
 #def run_tests(venv_path, project_path, test_relative_path):
 #    """Runs a specific test using the virtual environment created with `virtualenv`."""
@@ -359,6 +362,10 @@ def cleanup(venv_path):
 
 if __name__ == "__main__":
     import argparse
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    log_dir = os.path.join(script_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+
     input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
     with open(input_file_name, newline='', encoding='utf-8') as file:
         reader = csv.reader(file)
@@ -380,10 +387,10 @@ if __name__ == "__main__":
             python_executable = detect_python_version(repo_path)
             venv_path = create_virtual_env(repo_path, python_executable)
             install_dependencies(venv_path, repo_path)
-            run_tests(venv_path, repo_path, test_name)
+            run_tests(venv_path, repo_path, test_name, log_dir)
 
             #if not args.keep_venv:
             #    cleanup(venv_path)
-            exit()
+            #exit()
 
 #
