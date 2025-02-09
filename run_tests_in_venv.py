@@ -11,6 +11,24 @@ import toml  # Install with `pip install toml`
 
 import shutil
 
+# ---------------- Step 1: Clone the GitHub Repository ----------------
+def proj_clone(proj_name, sha):
+    repo_url = "https://github.com/"+proj_name
+    repo_path = proj_name.split("/")[-1]
+    
+    if not os.path.exists(repo_path):
+        print("Cloning repository...")
+        Repo.clone_from(repo_url, repo_path)
+    
+    repo = Repo(repo_path)
+    try:
+        repo.git.checkout(sha)
+        print(f"Successfully checked out commit")
+    except Exception as e:
+        print(f"Failed to checkout commit")
+        exit(1)
+    return repo, repo_path
+
 def detect_python_version(project_path):
     """Detects the required Python version and returns the full executable path."""
     pyproject_toml = os.path.join(project_path, "pyproject.toml")
@@ -444,7 +462,9 @@ def cleanup(venv_path):
 
 if __name__ == "__main__":
     import argparse
-
+    proj_name = "avwx-rest/avwx-engine"
+    sha = ""
+    proj_clone(proj_name, sha)
     parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
     parser.add_argument("project_path", type=str, help="Path to the project directory")
     args = parser.parse_args()
