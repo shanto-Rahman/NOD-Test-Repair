@@ -13,9 +13,10 @@ import toml  # Install with `pip install toml`
 import shutil
 
 # ---------------- Step 1: Clone the GitHub Repository ----------------
-def proj_clone(proj_name, sha):
+def proj_clone(proj_name, sha, projects_dir):
     repo_url = "https://github.com/"+proj_name
-    repo_path = proj_name.split("/")[-1]
+    repo_name = proj_name.split("/")[-1]
+    repo_path = os.path.join(projects_dir, repo_name)  # Clone inside projects directory
     
     if not os.path.exists(repo_path):
         print("Cloning repository...")
@@ -229,7 +230,10 @@ def cleanup(venv_path):
 if __name__ == "__main__":
     import argparse
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    projects_dir = os.path.join(script_dir, "projects")
     log_dir = os.path.join(script_dir, "logs")
+
+    os.makedirs(projects_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
 
     input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
@@ -241,7 +245,7 @@ if __name__ == "__main__":
             test_name = row[2]
             project_name = full_path_after_3 = "/".join(gitproj_name.split("/")[3:])
  
-            repo, repo_path = proj_clone(project_name, sha)
+            repo, repo_path = proj_clone(project_name, sha, projects_dir)
             print("repo=", repo)
             #parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
             #parser.add_argument("project_path", type=str, help="Path to the project directory")
