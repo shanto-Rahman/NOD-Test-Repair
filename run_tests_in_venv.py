@@ -166,7 +166,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1000):
+def run_tests(venv_path, project_path, test_name, log_dir, num_runs=10):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
@@ -188,14 +188,14 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1000):
     # Convert project path to absolute path
     project_path = os.path.abspath(project_path)
     num_parallel = 200
-    #pytest_command = [python_path, "-m", "pytest", "-n", str(num_parallel), "--count", str(num_runs), "--maxfail=1", test_name]
-    pytest_command = [
-        pytest_path,  # Path to pytest inside virtualenv
-        "--maxfail=1",  # Stop after first failure
-        "-n", str(num_parallel),  # Run tests in parallel
-        "--count", str(10000),  # Repeat the test N times
-        test_name  # The test to run
-    ]
+    pytest_command = [python_path, "-m", "pytest", test_name]
+    #pytest_command = [
+    #    pytest_path,  # Path to pytest inside virtualenv
+    #    "--maxfail=1",  # Stop after first failure
+    #    "-n", str(num_parallel),  # Run tests in parallel
+    #    "--count", str(10000),  # Repeat the test N times
+    #    test_name  # The test to run
+    #]
 
 
     # 🔍 Print debugging info
@@ -214,7 +214,7 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1000):
                 log.write(f"=== Test Run {i}/{num_runs} ===\n")
                 log.write(result.stdout + "\n")
                 log.write(result.stderr + "\n")
-                log.write("=" * 50 + "\n\n")
+                #log.write("=" * 50 + "\n\n")
 
 
             except Exception as e:
@@ -242,7 +242,6 @@ if __name__ == "__main__":
         for row in reader:
             gitproj_name = row[0]
             sha = row[1]
-            test_name = row[2]
             project_name = full_path_after_3 = "/".join(gitproj_name.split("/")[3:])
  
             repo, repo_path = proj_clone(project_name, sha, projects_dir)
@@ -254,6 +253,7 @@ if __name__ == "__main__":
             #project_path = os.path.abspath(args.project_path)
             #project_name = os.path.basename(project_path)
 
+            test_name = row[2]
             python_executable = detect_python_version(repo_path)
             venv_path = create_virtual_env(repo_path, python_executable)
             install_dependencies(venv_path, repo_path)
