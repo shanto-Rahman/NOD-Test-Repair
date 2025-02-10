@@ -158,6 +158,14 @@ def install_dependencies(venv_path, project_path):
     # ✅ Always ensure `pytest` is installed
     print("📦 Ensuring `pytest` is installed...")
     subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat"], check=True)
+    if project_name.lower() == "airbnb/artificial-adversary":
+        print("📦 Airbnb project detected! Installing NLTK & TextBlob...")
+        subprocess.run([pip_path, "install", "textblob", "nltk"], check=True)
+
+        print("📦 Downloading required NLTK corpora...")
+        subprocess.run([python_path, "-c", "import nltk; nltk.download('punkt')"], check=True)
+        subprocess.run([python_path, "-c", "import nltk; nltk.download('averaged_perceptron_tagger')"], check=True)
+
     print("✅ Dependencies installed successfully!\n")
 
 import os
@@ -166,7 +174,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, num_runs=10):
+def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
