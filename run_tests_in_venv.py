@@ -101,7 +101,7 @@ import os
 import subprocess
 import toml
 
-def install_dependencies(venv_path, project_path):
+def install_dependencies(venv_path, project_path, project_name):
     """Ensure all project dependencies are installed inside the virtual environment."""
     
     python_path = os.path.join(venv_path, "bin", "python")
@@ -159,12 +159,14 @@ def install_dependencies(venv_path, project_path):
     print("📦 Ensuring `pytest` is installed...")
     subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat"], check=True)
     if project_name.lower() == "airbnb/artificial-adversary":
+        print(project_name.lower())
         print("📦 Airbnb project detected! Installing NLTK & TextBlob...")
         subprocess.run([pip_path, "install", "textblob", "nltk"], check=True)
 
         print("📦 Downloading required NLTK corpora...")
         subprocess.run([python_path, "-c", "import nltk; nltk.download('punkt')"], check=True)
         subprocess.run([python_path, "-c", "import nltk; nltk.download('averaged_perceptron_tagger')"], check=True)
+        #exit()
 
     print("✅ Dependencies installed successfully!\n")
 
@@ -253,7 +255,7 @@ if __name__ == "__main__":
             project_name = full_path_after_3 = "/".join(gitproj_name.split("/")[3:])
  
             repo, repo_path = proj_clone(project_name, sha, projects_dir)
-            print("repo=", repo)
+            print("repo=", repo, project_name)
             #parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
             #parser.add_argument("project_path", type=str, help="Path to the project directory")
             #args = parser.parse_args()
@@ -264,7 +266,7 @@ if __name__ == "__main__":
             test_name = row[2]
             python_executable = detect_python_version(repo_path)
             venv_path = create_virtual_env(repo_path, python_executable)
-            install_dependencies(venv_path, repo_path)
+            install_dependencies(venv_path, repo_path, project_name)
             run_tests(venv_path, repo_path, test_name, log_dir)
 
             #if not args.keep_venv:
