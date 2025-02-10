@@ -109,23 +109,34 @@ def install_dependencies(venv_path, project_path, project_name):
 
     print("📦 Ensuring `pip` is installed in the virtual environment...")
 
-    # ✅ If pip is missing, install it manually
-    if not os.path.exists(pip_path):
-        print("⚠️ `pip` not found! Manually installing `pip` inside the virtual environment...")
-        subprocess.run([python_path, "-m", "ensurepip"], check=True)
-        subprocess.run([python_path, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"], check=True)
+    # ✅ Ensure pip, setuptools, and wheel are up-to-date
+    subprocess.run([python_path, "-m", "ensurepip"], check=True)
+    subprocess.run([python_path, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"], check=True)
+
     print("📦 Installing dependencies...")
     pyproject_toml = os.path.join(project_path, "pyproject.toml")
 
+    # ✅ Install from pyproject.toml if it exists
     if os.path.exists(pyproject_toml):
-        with open(pyproject_toml, "r", encoding="utf-8") as f:
-            pyproject_data = toml.load(f)
+        print("📦 Found `pyproject.toml`, extracting dependencies...")
+        try:
+            with open(pyproject_toml, "r", encoding="utf-8") as f:
+                pyproject_data = toml.load(f)
 
-        dependencies = pyproject_data.get("project", {}).get("dependencies", [])
+            # Install dependencies if defined
+            dependencies = pyproject_data.get("project", {}).get("dependencies", [])
+            if dependencies:
+                print(f"📦 Installing dependencies from `pyproject.toml`...")
+                subprocess.run([pip_path, "install"] + dependencies, check=True)
 
-        if dependencies:
-            print(f"📦 Installing dependencies from `pyproject.toml`...")
-            subprocess.run([pip_path, "install"] + dependencies, check=True)
+            # Check if Poetry is used
+            build_backend = pyproject_data.get("build-system", {}).get("build-backend", "")
+            if "poetry" in build_backend:
+                print("📦 Poetry detected, installing dependencies using Poetry...")
+                subprocess.run([pip_path, "install", "."], cwd=project_path, check=True)
+
+        except Exception as e:
+            print(f"⚠️ Error reading pyproject.toml: {e}")
 
     # ✅ Check for requirements.txt
     requirements_files = [
@@ -144,31 +155,90 @@ def install_dependencies(venv_path, project_path, project_name):
             installed = True
             break
 
-    # ✅ If no requirements.txt, try setup.py
+    # ✅ If no requirements.txt, try setup.py (for editable mode installation)
     setup_py_path = os.path.join(project_path, "setup.py")
     if not installed and os.path.exists(setup_py_path):
-        print("📦 Installing dependencies from setup.py...")
+        print("📦 Installing project in editable mode from setup.py...")
         subprocess.run([pip_path, "install", "-e", project_path], check=True)
-        installed = True
 
-    '''print("📦 Installing optional dependencies: `avwx-engine[fuzz]`...") #avwx-engine project specific
-    subprocess.run([pip_path, "install", "avwx-engine[fuzz]"], check=True)
-    subprocess.run([pip_path, "install", "scipy"], check=True)'''
-
-    # ✅ Always ensure `pytest` is installed
-    print("📦 Ensuring `pytest` is installed...")
+    # ✅ Always ensure test dependencies are installed
+    print("📦 Ensuring `pytest` and related dependencies are installed...")
     subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat"], check=True)
-    if project_name.lower() == "airbnb/artificial-adversary":
-        print(project_name.lower())
-        print("📦 Airbnb project detected! Installing NLTK & TextBlob...")
-        subprocess.run([pip_path, "install", "textblob", "nltk"], check=True)
-
-        print("📦 Downloading required NLTK corpora...")
-        subprocess.run([python_path, "-c", "import nltk; nltk.download('punkt')"], check=True)
-        subprocess.run([python_path, "-c", "import nltk; nltk.download('averaged_perceptron_tagger')"], check=True)
-        #exit()
 
     print("✅ Dependencies installed successfully!\n")
+
+#def install_dependencies(venv_path, project_path, project_name):
+#    """Ensure all project dependencies are installed inside the virtual environment."""
+#    
+#    python_path = os.path.join(venv_path, "bin", "python")
+#    pip_path = os.path.join(venv_path, "bin", "pip")
+#
+#    print("📦 Ensuring `pip` is installed in the virtual environment...")
+#
+#    # ✅ If pip is missing, install it manually
+#    if not os.path.exists(pip_path):
+#        print("⚠️ `pip` not found! Manually installing `pip` inside the virtual environment...")
+#        subprocess.run([python_path, "-m", "ensurepip"], check=True)
+#        subprocess.run([python_path, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"], check=True)
+#    print("📦 Installing dependencies...")
+#    pyproject_toml = os.path.join(project_path, "pyproject.toml")
+#
+#    if os.path.exists(pyproject_toml):
+#        with open(pyproject_toml, "r", encoding="utf-8") as f:
+#            pyproject_data = toml.load(f)
+#
+#        dependencies = pyproject_data.get("project", {}).get("dependencies", [])
+#
+#        if dependencies:
+#            print(f"📦 Installing dependencies from `pyproject.toml`...")
+#            subprocess.run([pip_path, "install"] + dependencies, check=True)
+#
+#    # ✅ Check for requirements.txt
+#    requirements_files = [
+#        os.path.join(project_path, "requirements.txt"),
+#        os.path.join(project_path, "requirements-dev.txt"),
+#        os.path.join(project_path, "requirements_test.txt"),
+#        os.path.join(project_path, "dev-requirements.txt"),
+#        os.path.join(project_path, "test-requirements.txt"),
+#    ]
+#
+#    installed = False
+#    for req_file in requirements_files:
+#        if os.path.exists(req_file):
+#            print(f"📦 Installing dependencies from {req_file}...")
+#            subprocess.run([pip_path, "install", "-r", req_file], check=True)
+#            installed = True
+#            break
+#
+#    # ✅ If no requirements.txt, try setup.py
+#    setup_py_path = os.path.join(project_path, "setup.py")
+#    if not installed and os.path.exists(setup_py_path):
+#        print("📦 Installing dependencies from setup.py...")
+#        subprocess.run([pip_path, "install", "-e", project_path], check=True)
+#        installed = True
+#
+#    '''print("📦 Installing optional dependencies: `avwx-engine[fuzz]`...") #avwx-engine project specific
+#    subprocess.run([pip_path, "install", "avwx-engine[fuzz]"], check=True)
+#    subprocess.run([pip_path, "install", "scipy"], check=True)'''
+#
+#    # ✅ Always ensure `pytest` is installed
+#    print("📦 Ensuring `pytest` is installed...")
+#    subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat"], check=True)
+#    if project_name.lower() == "airbnb/artificial-adversary":
+#        print(project_name.lower())
+#        print("📦 Airbnb project detected! Installing NLTK & TextBlob...")
+#        subprocess.run([pip_path, "install", "textblob", "nltk"], check=True)
+#
+#        print("📦 Downloading required NLTK corpora...")
+#        subprocess.run([python_path, "-c", "import nltk; nltk.download('punkt')"], check=True)
+#        subprocess.run([python_path, "-c", "import nltk; nltk.download('averaged_perceptron_tagger')"], check=True)
+#        #exit()
+#    elif project_name.lower() == "2franix/rpi-controls": 
+#        print("install dep")
+#        subprocess.run([pip_path, "install", "importlib_metadata"], check=True)
+#
+#
+#    print("✅ Dependencies installed successfully!\n")
 
 import os
 import subprocess
@@ -176,7 +246,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1):
+def run_tests(venv_path, project_path, test_name, log_dir, num_runs=5000):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
