@@ -33,16 +33,21 @@ def proj_clone(proj_name, sha, projects_dir):
 
 def detect_python_version(project_path):
     """Detects the required Python version and returns the full executable path."""
-    pyproject_toml = os.path.join(project_path, "pyproject.toml")
+    pyproject_toml_path = os.path.join(project_path, "pyproject.toml")
     python_version = None
 
-    if os.path.exists(pyproject_toml):
+    if os.path.exists(pyproject_toml_path):
         try:
-            import toml
-            pyproject_data = toml.load(pyproject_toml)
-            python_version = pyproject_data.get("project", {}).get("requires-python", "").lstrip(">=")
-            if python_version:
-                print(f"✅ Detected Python version from pyproject.toml: {python_version}")
+            with open(pyproject_toml_path, "r", encoding="utf-8") as file:
+                pyproject_data = toml.load(file)
+                requires_python = pyproject_data.get("tool", {}).get("poetry", {}).get("dependencies", {}).get("python")
+                #python_version = pyproject_data.get("project", {}).get("requires-python", "").lstrip(">=")
+                if requires_python:
+                    # Extracting the minimum version requirement from the version specifier
+                    match = re.search(r'>=([\d\.]+)', requires_python)
+                    if match:
+                        python_version = match.group(1)
+                        print(f"✅ Detected Python version from pyproject.toml: {python_version}") 
         except Exception as e:
             print(f"⚠️ Error reading pyproject.toml: {e}")
 
@@ -52,15 +57,17 @@ def detect_python_version(project_path):
         python_version = "3.8"
 
     # ✅ Find full path to the correct Python version
-    python_executable = shutil.which(f"python{python_version}")
+    #python_executable = shutil.which(f"python{python_version}")
+    #python_version = "3.8"
+    print('version=', python_version)
+    python_executable = shutil.which(f"python{python_version}") #or shutil.which("python3")
     
     if python_executable:
         print(f"✅ Found Python executable: {python_executable}")
-        return python_executable
     else:
-        print(f"❌ Python {python_version} not found! Falling back to default `python3`")
-        return shutil.which("python3")
-
+        print(f"❌ Python {python_version} not found! Please ensure it is installed.")
+    
+    return python_executable
 
 import os
 import subprocess
@@ -72,6 +79,7 @@ def create_virtual_env(project_path, python_executable):
     venv_path = os.path.join(project_path, "virtualenv")  # Use "virtualenv" in project root
 
     print(f"📦 Creating virtual environment in: {venv_path} using {python_executable}")
+    #exit()
 
     if os.path.exists(venv_path):
         print("⚠️ Virtual environment already exists. Deleting it first...")
@@ -84,22 +92,63 @@ def create_virtual_env(project_path, python_executable):
         print("⚠️ `virtualenv` not found! Installing it first...")
         subprocess.run([python_executable, "-m", "pip", "install", "--user", "virtualenv"], check=True)
 
-    # Find `virtualenv` path
-    virtualenv_bin = shutil.which("virtualenv") or os.path.expanduser("~/.local/bin/virtualenv")
-
-    # ✅ Create virtual environment inside the project root
+    # Create virtual environment with the specified Python executable
     try:
-        subprocess.run([virtualenv_bin, venv_path], check=True)
+        subprocess.run([python_executable, "-m", "virtualenv", venv_path, "--python", python_executable], check=True)
+        print(f"✅ Virtual environment created at: {venv_path}")
     except subprocess.CalledProcessError:
         print("❌ Failed to create virtual environment with `virtualenv`!")
         exit(1)
 
-    print(f"✅ Virtual environment created at: {venv_path}")
     return venv_path
+
+
+#def create_virtual_env(project_path, python_executable):
+#    """Creates a virtual environment using `virtualenv` inside the project root directory."""
+#    
+#    venv_path = os.path.join(project_path, "virtualenv")  # Use "virtualenv" in project root
+#
+#    print(f"📦 Creating virtual environment in: {venv_path} using {python_executable}")
+#
+#    if os.path.exists(venv_path):
+#        print("⚠️ Virtual environment already exists. Deleting it first...")
+#        shutil.rmtree(venv_path)
+#
+#    # Ensure `virtualenv` is installed
+#    try:
+#        subprocess.run([python_executable, "-m", "virtualenv", "--version"], check=True, stdout=subprocess.PIPE)
+#    except subprocess.CalledProcessError:
+#        print("⚠️ `virtualenv` not found! Installing it first...")
+#        subprocess.run([python_executable, "-m", "pip", "install", "--user", "virtualenv"], check=True)
+#
+#    # Find `virtualenv` path
+#    virtualenv_bin = shutil.which("virtualenv") or os.path.expanduser("~/.local/bin/virtualenv")
+#
+#    # ✅ Create virtual environment inside the project root
+#    try:
+#        subprocess.run([virtualenv_bin, venv_path], check=True)
+#    except subprocess.CalledProcessError:
+#        print("❌ Failed to create virtual environment with `virtualenv`!")
+#        exit(1)
+#
+#    print(f"✅ Virtual environment created at: {venv_path}")
+#    return venv_path
 
 import os
 import subprocess
 import toml
+
+def convert_poetry_version_to_pip(version):
+    """
+    Convert Poetry version specifiers to pip-compatible version specifiers.
+    Example: '^1.22.3' -> '>=1.22.3,<2.0.0'
+    """
+    if version.startswith("^"):
+        major_version = version[1:].split(".")[0]
+        next_major_version = str(int(major_version) + 1)
+        return f">={version[1:]},<{next_major_version}.0.0"
+    else:
+        return version
 
 def install_dependencies(venv_path, project_path, project_name):
     """Ensure all project dependencies are installed inside the virtual environment."""
@@ -131,29 +180,47 @@ def install_dependencies(venv_path, project_path, project_name):
     subprocess.run([python_path, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"], check=True)
 
     print("📦 Installing dependencies...")
-    pyproject_toml = os.path.join(project_path, "pyproject.toml")
+    pyproject_toml_path = os.path.join(project_path, "pyproject.toml")
 
     # ✅ Install from pyproject.toml if it exists
-    if os.path.exists(pyproject_toml):
-        print("📦 Found `pyproject.toml`, extracting dependencies...")
+    if os.path.exists(pyproject_toml_path):
         try:
-            with open(pyproject_toml, "r", encoding="utf-8") as f:
-                pyproject_data = toml.load(f)
+            with open(pyproject_toml_path, "r", encoding="utf-8") as file:
+                pyproject_data = toml.load(file)
+                print('pyptoject_data=',pyproject_data)
+                flit_metadata = pyproject_data.get("tool", {}).get("flit", {}).get("metadata", {})
+                #dependencies = flit_metadata.get("requires", [])
+                # Check if the project uses Poetry
+                '''if "poetry" in pyproject_data.get("tool", {}):
+                    poetry_data = pyproject_data["tool"]["poetry"]
+                    dependencies = {k: v for k, v in poetry_data.get("dependencies", {}).items() if k != "python"}
+                # Check if the project uses Flit
+                elif "flit" in pyproject_data.get("tool", {}):
+                    flit_data = pyproject_data["tool"]["flit"]["metadata"]
+                    dependencies = flit_data.get("requires", [])
+                else:
+                    dependencies = []
 
-            # Install dependencies if defined
-            dependencies = pyproject_data.get("project", {}).get("dependencies", [])
-            if dependencies:
-                print(f"📦 Installing dependencies from `pyproject.toml`...")
-                subprocess.run([pip_path, "install"] + dependencies, check=True)
-
-            # Check if Poetry is used
-            build_backend = pyproject_data.get("build-system", {}).get("build-backend", "")
-            if "poetry" in build_backend:
-                print("📦 Poetry detected, installing dependencies using Poetry...")
-                subprocess.run([pip_path, "install", "."], cwd=project_path, check=True)
-
+                if dependencies:'''
+                poetry_data = pyproject_data.get("tool", {}).get("poetry", {})
+                dependencies = poetry_data.get("dependencies", {})
+                dep_names = [f"{pkg}{convert_poetry_version_to_pip(ver)}" for pkg, ver in dependencies.items() if pkg != "python"]
+                if dep_names:
+                    #dep_names = [f"{pkg}{ver}" if isinstance(ver, str) else pkg for pkg, ver in dependencies.items()]
+                    print(f"Installing: {', '.join(dep_names)}")
+ 
+                    install_command = [pip_path, "install"] + dep_names
+                    install_result = subprocess.run(install_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    print(install_result.stdout)
+                    if install_result.stderr:
+                        print(f"Errors during installation of dependencies: {install_result.stderr}")
+                
+                else:
+                    print("No dependencies listed in `pyproject.toml`.")
         except Exception as e:
-            print(f"⚠️ Error reading pyproject.toml: {e}")
+            print(f"Error processing `pyproject.toml`: {e}")
+    else:
+        print("No `pyproject.toml` found at the project path.") 
 
     # ✅ Check for requirements.txt
     requirements_files = [
@@ -180,7 +247,7 @@ def install_dependencies(venv_path, project_path, project_name):
 
     # ✅ Always ensure test dependencies are installed
     print("📦 Ensuring `pytest` and related dependencies are installed...")
-    subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat"], check=True)
+    subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat", "toml"], check=True)
 
     print("✅ Dependencies installed successfully!\n")
 
@@ -263,7 +330,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, num_runs=5000):
+def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
