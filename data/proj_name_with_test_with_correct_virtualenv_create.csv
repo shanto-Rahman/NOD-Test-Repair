@@ -1,7 +1,3 @@
-https://github.com/airbnb/artificial-adversary,66763b,tests/test_adversary.py::test_attack,flaky_because_nltk_library (missing NLTK data) same as Martin's log
-https://github.com/airbnb/artificial-adversary,66763b,tests/test_adversary.py::test_generate_single_iter, both pass and fail- flaky_because_nltk_library (missing NLTK data) same as Martin's log
-https://github.com/2franix/rpi-controls,e90d00,tests/test_controller.py::TestController::test_long_press_double_click_events,async_wait
-https://github.com/ajax23/simemobilecity,070cfd,tests/test_simple.py::UserModelCase::test_mc,mostly determinstic failure
 https://github.com/akialbz/kagami,100c1e,kagami/tests/portals_tests/test_webPortal.py::test_post_io, flaky-failure found
 https://github.com/animenosekai/googlesearch,346bca,tests/test_search.py::test_search
 https://github.com/aosingh/sqlite_rx,55b191,sqlite_rx/tests/backup/test_queries.py::test_table_rows_insertion, test-failure found only by 100 runs
@@ -467,3 +463,7 @@ https://github.com/yoyololicon/fft-conv-pytorch,e31d97,tests/test_values.py::tes
 https://github.com/ypcethan/simplerequest,b23d4e,tests/test_http_client.py::test_post_json[https://httpbin.org/post-params0-data0-expected_args0-expected_data0]
 https://github.com/zero-archive/habrahabr-api-python,4d6d1e,tests/test_base.py::BaseResourceTest::test_request_delete
 https://github.com/zero-archive/habrahabr-api-python,4d6d1e,tests/test_base.py::BaseResourceTest::test_request_put
+#https://github.com/airbnb/artificial-adversary,66763b,tests/test_adversary.py::test_attack,flaky_because_nltk_library (missing NLTK data) same as Martin's log
+#https://github.com/airbnb/artificial-adversary,66763b,tests/test_adversary.py::test_generate_single_iter, both pass and fail- flaky_because_nltk_library (missing NLTK data) same as Martin's log
+#https://github.com/2franix/rpi-controls,e90d00,tests/test_controller.py::TestController::test_long_press_double_click_events,async_wait
+#https://github.com/ajax23/simemobilecity,070cfd,tests/test_simple.py::UserModelCase::test_mc,mostly determinstic failure after running 1985 times

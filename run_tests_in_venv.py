@@ -268,6 +268,8 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=5000):
     # Convert project path to absolute path
     project_path = os.path.abspath(project_path)
     num_parallel = 200
+    test_pass=0
+    test_fail=0
     pytest_command = [python_path, "-m", "pytest", test_name]
     #pytest_command = [
     #    pytest_path,  # Path to pytest inside virtualenv
@@ -294,8 +296,16 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=5000):
                 log.write(f"=== Test Run {i}/{num_runs} ===\n")
                 log.write(result.stdout + "\n")
                 log.write(result.stderr + "\n")
-                #log.write("=" * 50 + "\n\n")
+                # Check test results
+                if "1 passed" in result.stdout:
+                    test_pass += 1
+                if "1 failed" in result.stdout:
+                    test_fail += 1
 
+                # Stop if at least one test passes and one fails
+                if test_pass > 0 and test_fail > 0:
+                    print("🚨 Flaky test detected! Stopping execution.")
+                    return True # flaky test detected
 
             except Exception as e:
                 print(f"❌ ERROR: An unexpected exception occurred.\n{e}")
@@ -312,13 +322,21 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     projects_dir = os.path.join(script_dir, "projects")
     log_dir = os.path.join(script_dir, "logs")
+    result_dir = os.path.join(script_dir, "results")
 
     os.makedirs(projects_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(result_dir, exist_ok=True)
 
+    output_file = os.path.join(result_dir, "flaky_test_results.csv")
     input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
-    with open(input_file_name, newline='', encoding='utf-8') as file:
+
+    with open(input_file_name, newline='', encoding='utf-8') as file, \
+         open(output_file, "w", newline='', encoding='utf-8') as outfile:
         reader = csv.reader(file)
+        writer = csv.writer(outfile)
+        writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found"])
+
         for row in reader:
             gitproj_name = row[0]
             sha = row[1]
@@ -337,10 +355,13 @@ if __name__ == "__main__":
             python_executable = detect_python_version(repo_path)
             venv_path = create_virtual_env(repo_path, python_executable)
             install_dependencies(venv_path, repo_path, project_name)
-            run_tests(venv_path, repo_path, test_name, log_dir)
+            flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir)
+            # Write results to output file
+            writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
+            outfile.flush()
 
             #if not args.keep_venv:
             #    cleanup(venv_path)
-            exit()
+            #exit()
 
 #
