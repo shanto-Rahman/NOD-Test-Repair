@@ -110,7 +110,24 @@ def install_dependencies(venv_path, project_path, project_name):
     print("📦 Ensuring `pip` is installed in the virtual environment...")
 
     # ✅ Ensure pip, setuptools, and wheel are up-to-date
-    subprocess.run([python_path, "-m", "ensurepip"], check=True)
+    #subprocess.run([python_path, "-m", "ensurepip"], check=True)
+    # ✅ Run ensurepip only if it exists
+    try:
+        subprocess.run([python_path, "-m", "ensurepip"], check=True)
+    except subprocess.CalledProcessError:
+        print("⚠️ `ensurepip` is missing. Skipping...")
+        # ✅ Manually install pip when `ensurepip` is not available
+        get_pip_url = "https://bootstrap.pypa.io/get-pip.py"
+        get_pip_path = os.path.join(venv_path, "get-pip.py")
+
+        # ✅ Download get-pip.py
+        subprocess.run(["curl", "-o", get_pip_path, get_pip_url], check=True)
+
+        # ✅ Run get-pip.py inside the virtual environment
+        subprocess.run([python_path, get_pip_path], check=True)
+
+        # ✅ Cleanup
+        os.remove(get_pip_path)
     subprocess.run([python_path, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"], check=True)
 
     print("📦 Installing dependencies...")
