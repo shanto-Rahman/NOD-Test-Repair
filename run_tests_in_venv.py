@@ -332,7 +332,7 @@ if __name__ == "__main__":
     input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
 
     with open(input_file_name, newline='', encoding='utf-8') as file, \
-         open(output_file, "w", newline='', encoding='utf-8') as outfile:
+         open(output_file, "a", newline='', encoding='utf-8') as outfile:
         reader = csv.reader(file)
         writer = csv.writer(outfile)
         writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found"])
