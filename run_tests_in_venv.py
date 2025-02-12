@@ -183,15 +183,15 @@ def install_dependencies(venv_path, project_path, project_name):
     pyproject_toml_path = os.path.join(project_path, "pyproject.toml")
 
     # ✅ Install from pyproject.toml if it exists
-    if os.path.exists(pyproject_toml_path):
+    '''if os.path.exists(pyproject_toml_path):
         try:
             with open(pyproject_toml_path, "r", encoding="utf-8") as file:
                 pyproject_data = toml.load(file)
                 print('pyptoject_data=',pyproject_data)
                 flit_metadata = pyproject_data.get("tool", {}).get("flit", {}).get("metadata", {})
-                #dependencies = flit_metadata.get("requires", [])
+                dependencies = flit_metadata.get("requires", [])
                 # Check if the project uses Poetry
-                '''if "poetry" in pyproject_data.get("tool", {}):
+                if "poetry" in pyproject_data.get("tool", {}):
                     poetry_data = pyproject_data["tool"]["poetry"]
                     dependencies = {k: v for k, v in poetry_data.get("dependencies", {}).items() if k != "python"}
                 # Check if the project uses Flit
@@ -201,22 +201,51 @@ def install_dependencies(venv_path, project_path, project_name):
                 else:
                     dependencies = []
 
-                if dependencies:'''
-                poetry_data = pyproject_data.get("tool", {}).get("poetry", {})
-                dependencies = poetry_data.get("dependencies", {})
-                dep_names = [f"{pkg}{convert_poetry_version_to_pip(ver)}" for pkg, ver in dependencies.items() if pkg != "python"]
-                if dep_names:
-                    #dep_names = [f"{pkg}{ver}" if isinstance(ver, str) else pkg for pkg, ver in dependencies.items()]
-                    print(f"Installing: {', '.join(dep_names)}")
+                if dependencies:
+                    poetry_data = pyproject_data.get("tool", {}).get("poetry", {})
+                    dependencies = poetry_data.get("dependencies", {})
+                    dep_names = [f"{pkg}{convert_poetry_version_to_pip(ver)}" for pkg, ver in dependencies.items() if pkg != "python"]
+                    if dep_names:
+                        #dep_names = [f"{pkg}{ver}" if isinstance(ver, str) else pkg for pkg, ver in dependencies.items()]
+                        print(f"Installing: {', '.join(dep_names)}")
  
-                    install_command = [pip_path, "install"] + dep_names
-                    install_result = subprocess.run(install_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                    print(install_result.stdout)
-                    if install_result.stderr:
-                        print(f"Errors during installation of dependencies: {install_result.stderr}")
-                
-                else:
-                    print("No dependencies listed in `pyproject.toml`.")
+                        install_command = [pip_path, "install"] + dep_names
+                        install_result = subprocess.run(install_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                        print(install_result.stdout)
+                        if install_result.stderr:
+                            print(f"Errors during installation of dependencies: {install_result.stderr}")
+                    
+                    else:
+                        print("No dependencies listed in `pyproject.toml`.")
+        except Exception as e:
+            print(f"Error processing `pyproject.toml`: {e}")
+    else:
+        print("No `pyproject.toml` found at the project path.")'''
+    if os.path.exists(pyproject_toml_path):
+        try:
+            with open(pyproject_toml_path, "r", encoding="utf-8") as file:
+                pyproject_data = toml.load(file)
+            
+            # Initialize dependencies
+            dependencies = []
+
+            # Check if the project uses Poetry
+            if "poetry" in pyproject_data.get("tool", {}):
+                poetry_data = pyproject_data["tool"]["poetry"]
+                dependencies = {k: convert_poetry_version_to_pip(v) for k, v in poetry_data.get("dependencies", {}).items() if k != "python"}
+
+            # Check if the project uses Flit
+            elif "flit" in pyproject_data.get("tool", {}):
+                flit_data = pyproject_data["tool"]["flit"]["metadata"]
+                dependencies = [convert_poetry_version_to_pip(dep) for dep in flit_data.get("requires", [])]
+
+            # Install dependencies if any
+            if dependencies:
+                print(f"Installing: {', '.join(dependencies)}")
+                subprocess.run([pip_path, "install"] + list(dependencies), check=True)
+            else:
+                print("No dependencies listed in `pyproject.toml`.")
+
         except Exception as e:
             print(f"Error processing `pyproject.toml`: {e}")
     else:
