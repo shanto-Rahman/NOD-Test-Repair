@@ -59,6 +59,11 @@ def detect_python_version(project_path):
     # ✅ Find full path to the correct Python version
     #python_executable = shutil.which(f"python{python_version}")
     #python_version = "3.8"
+    '''if python_version == "3.7": 
+        activation_command = f"source activate py_37"
+    elif python_version == "3.9":
+        activation_command = f"source activate py_39"
+    os.system(activation_command)'''
     print('version=', python_version)
     python_executable = shutil.which(f"python{python_version}") #or shutil.which("python3")
     
@@ -209,15 +214,31 @@ def install_dependencies(venv_path, project_path, project_name):
 
         except Exception as e:
             print(f"Error processing `pyproject.toml`: {e}")
-
+        print("proj_name=", project_name)
         # Special handling for the opentelemetry project
-        if project_name.lower() == "microsoft/opentelemetry-azure-monitor-python":
-            print("📦 Special handling for opentelemetry project...")
-            subprocess.run([pip_path, "install", "opentelemetry-api", "opentelemetry-sdk"], check=True)
-            #exit()
+    if project_name.lower() == "microsoft/opentelemetry-azure-monitor-python":
+        print("📦 Special handling for opentelemetry project...")
+        subprocess.run([pip_path, "install", "opentelemetry-api", "opentelemetry-sdk"], check=True)
+    elif project_name.lower() == "nschloe/pipdate":
+        subprocess.run([pip_path, "install", "pipdate", "matplotlib"], check=True) 
+    elif project_name.lower() == "mondeja/pgdoc-datatype-parser":
+        print("I AM HERE ,")
+        subprocess.run([pip_path, "install", "--upgrade", "setuptools"], check=True)
+        subprocess.run([python_path, "-c", "import pkg_resources"], check=True)
+    elif project_name.lower() == "radeklat/issue-watcher":
+        subprocess.run([pip_path, "install", "issue_watcher"], check=True) 
 
-    else:
-        print("No `pyproject.toml` found at the project path.") 
+    elif project_name.lower() == "ratan-lab/sumo":
+        #print("I AM SUMO")
+        #subprocess.run([pip_path, "install", "sumo"], check=True) 
+        subprocess.run([pip_path, "install", "sumo"], check=True)
+        # Example: subprocess.run([pip_path, "install", "sumo-subpackage"], check=True)
+    elif project_name.lower() == "serfend/sgtlibc":
+        subprocess.run([pip_path, "install", "attrs"], check=True)
+
+
+    #else:
+    #    print("No `pyproject.toml` found at the project path.") 
 
     # ✅ Check for requirements.txt
     requirements_files = [
