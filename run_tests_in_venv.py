@@ -292,8 +292,8 @@ def install_dependencies(venv_path, project_path, project_name):
         subprocess.run([pip_path, "install", "experimaestro"], check=True)
     elif project_name.lower() == "jenesuispasdave/authenticator":
         subprocess.run([pip_path, "install", "authenticator"], check=True)
-    #elif project_name.lower() == "autoresearch/autora":
-    #    subprocess.run([pip_path, "install", "matplotlib", "numpy", "torch", "tqdm", "scikit-learn", "graphviz"], check=True)
+    elif project_name.lower() == "clementchadebec/pyraug":
+        subprocess.run([pip_path, "install", "pyraug"], check=True)
 
 
     #else:
