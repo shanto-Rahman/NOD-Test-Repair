@@ -294,7 +294,10 @@ def install_dependencies(venv_path, project_path, project_name):
         subprocess.run([pip_path, "install", "authenticator"], check=True)
     elif project_name.lower() == "clementchadebec/pyraug":
         subprocess.run([pip_path, "install", "pyraug"], check=True)
-
+    elif project_name.lower() == "stas-prokopiev/local_simple_database":
+        subprocess.run([pip_path, "install", "local_simple_database"], check=True)
+    elif project_name.lower() == "sagecontinuum/sage-data-client":
+        subprocess.run([pip_path, "install", "sage_data_client"], check=True)
 
     #else:
     #    print("No `pyproject.toml` found at the project path.") 
