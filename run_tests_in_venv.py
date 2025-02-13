@@ -148,6 +148,13 @@ def convert_poetry_version_to_pip(version):
     Convert Poetry version specifiers to pip-compatible version specifiers.
     Example: '^1.22.3' -> '>=1.22.3,<2.0.0'
     """
+    #autoresearch/autora, this if else were needed when it was autoresearch/autora project
+    if isinstance(version, dict):
+        if 'version' in version:
+            version = version['version']
+        else:
+            return None 
+
     if version.startswith("^"):
         major_version = version[1:].split(".")[0]
         next_major_version = str(int(major_version) + 1)
@@ -237,8 +244,11 @@ def install_dependencies(venv_path, project_path, project_name):
 
             # Check if the project uses Poetry
             if "poetry" in pyproject_data.get("tool", {}):
+                print("****SHANTO poetry found")
+                print("pyproject_data=",pyproject_data)
                 poetry_data = pyproject_data["tool"]["poetry"]
                 dependencies = {k: convert_poetry_version_to_pip(v) for k, v in poetry_data.get("dependencies", {}).items() if k != "python"}
+                print('I AM dependencies=',dependencies)
 
             # Check if the project uses Flit
             elif "flit" in pyproject_data.get("tool", {}):
@@ -247,8 +257,11 @@ def install_dependencies(venv_path, project_path, project_name):
 
             # Install dependencies if any
             if dependencies:
+                print("****SHANTO")
                 print(f"Installing: {', '.join(dependencies)}")
                 subprocess.run([pip_path, "install"] + list(dependencies), check=True)
+
+
             else:
                 print("No dependencies listed in `pyproject.toml`.")
 
@@ -279,6 +292,8 @@ def install_dependencies(venv_path, project_path, project_name):
         subprocess.run([pip_path, "install", "experimaestro"], check=True)
     elif project_name.lower() == "jenesuispasdave/authenticator":
         subprocess.run([pip_path, "install", "authenticator"], check=True)
+    #elif project_name.lower() == "autoresearch/autora":
+    #    subprocess.run([pip_path, "install", "matplotlib", "numpy", "torch", "tqdm", "scikit-learn", "graphviz"], check=True)
 
 
     #else:
