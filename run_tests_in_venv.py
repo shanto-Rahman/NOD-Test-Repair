@@ -155,6 +155,46 @@ def convert_poetry_version_to_pip(version):
     else:
         return version
 
+def install_requirements(python_path, project_path, pip_path, project_name):
+    print("📦 Installing dependencies...")
+    requirements_files = [
+        os.path.join(project_path, "requirements.txt"),
+        os.path.join(project_path, "requirements-dev.txt"),
+        os.path.join(project_path, "requirements_test.txt"),
+        os.path.join(project_path, "dev-requirements.txt"),
+        os.path.join(project_path, "test-requirements.txt"),
+    ]
+
+    installed = False
+    for req_file in requirements_files:
+        if os.path.exists(req_file):
+            if project_name == "connectedcompany/coco-agent" and req_file.endswith("requirements.txt"):
+                # Special handling for coco-agent with dot in requirements.txt
+                print("📦 Installing coco-agent in editable mode due to special requirements...")
+                setup_py_path = os.path.join(project_path, "setup.py")
+                subprocess.run([pip_path, "install", "-e", project_path], check=True)
+                installed = True
+                break
+            else:
+                print(f"📦 Installing dependencies from {req_file}...")
+                subprocess.run([pip_path, "install", "-r", req_file], check=True)
+                installed = True
+                break
+
+    # If no requirements.txt or special conditions matched, try setup.py (for editable mode installation)
+    if not installed:
+        setup_py_path = os.path.join(project_path, "setup.py")
+        if os.path.exists(setup_py_path):
+            print("📦 Installing project in editable mode from setup.py...")
+            subprocess.run([pip_path, "install", "-e", project_path], check=True)
+
+    # Ensure test dependencies are always installed
+    print("📦 Ensuring `pytest` and related dependencies are installed...")
+    subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat", "toml"], check=True)
+
+    print("✅ Dependencies installed successfully!\n")
+
+
 def install_dependencies(venv_path, project_path, project_name):
     """Ensure all project dependencies are installed inside the virtual environment."""
     
@@ -235,13 +275,18 @@ def install_dependencies(venv_path, project_path, project_name):
         # Example: subprocess.run([pip_path, "install", "sumo-subpackage"], check=True)
     elif project_name.lower() == "serfend/sgtlibc":
         subprocess.run([pip_path, "install", "attrs"], check=True)
+    elif project_name.lower() == "experimaestro/experimaestro-python":
+        subprocess.run([pip_path, "install", "experimaestro"], check=True)
+    elif project_name.lower() == "jenesuispasdave/authenticator":
+        subprocess.run([pip_path, "install", "authenticator"], check=True)
 
 
     #else:
     #    print("No `pyproject.toml` found at the project path.") 
 
     # ✅ Check for requirements.txt
-    requirements_files = [
+    install_requirements(python_path, project_path, pip_path, project_name)
+    '''requirements_files = [
         os.path.join(project_path, "requirements.txt"),
         os.path.join(project_path, "requirements-dev.txt"),
         os.path.join(project_path, "requirements_test.txt"),
@@ -267,7 +312,7 @@ def install_dependencies(venv_path, project_path, project_name):
     print("📦 Ensuring `pytest` and related dependencies are installed...")
     subprocess.run([pip_path, "install", "--upgrade", "pytest", "pytest-cov", "pytest-xdist", "pytest-repeat", "toml"], check=True)
 
-    print("✅ Dependencies installed successfully!\n")
+    print("✅ Dependencies installed successfully!\n")'''
 
 #def install_dependencies(venv_path, project_path, project_name):
 #    """Ensure all project dependencies are installed inside the virtual environment."""
