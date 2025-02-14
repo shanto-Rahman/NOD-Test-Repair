@@ -411,7 +411,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1):
+def run_tests(venv_path, project_path, test_name, log_dir, num_runs=3000):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
