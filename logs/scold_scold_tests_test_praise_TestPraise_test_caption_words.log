@@ -1,0 +1,36 @@
+=== Test Run 1/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/scold
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+scold/tests/test_praise.py F                                             [100%]
+
+=================================== FAILURES ===================================
+________________________ TestPraise.test_caption_words _________________________
+
+self = <scold.tests.test_praise.TestPraise testMethod=test_caption_words>
+
+    def test_caption_words(self):
+>       self.assertTrue(caption_check(scold.scold("${ADJECTIVE}"), scold.adjective.adjective))
+E       AssertionError: False is not true
+
+scold/tests/test_praise.py:37: AssertionError
+=========================== short test summary info ============================
+FAILED scold/tests/test_praise.py::TestPraise::test_caption_words - Assertion...
+============================== 1 failed in 0.03s ===============================
+
+
+=== Test Run 2/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/scold
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+scold/tests/test_praise.py .                                             [100%]
+
+============================== 1 passed in 0.01s ===============================
+
+

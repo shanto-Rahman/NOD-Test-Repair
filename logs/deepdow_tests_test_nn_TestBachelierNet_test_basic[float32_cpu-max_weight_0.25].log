@@ -1,0 +1,1181 @@
+=== Test Run 1/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.47s ========================
+
+
+=== Test Run 2/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 3/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.36s ========================
+
+
+=== Test Run 4/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 5/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.39s ========================
+
+
+=== Test Run 6/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 7/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.34s ========================
+
+
+=== Test Run 8/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 9/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 10/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.38s ========================
+
+
+=== Test Run 11/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 12/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 13/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 14/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 15/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 16/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 17/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 18/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 19/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.35s ========================
+
+
+=== Test Run 20/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 21/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 22/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.39s ========================
+
+
+=== Test Run 23/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 24/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 25/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 26/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 27/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.31s ========================
+
+
+=== Test Run 28/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.36s ========================
+
+
+=== Test Run 29/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+
+======================== 1 passed, 11 warnings in 0.32s ========================
+
+
+=== Test Run 30/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25] FAILED [100%]
+
+=================================== FAILURES ===================================
+___________ TestBachelierNet.test_basic[float32_cpu-max_weight_0.25] ___________
+tests/test_nn.py:48: in test_basic
+    assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+E   assert (tensor(True) and tensor(False))
+E    +  where tensor(True) = <built-in method all of type object at 0x7fa07f476480>(-0.0001 <= tensor([[0.2500, 0.1105, 0.1274, 0.2277, 0.2303, 0.0541],\n        [0.2219, 0.1643, 0.1172, 0.1896, 0.0571, 0.2500],\n        [0.0745, 0.1421, 0.1370, 0.1460, 0.2502, 0.2502],\n        [0.1696, 0.2499, 0.0446, 0.0956, 0.1902, 0.2499]],\n       grad_fn=<_CvxpyLayerFnFnBackward>))
+E    +    where <built-in method all of type object at 0x7fa07f476480> = torch.all
+E    +  and   tensor(False) = <built-in method all of type object at 0x7fa07f476480>(tensor([[0.2500, 0.1105, 0.1274, 0.2277, 0.2303, 0.0541],\n        [0.2219, 0.1643, 0.1172, 0.1896, 0.0571, 0.2500],\n        [0.0745, 0.1421, 0.1370, 0.1460, 0.2502, 0.2502],\n        [0.1696, 0.2499, 0.0446, 0.0956, 0.1902, 0.2499]],\n       grad_fn=<_CvxpyLayerFnFnBackward>) <= (0.25 + 0.0001))
+E    +    where <built-in method all of type object at 0x7fa07f476480> = torch.all
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     60    39%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    137    24%
+deepdow/layers/collapse.py       58     22    62%
+deepdow/layers/misc.py          142     99    30%
+deepdow/layers/transform.py      62     35    44%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137     81    41%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1280    28%
+
+=========================== short test summary info ============================
+FAILED tests/test_nn.py::TestBachelierNet::test_basic[float32_cpu-max_weight_0.25]
+======================== 1 failed, 11 warnings in 0.43s ========================
+
+

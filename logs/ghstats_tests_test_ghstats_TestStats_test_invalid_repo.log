@@ -1,0 +1,2399 @@
+=== Test Run 1/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f185966db50>
+req = <urllib.request.Request object at 0x7f185966d9a0>
+fp = <http.client.HTTPResponse object at 0x7f18596a8310>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f1859699190>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.27s ===============================
+
+
+=== Test Run 2/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f562bb75550>
+req = <urllib.request.Request object at 0x7f562bb04d30>
+fp = <http.client.HTTPResponse object at 0x7f562bacb8e0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f562bacbc40>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.28s ===============================
+
+
+=== Test Run 3/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f9f69cc54c0>
+req = <urllib.request.Request object at 0x7f9f69cb06d0>
+fp = <http.client.HTTPResponse object at 0x7f9f69c1a880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f9f69c1abe0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 4/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f0691fd8550>
+req = <urllib.request.Request object at 0x7f0691f67d30>
+fp = <http.client.HTTPResponse object at 0x7f0691f2e8e0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f0691f2ec40>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 5/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f37f3f62eb0>
+req = <urllib.request.Request object at 0x7f37f3f514f0>
+fp = <http.client.HTTPResponse object at 0x7f37f3eb7820>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f37f3eb7b80>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.27s ===============================
+
+
+=== Test Run 6/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f17d501f4f0>
+req = <urllib.request.Request object at 0x7f17d500a700>
+fp = <http.client.HTTPResponse object at 0x7f17d4f748b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f17d4f74c10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.30s ===============================
+
+
+=== Test Run 7/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f435d2b90d0>
+req = <urllib.request.Request object at 0x7f435d2a9520>
+fp = <http.client.HTTPResponse object at 0x7f435d20f850>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f435d20fbb0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.29s ===============================
+
+
+=== Test Run 8/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f7b781604c0>
+req = <urllib.request.Request object at 0x7f7b7814c580>
+fp = <http.client.HTTPResponse object at 0x7f7b780b6880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f7b780b6be0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.33s ===============================
+
+
+=== Test Run 9/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f25977f84f0>
+req = <urllib.request.Request object at 0x7f25977e35b0>
+fp = <http.client.HTTPResponse object at 0x7f259774d8b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f259774dc10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 10/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f0f9de454f0>
+req = <urllib.request.Request object at 0x7f0f9de30400>
+fp = <http.client.HTTPResponse object at 0x7f0f9dd9a8b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f0f9dd9ac10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.31s ===============================
+
+
+=== Test Run 11/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7fe3a64784f0>
+req = <urllib.request.Request object at 0x7fe3a6463640>
+fp = <http.client.HTTPResponse object at 0x7fe3a63cd8b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7fe3a63cdc10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 12/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f2d6fcc74f0>
+req = <urllib.request.Request object at 0x7f2d6fcb2640>
+fp = <http.client.HTTPResponse object at 0x7f2d6fc1c8b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f2d6fc1cc10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.29s ===============================
+
+
+=== Test Run 13/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f267e38aeb0>
+req = <urllib.request.Request object at 0x7f267e3791f0>
+fp = <http.client.HTTPResponse object at 0x7f267e2df820>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f267e2dfb80>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 14/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f22409834f0>
+req = <urllib.request.Request object at 0x7f224096e550>
+fp = <http.client.HTTPResponse object at 0x7f22408d88b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f22408d8c10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 15/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7fb88d598040>
+req = <urllib.request.Request object at 0x7fb88d5984f0>
+fp = <http.client.HTTPResponse object at 0x7fb88d4fe880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7fb88d4feb50>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.31s ===============================
+
+
+=== Test Run 16/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7fb07c4f3eb0>
+req = <urllib.request.Request object at 0x7fb07c4e25b0>
+fp = <http.client.HTTPResponse object at 0x7fb07c448820>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7fb07c448b80>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.30s ===============================
+
+
+=== Test Run 17/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7fb903993550>
+req = <urllib.request.Request object at 0x7fb903922d30>
+fp = <http.client.HTTPResponse object at 0x7fb9038e98e0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7fb9038e9c40>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.27s ===============================
+
+
+=== Test Run 18/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f54fe76d4c0>
+req = <urllib.request.Request object at 0x7f54fe758610>
+fp = <http.client.HTTPResponse object at 0x7f54fe6c3880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f54fe6c3be0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.31s ===============================
+
+
+=== Test Run 19/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f829f1a04c0>
+req = <urllib.request.Request object at 0x7f829f18b550>
+fp = <http.client.HTTPResponse object at 0x7f829f0f5880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f829f0f5be0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 20/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f563a823550>
+req = <urllib.request.Request object at 0x7f563a7b1d30>
+fp = <http.client.HTTPResponse object at 0x7f563a7798e0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f563a779c40>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.33s ===============================
+
+
+=== Test Run 21/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f6dfb761e50>
+req = <urllib.request.Request object at 0x7f6dfb7543a0>
+fp = <http.client.HTTPResponse object at 0x7f6dfb6b77c0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f6dfb6b7b20>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.33s ===============================
+
+
+=== Test Run 22/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f66a84354c0>
+req = <urllib.request.Request object at 0x7f66a8420580>
+fp = <http.client.HTTPResponse object at 0x7f66a838a880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f66a838abe0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.27s ===============================
+
+
+=== Test Run 23/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7ff47233c760>
+req = <urllib.request.Request object at 0x7ff47233cd60>
+fp = <http.client.HTTPResponse object at 0x7ff4722a2820>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7ff4722a2af0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.28s ===============================
+
+
+=== Test Run 24/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7fa8aa538550>
+req = <urllib.request.Request object at 0x7fa8aa4c8d30>
+fp = <http.client.HTTPResponse object at 0x7fa8aa48e8e0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7fa8aa48ec40>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 25/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f22188614c0>
+req = <urllib.request.Request object at 0x7f221884c5b0>
+fp = <http.client.HTTPResponse object at 0x7f22187b6880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f22187b6be0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 26/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f84f82d6550>
+req = <urllib.request.Request object at 0x7f84f8267d30>
+fp = <http.client.HTTPResponse object at 0x7f84f822d8e0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f84f822dc40>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 27/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f215ef8e4c0>
+req = <urllib.request.Request object at 0x7f215ef78520>
+fp = <http.client.HTTPResponse object at 0x7f215eee3880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f215eee3be0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 28/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7fc2ba6374f0>
+req = <urllib.request.Request object at 0x7fc2ba622640>
+fp = <http.client.HTTPResponse object at 0x7fc2ba58c8b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7fc2ba58cc10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 29/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f67eecc2040>
+req = <urllib.request.Request object at 0x7f67eecc2460>
+fp = <http.client.HTTPResponse object at 0x7f67eec28880>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f67eec28b50>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.29s ===============================
+
+
+=== Test Run 30/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7f1e9065c4f0>
+req = <urllib.request.Request object at 0x7f1e906475b0>
+fp = <http.client.HTTPResponse object at 0x7f1e905b18b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7f1e905b1c10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 31/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py F                                                  [100%]
+
+=================================== FAILURES ===================================
+_________________________ TestStats.test_invalid_repo __________________________
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+>           response = urllib.request.urlopen(request)
+
+ghstats/ghstats.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:222: in urlopen
+    return opener.open(url, data, timeout)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:531: in open
+    response = meth(req, response)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:640: in http_response
+    response = self.parent.error(
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:569: in error
+    return self._call_chain(*args)
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:502: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x7fb0217404f0>
+req = <urllib.request.Request object at 0x7fb02172c640>
+fp = <http.client.HTTPResponse object at 0x7fb0216968b0>, code = 403
+msg = 'rate limit exceeded'
+hdrs = <http.client.HTTPMessage object at 0x7fb021696c10>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 403: rate limit exceeded
+
+../../../anaconda3/envs/py_38/lib/python3.8/urllib/request.py:649: HTTPError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.test_ghstats.TestStats testMethod=test_invalid_repo>
+
+    def test_invalid_repo(self):
+        """
+        Test nonexistent repository.
+        """
+        with self.assertRaises(ghstats.GithubRepoError):
+>           ghstats.download_stats("kefir500", "foobar", None, False, ghstats.get_env_token(), True)
+
+tests/test_ghstats.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+ghstats/ghstats.py:206: in download_stats
+    response = fetch(url, headers)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def fetch(url, headers):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise GithubRepoError()    # Invalid GitHub username, repository or release tag.
+            elif e.code == 403:
+>               raise GithubLimitError()   # GitHub API request limit exceeded.
+E               ghstats.ghstats.GithubLimitError: GitHub API HTTP 403: Request limit exceeded.
+
+ghstats/ghstats.py:170: GithubLimitError
+=========================== short test summary info ============================
+FAILED tests/test_ghstats.py::TestStats::test_invalid_repo - ghstats.ghstats....
+============================== 1 failed in 0.32s ===============================
+
+
+=== Test Run 32/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/ghstats
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_ghstats.py .                                                  [100%]
+
+============================== 1 passed in 0.20s ===============================
+
+

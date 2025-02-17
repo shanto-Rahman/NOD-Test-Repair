@@ -1,0 +1,75 @@
+=== Test Run 1/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/httpy
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+test_httpy.py .                                                          [100%]
+
+============================== 1 passed in 1.74s ===============================
+
+
+=== Test Run 2/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/httpy
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+test_httpy.py .                                                          [100%]
+
+============================== 1 passed in 1.65s ===============================
+
+
+=== Test Run 3/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/httpy
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+test_httpy.py F                                                          [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_httpy_websocket_bytes_supalong ______________________
+
+    def test_httpy_websocket_bytes_supalong():
+        wsk = httpy.WebSocket('wss://echo.websocket.events',debug=True)
+        a=os.urandom(65537)
+        wsk.send(a)
+        time.sleep(1)
+>       assert wsk.recv()==a
+
+test_httpy.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+httpy/__init__.py:2375: in recv
+    payload, opcode = self._recv_frame()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <httpy.WebSocket object at 0x7f9f709154f0>
+
+    def _recv_frame(self):
+        if self.closed:
+            raise RuntimeError("WebSocket is closed.")
+>       fb = ord(self.socket.recv(1))
+E       socket.timeout: timed out
+
+httpy/__init__.py:2314: timeout
+----------------------------- Captured stdout call -----------------------------
+[94;1m[INFO][websocket_handshake](2138): started handshake[0m
+[94;1m[INFO][websocket_handshake](2151): sending request[0m
+[94;1m[INFO][websocket_handshake](2161): checking response[0m
+[92;1m[OK][websocket_handshake](2173): Handshake Ok[0m
+[94;1m[INFO]WebSocket[__init__](2304): extracting socket[0m
+[94;1m[INFO]WebSocket[_send_frame](2387): building header[0m
+[94;1m[INFO]WebSocket[_send_frame](2389): First part: 0b10000001[0m
+[94;1m[INFO]WebSocket[_send_frame](2392): selecting masking key[0m
+[94;1m[INFO]WebSocket[_send_frame](2395): Encoding payload length[0m
+[94;1m[INFO]WebSocket[_send_frame](2411): Masking payload[0m
+[94;1m[INFO]WebSocket[_send_frame](2413): Sending[0m
+=========================== short test summary info ============================
+FAILED test_httpy.py::test_httpy_websocket_bytes_supalong - socket.timeout: t...
+============================== 1 failed in 31.70s ==============================
+
+

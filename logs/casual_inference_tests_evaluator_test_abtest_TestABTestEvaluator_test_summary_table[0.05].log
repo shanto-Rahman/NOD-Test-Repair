@@ -1,0 +1,152 @@
+=== Test Run 1/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.09s ===============================
+
+
+=== Test Run 2/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.09s ===============================
+
+
+=== Test Run 3/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.08s ===============================
+
+
+=== Test Run 4/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.05s ===============================
+
+
+=== Test Run 5/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.04s ===============================
+
+
+=== Test Run 6/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.05s ===============================
+
+
+=== Test Run 7/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.06s ===============================
+
+
+=== Test Run 8/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py .                                         [100%]
+
+============================== 1 passed in 1.08s ===============================
+
+
+=== Test Run 9/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.9.21, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/casual_inference
+configfile: pyproject.toml
+plugins: repeat-0.9.3, cov-6.0.0, xdist-3.6.1
+collected 1 item
+
+tests/evaluator/test_abtest.py F                                         [100%]
+
+=================================== FAILURES ===================================
+_________________ TestABTestEvaluator.test_summary_table[0.05] _________________
+
+self = <test_abtest.TestABTestEvaluator object at 0x7fb5672308e0>
+p_threshold = 0.05
+prepare_abtest_evaluator = <casual_inference.evaluator.abtest.ABTestEvaluator object at 0x7fb567230070>
+
+    @pytest.mark.parametrize("p_threshold", (0.01, 0.05, 0.1))
+    def test_summary_table(self, p_threshold, prepare_abtest_evaluator):
+        evaluator: ABTestEvaluator = prepare_abtest_evaluator
+        summary = evaluator.summary_table(p_threshold=p_threshold)
+    
+        assert "significance" in summary.columns
+        assert "ci_abs_diff" in summary.columns
+        assert "ci_rel_diff" in summary.columns
+        assert summary.query(f"p_value <= {p_threshold}")["significance"].isin(["up", "down"]).all()
+        assert (
+            summary.query(f"p_value <= {p_threshold}")["ci_abs_diff"]
+            .map(lambda x: True if x[1] < 0 or x[0] > 0 else False)
+            .all()
+        )
+>       assert (
+            summary.query(f"p_value <= {p_threshold}")["ci_rel_diff"]
+            .map(lambda x: True if x[1] < 0 or x[0] > 0 else False)
+            .all()
+        )
+E       assert np.False_
+E        +  where np.False_ = all()
+E        +    where all = 2    False\n3     True\n4     True\n5     True\n6     True\n7     True\nName: ci_rel_diff, dtype: bool.all
+E        +      where 2    False\n3     True\n4     True\n5     True\n6     True\n7     True\nName: ci_rel_diff, dtype: bool = map(<function TestABTestEvaluator.test_summary_table.<locals>.<lambda> at 0x7fb5652c61f0>)
+E        +        where map = 2    (-0.00012820517688267447, 0.03360886791445012)\n3      (0.003312108780926501, 0.014484189024971363)\n4        (0.04...3534323179, -0.025021572196371477)\n7     (-0.051777378714846695, -0.04106255803643952)\nName: ci_rel_diff, dtype: object.map
+
+tests/evaluator/test_abtest.py:80: AssertionError
+=========================== short test summary info ============================
+FAILED tests/evaluator/test_abtest.py::TestABTestEvaluator::test_summary_table[0.05]
+============================== 1 failed in 1.10s ===============================
+
+

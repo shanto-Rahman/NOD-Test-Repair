@@ -1,0 +1,53 @@
+=== Test Run 1/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/financescraper
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_currency_converter.py .                                       [100%]
+
+============================== 1 passed in 0.20s ===============================
+
+
+=== Test Run 2/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/financescraper
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_currency_converter.py .                                       [100%]
+
+============================== 1 passed in 0.19s ===============================
+
+
+=== Test Run 3/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/sr53282/NOD-Test-Repair/projects/financescraper
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+tests/test_currency_converter.py F                                       [100%]
+
+=================================== FAILURES ===================================
+___________________ TestCurrencyConverter.test_using_buffer ____________________
+
+self = <test_currency_converter.TestCurrencyConverter testMethod=test_using_buffer>
+
+    def test_using_buffer(self):
+        start_time = time.time()
+        self.usd_converter.convert('EUR', 1)
+        start_time_buffer = end_time = time.time()
+        self.usd_converter.convert('EUR', 2)
+        end_time_buffer = time.time()
+>       self.assertTrue((end_time_buffer - start_time_buffer) < (end_time - start_time))
+E       AssertionError: False is not true
+
+tests/test_currency_converter.py:46: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_currency_converter.py::TestCurrencyConverter::test_using_buffer
+============================== 1 failed in 0.20s ===============================
+
+

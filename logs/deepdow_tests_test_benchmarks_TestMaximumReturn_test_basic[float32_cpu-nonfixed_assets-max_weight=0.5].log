@@ -1,0 +1,185 @@
+=== Test Run 1/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_benchmarks.py::TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5] FAILED [100%]
+
+=================================== FAILURES ===================================
+___ TestMaximumReturn.test_basic[float32_cpu-nonfixed_assets-max_weight=0.5] ___
+tests/test_benchmarks.py:73: in test_basic
+    assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+E   assert (tensor(False))
+E    +  where tensor(False) = <built-in method all of type object at 0x7f486a325480>(-0.0001 <= tensor([[ 3.7917e-07,  5.0000e-01,  5.0000e-01,  4.0838e-06,  1.6185e-06,\n         -5.5732e-06],\n        [-1.1264e-04,  2.5105e-01, -1.1237e-04,  4.9989e-01, -1.1224e-04,\n          2.4940e-01],\n        [-7.4851e-09, -1.3881e-08, -4.9845e-07,  5.0000e-01, -1.3566e-08,\n          5.0000e-01],\n        [-4.8484e-07, -1.6007e-06,  9.9304e-05, -6.1209e-07,  5.0000e-01,\n          4.9990e-01]]))
+E    +    where <built-in method all of type object at 0x7f486a325480> = torch.all
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     46    53%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    152    16%
+deepdow/layers/collapse.py       58     38    34%
+deepdow/layers/misc.py          142    122    14%
+deepdow/layers/transform.py      62     48    23%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137    104    24%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1356    24%
+
+=========================== short test summary info ============================
+FAILED tests/test_benchmarks.py::TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5]
+======================== 1 failed, 11 warnings in 0.35s ========================
+
+
+=== Test Run 2/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_benchmarks.py::TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5] FAILED [100%]
+
+=================================== FAILURES ===================================
+___ TestMaximumReturn.test_basic[float32_cpu-nonfixed_assets-max_weight=0.5] ___
+tests/test_benchmarks.py:73: in test_basic
+    assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+E   assert (tensor(False))
+E    +  where tensor(False) = <built-in method all of type object at 0x7f3b1fa31480>(-0.0001 <= tensor([[ 5.0001e-01,  5.0000e-01, -8.7569e-06, -3.5808e-07, -3.7641e-07,\n         -2.3108e-07],\n        [-1.4977e-06,  5.0000e-01, -1.7987e-06,  5.0017e-01, -3.6107e-06,\n         -1.5778e-04],\n        [-2.0532e-08,  5.0000e-01, -1.5187e-08,  5.0000e-01, -1.2782e-07,\n         -1.6291e-08],\n        [ 2.6614e-07, -4.7844e-06,  5.0000e-01,  5.0000e-01,  2.4846e-07,\n          2.6414e-07]]))
+E    +    where <built-in method all of type object at 0x7f3b1fa31480> = torch.all
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     46    53%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    152    16%
+deepdow/layers/collapse.py       58     38    34%
+deepdow/layers/misc.py          142    122    14%
+deepdow/layers/transform.py      62     48    23%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137    104    24%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1356    24%
+
+=========================== short test summary info ============================
+FAILED tests/test_benchmarks.py::TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5]
+======================== 1 failed, 11 warnings in 0.44s ========================
+
+
+=== Test Run 3/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_benchmarks.py::TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5] FAILED [100%]
+
+=================================== FAILURES ===================================
+___ TestMaximumReturn.test_basic[float32_cpu-nonfixed_assets-max_weight=0.5] ___
+tests/test_benchmarks.py:73: in test_basic
+    assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+E   assert (tensor(True) and tensor(False))
+E    +  where tensor(True) = <built-in method all of type object at 0x7fb15b60a480>(-0.0001 <= tensor([[ 2.7041e-01,  2.2884e-01,  1.8744e-04,  1.9082e-04,  1.8744e-04,\n          5.0019e-01],\n        [ 5.0000e-01,  1.8572e-06, -1.6810e-08, -1.2752e-06,  5.0517e-07,\n          5.0000e-01],\n        [ 5.3301e-07,  5.0001e-01,  5.5830e-07,  5.0000e-01, -1.0981e-05,\n          5.3337e-07],\n        [-1.0894e-06,  4.9984e-01,  1.6293e-04, -2.6398e-06,  5.0000e-01,\n         -1.1074e-06]]))
+E    +    where <built-in method all of type object at 0x7fb15b60a480> = torch.all
+E    +  and   tensor(False) = <built-in method all of type object at 0x7fb15b60a480>(tensor([[ 2.7041e-01,  2.2884e-01,  1.8744e-04,  1.9082e-04,  1.8744e-04,\n          5.0019e-01],\n        [ 5.0000e-01,  1.8572e-06, -1.6810e-08, -1.2752e-06,  5.0517e-07,\n          5.0000e-01],\n        [ 5.3301e-07,  5.0001e-01,  5.5830e-07,  5.0000e-01, -1.0981e-05,\n          5.3337e-07],\n        [-1.0894e-06,  4.9984e-01,  1.6293e-04, -2.6398e-06,  5.0000e-01,\n         -1.1074e-06]]) <= (0.5 + 0.0001))
+E    +    where <built-in method all of type object at 0x7fb15b60a480> = torch.all
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     46    53%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    152    16%
+deepdow/layers/collapse.py       58     38    34%
+deepdow/layers/misc.py          142    122    14%
+deepdow/layers/transform.py      62     48    23%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137    104    24%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1356    24%
+
+=========================== short test summary info ============================
+FAILED tests/test_benchmarks.py::TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5]
+======================== 1 failed, 11 warnings in 0.41s ========================
+
+
+=== Test Run 4/3000 ===
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.4, pluggy-1.5.0 -- /home/sr53282/NOD-Test-Repair/projects/deepdow/virtualenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/sr53282/NOD-Test-Repair/projects/deepdow
+configfile: setup.cfg
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collecting ... collected 1 item
+
+tests/test_benchmarks.py::TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5] PASSED [100%]
+
+---------- coverage: platform linux, python 3.8.20-final-0 -----------
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+deepdow/__init__.py               1      0   100%
+deepdow/benchmarks.py            98     45    54%
+deepdow/callbacks.py            288    237    18%
+deepdow/data/__init__.py          3      0   100%
+deepdow/data/augment.py          61     42    31%
+deepdow/data/load.py             91     35    62%
+deepdow/data/synthetic.py         4      4     0%
+deepdow/experiments.py          134    105    22%
+deepdow/explain.py               31     31     0%
+deepdow/layers/__init__.py        5      0   100%
+deepdow/layers/allocate.py      181    152    16%
+deepdow/layers/collapse.py       58     38    34%
+deepdow/layers/misc.py          142    122    14%
+deepdow/layers/transform.py      62     48    23%
+deepdow/losses.py               270    191    29%
+deepdow/nn.py                   137    104    24%
+deepdow/utils.py                 83     65    22%
+deepdow/visualize.py            136    136     0%
+-------------------------------------------------
+TOTAL                          1785   1355    24%
+
+
+======================== 1 passed, 19 warnings in 0.33s ========================
+
+
