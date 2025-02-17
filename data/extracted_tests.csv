@@ -1,0 +1,1020 @@
+git_proj,sha,test_file_path,test_name,test_code,start_line,end_line
+https://github.com/shyaginuma/casual_inference,31ec7a,tests/evaluator/test_abtest.py,TestABTestEvaluator::test_summary_table[0.01],"    @pytest.mark.parametrize(""p_threshold"", (0.01, 0.05, 0.1))
+    def test_summary_table(self, p_threshold, prepare_abtest_evaluator):
+        evaluator: ABTestEvaluator = prepare_abtest_evaluator
+        summary = evaluator.summary_table(p_threshold=p_threshold)
+
+        assert ""significance"" in summary.columns
+        assert ""ci_abs_diff"" in summary.columns
+        assert ""ci_rel_diff"" in summary.columns
+        assert summary.query(f""p_value <= {p_threshold}"")[""significance""].isin([""up"", ""down""]).all()
+        assert (
+            summary.query(f""p_value <= {p_threshold}"")[""ci_abs_diff""]
+            .map(lambda x: True if x[1] < 0 or x[0] > 0 else False)
+            .all()
+        )
+        assert (
+            summary.query(f""p_value <= {p_threshold}"")[""ci_rel_diff""]
+            .map(lambda x: True if x[1] < 0 or x[0] > 0 else False)
+            .all()
+        )",67.0,84.0
+https://github.com/shyaginuma/casual_inference,31ec7a,tests/evaluator/test_abtest.py,TestABTestEvaluator::test_summary_table[0.05],"    @pytest.mark.parametrize(""p_threshold"", (0.01, 0.05, 0.1))
+    def test_summary_table(self, p_threshold, prepare_abtest_evaluator):
+        evaluator: ABTestEvaluator = prepare_abtest_evaluator
+        summary = evaluator.summary_table(p_threshold=p_threshold)
+
+        assert ""significance"" in summary.columns
+        assert ""ci_abs_diff"" in summary.columns
+        assert ""ci_rel_diff"" in summary.columns
+        assert summary.query(f""p_value <= {p_threshold}"")[""significance""].isin([""up"", ""down""]).all()
+        assert (
+            summary.query(f""p_value <= {p_threshold}"")[""ci_abs_diff""]
+            .map(lambda x: True if x[1] < 0 or x[0] > 0 else False)
+            .all()
+        )
+        assert (
+            summary.query(f""p_value <= {p_threshold}"")[""ci_rel_diff""]
+            .map(lambda x: True if x[1] < 0 or x[0] > 0 else False)
+            .all()
+        )",67.0,84.0
+https://github.com/shyaginuma/casual_inference,31ec7a,tests/test_statistical_testing.py,test_eval_ttest_significance[0.001],"@pytest.mark.parametrize(""p_threshold"", (0.001, 0.01, 0.05, 0.1))
+def test_eval_ttest_significance(prepare_sample_data, p_threshold):
+    data: pd.DataFrame = prepare_sample_data
+    ttest_stats = t_test(data=data, unit_col=""rand_unit"", variant_col=""variant"", metrics=[""metric_bin"", ""metric_cont""])
+    significance, abs_ci_width, rel_ci_width = eval_ttest_significance(ttest_stats=ttest_stats, p_threshold=p_threshold)
+    ttest_stats[""significance""] = significance
+    ttest_stats[""abs_ci_upper""] = ttest_stats[""abs_diff_mean""] + abs_ci_width
+    ttest_stats[""abs_ci_lower""] = ttest_stats[""abs_diff_mean""] - abs_ci_width
+    ttest_stats[""rel_ci_upper""] = ttest_stats[""rel_diff_mean""] + rel_ci_width
+    ttest_stats[""rel_ci_lower""] = ttest_stats[""rel_diff_mean""] - rel_ci_width
+
+    assert significance.isin([""up"", ""down"", ""unclear""]).all()
+    assert (ttest_stats.query(""significance == 'up' or significance == 'down'"")[""p_value""] <= p_threshold).all()
+    assert (ttest_stats.query(""significance == 'up'"")[""abs_ci_lower""] > 0).all()
+    assert (ttest_stats.query(""significance == 'up'"")[""rel_ci_lower""] > 0).all()
+    assert (ttest_stats.query(""significance == 'down'"")[""abs_ci_upper""] < 0).all()
+    assert (ttest_stats.query(""significance == 'down'"")[""rel_ci_upper""] < 0).all()",56.0,71.0
+https://github.com/shyaginuma/casual_inference,31ec7a,tests/test_statistical_testing.py,test_eval_ttest_significance[0.01],"@pytest.mark.parametrize(""p_threshold"", (0.001, 0.01, 0.05, 0.1))
+def test_eval_ttest_significance(prepare_sample_data, p_threshold):
+    data: pd.DataFrame = prepare_sample_data
+    ttest_stats = t_test(data=data, unit_col=""rand_unit"", variant_col=""variant"", metrics=[""metric_bin"", ""metric_cont""])
+    significance, abs_ci_width, rel_ci_width = eval_ttest_significance(ttest_stats=ttest_stats, p_threshold=p_threshold)
+    ttest_stats[""significance""] = significance
+    ttest_stats[""abs_ci_upper""] = ttest_stats[""abs_diff_mean""] + abs_ci_width
+    ttest_stats[""abs_ci_lower""] = ttest_stats[""abs_diff_mean""] - abs_ci_width
+    ttest_stats[""rel_ci_upper""] = ttest_stats[""rel_diff_mean""] + rel_ci_width
+    ttest_stats[""rel_ci_lower""] = ttest_stats[""rel_diff_mean""] - rel_ci_width
+
+    assert significance.isin([""up"", ""down"", ""unclear""]).all()
+    assert (ttest_stats.query(""significance == 'up' or significance == 'down'"")[""p_value""] <= p_threshold).all()
+    assert (ttest_stats.query(""significance == 'up'"")[""abs_ci_lower""] > 0).all()
+    assert (ttest_stats.query(""significance == 'up'"")[""rel_ci_lower""] > 0).all()
+    assert (ttest_stats.query(""significance == 'down'"")[""abs_ci_upper""] < 0).all()
+    assert (ttest_stats.query(""significance == 'down'"")[""rel_ci_upper""] < 0).all()",56.0,71.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-fixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-fixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-fixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-fixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-nonfixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-nonfixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_nn.py,TestBachelierNet::test_basic[float32_cpu-max_weight_0.25],"    @pytest.mark.parametrize('max_weight', [0.25, 0.5, 1], ids=['max_weight_0.25', 'max_weight_0.5', 'max_weight_1'])
+    def test_basic(self, Xy_dummy, max_weight):
+        eps = 1e-4
+
+        X, _, _, _ = Xy_dummy
+        n_samples, n_channels, lookback, n_assets = X.shape
+        dtype = X.dtype
+        device = X.device
+
+        network = BachelierNet(n_channels, n_assets, max_weight=max_weight)
+        network.to(device=device, dtype=dtype)
+
+        weights = network(X)
+
+        assert isinstance(network.hparams, dict)
+        assert network.hparams
+        assert torch.is_tensor(weights)
+        assert weights.shape == (n_samples, n_assets)
+        assert X.device == weights.device
+        assert X.dtype == weights.dtype
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=eps)",29.0,49.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_nn.py,TestBachelierNet::test_basic[float64_cpu-max_weight_0.25],"    @pytest.mark.parametrize('max_weight', [0.25, 0.5, 1], ids=['max_weight_0.25', 'max_weight_0.5', 'max_weight_1'])
+    def test_basic(self, Xy_dummy, max_weight):
+        eps = 1e-4
+
+        X, _, _, _ = Xy_dummy
+        n_samples, n_channels, lookback, n_assets = X.shape
+        dtype = X.dtype
+        device = X.device
+
+        network = BachelierNet(n_channels, n_assets, max_weight=max_weight)
+        network.to(device=device, dtype=dtype)
+
+        weights = network(X)
+
+        assert isinstance(network.hparams, dict)
+        assert network.hparams
+        assert torch.is_tensor(weights)
+        assert weights.shape == (n_samples, n_assets)
+        assert X.device == weights.device
+        assert X.dtype == weights.dtype
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=eps)",29.0,49.0
+https://github.com/lukasbudach/financescraper,629dad,tests/test_currency_converter.py,TestCurrencyConverter::test_using_buffer,"    def test_using_buffer(self):
+        start_time = time.time()
+        self.usd_converter.convert('EUR', 1)
+        start_time_buffer = end_time = time.time()
+        self.usd_converter.convert('EUR', 2)
+        end_time_buffer = time.time()
+        self.assertTrue((end_time_buffer - start_time_buffer) < (end_time - start_time))",40.0,46.0
+https://github.com/lukasbudach/financescraper,629dad,tests/test_finance_scraper.py,TestFinanceScraper::test_scraper_order,"    def test_scraper_order(self):
+        idx = 0
+        valid_ticker = 'AAPL'
+        # make sure that stocks are always re-fetched
+        self.scraper.set_holding_time(0)
+        while idx < (self.scraper.scraper.__len__() - 1):
+            start_faster = time.time()
+            self.scraper.scraper.get(str(idx)).get_data(valid_ticker)
+            start_slower = end_faster = time.time()
+            self.scraper.scraper.get(str(idx + 1)).get_data(valid_ticker)
+            end_slower = time.time()
+            self.assertTrue((end_faster - start_faster) < (end_slower - start_slower), 'Scraper at %d is slower than '
+                                                                                       'scraper at %d' % (idx, idx+1))
+            idx += 1",53.0,66.0
+https://github.com/lukasbudach/financescraper,629dad,tests/test_general_scraper.py,TestBaseScraperFunctionality::test_get_data_with_buffer,"    def test_get_data_with_buffer(self):
+        valid_ticker = 'AAPL'
+        start_time = time.time()
+        self.scraper._get_data_object(valid_ticker)
+        start_time_buffer = end_time = time.time()
+        self.scraper._get_data_object(valid_ticker)
+        end_time_buffer = time.time()
+        self.assertTrue((end_time_buffer - start_time_buffer) < (end_time - start_time))",26.0,33.0
+https://github.com/kefir500/ghstats,8fb02f,tests/test_ghstats.py,TestStats::test_cli,"    def test_cli(self):
+        """"""
+        Test command line arguments.
+        """"""
+        self.assertTrue(ghstats.main_cli([""kefir500"", ""apk-icon-editor"", ""-q""]) > 0)
+        self.assertTrue(ghstats.main_cli([""kefir500"", ""apk-icon-editor"", ""-l"", ""-d""]) > 0)
+        self.assertTrue(ghstats.main_cli([""kefir500"", ""apk-icon-editor"", ""-l"", ""-d"", ""-q""]) > 0)
+        self.assertTrue(ghstats.main_cli([""kefir500"", ""apk-icon-editor"", ""v1.5.0""]) > 0)
+        self.assertTrue(ghstats.main_cli([""kefir500/apk-icon-editor""]) > 0)",12.0,20.0
+https://github.com/kefir500/ghstats,8fb02f,tests/test_ghstats.py,TestStats::test_invalid_repo,"    def test_invalid_repo(self):
+        """"""
+        Test nonexistent repository.
+        """"""
+        with self.assertRaises(ghstats.GithubRepoError):
+            ghstats.download_stats(""kefir500"", ""foobar"", None, False, ghstats.get_env_token(), True)",40.0,45.0
+https://github.com/kefir500/ghstats,8fb02f,tests/test_ghstats.py,TestStats::test_release,"    def test_release(self):
+        """"""
+        Test statistics for the latest release.
+        """"""
+        stats = ghstats.download_stats(""kefir500"", ""apk-icon-editor"", None, True, ghstats.get_env_token(), False)
+        self.assertTrue(isinstance(stats, dict))
+        count = ghstats.get_stats_downloads(stats, False)
+        self.assertTrue(count > 0)",31.0,38.0
+https://github.com/kefir500/ghstats,8fb02f,tests/test_ghstats.py,TestStats::test_releases,"    def test_releases(self):
+        """"""
+        Test statistics for all releases.
+        """"""
+        stats = ghstats.download_stats(""kefir500"", ""apk-icon-editor"", None, False, ghstats.get_env_token(), False)
+        self.assertTrue(isinstance(stats, list))
+        count = ghstats.get_stats_downloads(stats, False)
+        self.assertTrue(count > 0)",22.0,29.0
+https://github.com/kefir500/ghstats,8fb02f,tests/test_ghstats.py,TestStats::test_unicode,"    def test_unicode(self):
+        """"""
+        Test Unicode handling.
+        """"""
+        release = ghstats.download_stats(""d3"", ""d3"", ""v3.5.0"", False, ghstats.get_env_token(), False)
+        try:
+            ghstats.get_release_downloads(release)
+        except UnicodeEncodeError:
+            self.fail(""Could not handle Unicode release statistics."")",54.0,62.0
+https://github.com/jwalton3141/scold,5f72f1,scold/tests/test_praise.py,TestPraise::test_caption_words,"    def test_caption_words(self):
+        self.assertTrue(caption_check(scold.scold(""${ADJECTIVE}""), scold.adjective.adjective))
+        self.assertTrue(caption_check(scold.scold(""${ADVERB}""), scold.adverb.adverb))
+        self.assertTrue(caption_check(scold.scold(""${EXCLAMATION}""), scold.exclamation.exclamation))
+        self.assertTrue(caption_check(scold.scold(""${SMILEY}""), scold.smiley.smiley))
+        self.assertTrue(caption_check(scold.scold(""${CREATED}""), scold.verb.created))
+        self.assertTrue(caption_check(scold.scold(""${CREATING}""), scold.verb.creating))",36.0,42.0
+https://github.com/jwalton3141/scold,5f72f1,scold/tests/test_praise.py,TestPraise::test_first_caption_words,"    def test_first_caption_words(self):
+        self.assertTrue(first_letter_caption_check(scold.scold(""${Adjective}""), scold.adjective.adjective))
+        self.assertTrue(first_letter_caption_check(scold.scold(""${Adverb}""), scold.adverb.adverb))
+        self.assertTrue(first_letter_caption_check(scold.scold(""${Exclamation}""), scold.exclamation.exclamation))
+        self.assertTrue(first_letter_caption_check(scold.scold(""${Smiley}""), scold.smiley.smiley))
+        self.assertTrue(first_letter_caption_check(scold.scold(""${Created}""), scold.verb.created))
+        self.assertTrue(first_letter_caption_check(scold.scold(""${Creating}""), scold.verb.creating))",44.0,50.0
+https://github.com/joerick/pyinstrument_cext,7c1682,tests/test_threaded.py,TestThreaded::test_threaded,"    def test_threaded(self):
+        threads = [threading.Thread(target=self.profile_a_busy_wait) for _ in range(10)]
+        for thread in threads:
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+        
+        # threaded counts can be way lower, presumably due to the GIL.
+        # Really we only care that it didn't crash!
+        self.assertTrue(50 < self.count < 125,
+                'profile count should be approx. 100, was %i' % self.count)",31.0,42.0
+https://github.com/jenca-adam/httpy,46de21,test_httpy.py,test_httpy_get_status_codes,"def test_httpy_get_status_codes(capsys):
+    httpy.set_debug(False)
+    with capsys.disabled():
+        iterator=httpy.STATUS_CODES
+        if alive_progress:
+            iterator=alive_progress.alive_it(iterator)
+        print()
+        for code in iterator:
+            if 400<=int(code):
+                assert httpy.request(f'https://httpbin.org/status/{code}',enable_cache=False).status==int(code)",37.0,46.0
+https://github.com/jenca-adam/httpy,46de21,test_httpy.py,test_httpy_websocket_bytes_supalong,"def test_httpy_websocket_bytes_supalong():
+    wsk = httpy.WebSocket('wss://echo.websocket.events',debug=True)
+    a=os.urandom(65537)
+    wsk.send(a)
+    time.sleep(1)
+    assert wsk.recv()==a",70.0,75.0
+https://github.com/akialbz/kagami,100c1e,kagami/tests/portals_tests/test_webPortal.py,test_post_io,"@pytest.mark.skipif(not _connected(), reason = 'no connection to internet')
+def test_post_io():
+    ret = json.loads(webPortal.post('https://httpbin.org/post', params = {'b': 'bb'}, headers = {'a': 'aa'}))
+    assert ret['args'] == {'b': 'bb'}
+    assert ret['headers']['A'] == 'aa' and ret['headers']['Host'] == 'httpbin.org'
+    assert ret['url'] == 'https://httpbin.org/post?b=bb'
+
+    ret = webPortal.post('https://httpbin.org/no-such-website', tries = 3)
+    assert missing(ret)
+
+    ret = webPortal.post('http://no-such-website.com', tries = 3)
+    assert missing(ret)",38.0,48.0
+https://github.com/artificialintelligencetoolkit/aitk.keras,73df81,tests/test_keras.py,test_fit_sgd,"def test_fit_sgd():
+    from aitk.keras.optimizers import SGD
+    model_aitk = build_model(""aitk"", SGD(lr=.1, momentum=.9), ""mse"")
+    model_aitk.fit(inputs, targets, epochs=50, shuffle=False)
+    outputs = model_aitk.predict(inputs)
+    assert [round(v[0]) for v in outputs] == [0, 1, 1, 0]",242.0,247.0
+https://github.com/arun1729/cog,659374,test/test_indexer.py,TestIndexer::test_indexer_put_get,"    def test_indexer_put_get(self):
+        if not os.path.exists(""/tmp/""+DIR_NAME+""/test_table/""):
+            os.makedirs(""/tmp/""+DIR_NAME+""/test_table/"")
+
+        config.COG_HOME = DIR_NAME
+        print(""*** "" + config.COG_HOME + ""\n"")
+
+        dictConfig(config.logging_config)
+        logger = logging.getLogger()
+
+        table = Table(""testdb"",""test_table"",""test_xcvzdfsadx"", config, logger)
+
+        store = table.store
+        indexer = table.indexer.index_list[0]
+
+        max_range=100
+        for i in range(max_range):
+            key= ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+            value= ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(100))
+            expected_data = Record(key,value)
+
+            position=store.save(expected_data)
+            indexer.put(expected_data.key,position,store)
+            returned_data=indexer.get(expected_data.key, store)
+            print(""indexer retrieved data: ""+str(returned_data))
+            self.assertTrue(expected_data.is_equal_val(returned_data))
+            print(""Test progress: ""+str(i*100.0/max_range))
+
+        c = 0
+        scanner = indexer.scanner(store)
+        for r in scanner:
+            c += 1
+        self.assertEqual(max_range, c)
+
+        indexer.close()
+        store.close()
+        table.close()",25.0,61.0
+https://github.com/radeklat/issue-watcher,5396e6,tests/unit/github/test_live.py,TestChecksLive::test_closed_issue_check_does_not_fail_when_closed,"    @staticmethod
+    def test_closed_issue_check_does_not_fail_when_closed(
+        assert_github_issue_no_cache: AssertGitHubIssue,
+    ):
+        assert_github_issue_no_cache.is_closed(CLOSED_ISSUE_NUMBER)",33.0,36.0
+https://github.com/radeklat/issue-watcher,5396e6,tests/unit/github/test_live.py,TestChecksLive::test_closed_issue_check_fails_when_open,"    @staticmethod
+    def test_closed_issue_check_fails_when_open(
+        assert_github_issue_no_cache: AssertGitHubIssue,
+    ):
+        with pytest.raises(AssertionError):
+            assert_github_issue_no_cache.is_closed(OPEN_ISSUE_NUMBER)",26.0,30.0
+https://github.com/radeklat/issue-watcher,5396e6,tests/unit/github/test_live.py,TestChecksLive::test_open_issue_check_does_not_fail_when_open,"    @staticmethod
+    def test_open_issue_check_does_not_fail_when_open(
+        assert_github_issue_no_cache: AssertGitHubIssue,
+    ):
+        assert_github_issue_no_cache.is_open(OPEN_ISSUE_NUMBER)",20.0,23.0
+https://github.com/radeklat/issue-watcher,5396e6,tests/unit/github/test_live.py,TestChecksLive::test_open_issue_check_fails_when_closed,"    @staticmethod
+    def test_open_issue_check_fails_when_closed(
+        assert_github_issue_no_cache: AssertGitHubIssue,
+    ):
+        with pytest.raises(AssertionError):
+            try:
+                assert_github_issue_no_cache.is_open(CLOSED_ISSUE_NUMBER, ""Custom message."")
+            except AssertionError as ex:
+                print(ex)
+                raise ex",9.0,17.0
+https://github.com/radeklat/issue-watcher,5396e6,tests/unit/github/test_live.py,TestChecksLive::test_release_number_check_fails_when_new_releases_available,"    @staticmethod
+    def test_release_number_check_fails_when_new_releases_available(
+        assert_github_issue_no_cache: AssertGitHubIssue,
+    ):
+        with pytest.raises(AssertionError, match="".*New release of .*"") as ex:
+            assert_github_issue_no_cache.current_release(0)
+
+        print(ex)  # for quick grab of string for documentation",39.0,45.0
+https://github.com/stas-prokopiev/local_simple_database,51f7f5,tests/test_process_safety.py,test_multiprocessing,"def test_multiprocessing():
+    """"""""""""
+    #####
+    db = LocalSimpleDatabase(str_path_database_dir=""tests/tmp_database"")
+    # Test 1:
+    db[""int_new_db""] = 0
+    p = Process(target=func1)
+    p.start()
+    p.join()
+    assert db[""int_new_db""] == 100, ""ERROR: func1 is not working""
+    # Test 2:
+    db[""int_new_db""] = 0
+    p = Process(target=func1)
+    p2 = Process(target=func2)
+    p.start()
+    p2.start()
+    p.join()
+    p2.join()
+    assert db[""int_new_db""] == 0, ""ERROR: multiprocessing safety is lost""",21.0,39.0
+https://github.com/clementchadebec/pyraug,0fbba9,tests/test_sampler.py,Test_RHVAE_Sampler::test_hmc_sampling[rhvae_sample1-rhvae_sampler_config1],"    def test_hmc_sampling(self, rhvae_sample, rhvae_sampler_config):
+
+        # simulates a trained model
+        # rhvae_sample.centroids_tens = torch.randn(20, rhvae_sample.latent_dim)
+        # rhvae_sample.M_tens = torch.randn(20, rhvae_sample.latent_dim, rhvae_sample.latent_dim)
+
+        sampler = RHVAESampler(model=rhvae_sample, sampler_config=rhvae_sampler_config)
+
+        out = sampler.hmc_sampling(rhvae_sampler_config.batch_size)
+
+        assert out.shape == (rhvae_sampler_config.batch_size, rhvae_sample.latent_dim)
+
+        assert sampler.eps_lf == rhvae_sampler_config.eps_lf
+
+        assert all(
+            [
+                not torch.equal(out[i], out[j])
+                for i in range(len(out))
+                for j in range(i + 1, len(out))
+            ]
+        )",138.0,158.0
+https://github.com/clementchadebec/pyraug,0fbba9,tests/test_sampler.py,Test_RHVAE_Sampler::test_hmc_sampling[rhvae_sample0-rhvae_sampler_config1],"    def test_hmc_sampling(self, rhvae_sample, rhvae_sampler_config):
+
+        # simulates a trained model
+        # rhvae_sample.centroids_tens = torch.randn(20, rhvae_sample.latent_dim)
+        # rhvae_sample.M_tens = torch.randn(20, rhvae_sample.latent_dim, rhvae_sample.latent_dim)
+
+        sampler = RHVAESampler(model=rhvae_sample, sampler_config=rhvae_sampler_config)
+
+        out = sampler.hmc_sampling(rhvae_sampler_config.batch_size)
+
+        assert out.shape == (rhvae_sampler_config.batch_size, rhvae_sample.latent_dim)
+
+        assert sampler.eps_lf == rhvae_sampler_config.eps_lf
+
+        assert all(
+            [
+                not torch.equal(out[i], out[j])
+                for i in range(len(out))
+                for j in range(i + 1, len(out))
+            ]
+        )",138.0,158.0
+https://github.com/experimaestro/experimaestro-python,bd3bc0,experimaestro/tests/test_tokens.py,test_token_ok,"def test_token_ok():
+    """"""Simple token test: should succeed with token""""""
+    with TemporaryExperiment(""tokens"", maxwait=10) as xp:
+        token = CounterToken(""token-ok"", xp.workdir / ""token"", 1)
+        token_experiment(xp, token)
+    logging.info(""Finished token_ok test"")",70.0,75.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-fixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-fixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float32_cpu-nonfixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-fixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-fixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-nonfixed_assets-max_weight=0.5],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_benchmarks.py,TestMaximumReturn::test_basic[float64_cpu-nonfixed_assets-max_weight=1],"    @pytest.mark.parametrize('max_weight', [1, 0.5], ids=['max_weight=1', 'max_weight=0.5'])
+    @pytest.mark.parametrize('predefined_assets', [True, False], ids=['fixed_assets', 'nonfixed_assets'])
+    def test_basic(self, Xy_dummy, predefined_assets, max_weight):
+        X_dummy, _, _, _ = Xy_dummy
+        eps = 1e-4
+        n_samples, n_channels, lookback, n_assets = X_dummy.shape
+        dtype = X_dummy.dtype
+        device = X_dummy.device
+
+        X_more_assets = torch.cat([X_dummy, X_dummy], dim=-1)
+
+        bm = MaximumReturn(n_assets=n_assets if predefined_assets else None,
+                           max_weight=max_weight)
+
+        weights = bm(X_dummy)
+
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (n_samples, n_assets)
+        assert weights.dtype == dtype
+        assert weights.device == device
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=1e-4)
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert isinstance(bm.hparams, dict) and bm.hparams
+
+        if predefined_assets:
+            with pytest.raises(ValueError):
+                bm(X_more_assets)
+
+            return
+        else:
+            bm(X_more_assets)",54.0,82.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_nn.py,TestBachelierNet::test_basic[float32_cpu-max_weight_0.25],"    @pytest.mark.parametrize('max_weight', [0.25, 0.5, 1], ids=['max_weight_0.25', 'max_weight_0.5', 'max_weight_1'])
+    def test_basic(self, Xy_dummy, max_weight):
+        eps = 1e-4
+
+        X, _, _, _ = Xy_dummy
+        n_samples, n_channels, lookback, n_assets = X.shape
+        dtype = X.dtype
+        device = X.device
+
+        network = BachelierNet(n_channels, n_assets, max_weight=max_weight)
+        network.to(device=device, dtype=dtype)
+
+        weights = network(X)
+
+        assert isinstance(network.hparams, dict)
+        assert network.hparams
+        assert torch.is_tensor(weights)
+        assert weights.shape == (n_samples, n_assets)
+        assert X.device == weights.device
+        assert X.dtype == weights.dtype
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=eps)",29.0,49.0
+https://github.com/jankrepl/deepdow,48484f,tests/test_nn.py,TestBachelierNet::test_basic[float64_cpu-max_weight_0.25],"    @pytest.mark.parametrize('max_weight', [0.25, 0.5, 1], ids=['max_weight_0.25', 'max_weight_0.5', 'max_weight_1'])
+    def test_basic(self, Xy_dummy, max_weight):
+        eps = 1e-4
+
+        X, _, _, _ = Xy_dummy
+        n_samples, n_channels, lookback, n_assets = X.shape
+        dtype = X.dtype
+        device = X.device
+
+        network = BachelierNet(n_channels, n_assets, max_weight=max_weight)
+        network.to(device=device, dtype=dtype)
+
+        weights = network(X)
+
+        assert isinstance(network.hparams, dict)
+        assert network.hparams
+        assert torch.is_tensor(weights)
+        assert weights.shape == (n_samples, n_assets)
+        assert X.device == weights.device
+        assert X.dtype == weights.dtype
+        assert torch.all(-eps <= weights) and torch.all(weights <= max_weight + eps)
+        assert torch.allclose(weights.sum(dim=1), torch.ones(n_samples).to(dtype=dtype, device=device), atol=eps)",29.0,49.0
+https://github.com/connectedcompany/coco-agent,034aa9,integration_tests/test_public_repos.py,test_repo_process_and_upload[https://github.com/pyro-ppl/numpyro.git-numpyro-master-False-800],"@mark.parametrize(
+@mock.patch(""."".join([transfer.__name__, GCSClient.__name__]), autospec=True)
+def test_repo_process_and_upload(
+    mock_gcs, repo_url, repo_name, branch_name, use_non_native_repo_db, min_commits
+):
+    connector_id = ""test/git/test""
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # setup
+        repo_path = os.path.join(tmpdir, repo_name)
+        out_path = os.path.join(tmpdir, repo_name + ""-out"")
+        os.mkdir(repo_path)
+        os.mkdir(out_path)
+
+        gitpython.Repo.clone_from(repo_url, repo_path)
+
+        # extract repo
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            [
+                ""extract"",
+                ""git-repo"",
+                f""--connector-id={connector_id}"",
+                ""--output-dir="" + out_path,
+                ""--forced-repo-name=test-repo"",
+                *([""--use-non-native-repo-db""] if use_non_native_repo_db else []),
+                ""--log-level=info"",
+                ""--no-log-to-file"",
+                ""--branch="" + branch_name,
+                repo_path,
+            ],
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0, result.output
+
+        #  check commits, if we're expecting some
+        if min_commits > -1:
+            commits_file = [
+                f for f in os.listdir(out_path) if f.endswith(""git_commits.jsonl"")
+            ][0]
+            assert commits_file
+            commits = srsly.read_jsonl(os.path.join(out_path, commits_file))
+            assert len(list(commits)) > min_commits
+
+        # upload
+        mock_gcs_inst = mock.MagicMock()
+        mock_gcs.side_effect = lambda _: mock_gcs_inst
+
+        ts = datetime.utcnow().strftime(""%y%m%d.%H%M%S"")
+        result = runner.invoke(
+            cli,
+            [
+                ""upload"",
+                ""data"",
+                f""--credentials-file={os.path.join('tests', '../tests/fake_creds.json')}"",
+                connector_id,
+                out_path,
+            ],
+            catch_exceptions=False,
+        )
+
+        # check upload
+        assert result.exit_code == 0, result.output
+        mock_gcs_inst.write_file.call_count == 3
+        mock_gcs_inst.write_file.assert_has_calls(
+            [
+                mock.call(
+                    os.path.join(out_path, f),
+                    ""cc-upload-3lvbl6fqqanq2r"",
+                    bucket_file_name=f""uploads/git/test/{ts}/{f}"",
+                    skip_bucket_check=True,
+                )
+                for f in os.listdir(out_path)
+            ]
+        )
+        mock_gcs_inst.write_data.assert_called_with(
+            ""."",
+            ""cc-upload-3lvbl6fqqanq2r"",
+            name=StringMatches(r""uploads/git/test/\d{6}\.\d{6}/upload_complete_marker""),
+            skip_bucket_check=True,
+        )",71.0,150.0
+https://github.com/connectedcompany/coco-agent,034aa9,tests/cli/test_params.py,test_date_parameter[-3-expected5],"@pytest.mark.parametrize(
+def test_date_parameter(value, expected):
+    res = params.date_parameter(value)
+
+    if expected is None:
+        assert res is None
+    else:
+        assert res == datetime.combine(expected, datetime.min.time())",21.0,27.0
+https://github.com/dev3xor/pomodoro,d4dc48,tests/test_clock.py,ClockTestCase::test_clock_interval,"    def test_clock_interval(self):
+        c = Clock(timeout=10)
+        c.start()
+        time.sleep(1)
+        self.assertEqual(c.get_timeout(), 9)",22.0,26.0
+https://github.com/dlesbre/bibtex-autocomplete,f76666,tests/test_9_APIs.py,TestDBLP::test_no_author,,,
