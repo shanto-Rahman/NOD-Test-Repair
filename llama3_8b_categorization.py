@@ -11,7 +11,7 @@ import json
 from sklearn.metrics import confusion_matrix, classification_report
 import re
 from collections import Counter
-
+from parsing_test_code_info import extract_test_function
 
 
 #login(token="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")
@@ -341,12 +341,14 @@ def initialize_environment(seed_value):
     setup_logging()  # Setup standardized logging
 
 def data_from_row(row):
-    proj_name = row['gitproj_name'] 
-    if proj_name.strip().startswith('#'):
+    git_proj = row['gitproj_name'] 
+    if git_proj.strip().startswith('#'):
         return None
     sha = row['sha']
-    test_file_path, test_name = row['test_name'].split("::")
-    return proj_name, test_file_path, test_name
+    print("row['test_name']=", row['test_name'])
+    test_file_path, test_name = row['test_name'].split("::", 1)
+    print(test_file_path, test_name)
+    return git_proj, test_file_path, test_name
 
 if __name__ == "__main__":
     #model_weights_path = sys.argv[2]
@@ -355,18 +357,36 @@ if __name__ == "__main__":
     #technique = sys.argv[5]
     #initialize_environment(42)
     dataset_path = sys.argv[1]
-
+    output_data = []  # List to store extracted data
     df = pd.read_csv(dataset_path)
     for index, row in df.iterrows():
         row_data = data_from_row(row)
         if row_data is None:
             continue
-        proj_name, test_file_path, test_name = row_data
+        git_proj, test_file_path, test_name = row_data
+        proj_name = git_proj.split("/")[-1]
         print(proj_name)
         print(test_file_path)
         print(test_name)
+        print("projects/"+proj_name+"/"+test_file_path)
+        test_code, start_line, end_line = extract_test_function("projects/"+proj_name+"/"+test_file_path, test_name)
+        print('test_code=', test_code)
+        print('start_line=', start_line)
+        print('end_line=', end_line)
+        # Append the extracted information into a dictionary
+        output_data.append({
+            "git_proj": git_proj,
+            "test_file_path": test_file_path,
+            "test_name": test_name,
+            "test_code": test_code,
+            "start_line": start_line,
+            "end_line": end_line
+        })
 
-        
-        #exit()
+    output_df = pd.DataFrame(output_data)
+    # Save to CSV
+    output_csv_path = "extracted_tests.csv"
+    output_df.to_csv(output_csv_path, index=False)  
+    exit()
 
     #run_experiment(dataset_path, model_weights_path, results_file, data_name, technique)
