@@ -222,6 +222,7 @@ def extract_open_source_model_output_categpory(system_definition, prompt, model,
                 {"role": "system", "content": system_definition},
                 {"role": "user", "content": prompt}
             ]
+            #print('****message=',messages)
         else:
             messages = [{"role": "user", "content": prompt}] 
         
@@ -237,20 +238,12 @@ def extract_open_source_model_output_categpory(system_definition, prompt, model,
             tokenizer.convert_tokens_to_ids("<|eot_id|>")
         ]
         input_ids = inputs
-    elif model_name_arg == "codellama":
-        if cot_count == 0:
-            messages = system_definition + prompt
-        else:
-            messages = prompt #[{"role": "user", "content": prompt}]
-        
-        input_texts = messages #[msg["content"] for msg in messages]  # Extract 'content' part
-        inputs = tokenizer(input_texts, return_tensors="pt").to(model.device)
 
     #print("**** message to model=",input_texts)
     #inputs = tokenizer(input_texts, return_tensors="pt").to(model.device)
     # Calculate the total number of tokens in input_texts
     total_input_tokens = sum([len(tokenizer.encode(text)) for text in input_texts])
-    if model_name_arg == "deep_seek_coder" or  model_name_arg == "codellama":
+    if model_name_arg == "deep_seek_coder":
         input_ids = inputs["input_ids"]
     if input_ids.shape[1] > 2048:
         return "", True
@@ -268,7 +261,7 @@ def extract_open_source_model_output_categpory(system_definition, prompt, model,
     decoded_output_token_sizes = [len(tokenizer.encode(decoded_output)) for decoded_output in decoded_outputs]
     print("cot_count=",cot_count,",Total tokens in input_texts:", total_input_tokens, ",row_index=", row_index)
     print('Len of decoded_outputs=', decoded_output_token_sizes)
-    print("generated_decoded_outputs=",decoded_outputs)
+    print("****generated_decoded_outputs=",decoded_outputs)
     exit()
     cleaned_code = ""
     for i, output in enumerate(decoded_outputs):
