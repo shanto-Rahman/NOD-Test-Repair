@@ -57,5 +57,5 @@ if __name__ == "__main__":
 
     output_df = pd.DataFrame(output_data)
     # Save to CSV
-    output_csv_path = "extracted_tests.csv"
+    output_csv_path = "data/extracted_tests.csv"
     output_df.to_csv(output_csv_path, index=False)  
