@@ -201,7 +201,27 @@ def generate_open_source_model_output(model, input_ids, attention_mask, tokenize
             )
     return outputs
 
-def extract_open_source_model_output_categpory(system_definition, prompt, model, device, tokenizer, cot_count, row_index, model_name_arg, unit_test_name):
+def extract_category(decoded_output):
+    if isinstance(decoded_output, list):
+        decoded_output = " ".join(decoded_output)
+
+    decoded_output = decoded_output.replace('`', '').strip()
+    print('***DECODED_OUTPUT=',repr(decoded_output))
+    #match = re.search(r"<Category>\s*(.*?)\s*</Category>", decoded_output, re.DOTALL)
+    match = re.search(r"<Category>\s*([^<>]+?)\s*</Category>", decoded_output)
+
+
+    print('***Match=',match)
+    if match:
+        category_name = match.group(1).strip()  # Remove leading/trailing whitespace
+        print(f"\n✅ Extracted Category: {category_name}")
+        return category_name
+    else:
+        print("\n⚠️ No <Category> tag found!")
+        return None
+
+
+def extract_open_source_model_output_categpory(system_definition, prompt, model, device, tokenizer, cot_count, row_index, model_name_arg, unit_test_name, objective):
     messages = []
     model.eval() 
     if model_name_arg == "deep_seek_coder":
@@ -261,33 +281,38 @@ def extract_open_source_model_output_categpory(system_definition, prompt, model,
     decoded_output_token_sizes = [len(tokenizer.encode(decoded_output)) for decoded_output in decoded_outputs]
     print("cot_count=",cot_count,",Total tokens in input_texts:", total_input_tokens, ",row_index=", row_index)
     print('Len of decoded_outputs=', decoded_output_token_sizes)
-    print("****generated_decoded_outputs=",decoded_outputs)
+    #print("****generated_decoded_outputs=",decoded_outputs)
+    category_name = ""
+    if objective == "category_prediction":
+        category_name = extract_category(decoded_outputs)
+        print('*************category_name=',category_name)
+
     exit()
-    cleaned_code = ""
-    for i, output in enumerate(decoded_outputs):
-        print(f"**** Output {i+1}: {output}")    
-        # Remove system_definition and prompt from the output if they're present
-        if system_definition in output:
-            output = output.replace(system_definition, "").strip()
-        if prompt in output:
-            output = output.replace(prompt, "").strip()
-        print("generated output=", output)
-        # Extract Python code block
-        match = re.search(r'```python(.*?)```', output, re.DOTALL)
-        if match:
-            cleaned_code = match.group(1).strip()
-            cleaned_code = re.sub(r'def \s*(\w+)\s*\(', f'def {unit_test_name}(', cleaned_code)
-            print(f"Python Block {i+1}:\n{cleaned_code}\n")
-            #print(f"Python Block {i+1}:\n{cleaned_code}\n")
-        else:
-            print(f"No Python code block found in Output {i+1}")
-    # Clear GPU memory after each iteration to avoid memory accumulation
-    torch.cuda.empty_cache()
-    gc.collect() 
-    # Delete tensors explicitly to free memory
-    del inputs, input_ids, attention_mask, outputs, decoded_outputs
-    if model_name_arg == "deep_seek_coder" and total_input_tokens >= 1500:
-        return cleaned_code, True # Cannot proceed with the COT 
+    #cleaned_code = ""
+    #for i, output in enumerate(decoded_outputs):
+    #    print(f"**** Output {i+1}: {output}")    
+    #    # Remove system_definition and prompt from the output if they're present
+    #    if system_definition in output:
+    #        output = output.replace(system_definition, "").strip()
+    #    if prompt in output:
+    #        output = output.replace(prompt, "").strip()
+    #    print("generated output=", output)
+    #    # Extract Python code block
+    #    match = re.search(r'```python(.*?)```', output, re.DOTALL)
+    #    if match:
+    #        cleaned_code = match.group(1).strip()
+    #        cleaned_code = re.sub(r'def \s*(\w+)\s*\(', f'def {unit_test_name}(', cleaned_code)
+    #        print(f"Python Block {i+1}:\n{cleaned_code}\n")
+    #        #print(f"Python Block {i+1}:\n{cleaned_code}\n")
+    #    else:
+    #        print(f"No Python code block found in Output {i+1}")
+    ## Clear GPU memory after each iteration to avoid memory accumulation
+    #torch.cuda.empty_cache()
+    #gc.collect() 
+    ## Delete tensors explicitly to free memory
+    #del inputs, input_ids, attention_mask, outputs, decoded_outputs
+    #if model_name_arg == "deep_seek_coder" and total_input_tokens >= 1500:
+    #    return cleaned_code, True # Cannot proceed with the COT 
     return cleaned_code, False 
 
 

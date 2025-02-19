@@ -36,7 +36,7 @@ def generate_prompt_without_any_slice_for_flaky_test_category(test_file_path, un
         2. The corresponding failure message or error output within the `<failure_message>` tag.
     
         Your task is to analyze the provided information and **identify the category of flaky test** it belongs to. 
-        Please respond with the identified category enclosed in a `<Category>` tag.
+        Please respond only with the identified category enclosed in a `<Category>` tag.
     </instructions>
     """
     
