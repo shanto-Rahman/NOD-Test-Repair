@@ -77,7 +77,7 @@ def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
     os.makedirs(result_dir, exist_ok=True)
 
 
-    trace_command = [pytest_path,  "-m", "trace", "--trace", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", fully_qualified_test_name]
+    trace_command = [python_path,  "-m", "trace", "--trace", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", fully_qualified_test_name]
 
     # run the trace command just like we run the test command
     with open(trace_file_path_temp, "w") as log:
