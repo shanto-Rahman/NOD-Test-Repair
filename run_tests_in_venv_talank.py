@@ -83,6 +83,7 @@ def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
     log_dir = os.path.join(script_dir, "logs_traces")
 
     formatted_test_name = fully_qualified_test_name.replace(".py", "").replace("::", "_").replace("/", "_")
+    formatted_test_name = f"{project_name}_{formatted_test_name}"
 
     trace_file_path_temp = f"{log_dir}/{formatted_test_name}_temp.log"
     trace_file_path_wo_duplicate_lines = f"{log_dir}/{formatted_test_name}.log"
@@ -94,7 +95,10 @@ def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
 
     trace_command = [python_path,  "-m", "trace", "--trace", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", fully_qualified_test_name]
     env = os.environ.copy()
+    #  reset env["PYTHONPATH"] = projects_dir
     env["PYTHONPATH"] = projects_dir
+
+    print("current working directory=", projects_dir)
 
     # run the trace command just like we run the test command
     with open(trace_file_path_temp, "w") as log:
@@ -183,12 +187,15 @@ def create_virtual_env(project_path, python_executable):
     #exit()
 
     if os.path.exists(venv_path):
-        return venv_path
+        # return venv_path
         print("Virtual environment already exists. Deleting it first...")
+        # return venv_path
         shutil.rmtree(venv_path)
 
     # Ensure `virtualenv` is installed
     try:
+        print("Checking if `virtualenv` is installed...")
+        print("python_executable=", python_executable)
         subprocess.run([python_executable, "-m", "virtualenv", "--version"], check=True, stdout=subprocess.PIPE)
     except subprocess.CalledProcessError:
         print("`virtualenv` not found! Installing it first...")
