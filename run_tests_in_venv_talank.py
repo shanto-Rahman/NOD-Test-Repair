@@ -14,6 +14,12 @@ import shutil
 
 def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
 
+    if "/" in project_name:
+        project_name = project_name.split("/")[1]
+
+    print(f"Running test with trace: {fully_qualified_test_name}")
+    print(f"Project name: {project_name}")
+
     def sanitize_trace_line(line):
         # Remove the leading spaces and the newline character
         return re.sub(r"^\w+(\.\w+)?\(\d+\):\s", "", line)
@@ -47,19 +53,30 @@ def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
                     else:
                         outfile.write(previous_line)
             
-
-    # get the directories to ignore
-    import sysconfig
-    import site
-
-    std_lib = sysconfig.get_paths()['stdlib']
-    site_packages = site.getsitepackages()[0]
-    ignore_dirs = f"{std_lib}:{site_packages}"
-
     venv_path = os.path.abspath(venv_path)
     python_path = os.path.join(venv_path, "bin", "python")
     pytest_path = os.path.join(venv_path, "bin", "pytest")
 
+
+    std_lib = os.path.dirname(os.__file__)
+
+    python_code = (
+        "import site; "
+        "s = site.getsitepackages(); "
+        "print(s[0])"
+    )
+
+    site_packages_command = [python_path, "-c", python_code]
+
+    site_packages_result = subprocess.run(
+        site_packages_command,
+        check=True,
+        capture_output=True,
+        text=True
+    )
+
+    site_packages = site_packages_result.stdout.strip()
+    ignore_dirs = f"{std_lib}{os.pathsep}{site_packages}"
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     projects_dir = os.path.join(script_dir, "projects", project_name)
@@ -72,12 +89,12 @@ def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
 
     relative_trace_file_path = f"logs_traces/{formatted_test_name}.log"
 
-    os.makedirs(projects_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(result_dir, exist_ok=True)
 
-
     trace_command = [python_path,  "-m", "trace", "--trace", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", fully_qualified_test_name]
+    env = os.environ.copy()
+    env["PYTHONPATH"] = projects_dir
 
     # run the trace command just like we run the test command
     with open(trace_file_path_temp, "w") as log:
@@ -89,13 +106,6 @@ def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
     process_trace(trace_file_path_temp, trace_file_path_wo_duplicate_lines)
     # remove the temporary trace file
     os.remove(trace_file_path_temp)
-
-    # command = (
-    #     f"PYTHONPATH={project_path} python -m trace --trace "
-    #     f"--ignore-dir={ignore_dirs} "
-    #     f"$(which pytest) -s tests/evaluator/test_abtest.py::TestABTestEvaluator::test_summary_table[0.01]"
-    # )
-
     return relative_trace_file_path
 
 
