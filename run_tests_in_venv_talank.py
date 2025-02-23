@@ -11,8 +11,6 @@ from git import Repo
 import toml  # Install with `pip install toml`
 
 import shutil
-
-
 import re
 from tree_sitter import Parser
 from tree_sitter_languages import get_language
@@ -111,7 +109,7 @@ def extract_any_method_body(file_path, qualified_method_name):
     return find_function(root_node) or (None, None, None)
 
 
-def get_all_covered_methods_names(venv_path, project_name, fully_qualified_test_name):
+def get_all_covered_methods_names(venv_path, project_name, fully_qualified_test_name, log_file_name):
     # First runs the command like the following, just as we run in run_with_trace function
     # /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg/virtualenv/bin/python -m coverage run --source /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg/virtualenv/bin/pytest -s tests/dataIdentification_test.py::VizKGTestCase::test_column_dataframe
     # Then we get the function coverage list using the following command
@@ -139,7 +137,10 @@ def get_all_covered_methods_names(venv_path, project_name, fully_qualified_test_
 
     coverage_command=[python_path, "-m", "coverage", "run", f"--source={projects_dir}", pytest_path, "-s", fully_qualified_test_name]
     coverage_report_command = ["coverage", "report", "--functions", "|", "grep", "function", "|", "awk", "'{ sub(/%/,\"\",$NF); if ($NF > 0) print $1, $2, $3 }'"]
-    temo_coverage_file = f"temp_coverage.log"
+    
+    os.makedirs("func_coverage", exist_ok=True)
+
+    temo_coverage_file = f"func_coverage/{log_file_name}.log"
     
     # run the coverage command
     print("Running coverage command:")
@@ -534,7 +535,7 @@ def install_dependencies(venv_path, project_path, project_name):
 
             print("Installing tree_sitter and tree_sitter_languages...")
             subprocess.run([pip_path, "install", "tree_sitter", "tree_sitter_languages"], check=True)
-            
+
         except Exception as e:
             print(f"Error processing `pyproject.toml`: {e}")
         print("proj_name=", project_name)
@@ -688,7 +689,7 @@ if __name__ == "__main__":
             writer.writerow([gitproj_name, sha, test_name, trace_log_file_path])
             trace_log_filename = os.path.basename(trace_log_file_path)
             os.makedirs("method_bodies", exist_ok=True)
-            method_names = get_all_covered_methods_names(venv_path, project_name, test_name)
+            method_names = get_all_covered_methods_names(venv_path, project_name, test_name, trace_log_filename)
             print("method_names=", method_names)
             with open("method_bodies/"+trace_log_filename, "w") as mb_file:
                 for method_name in method_names:
