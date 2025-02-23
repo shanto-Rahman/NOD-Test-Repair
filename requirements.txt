@@ -7,3 +7,6 @@ tox
 
 pip install gitpython
 pip install toml
+pip install tree_sitter_languages
+pip install tree_sitter
+pip install -U git+https://github.com/devdanzin/coveragepy.git@report_on_regions

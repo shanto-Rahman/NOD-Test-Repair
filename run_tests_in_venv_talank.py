@@ -12,7 +12,208 @@ import toml  # Install with `pip install toml`
 
 import shutil
 
-def run_test_with_trace(venv_path, project_name, fully_qualified_test_name):
+
+import re
+from tree_sitter import Parser
+from tree_sitter_languages import get_language
+
+# Get the prebuilt Python language parser
+PY_LANGUAGE = get_language("python")
+
+def extract_any_method_body(file_path, qualified_method_name):
+    """
+    Extracts the source code of a function or method from a Python file,
+    given its fully qualified name.
+    
+    Parameters:
+      file_path (str): Path to the Python source file.
+      qualified_method_name (str): The fully qualified function/method name.
+                                   For methods, use "ClassName.method_name";
+                                   for top-level functions, use "function_name".
+    
+    Returns:
+      tuple: (method_source, start_line, end_line) where method_source is the
+             extracted source code (including decorators) and start_line/end_line
+             indicate where the definition occurs in the file (1-indexed).
+             If the method is not found, returns (None, None, None).
+    """
+    print("file_path=", file_path)
+    print("qualified_method_name=", qualified_method_name)
+
+
+    # Read the file content
+    with open(file_path, "r", encoding="utf-8") as f:
+        code = f.read()
+    lines = code.splitlines()
+    
+    # Initialize the parser and parse the source code.
+    parser = Parser()
+    parser.set_language(PY_LANGUAGE)
+    tree = parser.parse(bytes(code, "utf8"))
+    root_node = tree.root_node
+    
+    # Determine if a class is specified. We assume that if there is a dot,
+    # then the part before the dot is the class name.
+    if "." in qualified_method_name:
+        class_name, function_name = qualified_method_name.split(".", 1)
+    else:
+        class_name = None
+        function_name = qualified_method_name
+
+    def find_function(node, current_class=None):
+        """
+        Recursively searches the AST node for the function definition.
+        """
+        for child in node.children:
+            if child.type == "class_definition":
+                # Get the class name from the AST node.
+                class_node = child.child_by_field_name("name")
+                if class_node:
+                    child_class_name = class_node.text.decode("utf-8")
+                    # If we're looking for a method in a specific class, descend only when matched.
+                    if class_name and child_class_name == class_name:
+                        class_body = child.child_by_field_name("body")
+                        if class_body:
+                            result = find_function(class_body, current_class=child_class_name)
+                            if result:
+                                return result
+            elif child.type in ("function_definition", "decorated_definition"):
+                func_node = child.child_by_field_name("name")
+                if func_node:
+                    func_name = func_node.text.decode("utf-8")
+                    # Ensure we have the correct function (and correct class if applicable)
+                    if func_name == function_name and (class_name is None or current_class == class_name):
+                        # Determine the start and end lines (1-indexed)
+                        start_line = child.start_point[0] + 1
+                        end_line = child.end_point[0] + 1
+                        
+                        # Collect decorators (if any) from previous siblings.
+                        decorators = []
+                        prev_node = child.prev_named_sibling
+                        while prev_node and prev_node.type == "decorator":
+                            decorators.insert(0, lines[prev_node.start_point[0]])
+                            prev_node = prev_node.prev_named_sibling
+                        if decorators:
+                            # Adjust start_line to include decorators.
+                            start_line = decorators[0].strip() and child.start_point[0] + 1 or start_line
+                        
+                        # Extract the function's code lines.
+                        func_code_lines = lines[start_line - 1:end_line]
+                        method_source = "\n".join(decorators + func_code_lines)
+                        return method_source, start_line, end_line
+            # Recursively search in child nodes if the type is one of these.
+            if child.type in ("module", "class_definition", "decorated_definition", "block"):
+                result = find_function(child, current_class=current_class)
+                if result:
+                    return result
+        return None
+
+    return find_function(root_node) or (None, None, None)
+
+
+def get_all_covered_methods_names(venv_path, project_name, fully_qualified_test_name):
+    # First runs the command like the following, just as we run in run_with_trace function
+    # /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg/virtualenv/bin/python -m coverage run --source /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg/virtualenv/bin/pytest -s tests/dataIdentification_test.py::VizKGTestCase::test_column_dataframe
+    # Then we get the function coverage list using the following command
+    # coverage report --functions | grep "function" | awk '{ sub(/%/,"",$NF); if ($NF > 0) print $1, $2, $3 }'
+    # The output of the above command is like the following:
+        # VizKG/utils/util.py: function __convert_dtypes
+        # VizKG/utils/util.py: function set_chart
+        # VizKG/utils/util.py: function set_dataframe
+        # VizKG/visualize.py: function VizKG.__init__
+        # tests/dataIdentification_test.py: function VizKGTestCase.setUp
+    # we need to return this output as a list.
+
+    if "/" in project_name:
+        project_name = project_name.split("/")[1]
+
+    venv_path = os.path.abspath(venv_path)
+    python_path = os.path.join(venv_path, "bin", "python")
+    pytest_path = os.path.join(venv_path, "bin", "pytest")
+    coverage_path = os.path.join(venv_path, "bin", "coverage")
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    projects_dir = os.path.join(script_dir, "projects", project_name)
+
+    os.system(f"{python_path} -m pip install git+https://github.com/nedbat/coveragepy@f10c455b7c8fd26352de#egg=coverage==0.0")
+
+    coverage_command=[python_path, "-m", "coverage", "run", f"--source={projects_dir}", pytest_path, "-s", fully_qualified_test_name]
+    coverage_report_command = ["coverage", "report", "--functions", "|", "grep", "function", "|", "awk", "'{ sub(/%/,\"\",$NF); if ($NF > 0) print $1, $2, $3 }'"]
+    temo_coverage_file = f"temp_coverage.log"
+    
+    # run the coverage command
+    print("Running coverage command:")
+
+    subprocess.run(coverage_command, cwd=projects_dir)
+
+    # get the function coverage list
+    with open(temo_coverage_file, "w") as fnull:
+        result = subprocess.run(
+                'coverage report --functions | grep function | awk \'{ sub(/%/,"",$NF); if ($NF > 0) print $1, $2, $3 }\'',
+                shell=True,
+                cwd=projects_dir,
+                capture_output=True,
+                text=True
+            )
+
+        if result.returncode != 0:
+            print(f"Error running coverage report command: {result.stderr}")
+            return []
+        
+        with open(temo_coverage_file, "w") as f:
+            f.write(result.stdout)
+    
+    with open(temo_coverage_file, "r") as f:
+        lines = f.readlines()
+        print("lines=", lines)
+        files = [line.split(":")[0] for line in lines]
+        functions = [line.split(":")[1].strip() for line in lines]
+        # remove the word "function" from the functions list
+        functions = [function.replace("function", "").strip() for function in functions]
+
+        print("files=", files)
+        print("functions=", functions)
+    
+        fully_qualified_file = [f"{projects_dir}/{file}" for file in files]
+        return list(zip(fully_qualified_file, functions))
+
+
+def run_test_with_trace(venv_path, project_name, fully_qualified_test_name, trace_level="method"):
+    def remove_unnecessary_lines(input_file, output_file):
+        # from the trace output, remove everything before the line:
+        # ========= short test summary info ========
+
+        with open(input_file, "r") as infile:
+            lines = infile.readlines()
+            start = 0
+            for i, line in enumerate(lines):
+                if "=== short test summary info ===" in line:
+                    start = i
+                    break
+            with open(output_file, "w") as outfile:
+                outfile.writelines(lines[start:])
+
+
+    def filter_function_names(line):
+        # Filter out the function names from the trace output
+        # if line contains one of the following, then return None otherwite return the line
+        # 1. lib/python3.8/site-packages/
+        # 2. /usr/lib/python3.8/
+        # 3. filename: <string>, modulename: <string>,
+        # 4. filename: <frozen importlib._bootstrap_external>,
+
+        if "lib/python3.8/site-packages/" in line:
+            return None
+        if "/usr/lib/python3.8/" in line:
+            return None
+        if "filename: <string>, modulename: <string>," in line:
+            return None
+        if "filename: <frozen importlib." in line:
+            return None
+        if ", funcname: <module>" in line:
+            return None
+        return line
+
 
     if "/" in project_name:
         project_name = project_name.split("/")[1]
@@ -331,6 +532,9 @@ def install_dependencies(venv_path, project_path, project_name):
             else:
                 print("No dependencies listed in `pyproject.toml`.")
 
+            print("Installing tree_sitter and tree_sitter_languages...")
+            subprocess.run([pip_path, "install", "tree_sitter", "tree_sitter_languages"], check=True)
+            
         except Exception as e:
             print(f"Error processing `pyproject.toml`: {e}")
         print("proj_name=", project_name)
@@ -482,7 +686,16 @@ if __name__ == "__main__":
             trace_log_file_path = run_test_with_trace(venv_path, project_name, test_name)
             # Write results to output file
             writer.writerow([gitproj_name, sha, test_name, trace_log_file_path])
-
+            trace_log_filename = os.path.basename(trace_log_file_path)
+            os.makedirs("method_bodies", exist_ok=True)
+            method_names = get_all_covered_methods_names(venv_path, project_name, test_name)
+            print("method_names=", method_names)
+            with open("method_bodies/"+trace_log_filename, "w") as mb_file:
+                for method_name in method_names:
+                    method_body= extract_any_method_body(method_name[0], method_name[1])
+                    if method_body[0] is not None:
+                        mb_file.write(f"[INFO] Method {method_name[1]} in {method_name[0]} (lines {method_body[1]}-{method_body[2]}):\n")
+                        mb_file.write(method_body[0] + "\n\n")
 
             outfile.flush()
 
