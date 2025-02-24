@@ -20,84 +20,7 @@ from collections import defaultdict, deque
 PY_LANGUAGE = get_language("python")
 
 
-def reorder_function_levels(log_file, function_levels):
-    """
-    Reorder the function_levels dictionary based on the order of function definitions in the log_file.
-
-    Args:
-        log_file (str): Path to the log file containing function definitions.
-        function_levels (dict): Dictionary with composite keys (filename, modulename, funcname) and their levels as values.
-
-    Returns:
-        dict: Reordered dictionary matching the sequence in the log file.
-    """
-    # Read the log file and extract function definitions
-    with open(log_file, 'r') as file:
-        log_lines = file.readlines()
-
-    # Initialize a list to hold the ordered function identifiers
-    ordered_functions = []
-
-    # Flag to start capturing function definitions
-    capture = False
-
-    # Regular expression to match function definition lines
-    func_def_pattern = re.compile(
-        r'filename:\s*(?P<filename>[^,]+),\s*modulename:\s*(?P<modulename>[^,]+),\s*funcname:\s*(?P<funcname>[^\s]+)'
-    )
-
-    def find_level(filename, modulename, funcname):
-        # from the dictionary function_levels, if the object has filename, modulename, funcname, return the level
-        for item in function_levels:
-            if item['filename'] == filename and item['modulename'] == modulename and item['funcname'] == funcname:
-                return item['level']
-        return None
-
-    
-    filename_method = []
-
-    for line in log_lines:
-        if line.strip() == "functions called:":
-            capture = True
-            continue
-        if capture:
-            # if line.strip() == "":
-            #     break  # End of function definitions section
-
-            # Match the line against the function definition pattern
-            match = func_def_pattern.search(line)
-            if match:
-                # Extract filename, modulename, and funcname
-                filename = match.group('filename').strip()
-                modulename = match.group('modulename').strip()
-                funcname = match.group('funcname').strip()
-                level = find_level(filename, modulename, funcname)
-
-                # if level is None:
-                #     # print(f"Function {funcname} not found in the trace output.")
-                #     continue
-
-                if "/lib/python3" in filename:
-                    continue
-                if "<" in filename:
-                    continue
-
-                temp_dict = {
-                    'filename': filename,
-                    'modulename': modulename,
-                    'funcname': funcname,
-                    'level': level
-                }
-
-                # append the filename and method name to the filename_method list, as a tuple
-                filename_method.append((filename, funcname))
-
-                ordered_functions.append(temp_dict)
-
-    return ordered_functions, filename_method
-
-
-def parse_trackcalls_output(log_file):
+def parse_trace_output(log_file):
     """
     Parses the output of `python -m trace --trackcalls` to determine function call levels.
 
@@ -111,25 +34,29 @@ def parse_trackcalls_output(log_file):
         lines = f.readlines()
 
     call_graph = defaultdict(list)
-    function_files = {}
+    function_details = {}
     current_file = None
 
     # Regular expressions to match lines
     file_header_re = re.compile(r'^\*\*\* (.+) \*\*\*$')
     call_re = re.compile(r'^\s*(\S+) -> (\S+)$')
+    module_re = re.compile(r'^\s*--> (.+)$')
 
     for line in lines:
         file_header_match = file_header_re.match(line)
         call_match = call_re.match(line)
+        module_match = module_re.match(line)
 
         if file_header_match:
             current_file = file_header_match.group(1)
+        elif module_match:
+            current_file = module_match.group(1)
         elif call_match and current_file:
             caller = call_match.group(1)
             callee = call_match.group(2)
             call_graph[caller].append(callee)
-            function_files[caller] = current_file
-            function_files[callee] = current_file
+            function_details[caller] = current_file
+            function_details[callee] = current_file
 
     # Determine levels using BFS
     levels = {}
@@ -151,7 +78,7 @@ def parse_trackcalls_output(log_file):
     # Prepare the result
     result = []
     for func, level in levels.items():
-        filename = function_files.get(func, 'Unknown')
+        filename = function_details.get(func, 'Unknown')
         modulename, funcname = func.rsplit('.', 1)
         result.append({
             'filename': filename,
@@ -162,31 +89,70 @@ def parse_trackcalls_output(log_file):
 
     return result
 
+def reorder_function_levels(log_file, function_levels):
+    """
+    Reorder the function_levels list based on the order of function definitions in the log_file.
+
+    Args:
+        log_file (str): Path to the log file containing function definitions.
+        function_levels (list): List of dicts with 'filename', 'modulename', 'funcname', and 'level'.
+
+    Returns:
+        list: Reordered list matching the sequence in the log file.
+    """
+    # Read the log file and extract function definitions
+    with open(log_file, 'r') as file:
+        log_lines = file.readlines()
+
+    # Initialize a list to hold the ordered function identifiers
+    ordered_functions = []
+
+    # Flag to start capturing function definitions
+    capture = False
+
+    # Regular expression to match function definition lines
+    func_def_pattern = re.compile(
+        r'filename:\s*(?P<filename>[^,]+),\s*modulename:\s*(?P<modulename>[^,]+),\s*funcname:\s*(?P<funcname>[^\s]+)'
+    )
+
+    # Create a lookup dictionary for function levels
+    function_level_dict = {
+        (entry['filename'], entry['modulename'], entry['funcname']): entry['level']
+        for entry in function_levels
+    }
+
+    for line in log_lines:
+        if line.strip() == "functions called:":
+            capture = True
+            continue
+        if capture:
+            match = func_def_pattern.search(line)
+            if match:
+                filename = match.group('filename').strip()
+                modulename = match.group('modulename').strip()
+                funcname = match.group('funcname').strip()
+                level = function_level_dict.get((filename, modulename, funcname))
+
+                if "/lib/python3" in filename:
+                    continue
+                if "<" in filename:
+                    continue
+
+                if level is None:
+                    # Assign a default level if not found
+                    level = 0
+
+                ordered_functions.append({
+                    'filename': filename,
+                    'modulename': modulename,
+                    'funcname': funcname,
+                    'level': level
+                })
+
+    return ordered_functions
 
 
 def run_trace_func_level(venv_path, project_name, fully_qualified_test_name):
-    def filter_function_names(line):
-        # Filter out the function names from the trace output
-        # if line contains one of the following, then return None otherwite return the line
-        # 1. lib/python3.8/site-packages/
-        # 2. /usr/lib/python3.8/
-        # 3. filename: <string>, modulename: <string>,
-        # 4. filename: <frozen importlib._bootstrap_external>,
-
-        if "filename: /usr/lib/" in line:
-            return None
-        if "filename: <string>" in line:
-            return None
-        if "filename: <frozen" in line:
-            return None
-        if "filename: <__array_function__" in line:
-            return None
-        if "/virtualenv/lib/python3.8/site-packages/" in line:
-            return None
-        # if "level: None" in line:
-        #     return None
-        return line
-
     if "/" in project_name:
         project_name = project_name.split("/")[1]
 
@@ -261,11 +227,22 @@ def run_trace_func_level(venv_path, project_name, fully_qualified_test_name):
         log.write(result.stderr + "\n")
 
     # Now that we have two tracefiles,
-    function_levels = parse_trackcalls_output(trackcalls_trace)
-    ordered_functions, filename_method = reorder_function_levels(listfunc_trace, function_levels)
+    function_levels = parse_trace_output(trackcalls_trace)
+    ordered_functions = reorder_function_levels(listfunc_trace, function_levels)
+
+    filename_method = []
 
     with open(level_trace, "w") as f:
         for func in ordered_functions:
+            filename = func['filename']
+            if "/lib/python3" in filename:
+                continue
+            if "<" in filename:
+                continue
+            method_name = func['funcname']
+
+            filename_method.append((filename, method_name))
+
             line = f"filename: {func['filename']}, modulename: {func['modulename']}, funcname: {func['funcname']}, level: {func['level']}\n"
             # line = filter_function_names(line)
             if line is not None:
@@ -388,18 +365,6 @@ def extract_any_method_body(file_path, qualified_method_name):
 
 
 def get_all_covered_methods_names(venv_path, project_name, fully_qualified_test_name, log_file_name):
-    # First runs the command like the following, just as we run in run_with_trace function
-    # /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg/virtualenv/bin/python -m coverage run --source /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg /home/tbaral/icse25/NOD-Test-Repair/projects/vizkg/virtualenv/bin/pytest -s tests/dataIdentification_test.py::VizKGTestCase::test_column_dataframe
-    # Then we get the function coverage list using the following command
-    # coverage report --functions | grep "function" | awk '{ sub(/%/,"",$NF); if ($NF > 0) print $1, $2, $3 }'
-    # The output of the above command is like the following:
-        # VizKG/utils/util.py: function __convert_dtypes
-        # VizKG/utils/util.py: function set_chart
-        # VizKG/utils/util.py: function set_dataframe
-        # VizKG/visualize.py: function VizKG.__init__
-        # tests/dataIdentification_test.py: function VizKGTestCase.setUp
-    # we need to return this output as a list.
-
     if "/" in project_name:
         project_name = project_name.split("/")[1]
 
@@ -474,13 +439,6 @@ def run_test_with_trace(venv_path, project_name, fully_qualified_test_name, trac
 
 
     def filter_function_names(line):
-        # Filter out the function names from the trace output
-        # if line contains one of the following, then return None otherwite return the line
-        # 1. lib/python3.8/site-packages/
-        # 2. /usr/lib/python3.8/
-        # 3. filename: <string>, modulename: <string>,
-        # 4. filename: <frozen importlib._bootstrap_external>,
-
         if "lib/python3.8/site-packages/" in line:
             return None
         if "/usr/lib/python3.8/" in line:
