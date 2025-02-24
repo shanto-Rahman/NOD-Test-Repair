@@ -14,9 +14,287 @@ import shutil
 import re
 from tree_sitter import Parser
 from tree_sitter_languages import get_language
+from collections import defaultdict, deque
 
 # Get the prebuilt Python language parser
 PY_LANGUAGE = get_language("python")
+
+
+def reorder_function_levels(log_file, function_levels):
+    """
+    Reorder the function_levels dictionary based on the order of function definitions in the log_file.
+
+    Args:
+        log_file (str): Path to the log file containing function definitions.
+        function_levels (dict): Dictionary with composite keys (filename, modulename, funcname) and their levels as values.
+
+    Returns:
+        dict: Reordered dictionary matching the sequence in the log file.
+    """
+    # Read the log file and extract function definitions
+    with open(log_file, 'r') as file:
+        log_lines = file.readlines()
+
+    # Initialize a list to hold the ordered function identifiers
+    ordered_functions = []
+
+    # Flag to start capturing function definitions
+    capture = False
+
+    # Regular expression to match function definition lines
+    func_def_pattern = re.compile(
+        r'filename:\s*(?P<filename>[^,]+),\s*modulename:\s*(?P<modulename>[^,]+),\s*funcname:\s*(?P<funcname>[^\s]+)'
+    )
+
+    def find_level(filename, modulename, funcname):
+        # from the dictionary function_levels, if the object has filename, modulename, funcname, return the level
+        for item in function_levels:
+            if item['filename'] == filename and item['modulename'] == modulename and item['funcname'] == funcname:
+                return item['level']
+        return None
+
+    
+    filename_method = []
+
+    for line in log_lines:
+        if line.strip() == "functions called:":
+            capture = True
+            continue
+        if capture:
+            # if line.strip() == "":
+            #     break  # End of function definitions section
+
+            # Match the line against the function definition pattern
+            match = func_def_pattern.search(line)
+            if match:
+                # Extract filename, modulename, and funcname
+                filename = match.group('filename').strip()
+                modulename = match.group('modulename').strip()
+                funcname = match.group('funcname').strip()
+                level = find_level(filename, modulename, funcname)
+
+                # if level is None:
+                #     # print(f"Function {funcname} not found in the trace output.")
+                #     continue
+
+                if "/lib/python3" in filename:
+                    continue
+                if "<" in filename:
+                    continue
+
+                temp_dict = {
+                    'filename': filename,
+                    'modulename': modulename,
+                    'funcname': funcname,
+                    'level': level
+                }
+
+                # append the filename and method name to the filename_method list, as a tuple
+                filename_method.append((filename, funcname))
+
+                ordered_functions.append(temp_dict)
+
+    return ordered_functions, filename_method
+
+
+def parse_trackcalls_output(log_file):
+    """
+    Parses the output of `python -m trace --trackcalls` to determine function call levels.
+
+    Args:
+        log_file (str): Path to the log file containing the trace output.
+
+    Returns:
+        list of dict: A list where each dict contains 'filename', 'modulename', 'funcname', and 'level'.
+    """
+    with open(log_file, 'r') as f:
+        lines = f.readlines()
+
+    call_graph = defaultdict(list)
+    function_files = {}
+    current_file = None
+
+    # Regular expressions to match lines
+    file_header_re = re.compile(r'^\*\*\* (.+) \*\*\*$')
+    call_re = re.compile(r'^\s*(\S+) -> (\S+)$')
+
+    for line in lines:
+        file_header_match = file_header_re.match(line)
+        call_match = call_re.match(line)
+
+        if file_header_match:
+            current_file = file_header_match.group(1)
+        elif call_match and current_file:
+            caller = call_match.group(1)
+            callee = call_match.group(2)
+            call_graph[caller].append(callee)
+            function_files[caller] = current_file
+            function_files[callee] = current_file
+
+    # Determine levels using BFS
+    levels = {}
+    queue = deque()
+
+    # Initialize the queue with top-level module functions
+    for func in call_graph:
+        if '.<module>' in func:
+            queue.append((func, 0))
+            levels[func] = 0
+
+    while queue:
+        current_func, current_level = queue.popleft()
+        for callee in call_graph[current_func]:
+            if callee not in levels:  # Avoid revisiting
+                levels[callee] = current_level + 1
+                queue.append((callee, current_level + 1))
+
+    # Prepare the result
+    result = []
+    for func, level in levels.items():
+        filename = function_files.get(func, 'Unknown')
+        modulename, funcname = func.rsplit('.', 1)
+        result.append({
+            'filename': filename,
+            'modulename': modulename,
+            'funcname': funcname,
+            'level': level
+        })
+
+    return result
+
+
+
+def run_trace_func_level(venv_path, project_name, fully_qualified_test_name):
+    def filter_function_names(line):
+        # Filter out the function names from the trace output
+        # if line contains one of the following, then return None otherwite return the line
+        # 1. lib/python3.8/site-packages/
+        # 2. /usr/lib/python3.8/
+        # 3. filename: <string>, modulename: <string>,
+        # 4. filename: <frozen importlib._bootstrap_external>,
+
+        if "filename: /usr/lib/" in line:
+            return None
+        if "filename: <string>" in line:
+            return None
+        if "filename: <frozen" in line:
+            return None
+        if "filename: <__array_function__" in line:
+            return None
+        if "/virtualenv/lib/python3.8/site-packages/" in line:
+            return None
+        # if "level: None" in line:
+        #     return None
+        return line
+
+    if "/" in project_name:
+        project_name = project_name.split("/")[1]
+
+    print(f"Running test with trace to get function trace and levels: {fully_qualified_test_name}")
+    print(f"Project name: {project_name}")
+
+    venv_path = os.path.abspath(venv_path)
+    python_path = os.path.join(venv_path, "bin", "python")
+    pytest_path = os.path.join(venv_path, "bin", "pytest")
+
+
+    std_lib = os.path.dirname(os.__file__)
+
+    python_code = (
+        "import site; "
+        "s = site.getsitepackages(); "
+        "print(s[0])"
+    )
+
+    site_packages_command = [python_path, "-c", python_code]
+
+    site_packages_result = subprocess.run(
+        site_packages_command,
+        check=True,
+        capture_output=True,
+        text=True
+    )
+
+    site_packages = site_packages_result.stdout.strip()
+    ignore_dirs = f"{std_lib}{os.pathsep}{site_packages}"
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    projects_dir = os.path.join(script_dir, "projects", project_name)
+    
+    log_dir = os.path.join(script_dir, "logs_traces")
+    method_bodies_dir = os.path.join(script_dir, "method_bodies")
+    formatted_test_name = fully_qualified_test_name.replace(".py", "").replace("::", "_").replace("/", "_")
+    formatted_test_name = f"{project_name}_{formatted_test_name}"
+
+    trace_file_path_temp = f"{log_dir}/{formatted_test_name}_temp.log"
+    trace_file_path_wo_duplicate_lines = f"{log_dir}/{formatted_test_name}.log"
+    method_bodies_filename = f"{method_bodies_dir}/{formatted_test_name}.log"
+
+    # relative_trace_file_path = f"logs_traces/{formatted_test_name}.log"
+    listfunc_trace = f"traces_listfunc/{formatted_test_name}.log"
+    trackcalls_trace = f"trace_trackcalls/{formatted_test_name}.log"
+    level_trace = f"level_traces/{formatted_test_name}.log"
+
+    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs("traces_listfunc", exist_ok=True)
+    os.makedirs("trace_trackcalls", exist_ok=True)
+    os.makedirs("level_traces", exist_ok=True)
+    os.makedirs(method_bodies_dir, exist_ok=True)
+
+
+    trace_command_listfunc = [python_path,  "-m", "trace", "--listfuncs", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", fully_qualified_test_name]
+    trace_command_trackcalls = [python_path,  "-m", "trace", "--trackcalls", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", fully_qualified_test_name]
+    
+    env = os.environ.copy()
+    #  reset env["PYTHONPATH"] = projects_dir
+    env["PYTHONPATH"] = projects_dir
+
+    # run the trace command just like we run the test command
+    with open(listfunc_trace, "w") as log:
+        result = subprocess.run(trace_command_listfunc, cwd=projects_dir, check=False, capture_output=True, text=True)
+        log.write(result.stdout + "\n")
+        log.write(result.stderr + "\n")
+
+    with open(trackcalls_trace, "w") as log:
+        result = subprocess.run(trace_command_trackcalls, cwd=projects_dir, check=False, capture_output=True, text=True)
+        log.write(result.stdout + "\n")
+        log.write(result.stderr + "\n")
+
+    # Now that we have two tracefiles,
+    function_levels = parse_trackcalls_output(trackcalls_trace)
+    ordered_functions, filename_method = reorder_function_levels(listfunc_trace, function_levels)
+
+    with open(level_trace, "w") as f:
+        for func in ordered_functions:
+            line = f"filename: {func['filename']}, modulename: {func['modulename']}, funcname: {func['funcname']}, level: {func['level']}\n"
+            # line = filter_function_names(line)
+            if line is not None:
+                f.write(line)
+            # f.write(f"filename: {func['filename']}, modulename: {func['modulename']}, funcname: {func['funcname']}, level: {func['level']}\n")
+
+    
+    # clear the method_bodies file before writing to it
+    with open(method_bodies_filename, "w") as f:
+        f.write("")
+
+    # get method bodies for each of the filename_method
+    for filename, method in filename_method:
+        if method == "<module>":
+            continue
+
+        exclude_file_path_content = ["site-packages", "/usr/lib/"]
+
+        if any(exclude_file_path in filename for exclude_file_path in exclude_file_path_content):
+            continue
+        
+        method_body, start_line, end_line = extract_any_method_body(filename, method)
+        if method_body is not None:
+            with open(method_bodies_filename, "a") as mb_file:
+                # mb_file.write(f"[INFO] Method {method_name[1]} in {method_name[0]} (lines {method_body[1]}-{method_body[2]}):\n")
+                mb_file.write(f"[INFO] Method {method} in {filename} (lines {start_line}-{end_line}):\n")
+                mb_file.write(method_body + "\n\n")
+
+    return level_trace
 
 def extract_any_method_body(file_path, qualified_method_name):
     """
@@ -684,19 +962,22 @@ if __name__ == "__main__":
             venv_path = create_virtual_env(repo_path, python_executable)
             install_dependencies(venv_path, repo_path, project_name)
 
-            trace_log_file_path = run_test_with_trace(venv_path, project_name, test_name)
+            # trace_log_file_path = run_test_with_trace(venv_path, project_name, test_name)
+            trace_log_file_path = run_trace_func_level(venv_path, project_name, test_name)
             # Write results to output file
             writer.writerow([gitproj_name, sha, test_name, trace_log_file_path])
             trace_log_filename = os.path.basename(trace_log_file_path)
-            os.makedirs("method_bodies", exist_ok=True)
-            method_names = get_all_covered_methods_names(venv_path, project_name, test_name, trace_log_filename)
-            print("method_names=", method_names)
-            with open("method_bodies/"+trace_log_filename, "w") as mb_file:
-                for method_name in method_names:
-                    method_body= extract_any_method_body(method_name[0], method_name[1])
-                    if method_body[0] is not None:
-                        mb_file.write(f"[INFO] Method {method_name[1]} in {method_name[0]} (lines {method_body[1]}-{method_body[2]}):\n")
-                        mb_file.write(method_body[0] + "\n\n")
+            # remove extension from the trace_log_filename
+            trace_log_filename = trace_log_filename.split(".")[0]
+            # os.makedirs("method_bodies", exist_ok=True)
+            # method_names = get_all_covered_methods_names(venv_path, project_name, test_name, trace_log_filename)
+            # print("method_names=", method_names)
+            # with open("method_bodies/"+trace_log_filename, "w") as mb_file:
+            #     for method_name in method_names:
+            #         method_body= extract_any_method_body(method_name[0], method_name[1])
+            #         if method_body[0] is not None:
+            #             mb_file.write(f"[INFO] Method {method_name[1]} in {method_name[0]} (lines {method_body[1]}-{method_body[2]}):\n")
+            #             mb_file.write(method_body[0] + "\n\n")
 
             outfile.flush()
 
