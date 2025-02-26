@@ -375,7 +375,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, num_runs=3000):
+def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path, num_runs=3000):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
@@ -405,7 +405,7 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
     env = os.environ.copy()
     env["PYTHONPATH"] = projects_dir
 
-    trace_script_path = "/home/tbaral/icse25/2/NOD-Test-Repair/trace_script.py"
+    # trace_script_path = "trace_script.py"
 
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(method_lists_dir, exist_ok=True)
@@ -500,6 +500,7 @@ if __name__ == "__main__":
     method_bodies_dir = os.path.join(script_dir, "method_bodies")
     function_trace_dir = os.path.join(script_dir, "function_traces")
     line_trace_dir = os.path.join(script_dir, "line_traces")
+    trace_script_path = os.path.join(script_dir, "trace_script.py")
 
     os.makedirs(projects_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
@@ -532,7 +533,7 @@ if __name__ == "__main__":
             python_executable = detect_python_version(repo_path)
             venv_path = create_virtual_env(repo_path, python_executable)
             install_dependencies(venv_path, repo_path, project_name)
-            flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir)
+            flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path)
             # Write results to output file
             writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
             outfile.flush()
