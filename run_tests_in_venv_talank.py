@@ -375,7 +375,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, num_runs=5):
+def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, num_runs=3000):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
@@ -384,7 +384,6 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
     pytest_path = os.path.join(venv_path, "bin", "pytest")
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    # trace_script_path = os.path.join(script_dir, "trace_script")
 
     # Check if virtual environment files exist
     if not os.path.exists(python_path):
@@ -397,30 +396,16 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
         print(f"Current working directory: {os.getcwd()}")  # Print current directory
         return
 
-
     # Convert project path to absolute path
     project_path = os.path.abspath(project_path)
     num_parallel = 200
     test_pass=0
     test_fail=0
 
-    # trace_ignore_dirs = get_ignored_dirs_for_trace(python_path)
-     # Set up env var so that trace can be run
     env = os.environ.copy()
     env["PYTHONPATH"] = projects_dir
 
     trace_script_path = "/home/tbaral/icse25/2/NOD-Test-Repair/trace_script.py"
-
-    # Create the python test command that generate trace as well
-    # pytest_command = [python_path, "-m", "trace", "--trace", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", test_name]
-    
-    #pytest_command = [
-    #    pytest_path,  # Path to pytest inside virtualenv
-    #    "--maxfail=1",  # Stop after first failure
-    #    "-n", str(num_parallel),  # Run tests in parallel
-    #    "--count", str(10000),  # Repeat the test N times
-    #    test_name  # The test to run
-    #]
 
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(method_lists_dir, exist_ok=True)
@@ -436,7 +421,23 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
     line_trace_file = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
     # method_list_filename = covered_method_list_file
 
-    pytest_command = [python_path, trace_script_path, test_name, function_trace_file, line_trace_file, covered_method_list_file]
+    # open the covered_method_list_file in write mode
+    open(covered_method_list_file, "w").close()
+    open(function_trace_file, "w").close()
+    open(line_trace_file, "w").close()
+
+    # I need temp function trace and line trace file
+    function_trace_file_temp = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_temp.log")
+    line_trace_file_temp = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_temp.log")
+
+    function_trace_file_pass = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_pass.log")
+    line_trace_file_pass = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_pass.log")
+
+    # filenames for failure logs
+    function_trace_file_fail = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_fail.log")
+    line_trace_file_fail = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_fail.log")
+
+    pytest_command = [python_path, trace_script_path, test_name, function_trace_file_temp, line_trace_file_temp, covered_method_list_file]
     
     # 🔍 Print debugging info
     print(f"Running command: {' '.join(pytest_command)}")
@@ -452,12 +453,29 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
                 log.write(f"=== Test Run {i}/{num_runs} ===\n")
                 log.write(result.stdout + "\n")
                 log.write(result.stderr + "\n")
+
+                # put the content of temp files to the final files, use append mode
+                with open(function_trace_file_pass, "a") as f:
+                    with open(function_trace_file_temp, "r") as f_temp:
+                        f.write(f_temp.read())
+                with open(line_trace_file_pass, "a") as f:
+                    with open(line_trace_file_temp, "r") as f_temp:
+                        f.write(f_temp.read())
+
                 # Talank should change the logfile as it contains traces, and duplicate lines in trace. 
                 # Check test results
                 if "1 passed" in result.stdout:
                     test_pass += 1
+                    # we want to rename the temp files to _passed ones
+                    os.rename(function_trace_file_temp, function_trace_file_pass)
+                    os.rename(line_trace_file_temp, line_trace_file_pass)
+
                 if "1 failed" in result.stdout:
                     test_fail += 1
+                    # we want to rename the temp files to _failed ones
+                    os.rename(function_trace_file_temp, function_trace_file_fail)
+                    os.rename(line_trace_file_temp, line_trace_file_fail)
+                
 
                 # Stop if at least one test passes and one fails
                 if test_pass > 0 and test_fail > 0:
@@ -542,6 +560,10 @@ if __name__ == "__main__":
             for filename, method_name, level in method_lists:
                 if filename == "filename":
                     continue
+
+                if int(level) < 3:
+                    continue
+
                 # filter level here: eg, if level < 2 then continue so that only level 0,1,2 are considered
                 method_body, start_line, end_line = extract_any_method_body(filename, method_name)
                 if method_body is not None:
