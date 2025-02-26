@@ -455,12 +455,10 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
                 log.write(result.stderr + "\n")
 
                 # put the content of temp files to the final files, use append mode
-                with open(function_trace_file_pass, "a") as f:
-                    with open(function_trace_file_temp, "r") as f_temp:
-                        f.write(f_temp.read())
-                with open(line_trace_file_pass, "a") as f:
-                    with open(line_trace_file_temp, "r") as f_temp:
-                        f.write(f_temp.read())
+                with open(function_trace_file_temp, "r") as f:
+                    function_trace_content = f.read()
+                with open(function_trace_file, "a") as f:
+                    f.write(function_trace_content)
 
                 # Talank should change the logfile as it contains traces, and duplicate lines in trace. 
                 # Check test results
@@ -563,6 +561,8 @@ if __name__ == "__main__":
 
                 if int(level) < 3:
                     continue
+
+                print(f"Extracting method body for {method_name} in {filename}...")
 
                 # filter level here: eg, if level < 2 then continue so that only level 0,1,2 are considered
                 method_body, start_line, end_line = extract_any_method_body(filename, method_name)
