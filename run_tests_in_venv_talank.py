@@ -6,6 +6,7 @@ import venv
 import re
 import csv
 from git import Repo
+import pytest
 
 
 import toml  # Install with `pip install toml`
@@ -18,6 +19,7 @@ from collections import defaultdict, deque
 
 # Get the prebuilt Python language parser
 PY_LANGUAGE = get_language("python")
+# method_list_filename = ""
 
 
 def parse_trace_output(log_file):
@@ -133,10 +135,10 @@ def reorder_function_levels(log_file, function_levels):
                 funcname = match.group('funcname').strip()
                 level = function_level_dict.get((filename, modulename, funcname))
 
-                if "/lib/python3" in filename:
-                    continue
-                if "<" in filename:
-                    continue
+                # if "/lib/python3" in filename:
+                #     continue
+                # if "<" in filename:
+                #     continue
 
                 if level is None:
                     # Assign a default level if not found
@@ -770,7 +772,7 @@ def install_dependencies(venv_path, project_path, project_name):
                 print("No dependencies listed in `pyproject.toml`.")
 
             print("Installing tree_sitter and tree_sitter_languages...")
-            subprocess.run([pip_path, "install", "tree_sitter", "tree_sitter_languages"], check=True)
+            subprocess.run([pip_path, "install", "tree_sitter", "tree_sitter_languages", "pytest"], check=True)
 
         except Exception as e:
             print(f"Error processing `pyproject.toml`: {e}")
@@ -815,13 +817,16 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1):
+def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, num_runs=5):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
     venv_path = os.path.abspath(venv_path)
     python_path = os.path.join(venv_path, "bin", "python")
     pytest_path = os.path.join(venv_path, "bin", "pytest")
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # trace_script_path = os.path.join(script_dir, "trace_script")
 
     # Check if virtual environment files exist
     if not os.path.exists(python_path):
@@ -834,12 +839,23 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1):
         print(f"Current working directory: {os.getcwd()}")  # Print current directory
         return
 
+
     # Convert project path to absolute path
     project_path = os.path.abspath(project_path)
     num_parallel = 200
     test_pass=0
     test_fail=0
-    pytest_command = [python_path, "-m", "pytest", test_name] # Talank need to change this to run with trace
+
+    # trace_ignore_dirs = get_ignored_dirs_for_trace(python_path)
+     # Set up env var so that trace can be run
+    env = os.environ.copy()
+    env["PYTHONPATH"] = projects_dir
+
+    trace_script_path = "/home/tbaral/icse25/2/NOD-Test-Repair/trace_script.py"
+
+    # Create the python test command that generate trace as well
+    # pytest_command = [python_path, "-m", "trace", "--trace", f"--ignore-dir={ignore_dirs}", pytest_path, "-s", test_name]
+    
     #pytest_command = [
     #    pytest_path,  # Path to pytest inside virtualenv
     #    "--maxfail=1",  # Stop after first failure
@@ -848,14 +864,27 @@ def run_tests(venv_path, project_path, test_name, log_dir, num_runs=1):
     #    test_name  # The test to run
     #]
 
+    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(method_lists_dir, exist_ok=True)
+    os.makedirs(function_trace_dir, exist_ok=True)
+    os.makedirs(line_trace_dir, exist_ok=True)
 
+   
+    # Format log filename: replace `.py` and `::` with `_`
+    formatted_test_name = test_name.replace(".py", "").replace("::", "_").replace("/", "_")
+    log_file = os.path.join(log_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
+    covered_method_list_file = os.path.join(method_lists_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.csv")
+    function_trace_file = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
+    line_trace_file = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
+    # method_list_filename = covered_method_list_file
+
+    pytest_command = [python_path, trace_script_path, test_name, function_trace_file, line_trace_file, covered_method_list_file]
+    
     # 🔍 Print debugging info
     print(f"Running command: {' '.join(pytest_command)}")
     print(f"Project directory: {project_path}")
     print(f"Current working directory before running pytest: {os.getcwd()}")
-    # Format log filename: replace `.py` and `::` with `_`
-    formatted_test_name = test_name.replace(".py", "").replace("::", "_").replace("/", "_")
-    log_file = os.path.join(log_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
+
 
     with open(log_file, "w") as log:
         for i in range(1, num_runs+1):
@@ -893,19 +922,23 @@ if __name__ == "__main__":
     projects_dir = os.path.join(script_dir, "projects")
     log_dir = os.path.join(script_dir, "logs")
     result_dir = os.path.join(script_dir, "results")
+    method_lists_dir = os.path.join(script_dir, "method_lists")
+    method_bodies_dir = os.path.join(script_dir, "method_bodies")
+    function_trace_dir = os.path.join(script_dir, "function_traces")
+    line_trace_dir = os.path.join(script_dir, "line_traces")
 
     os.makedirs(projects_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(result_dir, exist_ok=True)
 
-    output_file = os.path.join(result_dir, "trace_files.csv")
+    output_file = os.path.join(result_dir, "flaky_test_results.csv")
     input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
 
     with open(input_file_name, newline='', encoding='utf-8') as file, \
          open(output_file, "a", newline='', encoding='utf-8') as outfile:
         reader = csv.reader(file)
         writer = csv.writer(outfile)
-        writer.writerow(["gitproj_name", "sha", "test_name", "trace_file_path"])
+        writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found"])
 
         for row in reader:
             gitproj_name = row[0]
@@ -914,30 +947,49 @@ if __name__ == "__main__":
  
             repo, repo_path = proj_clone(project_name, sha, projects_dir)
             print("repo=", repo, project_name)
+            #parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
+            #parser.add_argument("project_path", type=str, help="Path to the project directory")
+            #args = parser.parse_args()
+
+            #project_path = os.path.abspath(args.project_path)
+            #project_name = os.path.basename(project_path)
 
             test_name = row[2]
             python_executable = detect_python_version(repo_path)
             venv_path = create_virtual_env(repo_path, python_executable)
             install_dependencies(venv_path, repo_path, project_name)
-
-            # trace_log_file_path = run_test_with_trace(venv_path, project_name, test_name)
-            trace_log_file_path = run_trace_func_level(venv_path, project_name, test_name)
+            flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir)
             # Write results to output file
-            writer.writerow([gitproj_name, sha, test_name, trace_log_file_path])
-            trace_log_filename = os.path.basename(trace_log_file_path)
-            # remove extension from the trace_log_filename
-            trace_log_filename = trace_log_filename.split(".")[0]
-            # os.makedirs("method_bodies", exist_ok=True)
-            # method_names = get_all_covered_methods_names(venv_path, project_name, test_name, trace_log_filename)
-            # print("method_names=", method_names)
-            # with open("method_bodies/"+trace_log_filename, "w") as mb_file:
-            #     for method_name in method_names:
-            #         method_body= extract_any_method_body(method_name[0], method_name[1])
-            #         if method_body[0] is not None:
-            #             mb_file.write(f"[INFO] Method {method_name[1]} in {method_name[0]} (lines {method_body[1]}-{method_body[2]}):\n")
-            #             mb_file.write(method_body[0] + "\n\n")
-
+            writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
             outfile.flush()
+
+            # Get the log file name for method list, using the naming convention used in run_tests
+            formatted_test_name = test_name.replace(".py", "").replace("::", "_").replace("/", "_")
+            log_file_generic_name = f"{os.path.basename(repo_path)}_{formatted_test_name}"
+
+            method_list_filename = os.path.join(method_lists_dir, log_file_generic_name + ".csv")
+            method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
+            
+            os.makedirs(method_bodies_dir, exist_ok=True)
+
+            print(f"Extracting method bodies for {method_list_filename}...")
+
+            method_lists = [] # list of tuple (filename, method_name, level)
+            with open(method_list_filename, newline='', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                for row in reader:
+                    current_filename, current_method_name, current_level = row[0], row[1], row[2]
+                    method_lists.append((current_filename, current_method_name, current_level))
+
+            for filename, method_name, level in method_lists:
+                if filename == "filename":
+                    continue
+                method_body, start_line, end_line = extract_any_method_body(filename, method_name)
+                if method_body is not None:
+                    with open(method_bodies_filename, "a") as mb_file:
+                        mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
+                        mb_file.write(method_body + "\n\n")
+            
 
             #if not args.keep_venv:
             #    cleanup(venv_path)
