@@ -375,7 +375,7 @@ import sys
 import subprocess
 import os
 
-def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path, num_runs=3000):
+def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path, log_file_generic_name, num_runs=3000):
     """Runs the specified test using the virtual environment."""
 
     # Convert venv path to absolute path
@@ -405,39 +405,61 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
     env = os.environ.copy()
     env["PYTHONPATH"] = projects_dir
 
-    # trace_script_path = "trace_script.py"
-
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(method_lists_dir, exist_ok=True)
     os.makedirs(function_trace_dir, exist_ok=True)
     os.makedirs(line_trace_dir, exist_ok=True)
 
+    # next we create log dir inside each of the above directories for this test specific, where we save all the logs, passing, failing, etc.
+    log_dir = os.path.join(log_dir, log_file_generic_name)
+    log_dir_pass = os.path.join(log_dir, "pass")
+    log_dir_fail = os.path.join(log_dir, "fail")
+
+    method_lists_dir = os.path.join(method_lists_dir, log_file_generic_name)
+    method_lists_dir_pass = os.path.join(method_lists_dir, "pass")
+    method_lists_dir_fail = os.path.join(method_lists_dir, "fail")
+
+    function_trace_dir = os.path.join(function_trace_dir, log_file_generic_name)
+    function_trace_dir_pass = os.path.join(function_trace_dir, "pass")
+    function_trace_dir_fail = os.path.join(function_trace_dir, "fail")
+
+    line_trace_dir = os.path.join(line_trace_dir, log_file_generic_name)
+    line_trace_dir_pass = os.path.join(line_trace_dir, "pass")
+    line_trace_dir_fail = os.path.join(line_trace_dir, "fail")
+
+    # remove the directories if they exist
+    if os.path.exists(log_dir):
+        shutil.rmtree(log_dir)
+    if os.path.exists(method_lists_dir):
+        shutil.rmtree(method_lists_dir)
+    if os.path.exists(function_trace_dir):
+        shutil.rmtree(function_trace_dir)
+    if os.path.exists(line_trace_dir):
+        shutil.rmtree(line_trace_dir)
+
+    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(log_dir_pass, exist_ok=True)
+    os.makedirs(log_dir_fail, exist_ok=True)
+
+    os.makedirs(method_lists_dir, exist_ok=True)
+    os.makedirs(method_lists_dir_pass, exist_ok=True)
+    os.makedirs(method_lists_dir_fail, exist_ok=True)
+
+    os.makedirs(function_trace_dir, exist_ok=True)
+    os.makedirs(function_trace_dir_pass, exist_ok=True)
+    os.makedirs(function_trace_dir_fail, exist_ok=True)
+
+    os.makedirs(line_trace_dir, exist_ok=True)
+    os.makedirs(line_trace_dir_pass, exist_ok=True)
+    os.makedirs(line_trace_dir_fail, exist_ok=True)
    
-    # Format log filename: replace `.py` and `::` with `_`
-    formatted_test_name = test_name.replace(".py", "").replace("::", "_").replace("/", "_")
-    log_file = os.path.join(log_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
-    covered_method_list_file = os.path.join(method_lists_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.csv")
-    function_trace_file = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
-    line_trace_file = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}.log")
-    # method_list_filename = covered_method_list_file
+    # make the temp files empty, inside the log dirs
+    function_trace_file_temp = os.path.join(function_trace_dir, f"ft_temp.log")
+    line_trace_file_temp = os.path.join(line_trace_dir, f"lt_temp.log")
+    covered_method_list_file_temp = os.path.join(method_lists_dir, f"ml_temp.csv")
+    log_file_temp = os.path.join(log_dir, f"log_temp.log")
 
-    # open the covered_method_list_file in write mode
-    open(covered_method_list_file, "w").close()
-    open(function_trace_file, "w").close()
-    open(line_trace_file, "w").close()
-
-    # I need temp function trace and line trace file
-    function_trace_file_temp = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_temp.log")
-    line_trace_file_temp = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_temp.log")
-
-    function_trace_file_pass = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_pass.log")
-    line_trace_file_pass = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_pass.log")
-
-    # filenames for failure logs
-    function_trace_file_fail = os.path.join(function_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_fail.log")
-    line_trace_file_fail = os.path.join(line_trace_dir, f"{os.path.basename(project_path)}_{formatted_test_name}_fail.log")
-
-    pytest_command = [python_path, trace_script_path, test_name, function_trace_file_temp, line_trace_file_temp, covered_method_list_file]
+    pytest_command = [python_path, trace_script_path, test_name, function_trace_file_temp, line_trace_file_temp, covered_method_list_file_temp]
     
     # 🔍 Print debugging info
     print(f"Running command: {' '.join(pytest_command)}")
@@ -445,44 +467,69 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
     print(f"Current working directory before running pytest: {os.getcwd()}")
 
 
-    with open(log_file, "w") as log:
-        for i in range(1, num_runs+1):
-            print(f"Running test {i}/{num_runs}...")
-            try:
+    # with open(log_file, "w") as log:
+    for i in range(1, num_runs+1):
+        last_test_result = ""
+        print(f"Running test {i}/{num_runs}...")
+        try:
+            with open(log_file_temp, "w") as log:
                 result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True) 
                 log.write(f"=== Test Run {i}/{num_runs} ===\n")
                 log.write(result.stdout + "\n")
                 log.write(result.stderr + "\n")
 
-                # put the content of temp files to the final files, use append mode
-                with open(function_trace_file_temp, "r") as f:
-                    function_trace_content = f.read()
-                with open(function_trace_file, "a") as f:
-                    f.write(function_trace_content)
-
-                # Talank should change the logfile as it contains traces, and duplicate lines in trace. 
                 # Check test results
                 if "1 passed" in result.stdout:
                     test_pass += 1
-                    # we want to rename the temp files to _passed ones
-                    os.rename(function_trace_file_temp, function_trace_file_pass)
-                    os.rename(line_trace_file_temp, line_trace_file_pass)
-
+                    last_test_result = "pass"
+                    
                 if "1 failed" in result.stdout:
                     test_fail += 1
-                    # we want to rename the temp files to _failed ones
-                    os.rename(function_trace_file_temp, function_trace_file_fail)
-                    os.rename(line_trace_file_temp, line_trace_file_fail)
-                
+                    last_test_result = "fail"
+                    
+            # put the content of temp files to the final files, use append mode
+            with open(function_trace_file_temp, "r") as f:
+                function_trace_content = f.read()
+            
+            with open(line_trace_file_temp, "r") as f:
+                line_trace_content = f.read()
 
-                # Stop if at least one test passes and one fails
-                if test_pass > 0 and test_fail > 0:
-                    print("Flaky test detected! Stopping execution.")
-                    return True # flaky test detected
+            with open(covered_method_list_file_temp, "r") as f:
+                covered_method_list_content = f.read()
 
-            except Exception as e:
-                print(f"ERROR: An unexpected exception occurred.\n{e}")
-                print(f"Current working directory after failure: {os.getcwd()}")
+            with open(log_file_temp, "r") as f:
+                log_content = f.read()
+
+            # if last_test_result is pass, then move the temp files to pass directory
+            if last_test_result == "pass":
+                with open(os.path.join(function_trace_dir_pass, f"{i}.log"), "w") as f:
+                    f.write(function_trace_content)
+                with open(os.path.join(line_trace_dir_pass, f"{i}.log"), "w") as f:
+                    f.write(line_trace_content)
+                with open(os.path.join(method_lists_dir_pass, f"{i}.csv"), "w") as f:
+                    f.write(covered_method_list_content)
+                with open(os.path.join(log_dir_pass, f"{i}.log"), "w") as f:
+                    f.write(log_content)
+
+            # if last_test_result is fail, then move the temp files to fail directory
+            if last_test_result == "fail":
+                with open(os.path.join(function_trace_dir_fail, f"{i}.log"), "w") as f:
+                    f.write(function_trace_content)
+                with open(os.path.join(line_trace_dir_fail, f"{i}.log"), "w") as f:
+                    f.write(line_trace_content)
+                with open(os.path.join(method_lists_dir_fail, f"{i}.csv"), "w") as f:
+                    f.write(covered_method_list_content)
+                with open(os.path.join(log_dir_fail, f"{i}.log"), "w") as f:
+                    f.write(log_content)
+
+            # Stop if at least one test passes and one fails
+            if test_pass > 0 and test_fail > 0:
+                print("Flaky test detected! Stopping execution.")
+                return True # flaky test detected
+
+        except Exception as e:
+            print(f"ERROR: An unexpected exception occurred.\n{e}")
+            print(f"Current working directory after failure: {os.getcwd()}")
 
 def cleanup(venv_path):
     """Deletes the virtual environment."""
@@ -522,48 +569,61 @@ if __name__ == "__main__":
  
             repo, repo_path = proj_clone(project_name, sha, projects_dir)
             print("repo=", repo, project_name)
-            #parser = argparse.ArgumentParser(description="Run tests in an isolated virtual environment per project.")
-            #parser.add_argument("project_path", type=str, help="Path to the project directory")
-            #args = parser.parse_args()
-
-            #project_path = os.path.abspath(args.project_path)
-            #project_name = os.path.basename(project_path)
-
+            
             test_name = row[2]
             python_executable = detect_python_version(repo_path)
             venv_path = create_virtual_env(repo_path, python_executable)
             install_dependencies(venv_path, repo_path, project_name)
-            flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path)
-            # Write results to output file
-            writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
-            outfile.flush()
-
+            
             # Get the log file name for method list, using the naming convention used in run_tests
             formatted_test_name = test_name.replace(".py", "").replace("::", "_").replace("/", "_")
             log_file_generic_name = f"{os.path.basename(repo_path)}_{formatted_test_name}"
 
-            method_list_filename = os.path.join(method_lists_dir, log_file_generic_name + ".csv")
-            method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
+            flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path, log_file_generic_name)
+            # Write results to output file
+            writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
+            outfile.flush()
 
-            open(method_bodies_filename, "w").close()
+            # method_list_filename = os.path.join(method_lists_dir, log_file_generic_name + ".csv")
+            # Get the fist listing pass and the first listed fail files
+            # method_list_filename_pass = os.path.join(method_lists_dir, log_file_generic_name, "pass", "1.csv") .. the first listed might not always be 1.csv
+            failing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "fail")
+            failing_method_list_files = os.listdir(failing_method_list_dir)
+            failing_method_list_files.sort()
+            failing_method_list_filename = os.path.join(failing_method_list_dir, failing_method_list_files[0])
+
+
+            passing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "pass")
+            passing_method_list_files = os.listdir(passing_method_list_dir)
+            passing_method_list_files.sort()
+            passing_method_list_filename = os.path.join(passing_method_list_dir, passing_method_list_files[0])
+
+
+            # method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
+            method_bodies_dir = os.path.join(method_bodies_dir, log_file_generic_name)
+            passing_method_bodies_file = os.path.join(method_bodies_dir, "pass.log")
+            failing_method_bodies_file = os.path.join(method_bodies_dir, "fail.log")
             
             os.makedirs(method_bodies_dir, exist_ok=True)
 
-            print(f"Extracting method bodies for {method_list_filename}...")
+            open(passing_method_bodies_file, "w").close()
+            open(failing_method_bodies_file, "w").close()
+
+            print(f"Extracting passing method bodies for {passing_method_list_filename}...")
 
             # Initialize a set to keep track of processed (filename, method_name) pairs
-            processed_methods = set()
+            passing_processed_methods = set()
 
             # Read the method list from the CSV file
-            method_lists = []
-            with open(method_list_filename, newline='', encoding='utf-8') as csvfile:
+            passing_method_lists = []
+            with open(passing_method_list_filename, newline='', encoding='utf-8') as csvfile:
                 reader = csv.reader(csvfile)
                 for row in reader:
                     current_filename, current_method_name, current_level = row[0], row[1], row[2]
-                    method_lists.append((current_filename, current_method_name, current_level))
+                    passing_method_lists.append((current_filename, current_method_name, current_level))
 
             # Process each method in the list
-            for filename, method_name, level in method_lists:
+            for filename, method_name, level in passing_method_lists:
                 if filename == "filename":
                     continue
 
@@ -571,7 +631,7 @@ if __name__ == "__main__":
                     continue
 
                 # Check if the (filename, method_name) pair has already been processed
-                if (filename, method_name) in processed_methods:
+                if (filename, method_name) in passing_processed_methods:
                     print(f"Method {method_name} in {filename} has already been processed. Skipping...")
                     continue
 
@@ -580,12 +640,52 @@ if __name__ == "__main__":
                 # Extract the method body
                 method_body, start_line, end_line = extract_any_method_body(filename, method_name)
                 if method_body is not None:
-                    with open(method_bodies_filename, "a") as mb_file:
+                    with open(passing_method_bodies_file, "a") as mb_file:
                         mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
                         mb_file.write(method_body + "\n\n")
 
                     # Add the (filename, method_name) pair to the set of processed methods
-                    processed_methods.add((filename, method_name))
+                    passing_processed_methods.add((filename, method_name))
+
+
+            print(f"Extracting failing method bodies for {failing_method_list_filename}...")
+            # Initialize a set to keep track of processed (filename, method_name) pairs
+
+            failing_processed_methods = set()
+
+            # Read the method list from the CSV file
+            failing_method_lists = []
+            with open(failing_method_list_filename, newline='', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                for row in reader:
+                    current_filename, current_method_name, current_level = row[0], row[1], row[2]
+                    failing_method_lists.append((current_filename, current_method_name, current_level))
+
+            # Process each method in the list
+
+            for filename, method_name, level in failing_method_lists:
+                if filename == "filename":
+                    continue
+
+                if int(level) > 3:
+                    continue
+
+                # Check if the (filename, method_name) pair has already been processed
+                if (filename, method_name) in failing_processed_methods:
+                    print(f"Method {method_name} in {filename} has already been processed. Skipping...")
+                    continue
+
+                print(f"Extracting method body for {method_name} in {filename}...")
+
+                # Extract the method body
+                method_body, start_line, end_line = extract_any_method_body(filename, method_name)
+                if method_body is not None:
+                    with open(failing_method_bodies_file, "a") as mb_file:
+                        mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
+                        mb_file.write(method_body + "\n\n")
+
+                    # Add the (filename, method_name) pair to the set of processed methods
+                    failing_processed_methods.add((filename, method_name))
 
             #if not args.keep_venv:
             #    cleanup(venv_path)
