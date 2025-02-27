@@ -544,34 +544,48 @@ if __name__ == "__main__":
 
             method_list_filename = os.path.join(method_lists_dir, log_file_generic_name + ".csv")
             method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
+
+            open(method_bodies_filename, "w").close()
             
             os.makedirs(method_bodies_dir, exist_ok=True)
 
             print(f"Extracting method bodies for {method_list_filename}...")
 
-            method_lists = [] # list of tuple (filename, method_name, level)
+            # Initialize a set to keep track of processed (filename, method_name) pairs
+            processed_methods = set()
+
+            # Read the method list from the CSV file
+            method_lists = []
             with open(method_list_filename, newline='', encoding='utf-8') as csvfile:
                 reader = csv.reader(csvfile)
                 for row in reader:
                     current_filename, current_method_name, current_level = row[0], row[1], row[2]
                     method_lists.append((current_filename, current_method_name, current_level))
 
+            # Process each method in the list
             for filename, method_name, level in method_lists:
                 if filename == "filename":
                     continue
 
-                if int(level) < 3:
+                if int(level) > 3:
+                    continue
+
+                # Check if the (filename, method_name) pair has already been processed
+                if (filename, method_name) in processed_methods:
+                    print(f"Method {method_name} in {filename} has already been processed. Skipping...")
                     continue
 
                 print(f"Extracting method body for {method_name} in {filename}...")
 
-                # filter level here: eg, if level < 2 then continue so that only level 0,1,2 are considered
+                # Extract the method body
                 method_body, start_line, end_line = extract_any_method_body(filename, method_name)
                 if method_body is not None:
                     with open(method_bodies_filename, "a") as mb_file:
                         mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
                         mb_file.write(method_body + "\n\n")
-            
+
+                    # Add the (filename, method_name) pair to the set of processed methods
+                    processed_methods.add((filename, method_name))
 
             #if not args.keep_venv:
             #    cleanup(venv_path)

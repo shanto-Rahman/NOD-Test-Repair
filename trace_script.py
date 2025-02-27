@@ -16,7 +16,31 @@ ftracefile = sys.argv[2] if len(sys.argv) > 2 else "ftrace.log"
 linetracefile = sys.argv[3] if len(sys.argv) > 3 else "linetrace.log"
 method_lists = sys.argv[4] if len(sys.argv) > 4 else "method_lists.log"
 
+other_log_files = "logs_other.log"
+open(other_log_files, "w").close()
+
+
+def get_qualified_function_name(frame):
+    func_name = frame.f_code.co_name
+    locals_ = frame.f_locals
+
+    # Check if it's a method by inspecting 'self' or 'cls'
+    if 'self' in locals_:
+        # write to file, other_log_files
+        class_name = type(locals_['self']).__name__
+        return f"{class_name}.{func_name}"
+    elif 'cls' in locals_:
+        # write to file, other_log_files
+        print("cls")
+        print(locals_['cls'])
+        class_name = locals_['cls'].__name__
+        return f"{class_name}.{func_name}"
+    else:
+        return func_name  # It's a standalone function
+
+
 def trace_calls(frame, event, arg):
+    print("Inside trace_calls")
     global initial_depth
 
     filename = frame.f_code.co_filename
@@ -35,18 +59,20 @@ def trace_calls(frame, event, arg):
         linetrace_out.write(f"filename: {filename}, funcname: {func_name}, line {lineno}: {code_line}\n")
 
     if event == "call":
+        print("Inside call")
         if initial_depth is None:
             initial_depth = len(call_stack)  # Set initial depth on first function call
 
+        qualified_func_name = get_qualified_function_name(frame)
         level = len(call_stack) - initial_depth  # Normalize depth
-        call_stack.append(func_name)
+        call_stack.append(qualified_func_name)
 
         # Print function call details
         with open(ftracefile, "a") as ftrace_out:
-            ftrace_out.write(f"filename: {filename}, funcname: {func_name}, level: {level}\n")
+            ftrace_out.write(f"filename: {filename}, funcname: {qualified_func_name}, level: {level}\n")
         
         with open(method_lists, "a") as method_lists_out:
-            method_lists_out.write(f"{filename},{func_name},{level}\n")
+            method_lists_out.write(f"{filename},{qualified_func_name},{level}\n")
 
     elif event == "return":
         if call_stack:
