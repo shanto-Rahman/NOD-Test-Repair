@@ -37,8 +37,8 @@ def extract_any_method_body(file_path, qualified_method_name):
              indicate where the definition occurs in the file (1-indexed).
              If the method is not found, returns (None, None, None).
     """
-    print("file_path=", file_path)
-    print("qualified_method_name=", qualified_method_name)
+    # print("file_path=", file_path)
+    # print("qualified_method_name=", qualified_method_name)
 
 
     # Read the file content
@@ -553,14 +553,14 @@ if __name__ == "__main__":
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(result_dir, exist_ok=True)
 
-    output_file = os.path.join(result_dir, "flaky_test_results.csv")
+    output_file = os.path.join(result_dir, "trace_results.csv")
     input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
 
     with open(input_file_name, newline='', encoding='utf-8') as file, \
          open(output_file, "a", newline='', encoding='utf-8') as outfile:
         reader = csv.reader(file)
         writer = csv.writer(outfile)
-        writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found"])
+        writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found", "passing_method_list", "failing_method_list", "passing_method_trace", "failing_method_trace", "passing_line_trace", "failing_line_trace", "passing_method_bodies", "failing_method_bodies"])
 
         for row in reader:
             gitproj_name = row[0]
@@ -581,23 +581,18 @@ if __name__ == "__main__":
 
             flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path, log_file_generic_name)
             # Write results to output file
-            writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
+            # writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
             outfile.flush()
 
-            # method_list_filename = os.path.join(method_lists_dir, log_file_generic_name + ".csv")
-            # Get the fist listing pass and the first listed fail files
-            # method_list_filename_pass = os.path.join(method_lists_dir, log_file_generic_name, "pass", "1.csv") .. the first listed might not always be 1.csv
             failing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "fail")
             failing_method_list_files = os.listdir(failing_method_list_dir)
             failing_method_list_files.sort()
             failing_method_list_filename = os.path.join(failing_method_list_dir, failing_method_list_files[0])
 
-
             passing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "pass")
             passing_method_list_files = os.listdir(passing_method_list_dir)
             passing_method_list_files.sort()
             passing_method_list_filename = os.path.join(passing_method_list_dir, passing_method_list_files[0])
-
 
             # method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
             method_bodies_dir = os.path.join(method_bodies_dir, log_file_generic_name)
@@ -686,6 +681,15 @@ if __name__ == "__main__":
 
                     # Add the (filename, method_name) pair to the set of processed methods
                     failing_processed_methods.add((filename, method_name))
+
+            # add the data to the csv file
+            passing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "pass")
+            failing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "fail")
+            passing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "pass")
+            failing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "fail")
+
+            # writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found", "passing_method_list", "failing_method_list", "passing_method_trace", "failing_method_trace", "passing_line_trace", "failing_line_trace", "passing_method_bodies", "failing_method_bodies"])
+            writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found, passing_method_list_filename, failing_method_list_filename, passing_method_trace, failing_method_trace, passing_line_trace, failing_line_trace, passing_method_bodies_file, failing_method_bodies_file])
 
             #if not args.keep_venv:
             #    cleanup(venv_path)
