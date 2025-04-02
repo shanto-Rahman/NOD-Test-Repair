@@ -40,7 +40,7 @@ def get_qualified_function_name(frame):
 
 
 def trace_calls(frame, event, arg):
-    print("Inside trace_calls")
+    # print("Inside trace_calls")
     global initial_depth
 
     filename = frame.f_code.co_filename
