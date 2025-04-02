@@ -544,7 +544,7 @@ if __name__ == "__main__":
     log_dir = os.path.join(script_dir, "logs")
     result_dir = os.path.join(script_dir, "results")
     method_lists_dir = os.path.join(script_dir, "method_lists")
-    method_bodies_dir = os.path.join(script_dir, "method_bodies")
+    method_bodies_dir_base = os.path.join(script_dir, "method_bodies")
     function_trace_dir = os.path.join(script_dir, "function_traces")
     line_trace_dir = os.path.join(script_dir, "line_traces")
     trace_script_path = os.path.join(script_dir, "trace_script.py")
@@ -595,7 +595,7 @@ if __name__ == "__main__":
             passing_method_list_filename = os.path.join(passing_method_list_dir, passing_method_list_files[0])
 
             # method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
-            method_bodies_dir = os.path.join(method_bodies_dir, log_file_generic_name)
+            method_bodies_dir = os.path.join(method_bodies_dir_base, log_file_generic_name)
             passing_method_bodies_file = os.path.join(method_bodies_dir, "pass.log")
             failing_method_bodies_file = os.path.join(method_bodies_dir, "fail.log")
             

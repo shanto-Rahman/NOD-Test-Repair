@@ -59,7 +59,7 @@ def trace_calls(frame, event, arg):
         linetrace_out.write(f"filename: {filename}, funcname: {func_name}, line {lineno}: {code_line}\n")
 
     if event == "call":
-        print("Inside call")
+        # print("Inside call")
         if initial_depth is None:
             initial_depth = len(call_stack)  # Set initial depth on first function call
 

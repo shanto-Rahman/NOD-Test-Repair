@@ -1,0 +1,130 @@
+=== Test Run 1/3000 ===
+TALANK Tracing test_statmach.py::Test_statmach::test_new_state_handles_less_events...
+============================= test session starts ==============================
+platform linux -- Python 3.8.20, pytest-8.3.5, pluggy-1.5.0
+rootdir: /home/tbaral/icse25/ASE/NOD-Test-Repair/projects/statmach
+plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
+collected 1 item
+
+test_statmach.py F
+
+=================================== FAILURES ===================================
+_______________ Test_statmach.test_new_state_handles_less_events _______________
+
+self = <test_statmach.Test_statmach object at 0x71cfea81d4c0>
+
+    def test_new_state_handles_less_events(self):
+        Events = enum.Enum('Events', 's0 s1')
+        s0 = State()
+        s1 = State()
+        s0.actions = {Events.s0: s0.action, Events.s1: s1.action}
+        s1.actions = {Events.s0: s0.action}  # Missing `s1`.
+        with pytest.raises(AssertionError, match=(
+                'Set of current events handled, {<Events.s1: 2>, <Events.s0: 1>},'
+                ' not the same as set of new events, {<Events.s0: 1>}'
+        )
+                           ):
+            with Machine(initial_state=s0) as m:
+>               m.fire(Events.s1)
+
+test_statmach.py:338: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Machine(initial_state=None), event = <Events.s1: 2>
+
+    def fire(self, event):
+        """
+        Fire the given event off and return the new value of the state machine.
+    
+        If it is the 1st firing on a new machine then the ``initial_state`` is entered before firing.
+    
+        The firing obtains the action tuple (new state, new value) associated with the event on the current state and
+        if the new state in the tuple is different than the current state
+        then exit the current state and enter the new state.
+    
+        :param event: event to fire off.
+        :returns: the new value of the state machine.
+        :raises AssertionError: if ``initial_state``'s ``__enter__`` returns ``None`` or not a ``State``
+                                or new state is ``None``
+                                or not a ``State``
+                                or if the set of events handled changes as a result of a state change.
+        :raises Exception: if initial state's or new state's ``__entry__`` raises or if old state's ``__exit__`` raises.
+        """
+        # See https://docs.python.org/3/reference/compound_stmts.html#with for how ``with`` works.
+    
+        if self._new_machine:  # Enter the initial state of the newly created machine.
+            self._new_machine = False
+            new_state = self._state.__enter__()
+            assert isinstance(new_state, State), \
+                "Object, {}, returned by `initial_state`'s, {}, `__enter__` is not a `State`.".format(
+                    new_state,
+                    self._state,
+                )
+            self._state = new_state
+    
+        current_events = self.events
+        current_state = self._state
+    
+        new_value = None
+        # noinspection PyBroadException
+        try:
+            machine_actions = self.actions
+            state_actions = current_state.actions
+            new_state, new_value = state_actions[event] if event in state_actions.keys() else machine_actions[event]
+        except BaseException as e:
+            if sys.implementation.name == 'micropython':  # Micropython has reduced exception capability.
+                if not current_state.__exit__(type(e), e, None):
+                    self._state = None  # None indicates that __exit__ already called.
+                    raise e
+            else:
+                if not current_state.__exit__(*sys.exc_info()):
+                    self._state = None  # None indicates that __exit__ already called.
+                    raise e
+            new_state = current_state  # ``__exit__`` has dealt with the exception, therefore continue in current state.
+    
+        if new_state is not current_state:
+            assert new_state is not None, 'New state cannot be `None`.'
+    
+            _ = current_state.__exit__(None, None, None)
+            self._state = new_state.__enter__()
+    
+            assert self._state is not None, "New state's `__enter__`  cannot return `None`."
+            assert isinstance(self._state, State), "New state's `__enter__`  must return a `State`."
+    
+            new_events = self.events
+>           assert new_events == current_events, \
+                "Set of current events handled, {}, not the same as set of new events, {}".format(
+                    current_events,
+                    new_events,
+                )
+E           AssertionError: Set of current events handled, {<Events.s0: 1>, <Events.s1: 2>}, not the same as set of new events, {<Events.s0: 1>}
+
+statmach.py:215: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_statmach.Test_statmach object at 0x71cfea81d4c0>
+
+    def test_new_state_handles_less_events(self):
+        Events = enum.Enum('Events', 's0 s1')
+        s0 = State()
+        s1 = State()
+        s0.actions = {Events.s0: s0.action, Events.s1: s1.action}
+        s1.actions = {Events.s0: s0.action}  # Missing `s1`.
+        with pytest.raises(AssertionError, match=(
+                'Set of current events handled, {<Events.s1: 2>, <Events.s0: 1>},'
+                ' not the same as set of new events, {<Events.s0: 1>}'
+        )
+                           ):
+            with Machine(initial_state=s0) as m:
+>               m.fire(Events.s1)
+E               AssertionError: Regex pattern did not match.
+E                Regex: 'Set of current events handled, {<Events.s1: 2>, <Events.s0: 1>}, not the same as set of new events, {<Events.s0: 1>}'
+E                Input: 'Set of current events handled, {<Events.s0: 1>, <Events.s1: 2>}, not the same as set of new events, {<Events.s0: 1>}'
+
+test_statmach.py:338: AssertionError
+=========================== short test summary info ============================
+FAILED test_statmach.py::Test_statmach::test_new_state_handles_less_events - ...
+============================== 1 failed in 0.10s ===============================
+
+
