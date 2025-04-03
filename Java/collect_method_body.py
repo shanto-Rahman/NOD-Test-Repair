@@ -1,3 +1,6 @@
+#pip install tree-sitter==0.21.3
+#tree-sitter-languages==1.10.2
+
 from tree_sitter import Language, Parser
 from tree_sitter_languages import get_language
 
