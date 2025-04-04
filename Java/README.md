@@ -1,0 +1,8 @@
+clone the project
+Run the test, collect the failure, modify the pom.xml to add jacoco and surefire plugin ( mvn test -pl common -Dtest=org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool)
+java -jar jacococli.jar report common/target/jacoco.exec \
+  --classfiles common/target/classes \
+    --sourcefiles common/src/main/java \
+      --xml common/target/coverage.xml
+
+Collect the code-coverage and methods using jacoco and tree-sitter (Run collect_executed_meths.py, and collect_method_body.py)
