@@ -1,5 +1,8 @@
 clone the project
-Run the test, collect the failure, modify the pom.xml to add jacoco and surefire plugin ( mvn test -pl common -Dtest=org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool)
+
+Run the test, collect the failure. So collecting the failure, we might need to run flakesync.
+
+modify the pom.xml to add jacoco and surefire plugin (mvn test -pl common -Dtest=org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool)
 java -jar jacococli.jar report common/target/jacoco.exec \
   --classfiles common/target/classes \
     --sourcefiles common/src/main/java \
