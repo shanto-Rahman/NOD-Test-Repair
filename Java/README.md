@@ -9,3 +9,7 @@ java -jar jacococli.jar report common/target/jacoco.exec \
       --xml common/target/coverage.xml
 
 Collect the code-coverage and methods using jacoco and tree-sitter (Run collect_executed_meths.py, and collect_method_body.py)
+
+
+tree-sitter-languages==1.10.2
+tree-sitter==0.21.3

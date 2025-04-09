@@ -2,6 +2,8 @@ import csv
 from pathlib import Path
 from tree_sitter import Parser
 from tree_sitter_languages import get_language
+import sys
+module_name = sys.argv[1]
 
 # Set up parser
 JAVA_LANGUAGE = get_language("java")
@@ -22,7 +24,7 @@ with open(executed_methods_file, newline='') as f:
         class_to_methods.setdefault(full_class_name, set()).add(method_name)
 
 # Root directory for source files
-src_root = Path("common/src/main/java")
+src_root = Path(module_name+"/src/main/java")
 
 # Store extracted method bodies
 extracted = []

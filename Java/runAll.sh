@@ -121,10 +121,14 @@ while IFS= read -r line
     
     cp $currentDir/jacococli.jar .
 
-    java -jar jacococli.jar report common/target/jacoco.exec \
-      --classfiles common/target/classes \
-        --sourcefiles common/src/main/java \
-          --xml common/target/coverage.xml
+    java -jar jacococli.jar report $module/target/jacoco.exec \
+      --classfiles $module/target/classes \
+        --sourcefiles $module/src/main/java \
+          --xml $module/target/coverage.xml
+
+
+    python3 $currentDir/collect_executed_meths.py "$module"
+    python3 $currentDir/collect_method_body.py "$module"
 
     
     #exit

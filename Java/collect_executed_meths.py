@@ -1,8 +1,10 @@
 import xml.etree.ElementTree as ET
 import csv
+import sys
 
+module_name = sys.argv[1]
 # Load the XML
-tree = ET.parse("common/target/coverage.xml")
+tree = ET.parse(module_name+"/target/coverage.xml")
 root = tree.getroot()
 
 executed_methods = []
