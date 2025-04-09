@@ -118,10 +118,18 @@ while IFS= read -r line
     echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName"
 
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
+    
+    cp $currentDir/jacococli.jar .
 
+    java -jar jacococli.jar report common/target/jacoco.exec \
+      --classfiles common/target/classes \
+        --sourcefiles common/src/main/java \
+          --xml common/target/coverage.xml
+
+    
     #exit
     echo "$(pwd)"
-    mvn org.jacoco:jacoco-maven-plugin:report
+    #mvn org.jacoco:jacoco-maven-plugin:report
     exit
 
     #exit
