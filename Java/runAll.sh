@@ -131,12 +131,12 @@ while IFS= read -r line
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
     slug_with_underscore="${slug//\//_}"
+    module_with_underscore="${module//\//_}"
     echo "$slug_with_underscore"
 
 
-    mv "${slug_with_underscore}_${module}_${testName}_executed_methods.csv" "$trace_dir/"
-    mv "${slug_with_underscore}_${module}_${testName}_executed_method_bodies.csv" "$trace_dir/"
-
+    mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
+    mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
     
     exit
 

@@ -4,7 +4,8 @@ from tree_sitter import Parser
 from tree_sitter_languages import get_language
 import sys
 
-module = sys.argv[1].replace("/", "_")
+module = sys.argv[1]
+module_with_underscore = module.replace("/", "_")
 test_name = sys.argv[2]
 slug = sys.argv[3].replace("/", "_")
 
@@ -15,7 +16,7 @@ parser.set_language(JAVA_LANGUAGE)
 
 # Load executed methods from CSV
 #executed_methods_file = "executed_methods.csv"
-executed_methods_file = slug+"_"+module+"_"+test_name+"_executed_methods.csv"
+executed_methods_file = slug+"_"+module_with_underscore+"_"+test_name+"_executed_methods.csv"
 executed_methods = set()
 class_to_methods = {}
 
@@ -73,7 +74,7 @@ for class_name in class_to_methods:
 
 # Save extracted method bodies to a CSV
 #output_path = "extracted_method_bodies.csv"
-executed_meth_csv = slug+"_"+module+"_"+test_name+"_executed_method_bodies.csv"
+executed_meth_csv = slug+"_"+module_with_underscore+"_"+test_name+"_executed_method_bodies.csv"
 #with open(executed_meth_csv, "w", newline="") as f:
 with open(executed_meth_csv, "w", newline="") as f:
     writer = csv.writer(f)

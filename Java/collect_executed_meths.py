@@ -2,7 +2,8 @@ import xml.etree.ElementTree as ET
 import csv
 import sys
 
-module = sys.argv[1].replace("/", "_")
+module = sys.argv[1]
+module_with_underscore = module.replace("/", "_")
 test_name = sys.argv[2]
 slug = sys.argv[3].replace("/", "_")
 # Load the XML
@@ -28,7 +29,7 @@ for package in root.findall("package"):
                     break  # If covered once, record and skip rest
 
 # Write to CSV
-executed_meth_csv = slug+"_"+module+"_"+test_name+"_executed_methods.csv"
+executed_meth_csv = slug+"_"+module_with_underscore+"_"+test_name+"_executed_methods.csv"
 with open(executed_meth_csv, "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["Package", "Class", "Method", "Descriptor"])
