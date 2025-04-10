@@ -2,9 +2,11 @@ import xml.etree.ElementTree as ET
 import csv
 import sys
 
-module_name = sys.argv[1]
+module = sys.argv[1].replace("/", "_")
+test_name = sys.argv[2]
+slug = sys.argv[3].replace("/", "_")
 # Load the XML
-tree = ET.parse(module_name+"/target/coverage.xml")
+tree = ET.parse(module+"/target/coverage.xml")
 root = tree.getroot()
 
 executed_methods = []
@@ -26,7 +28,8 @@ for package in root.findall("package"):
                     break  # If covered once, record and skip rest
 
 # Write to CSV
-with open("executed_methods.csv", "w", newline="") as f:
+executed_meth_csv = slug+"_"+module+"_"+test_name+"_executed_methods.csv"
+with open(executed_meth_csv, "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["Package", "Class", "Method", "Descriptor"])
     writer.writerows(executed_methods)

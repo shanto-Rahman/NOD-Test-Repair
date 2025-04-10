@@ -8,6 +8,7 @@ fi
 currentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 inputProj=$currentDir"/projects"
+trace_dir="$currentDir/traces"
 outputDir="$2"
 
 if [ ! -d "$currentDir/$outputDir" ] 
@@ -25,9 +26,9 @@ then
     mkdir "$currentDir/logs"
 fi
 
-if [ ! -d "$currentDir/Locations" ] 
+if [ ! -d "$trace_dir" ] 
 then
-    mkdir "$currentDir/Locations"
+    mkdir "$trace_dir"
 fi
 
 echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" >> "$currentDir/$outputDir/Isolation-Result.csv"
@@ -127,13 +128,16 @@ while IFS= read -r line
           --xml $module/target/coverage.xml
 
 
-    python3 $currentDir/collect_executed_meths.py "$module"
-    python3 $currentDir/collect_method_body.py "$module"
+    python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
+    python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
+    slug_with_underscore="${slug//\//_}"
+    echo "$slug_with_underscore"
+
+
+    mv "${slug_with_underscore}_${module}_${testName}_executed_methods.csv" "$trace_dir/"
+    mv "${slug_with_underscore}_${module}_${testName}_executed_method_bodies.csv" "$trace_dir/"
 
     
-    #exit
-    echo "$(pwd)"
-    #mvn org.jacoco:jacoco-maven-plugin:report
     exit
 
     #exit
