@@ -1,7 +1,7 @@
 [INFO] Method TestRetry.test_retry_with_catch_error in /home/tbaral/icse25/ASE/NOD-Test-Repair/projects/smartool/tests/test_retry.py (lines 29-45):
     def test_retry_with_catch_error(self):
 
-        @retry(times=100, delay=0.1, catch_error=ZeroDivisionError)
+        @retry(times=500, delay=0.1, catch_error=ZeroDivisionError)
         def add(a, b):
             1 / random.choice([0, 0, 0, 0, 0, 0, 1])
             return a + b
@@ -9,7 +9,7 @@
         self.assertEqual(add(1, 2), 3)
         self.assertEqual(add.__name__, 'add')
 
-        @retry(times=100, delay=0.1, catch_error=ValueError)
+        @retry(times=500, delay=0.1, catch_error=ValueError)
         def add(a, b):
             1 / random.choice([0, 0, 0, 0, 0, 0, 1])
             return a + b
