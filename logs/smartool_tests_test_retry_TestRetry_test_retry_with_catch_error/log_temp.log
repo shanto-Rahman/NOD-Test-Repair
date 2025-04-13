@@ -1,4 +1,4 @@
-=== Test Run 8/3000 ===
+=== Test Run 2611/3000 ===
 TALANK Tracing tests/test_retry.py::TestRetry::test_retry_with_catch_error...
 ============================= test session starts ==============================
 platform linux -- Python 3.8.20, pytest-8.3.5, pluggy-1.5.0
@@ -17,26 +17,52 @@ self = <test_retry.TestRetry testMethod=test_retry_with_catch_error>
     
         @retry(times=100, delay=0.1, catch_error=ZeroDivisionError)
         def add(a, b):
-            1 / random.choice([0, 0, 0, 0, 0, 0, 1])
+            1 / random.choice([0, 0, 0, 0, 0, 0, 0])
             return a + b
     
-        self.assertEqual(add(1, 2), 3)
-        self.assertEqual(add.__name__, 'add')
-    
-        @retry(times=100, delay=0.1, catch_error=ValueError)
-        def add(a, b):
-            1 / random.choice([0, 0, 0, 0, 0, 0, 1])
-            return a + b
-    
-        with self.assertRaises(ZeroDivisionError):
->           add(1, 2)
-E           AssertionError: ZeroDivisionError not raised
+>       self.assertEqual(add(1, 2), 3)
 
-tests/test_retry.py:45: AssertionError
+tests/test_retry.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/retry.py:28: in inner
+    return f(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = 1, b = 2
+
+    @retry(times=100, delay=0.1, catch_error=ZeroDivisionError)
+    def add(a, b):
+>       1 / random.choice([0, 0, 0, 0, 0, 0, 0])
+E       ZeroDivisionError: division by zero
+
+tests/test_retry.py:33: ZeroDivisionError
 ------------------------------ Captured log call -------------------------------
 WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 99, error: division by zero
-=========================== short test summary info ============================
-FAILED tests/test_retry.py::TestRetry::test_retry_with_catch_error - Assertio...
-============================== 1 failed in 0.20s ===============================
-
-
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 98, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 97, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 96, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 95, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 94, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 93, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 92, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 91, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 90, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 89, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 88, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 87, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 86, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 85, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 84, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 83, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 82, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 81, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 80, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 79, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 78, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 77, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 76, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 75, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 74, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 73, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 72, error: division by zero
+WARNING  Sm

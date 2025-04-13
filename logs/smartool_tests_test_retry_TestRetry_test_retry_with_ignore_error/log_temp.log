@@ -1,4 +1,4 @@
-=== Test Run 2/3000 ===
+=== Test Run 4/3000 ===
 TALANK Tracing tests/test_retry.py::TestRetry::test_retry_with_ignore_error...
 ============================= test session starts ==============================
 platform linux -- Python 3.8.20, pytest-8.3.5, pluggy-1.5.0
@@ -6,8 +6,45 @@ rootdir: /home/tbaral/icse25/ASE/NOD-Test-Repair/projects/smartool
 plugins: repeat-0.9.3, cov-5.0.0, xdist-3.6.1
 collected 1 item
 
-tests/test_retry.py .
+tests/test_retry.py F
 
-============================== 1 passed in 1.37s ===============================
+=================================== FAILURES ===================================
+____________________ TestRetry.test_retry_with_ignore_error ____________________
+
+self = <test_retry.TestRetry testMethod=test_retry_with_ignore_error>
+
+    def test_retry_with_ignore_error(self):
+    
+        @retry(times=100, delay=0.1, ignore_error=ValueError)
+        def add(a, b):
+            1 / random.choice([0, 0, 0, 0, 0, 0, 1])
+            return a + b
+    
+        self.assertEqual(add(1, 2), 3)
+        self.assertEqual(add.__name__, 'add')
+    
+        @retry(times=100, delay=0.1, ignore_error=[ZeroDivisionError])
+        def add(a, b):
+            1 / random.choice([0, 0, 0, 0, 0, 0, 1])
+            return a + b
+    
+        with self.assertRaises(ZeroDivisionError):
+>           add(1, 2)
+E           AssertionError: ZeroDivisionError not raised
+
+tests/test_retry.py:63: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 99, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 98, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 97, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 96, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 95, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 94, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 93, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 92, error: division by zero
+WARNING  SmarTool:retry.py:38 Failed to run function "add", retry 91, error: division by zero
+=========================== short test summary info ============================
+FAILED tests/test_retry.py::TestRetry::test_retry_with_ignore_error - Asserti...
+============================== 1 failed in 1.00s ===============================
 
 

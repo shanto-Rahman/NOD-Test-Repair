@@ -473,19 +473,25 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
         print(f"Running test {i}/{num_runs}...")
         try:
             with open(log_file_temp, "w") as log:
-                result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True) 
-                log.write(f"=== Test Run {i}/{num_runs} ===\n")
-                log.write(result.stdout + "\n")
-                log.write(result.stderr + "\n")
+                try:
+                    result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True, timeout=600) 
+                    log.write(f"=== Test Run {i}/{num_runs} ===\n")
+                    log.write(result.stdout + "\n")
+                    log.write(result.stderr + "\n")
 
-                # Check test results
-                if "1 passed" in result.stdout:
-                    test_pass += 1
-                    last_test_result = "pass"
-                    
-                if "1 failed" in result.stdout:
-                    test_fail += 1
-                    last_test_result = "fail"
+                    # Check test results
+                    if "1 passed" in result.stdout:
+                        test_pass += 1
+                        last_test_result = "pass"
+                        
+                    if "1 failed" in result.stdout:
+                        test_fail += 1
+                        last_test_result = "fail"
+                except subprocess.TimeoutExpired:
+                    print(f"Test {i} timed out.")
+                    log.write(f"Test {i} timed out.\n")
+                    last_test_result = "timeout"
+                    return False
                     
             # put the content of temp files to the final files, use append mode
             with open(function_trace_file_temp, "r") as f:
@@ -583,113 +589,116 @@ if __name__ == "__main__":
             # Write results to output file
             # writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found])
             outfile.flush()
+            try:
+                failing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "fail")
+                failing_method_list_files = os.listdir(failing_method_list_dir)
+                failing_method_list_files.sort()
+                failing_method_list_filename = os.path.join(failing_method_list_dir, failing_method_list_files[0])
 
-            failing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "fail")
-            failing_method_list_files = os.listdir(failing_method_list_dir)
-            failing_method_list_files.sort()
-            failing_method_list_filename = os.path.join(failing_method_list_dir, failing_method_list_files[0])
+                passing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "pass")
+                passing_method_list_files = os.listdir(passing_method_list_dir)
+                passing_method_list_files.sort()
+                passing_method_list_filename = os.path.join(passing_method_list_dir, passing_method_list_files[0])
 
-            passing_method_list_dir = os.path.join(method_lists_dir, log_file_generic_name, "pass")
-            passing_method_list_files = os.listdir(passing_method_list_dir)
-            passing_method_list_files.sort()
-            passing_method_list_filename = os.path.join(passing_method_list_dir, passing_method_list_files[0])
+                # method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
+                method_bodies_dir = os.path.join(method_bodies_dir_base, log_file_generic_name)
+                passing_method_bodies_file = os.path.join(method_bodies_dir, "pass.log")
+                failing_method_bodies_file = os.path.join(method_bodies_dir, "fail.log")
+                
+                os.makedirs(method_bodies_dir, exist_ok=True)
 
-            # method_bodies_filename = os.path.join(method_bodies_dir, log_file_generic_name + ".log")
-            method_bodies_dir = os.path.join(method_bodies_dir_base, log_file_generic_name)
-            passing_method_bodies_file = os.path.join(method_bodies_dir, "pass.log")
-            failing_method_bodies_file = os.path.join(method_bodies_dir, "fail.log")
-            
-            os.makedirs(method_bodies_dir, exist_ok=True)
+                open(passing_method_bodies_file, "w").close()
+                open(failing_method_bodies_file, "w").close()
 
-            open(passing_method_bodies_file, "w").close()
-            open(failing_method_bodies_file, "w").close()
+                print(f"Extracting passing method bodies for {passing_method_list_filename}...")
 
-            print(f"Extracting passing method bodies for {passing_method_list_filename}...")
+                # Initialize a set to keep track of processed (filename, method_name) pairs
+                passing_processed_methods = set()
 
-            # Initialize a set to keep track of processed (filename, method_name) pairs
-            passing_processed_methods = set()
+                # Read the method list from the CSV file
+                passing_method_lists = []
+                with open(passing_method_list_filename, newline='', encoding='utf-8') as csvfile:
+                    reader = csv.reader(csvfile)
+                    for row in reader:
+                        current_filename, current_method_name, current_level = row[0], row[1], row[2]
+                        passing_method_lists.append((current_filename, current_method_name, current_level))
 
-            # Read the method list from the CSV file
-            passing_method_lists = []
-            with open(passing_method_list_filename, newline='', encoding='utf-8') as csvfile:
-                reader = csv.reader(csvfile)
-                for row in reader:
-                    current_filename, current_method_name, current_level = row[0], row[1], row[2]
-                    passing_method_lists.append((current_filename, current_method_name, current_level))
+                # Process each method in the list
+                for filename, method_name, level in passing_method_lists:
+                    if filename == "filename":
+                        continue
 
-            # Process each method in the list
-            for filename, method_name, level in passing_method_lists:
-                if filename == "filename":
-                    continue
+                    if int(level) > 3:
+                        continue
 
-                if int(level) > 3:
-                    continue
+                    # Check if the (filename, method_name) pair has already been processed
+                    if (filename, method_name) in passing_processed_methods:
+                        print(f"Method {method_name} in {filename} has already been processed. Skipping...")
+                        continue
 
-                # Check if the (filename, method_name) pair has already been processed
-                if (filename, method_name) in passing_processed_methods:
-                    print(f"Method {method_name} in {filename} has already been processed. Skipping...")
-                    continue
+                    print(f"Extracting method body for {method_name} in {filename}...")
 
-                print(f"Extracting method body for {method_name} in {filename}...")
+                    # Extract the method body
+                    method_body, start_line, end_line = extract_any_method_body(filename, method_name)
+                    if method_body is not None:
+                        with open(passing_method_bodies_file, "a") as mb_file:
+                            mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
+                            mb_file.write(method_body + "\n\n")
 
-                # Extract the method body
-                method_body, start_line, end_line = extract_any_method_body(filename, method_name)
-                if method_body is not None:
-                    with open(passing_method_bodies_file, "a") as mb_file:
-                        mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
-                        mb_file.write(method_body + "\n\n")
-
-                    # Add the (filename, method_name) pair to the set of processed methods
-                    passing_processed_methods.add((filename, method_name))
+                        # Add the (filename, method_name) pair to the set of processed methods
+                        passing_processed_methods.add((filename, method_name))
 
 
-            print(f"Extracting failing method bodies for {failing_method_list_filename}...")
-            # Initialize a set to keep track of processed (filename, method_name) pairs
+                print(f"Extracting failing method bodies for {failing_method_list_filename}...")
+                # Initialize a set to keep track of processed (filename, method_name) pairs
 
-            failing_processed_methods = set()
+                failing_processed_methods = set()
 
-            # Read the method list from the CSV file
-            failing_method_lists = []
-            with open(failing_method_list_filename, newline='', encoding='utf-8') as csvfile:
-                reader = csv.reader(csvfile)
-                for row in reader:
-                    current_filename, current_method_name, current_level = row[0], row[1], row[2]
-                    failing_method_lists.append((current_filename, current_method_name, current_level))
+                # Read the method list from the CSV file
+                failing_method_lists = []
+                with open(failing_method_list_filename, newline='', encoding='utf-8') as csvfile:
+                    reader = csv.reader(csvfile)
+                    for row in reader:
+                        current_filename, current_method_name, current_level = row[0], row[1], row[2]
+                        failing_method_lists.append((current_filename, current_method_name, current_level))
 
-            # Process each method in the list
+                # Process each method in the list
 
-            for filename, method_name, level in failing_method_lists:
-                if filename == "filename":
-                    continue
+                for filename, method_name, level in failing_method_lists:
+                    if filename == "filename":
+                        continue
 
-                if int(level) > 3:
-                    continue
+                    if int(level) > 3:
+                        continue
 
-                # Check if the (filename, method_name) pair has already been processed
-                if (filename, method_name) in failing_processed_methods:
-                    print(f"Method {method_name} in {filename} has already been processed. Skipping...")
-                    continue
+                    # Check if the (filename, method_name) pair has already been processed
+                    if (filename, method_name) in failing_processed_methods:
+                        print(f"Method {method_name} in {filename} has already been processed. Skipping...")
+                        continue
 
-                print(f"Extracting method body for {method_name} in {filename}...")
+                    print(f"Extracting method body for {method_name} in {filename}...")
 
-                # Extract the method body
-                method_body, start_line, end_line = extract_any_method_body(filename, method_name)
-                if method_body is not None:
-                    with open(failing_method_bodies_file, "a") as mb_file:
-                        mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
-                        mb_file.write(method_body + "\n\n")
+                    # Extract the method body
+                    method_body, start_line, end_line = extract_any_method_body(filename, method_name)
+                    if method_body is not None:
+                        with open(failing_method_bodies_file, "a") as mb_file:
+                            mb_file.write(f"[INFO] Method {method_name} in {filename} (lines {start_line}-{end_line}):\n")
+                            mb_file.write(method_body + "\n\n")
 
-                    # Add the (filename, method_name) pair to the set of processed methods
-                    failing_processed_methods.add((filename, method_name))
+                        # Add the (filename, method_name) pair to the set of processed methods
+                        failing_processed_methods.add((filename, method_name))
 
-            # add the data to the csv file
-            passing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "pass")
-            failing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "fail")
-            passing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "pass")
-            failing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "fail")
+                # add the data to the csv file
+                passing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "pass")
+                failing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "fail")
+                passing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "pass")
+                failing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "fail")
 
-            # writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found", "passing_method_list", "failing_method_list", "passing_method_trace", "failing_method_trace", "passing_line_trace", "failing_line_trace", "passing_method_bodies", "failing_method_bodies"])
-            writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found, passing_method_list_filename, failing_method_list_filename, passing_method_trace, failing_method_trace, passing_line_trace, failing_line_trace, passing_method_bodies_file, failing_method_bodies_file])
+                # writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found", "passing_method_list", "failing_method_list", "passing_method_trace", "failing_method_trace", "passing_line_trace", "failing_line_trace", "passing_method_bodies", "failing_method_bodies"])
+                writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found, passing_method_list_filename, failing_method_list_filename, passing_method_trace, failing_method_trace, passing_line_trace, failing_line_trace, passing_method_bodies_file, failing_method_bodies_file])
+
+            except Exception as e:
+                print(f"ERROR: An unexpected exception occurred while processing method bodies.\n{e}") 
 
             #if not args.keep_venv:
             #    cleanup(venv_path)

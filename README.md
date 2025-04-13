@@ -17,6 +17,13 @@ function traces will be in the dir `function_traces`
 method lists will be in the dir `method_lists` it will be a csv file with the columns `filename,method,level`. So, you can find the methodname for specific levels here. This file will be used eventually to get method bodies. You can add additional filter in the script `run_tests_in_venv_talank.py` in line 987 if you want to keep filter by levels
 
 
+Other dependency for running in ubuntu:
+```
+sudo apt-get update
+# PyCifRW components need access to Python.h and other headers, which are only available if the dev package is installed
+sudo apt-get install python3.8-dev
+```
+
 # OUTDATED INFORMATION
 Make sure that the following are installed in the python virtual environment
 conda create -n test_env python=3.9
