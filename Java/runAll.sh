@@ -46,6 +46,10 @@ while IFS= read -r line
     #package_class_name=$(echo $testName_with_dot| rev | cut -d'.' -f2- | rev)
     testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
     echo "$testName"
+    testClass="$(echo $testName_with_dot | rev | cut -d'.' -f2 | rev)"
+    echo "$testClass"
+    
+
     rootProj=$(echo "$slug" | cut -d/ -f 1)
     subProj=$(echo "$slug" | cut -d/ -f 2)
     if [[ ! -d ${inputProj}/${slug} ]]; then
@@ -116,19 +120,27 @@ while IFS= read -r line
     bash modify-project.sh $inputProj/$slug "jacoco"
     #mvn clean install -pl $module -am -DskipTests
     cd $inputProj/$slug
-    echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName"
+    #echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName" -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar"
+    #echo "mvn test   -pl common   -Dtest=org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool   -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=org.apache.uniffle.*;""
 
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
     
     cp $currentDir/jacococli.jar .
-
-    java -jar jacococli.jar report $module/target/jacoco.exec \
-      --classfiles $module/target/classes \
-        --sourcefiles $module/src/main/java \
-          --xml $module/target/coverage.xml
-
-
+    #if [[ $module == "." ]]; then
+    #    java -jar jacococli.jar report target/jacoco.exec \
+    #      --classfiles $module/target/classes \
+    #        --sourcefiles $module/src/main/java \
+    #          --xml $module/target/coverage.xml
+    #else
+        java -jar jacococli.jar report $module/target/jacoco.exec \
+          --classfiles $module/target/classes \
+            --sourcefiles $module/src/main/java \
+              --xml $module/target/coverage.xml
+    #fi
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
+    test_class_full_path=$(find $module -name "${testClass}.java")
+    python3 $currentDir/collect_test_meth_body.py "$moduel" "$testName" "$slug" "$test_class_full_path"
+    exit
     python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
     slug_with_underscore="${slug//\//_}"
     module_with_underscore="${module//\//_}"
@@ -137,8 +149,19 @@ while IFS= read -r line
 
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
-    
-    exit
+    base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
+
+    echo "$base_package"
+    #git stash
+
+    #mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName  -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${base_package}.*;" >  "$currentDir/logs/$testName.txt"
+
+    #echo "mvn test -pl $module  -Dtest=$testName  -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${base_package}.*;""
+
+    #mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
+    #exit
+    #How to get the api call by the test-code
+
 
     #exit
     cd $inputProj/$slug
