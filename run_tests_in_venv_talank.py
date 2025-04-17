@@ -195,17 +195,17 @@ def create_virtual_env(project_path, python_executable, generic_name="virtualenv
     try:
         print("Checking if `virtualenv` is installed...")
         print("python_executable=", python_executable)
-        subprocess.run([python_executable, "-m", generic_name, "--version"], check=True, stdout=subprocess.PIPE)
+        subprocess.run([python_executable, "-m", "virtualenv", "--version"], check=True, stdout=subprocess.PIPE)
     except subprocess.CalledProcessError:
-        print(f"`{generic_name}` not found! Installing it first...")
-        subprocess.run([python_executable, "-m", "pip", "install", "--user", generic_name], check=True)
+        print(f"`virtualenv` not found! Installing it first...")
+        subprocess.run([python_executable, "-m", "pip", "install", "--user", "virtualenv"], check=True)
 
     # Create virtual environment with the specified Python executable
     try:
-        subprocess.run([python_executable, "-m", generic_name, venv_path, "--python", python_executable], check=True)
+        subprocess.run([python_executable, "-m", "virtualenv", venv_path, "--python", python_executable], check=True)
         print(f"Virtual environment created at: {venv_path}")
     except subprocess.CalledProcessError:
-        print(f"Failed to create virtual environment with `{generic_name}`!")
+        print(f"Failed to create virtual environment with `virtualenv`!")
         exit(1)
 
     return venv_path
