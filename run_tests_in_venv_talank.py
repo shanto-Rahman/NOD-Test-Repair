@@ -7,6 +7,7 @@ import re
 import csv
 from git import Repo
 import pytest
+import pandas as pd
 
 
 import toml  # Install with `pip install toml`
@@ -176,10 +177,10 @@ import os
 import subprocess
 import shutil
 
-def create_virtual_env(project_path, python_executable):
+def create_virtual_env(project_path, python_executable, generic_name="virtualenv"):
     """Creates a virtual environment using `virtualenv` inside the project root directory."""
     
-    venv_path = os.path.join(project_path, "virtualenv")  # Use "virtualenv" in project root
+    venv_path = os.path.join(project_path, generic_name)  # Use generic_name in project root
 
     print(f"Creating virtual environment in: {venv_path} using {python_executable}")
     #exit()
@@ -194,17 +195,17 @@ def create_virtual_env(project_path, python_executable):
     try:
         print("Checking if `virtualenv` is installed...")
         print("python_executable=", python_executable)
-        subprocess.run([python_executable, "-m", "virtualenv", "--version"], check=True, stdout=subprocess.PIPE)
+        subprocess.run([python_executable, "-m", generic_name, "--version"], check=True, stdout=subprocess.PIPE)
     except subprocess.CalledProcessError:
-        print("`virtualenv` not found! Installing it first...")
-        subprocess.run([python_executable, "-m", "pip", "install", "--user", "virtualenv"], check=True)
+        print(f"`{generic_name}` not found! Installing it first...")
+        subprocess.run([python_executable, "-m", "pip", "install", "--user", generic_name], check=True)
 
     # Create virtual environment with the specified Python executable
     try:
-        subprocess.run([python_executable, "-m", "virtualenv", venv_path, "--python", python_executable], check=True)
+        subprocess.run([python_executable, "-m", generic_name, venv_path, "--python", python_executable], check=True)
         print(f"Virtual environment created at: {venv_path}")
     except subprocess.CalledProcessError:
-        print("Failed to create virtual environment with `virtualenv`!")
+        print(f"Failed to create virtual environment with `{generic_name}`!")
         exit(1)
 
     return venv_path
@@ -474,7 +475,7 @@ def run_tests(venv_path, project_path, test_name, log_dir, method_lists_dir, fun
         try:
             with open(log_file_temp, "w") as log:
                 try:
-                    result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True, timeout=600) 
+                    result = subprocess.run(pytest_command, cwd=project_path, check=False, capture_output=True, text=True) 
                     log.write(f"=== Test Run {i}/{num_runs} ===\n")
                     log.write(result.stdout + "\n")
                     log.write(result.stderr + "\n")
@@ -550,6 +551,7 @@ if __name__ == "__main__":
     log_dir = os.path.join(script_dir, "logs")
     result_dir = os.path.join(script_dir, "results")
     method_lists_dir = os.path.join(script_dir, "method_lists")
+    pretrained_data_dir = os.path.join(script_dir, "pretrained_data")
     method_bodies_dir_base = os.path.join(script_dir, "method_bodies")
     function_trace_dir = os.path.join(script_dir, "function_traces")
     line_trace_dir = os.path.join(script_dir, "line_traces")
@@ -558,6 +560,7 @@ if __name__ == "__main__":
     os.makedirs(projects_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(result_dir, exist_ok=True)
+    os.makedirs(pretrained_data_dir, exist_ok=True)
 
     output_file = os.path.join(result_dir, "trace_results.csv")
     input_file_name = sys.argv[1] #data/idoft_all_nod_test.csv 
@@ -575,15 +578,20 @@ if __name__ == "__main__":
  
             repo, repo_path = proj_clone(project_name, sha, projects_dir)
             print("repo=", repo, project_name)
+
+            print(f"project name = {project_name}")
+            # exit(0)
             
             test_name = row[2]
-            python_executable = detect_python_version(repo_path)
-            venv_path = create_virtual_env(repo_path, python_executable)
-            install_dependencies(venv_path, repo_path, project_name)
-            
+
             # Get the log file name for method list, using the naming convention used in run_tests
             formatted_test_name = test_name.replace(".py", "").replace("::", "_").replace("/", "_")
             log_file_generic_name = f"{os.path.basename(repo_path)}_{formatted_test_name}"
+
+            python_executable = detect_python_version(repo_path)
+            venv_path = create_virtual_env(repo_path, python_executable, log_file_generic_name)
+            install_dependencies(venv_path, repo_path, project_name)
+            
 
             flaky_behavior_found = run_tests(venv_path, repo_path, test_name, log_dir, method_lists_dir, function_trace_dir, line_trace_dir, trace_script_path, log_file_generic_name)
             # Write results to output file
@@ -653,6 +661,7 @@ if __name__ == "__main__":
                 # Initialize a set to keep track of processed (filename, method_name) pairs
 
                 failing_processed_methods = set()
+                failing_method_df = pd.DataFrame(columns=["Filename", "Method", "Body", "level"])
 
                 # Read the method list from the CSV file
                 failing_method_lists = []
@@ -668,7 +677,7 @@ if __name__ == "__main__":
                     if filename == "filename":
                         continue
 
-                    if int(level) > 3:
+                    if int(level) > 10:
                         continue
 
                     # Check if the (filename, method_name) pair has already been processed
@@ -687,12 +696,31 @@ if __name__ == "__main__":
 
                         # Add the (filename, method_name) pair to the set of processed methods
                         failing_processed_methods.add((filename, method_name))
+                        
+                        base_filename = os.path.basename(filename)
+                        project_name_wo_repo = project_name.split("/")[-1]
+                        filepath_relative = filename.split(project_name_wo_repo)[-1]
+                        
+                        new_row = {
+                            "Filename": filepath_relative,
+                            "Method": method_name,
+                            "Body": method_body,
+                            "level": level
+                        }
+                    
+                        # concat the new row to the DataFrame
+                        failing_method_df = pd.concat([failing_method_df, pd.DataFrame([new_row])], ignore_index=True)
+
 
                 # add the data to the csv file
                 passing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "pass")
                 failing_method_trace = os.path.join(function_trace_dir, log_file_generic_name, "fail")
                 passing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "pass")
                 failing_line_trace = os.path.join(line_trace_dir, log_file_generic_name, "fail")
+                preprocessing_file = os.path.join(pretrained_data_dir, log_file_generic_name + ".csv")
+
+                # Write the DataFrame to a CSV file
+                failing_method_df.to_csv(preprocessing_file, index=False)
 
                 # writer.writerow(["gitproj_name", "sha", "test_name", "flaky_behavior_found", "passing_method_list", "failing_method_list", "passing_method_trace", "failing_method_trace", "passing_line_trace", "failing_line_trace", "passing_method_bodies", "failing_method_bodies"])
                 writer.writerow([gitproj_name, sha, test_name, flaky_behavior_found, passing_method_list_filename, failing_method_list_filename, passing_method_trace, failing_method_trace, passing_line_trace, failing_line_trace, passing_method_bodies_file, failing_method_bodies_file])
