@@ -62,11 +62,11 @@ with open(executed_csv_path, newline="") as f:
         matched = False
         full_method = f"{row['Class']}.{row['Method']}".split('$')[0]  # remove inner class if needed
         for _, called in called_method_names:
-            print(f"Checking if {full_method} ends with .{called}")
+            #print(f"Checking if {full_method} ends with .{called}")
 
             if full_method.endswith(f".{called}"):
                 row["Called-level"] = "1"
-                print("I AM HERE ****")
+                #print("I AM HERE ****")
                 matched = True
                 break
             else:
@@ -85,7 +85,7 @@ with open(output_csv_path, "w", newline="") as f:
     writer.writeheader()
     writer.writerows(rows)
 
-print(f"Output written to: {output_csv_path}")
+#print(f"Output written to: {output_csv_path}")
 
 
 '''with open(executed_csv_path, newline="") as f:
