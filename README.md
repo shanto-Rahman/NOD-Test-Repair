@@ -24,6 +24,13 @@ sudo apt-get update
 sudo apt-get install python3.8-dev
 ```
 
+## run paralel in hopper
+The commit `f0b72d37259723c40724bc85ac2c1084b007890e` contains code to run each test in parallel in hopper. It does not modify a lot of existing code, the input and output is basically same. However, the input csv now contains only one row, which is taken care by the script `runner_llama.sh`. The script then creates a hopper job per test and run them in parallel. The prerequisite of the parallelization is that we need to assign ID for each of the tests. For example, a test data should look like this:
+```
+1,https://github.com/harpsichord1207/smartool,c742e0,tests/test_retry.py::TestRetry::test_retry_with_catch_error,py_38,Randomness
+```
+The data for python are available in `exp_data/exp_data.csv`
+
 # OUTDATED INFORMATION
 Make sure that the following are installed in the python virtual environment
 conda create -n test_env python=3.9
