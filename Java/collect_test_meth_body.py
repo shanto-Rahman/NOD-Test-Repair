@@ -10,7 +10,12 @@ module_with_underscore = module.replace("/", "_")
 test_name = sys.argv[2]
 slug = sys.argv[3].replace("/", "_")
 test_file_name= sys.argv[4]
+#print(slug)
+#print(module)
+#print(test_name)
+#exit
 test_method_only = test_name.split("#")[1] 
+script_root_dir = sys.argv[5]
 
 JAVA_LANGUAGE = get_language("java")
 #JAVA_LANGUAGE = Language('build/my-languages.so', 'java')
@@ -49,7 +54,8 @@ def extract_method_calls(node, code_bytes):
 
 # Load executed methods
 executed_methods = set()
-executed_csv_path = "/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool_executed_methods.csv"
+executed_csv_path = script_root_dir + "/traces/"+ slug + "_" + module_with_underscore+"_"+test_name +"_executed_methods.csv"
+#apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool
 # Step 1: Find method node
 method_body = find_test_method_node(root, test_method_only)
 called_method_names = extract_method_calls(method_body, code) if method_body else set()
@@ -78,7 +84,7 @@ with open(executed_csv_path, newline="") as f:
         #    row["Called-level"] = ""
         rows.append(row)
 
-output_csv_path="/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/tmp.csv"
+output_csv_path = script_root_dir + "/traces/"+ slug + "_" + module_with_underscore+"_"+test_name +"_executed_methods_with_call_labels.csv" #executed_csv_path #script_root_dir+"/traces/tmp.csv"
 # Step 3: Write to new CSV
 with open(output_csv_path, "w", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=rows[0].keys())
@@ -86,30 +92,4 @@ with open(output_csv_path, "w", newline="") as f:
     writer.writerows(rows)
 
 #print(f"Output written to: {output_csv_path}")
-
-
-'''with open(executed_csv_path, newline="") as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        executed_methods.add(f"{row['Class']}.{row['Method']}")
-
-#method_body = extract_test_method_body(root, test_method_only)
-method_body = find_test_method_node(root, test_method_only)
-
-if method_body:
-    #print(code[method_body.start_byte:method_body.end_byte].decode())
-    #print("\n Matched calls from _executed_methods.csv:")
-    calls = extract_method_calls(method_body, code)
-    matched_calls = []
-
-    for obj, method in sorted(calls):
-        for em in executed_methods:
-            if em.endswith(f".{method}"):
-                matched_calls.append(f"{obj}.{method} → {em}")
-                break
-    print(json.dumps(matched_calls))  # Send back as JSON array
-
-else:
-    #print("❌ Test method not found.")
-    print(json.dumps([]))  # Return empty if not found'''
 
