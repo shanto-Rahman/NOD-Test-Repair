@@ -139,10 +139,10 @@ while IFS= read -r line
     #fi
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     test_class_full_path=$(find $module -name "${testClass}.java")
-    python3 $currentDir/collect_test_meth_body.py "$moduel" "$testName" "$slug" "$test_class_full_path"
+    #matched_calls=$(
+    python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #)
     exit
-    test_meth_body=$(python3 $currentDir/collect_test_meth_body.py "$moduel" "$testName" "$slug" "$test_class_full_path")
-    echo "test_meth_body=$test_meth_body"
+    echo "matched_calls===$matched_calls"
     exit
     python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
     slug_with_underscore="${slug//\//_}"
