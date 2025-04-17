@@ -60,6 +60,22 @@ executed_csv_path = script_root_dir + "/traces/"+ slug + "_" + module_with_under
 method_body = find_test_method_node(root, test_method_only)
 called_method_names = extract_method_calls(method_body, code) if method_body else set()
 
+test_body_output_csv_path = script_root_dir + "/traces/"+ slug + "_" + module_with_underscore+"_"+test_name +"_test_code.csv" # executed_methods_with_call_labels.csv" #executed_csv_path #script_root_dir+"/traces/tmp.csv"
+test_code_str = code[method_body.start_byte:method_body.end_byte].decode()
+
+with open(test_body_output_csv_path, "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["test_code"])
+    writer.writeheader()
+    writer.writerow({"test_code": test_code_str})
+
+#test_code_str = code[method_body.start_byte:method_body.end_byte].decode()
+#
+#with open(test_body_output_csv_path, "w", newline="") as f:
+#    writer = csv.DictWriter(f, fieldnames=["test_code"])
+#    writer.writeheader()
+#    writer.writerows({"test_code": test_code_str})
+
+
 # Step 2: Add "Called-level" to executed_methods
 rows = []
 with open(executed_csv_path, newline="") as f:
