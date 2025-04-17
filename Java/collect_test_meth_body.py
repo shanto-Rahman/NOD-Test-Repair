@@ -2,6 +2,7 @@ import sys
 from tree_sitter import Language, Parser
 from tree_sitter_languages import get_language
 import csv
+import json
 
 
 module = sys.argv[1]
@@ -32,19 +33,6 @@ def find_test_method_node(node, target_name):
             return result
     return None
 
-#def extract_test_method_body(node, target_name):
-#    for child in node.children:
-#        if child.type == 'method_declaration':
-#            method_name = child.child_by_field_name("name")
-#            if method_name and method_name.text.decode() == target_name:
-#                return code[child.start_byte:child.end_byte].decode()
-#        body = extract_test_method_body(child, target_name)
-#        if body:
-#            return body
-
-#print(extract_test_method_body(root, test_method_only))
-#test_code_body = extract_test_method_body(root, test_method_only)
-
 def extract_method_calls(node, code_bytes):
     calls = set()
     if node.type == "method_invocation":
@@ -62,7 +50,45 @@ def extract_method_calls(node, code_bytes):
 # Load executed methods
 executed_methods = set()
 executed_csv_path = "/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool_executed_methods.csv"
+# Step 1: Find method node
+method_body = find_test_method_node(root, test_method_only)
+called_method_names = extract_method_calls(method_body, code) if method_body else set()
+
+# Step 2: Add "Called-level" to executed_methods
+rows = []
 with open(executed_csv_path, newline="") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        matched = False
+        full_method = f"{row['Class']}.{row['Method']}".split('$')[0]  # remove inner class if needed
+        for _, called in called_method_names:
+            print(f"Checking if {full_method} ends with .{called}")
+
+            if full_method.endswith(f".{called}"):
+                row["Called-level"] = "1"
+                print("I AM HERE ****")
+                matched = True
+                break
+            else:
+                row["Called-level"] = ""
+
+        #if row["Method"] in called_method_names:
+        #    row["Called-level"] = "1"
+        #else:
+        #    row["Called-level"] = ""
+        rows.append(row)
+
+output_csv_path="/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/tmp.csv"
+# Step 3: Write to new CSV
+with open(output_csv_path, "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+    writer.writeheader()
+    writer.writerows(rows)
+
+print(f"Output written to: {output_csv_path}")
+
+
+'''with open(executed_csv_path, newline="") as f:
     reader = csv.DictReader(f)
     for row in reader:
         executed_methods.add(f"{row['Class']}.{row['Method']}")
@@ -71,12 +97,19 @@ with open(executed_csv_path, newline="") as f:
 method_body = find_test_method_node(root, test_method_only)
 
 if method_body:
-    print(code[method_body.start_byte:method_body.end_byte].decode())
-    print("\n✅ Matched calls from _executed_methods.csv:")
+    #print(code[method_body.start_byte:method_body.end_byte].decode())
+    #print("\n Matched calls from _executed_methods.csv:")
     calls = extract_method_calls(method_body, code)
+    matched_calls = []
+
     for obj, method in sorted(calls):
         for em in executed_methods:
             if em.endswith(f".{method}"):
-                print(f"{obj}.{method} → {em}")
+                matched_calls.append(f"{obj}.{method} → {em}")
+                break
+    print(json.dumps(matched_calls))  # Send back as JSON array
+
 else:
-    print("❌ Test method not found.")
+    #print("❌ Test method not found.")
+    print(json.dumps([]))  # Return empty if not found'''
+
