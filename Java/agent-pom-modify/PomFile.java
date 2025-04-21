@@ -210,7 +210,7 @@ public class PomFile {
             }
             {
                 Node version = doc.createElement("version");
-                version.setTextContent("0.8.4");
+                version.setTextContent("0.8.8");
                 plugin.appendChild(version);
             }
             {

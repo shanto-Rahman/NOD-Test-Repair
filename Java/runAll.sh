@@ -118,14 +118,12 @@ while IFS= read -r line
     #echo "bash modify-project.sh $inputProj/$slug $surefire_exists "minimizer""
     
     bash modify-project.sh $inputProj/$slug "jacoco"
-    #mvn clean install -pl $module -am -DskipTests
     cd $inputProj/$slug
-    #echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName" -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar"
-    #echo "mvn test   -pl common   -Dtest=org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool   -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=org.apache.uniffle.*;""
-
+    mvn clean install -pl $module -am -DskipTests
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
     
     cp $currentDir/jacococli.jar .
+    #fi
     #if [[ $module == "." ]]; then
     #    java -jar jacococli.jar report target/jacoco.exec \
     #      --classfiles $module/target/classes \
@@ -137,6 +135,13 @@ while IFS= read -r line
             --sourcefiles $module/src/main/java \
               --xml $module/target/coverage.xml
     #fi
+
+    echo "
+        java -jar jacococli.jar report $module/target/jacoco.exec \
+          --classfiles $module/target/classes \
+            --sourcefiles $module/src/main/java \
+              --xml $module/target/coverage.xml"
+    exit
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     test_class_full_path=$(find $module -name "${testClass}.java")
     #matched_calls=$(
