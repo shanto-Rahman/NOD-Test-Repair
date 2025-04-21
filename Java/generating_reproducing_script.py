@@ -16,13 +16,57 @@ import torch.nn.functional as F
 #from Testing_gemma_7b_categorization import parse_generated_output_to_get_category
 #from Testing_gemma_2b_categorization  import identify_test_category
 import transformers 
-
+from prompt_engineering import generate_prompt
 import torch
+import openai
+
 login(token="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")
 
+def gpt_score_finder(prompt, definition, max_retries=1):
+    retry_count = 0
+    while retry_count < max_retries:
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": definition},
+                    {"role": "user", "content": prompt}
+                ],
+                #temperature=1,
+            )
+            return response
+        except openai.error.APIError as e:
+            # Check if it's a server-side error (500, 502, 503, etc.)
+            if hasattr(e, 'response') and e.response.status_code >= 500:
+                print(f"Server error ({e.response.status_code}). Retrying in {initial_wait * (2 ** retry_count)} seconds.")
+                time.sleep(initial_wait * (2 ** retry_count))  # Exponential backoff
+                retry_count += 1
+            else:
+                print(f"API error: {str(e)}")
+                raise  # Re-raise the exception for non-server-side errors or if retries are exhausted
+        except Exception as e:
+            # Catch any other unexpected errors
+            print(f"Unexpected error: {str(e)}")
+            raise 
+    print("Max retries reached, unable to complete request.")
+    return None 
+
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, failure_log):
+    prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
+    response = gpt_score_finder(prompt, definition)
+    if response: 
+        response_content = response['choices'][0]['message']['content']
+        
+        print("RESPONSE CONTENT =============================")
+        print(response_content)
+    
+        #scores = response_content.split()
+        #print("SCORES:")
+        #print(scores)
+ 
+    
+
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, failure_log_df):
-#(x_test_nparray, tokenizer, model, batch_size, device, project_group, y_test_nparray, ml_technique): 
-    # BERT-like max_length
     max_length = 1024
     n = 1  # len(x_test) / batch_size
     preds_chunks = None
@@ -34,23 +78,12 @@ def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, m
     #categories, MAX_LENGTH = categories_defination_and_tokenizers_max_length()
     MAX_LENGTH = 2048
     model.eval()  # Set the model to evaluation mode
-    #for index, row in x_test_df.iterrows():
-    #test_data = row['full_code']
-
-    # Define the prompt and the input for classification
-
-    #prompt = f"""I have an async-wait flaky test, which passes and fails non-determinstically. When the test fails, we get the following failure-log starting with “#Failure”.  Along with these information, I am giving “#Code-Under-Tests that are executed” this contains all the methods that are executed during the test-run. Your task is  to modify the code-under-test, that can lead to the given test failure consistently? Your output should be within <Output> tag. Do not change the semantics of the test-code. \n#Failure\n{failure_log}\n#Code-Under-Tests\n{method_bodies}\n#Test-code\n{test_code}
-
-    #**Output Format (MUST follow this format exactly):**
-    #```
-    #Modified_code: <Code-block>
-    #```
-    #"""
     prompt = f"""
-    I have a test that sometimes passes and sometimes fails unpredictably. This test uses asynchronous operations and waiting mechanisms.
+    I have an async-wait flaky test that sometimes passes and fails unpredictably.
     When the test fails, it produces the following failure log:
     #Failure
     {failure_log_df}
+
     Below is the code that is executed during the test run:    
     #Code-Under-Test
     {code_under_test_meths}
@@ -69,12 +102,14 @@ def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, m
     <Your modified code here>
     </Output>
     """
-    definitions = """You are an expert at identifying flaky tests and analyzing their type. Flaky tests are tests that pass and fail non-deterministically for the same code. You are given a test, and you have to modify a minimal change that can help to get the test-failure consistently."""
+    definitions = """You are an expert at identifying flaky tests and analyzing their type. Flaky tests are tests that pass and fail non-deterministically for the same code."""
     
     messages = [
         {"role": "system", "content": definitions},
         {"role": "user", "content": prompt}
     ]
+    print(messages)
+    
     text = tokenizer.apply_chat_template(
            messages,
            tokenize=False,
@@ -84,25 +119,24 @@ def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, m
     model_inputs = tokenizer([text], return_tensors="pt",
         max_length=MAX_LENGTH,  # Truncate long inputs
             truncation=True
-
     ).to(model.device)
-    #with torch.no_grad():
+
     outputs = model.generate(
             **model_inputs,
-            max_new_tokens=100,
+            max_new_tokens=500,
             eos_token_id=tokenizer.eos_token_id,
             do_sample=False,  # Use deterministic sampling
-            temperature=0.8,  # Slightly lower temperature for more focused predictions
+            temperature=0,  # Slightly lower temperature for more focused predictions
             return_dict_in_generate=True,  # Return full output including attention
-            output_attentions=True  # Capture attention weights
+            #output_attentions=True  # Capture attention weights
         )
     #print(outputs.keys())
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, outputs.sequences)
     ]
-    output_category = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    changed_code = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-    print(output_category)
+    print(changed_code)
     exit()
 
     return "" #, category_token_map, top_tokens_per_test
@@ -226,18 +260,12 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     if ml_technique == "qwen":
         print('I am qwen')
         model_name, tokenizer, auto_model = qwen_model_define()
-    elif ml_technique == "gemma7b":
-        model_name, tokenizer, auto_model = gemma7b_model_define() 
-    elif ml_technique == "gemma2b":
-        model_name, tokenizer, auto_model = gemma2b_model_define()
-    elif ml_technique == "codegemma":
-        model_name, tokenizer, auto_model = codegemma7b_model_define()
     elif ml_technique == "llama3_8b":
         model_name, tokenizer, auto_model = llama3_8b_model_define()
     elif ml_technique == "deep_seek_coder":
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
-    elif ml_technique == "codellama":
-        model_name, tokenizer, auto_model =  codellama_7b_instruct_model_define()
+    elif ml_technique == "gpt":
+         #openai.api_key = "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"
     else:
         print('model name not correct')
         exit()
@@ -271,71 +299,57 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #pd.read_csv(dataset_path['Body'])
     print(failure_log)
     print(test_code)
-    model = auto_model
+    #model = auto_model
 
     if ml_technique == "qwen":
         with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_qwen(test_code, tokenizer, model, device, ml_technique, code_under_test_meths, failure_log)
+            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_qwen(test_code, tokenizer, auto_model, device, ml_technique, code_under_test_meths, failure_log)
  
             #X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
             print('***************** All preds=')
             print(preds)
     
-    elif ml_technique == "gemma7b":
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_gemma7b(X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
-            print('***************** All preds=')
-            print(preds)
-
-    elif ml_technique == "gemma2b":
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_gemma2b(X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
-
-    elif ml_technique == "codegemma":
-        #model_name, tokenizer, auto_model = codegemma7b_model_define()
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_codegemma(X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
 
     elif ml_technique == "llama3_8b":
         #model_name, tokenizer, auto_model = llama3_8b_model_define()
         with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
+            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "deep_seek_coder":
         #model_name, tokenizer, auto_model = deep_seek_coder_model_define()
         with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
-    elif ml_technique == "codellama":
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_codellama(X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
+            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
+    elif ml_technique == "gpt":
+        gpt_output_calculate(test_code, ml_technique, code_under_test_meths, failure_log)
     else:
         print('no model name found')
-    predictions_per_project_group[f"Fold_{project_group}"] = preds
-    tokens_per_project_group[f"Fold_{project_group}"] = top_tokens_per_test
-    ground_truth_per_project_group[f"Fold_{project_group}"] = test_y
-    Org_test_per_project_group[f"Fold_{project_group}"] = X_test
 
-    # Merge tokens from the current project_group into the global category-token map
-    for category, tokens in category_token_map.items():
-        if category not in global_category_token_map:
-            global_category_token_map[category] = []  # Initialize list if category not present
-        global_category_token_map[category].extend(tokens)  # Append tokens from current project_group
+    #predictions_per_project_group[f"Fold_{project_group}"] = preds
+    #tokens_per_project_group[f"Fold_{project_group}"] = top_tokens_per_test
+    #ground_truth_per_project_group[f"Fold_{project_group}"] = test_y
+    #Org_test_per_project_group[f"Fold_{project_group}"] = X_test
 
-    cr=classification_report(test_y, preds)
-    print(type(cr))
-    parse_cr(cr, technique, str(project_group))
-    
-    with open(where_data_comes+"-result/classification_report_"+str(project_group)+"project_groups_"+str(project_group), "a") as file:
-        file.write("Fold="+str(project_group)+"\n")
-        file.write(cr)
-        file.write("\n")
-    
-    cm = confusion_matrix(test_y, preds)
-    #print(cm)
-    
-    with open(where_data_comes+"-result/confusion_matrix_"+str(project_group)+"project_groups_"+str(project_group), "a") as file:
-        file.write("Fold="+str(project_group)+"\n")
-        file.write(np.array2string(cm))
-        file.write("\n")
+    ## Merge tokens from the current project_group into the global category-token map
+    #for category, tokens in category_token_map.items():
+    #    if category not in global_category_token_map:
+    #        global_category_token_map[category] = []  # Initialize list if category not present
+    #    global_category_token_map[category].extend(tokens)  # Append tokens from current project_group
+
+    #cr=classification_report(test_y, preds)
+    #print(type(cr))
+    #parse_cr(cr, technique, str(project_group))
+    #
+    #with open(where_data_comes+"-result/classification_report_"+str(project_group)+"project_groups_"+str(project_group), "a") as file:
+    #    file.write("Fold="+str(project_group)+"\n")
+    #    file.write(cr)
+    #    file.write("\n")
+    #
+    #cm = confusion_matrix(test_y, preds)
+    ##print(cm)
+    #
+    #with open(where_data_comes+"-result/confusion_matrix_"+str(project_group)+"project_groups_"+str(project_group), "a") as file:
+    #    file.write("Fold="+str(project_group)+"\n")
+    #    file.write(np.array2string(cm))
+    #    file.write("\n")
     
     #tn, fp, fn, tp = confusion_matrix(test_y, preds, labels=[0, 1]).ravel()
     #TN = TN + tn
