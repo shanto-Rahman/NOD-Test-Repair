@@ -141,14 +141,12 @@ while IFS= read -r line
           --classfiles $module/target/classes \
             --sourcefiles $module/src/main/java \
               --xml $module/target/coverage.xml"
-    exit
+    
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     test_class_full_path=$(find $module -name "${testClass}.java")
     #matched_calls=$(
     python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #)
-    exit
     echo "matched_calls===$matched_calls"
-    exit
     python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
     slug_with_underscore="${slug//\//_}"
     module_with_underscore="${module//\//_}"
@@ -171,7 +169,7 @@ while IFS= read -r line
     #How to get the api call by the test-code
 
 
-    #exit
+    exit
     cd $inputProj/$slug
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
     cd $currentDir
