@@ -4,7 +4,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
 import sys
-from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter, filter_tokens, forward_func, predict, deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define, interpret_with_ig_qwen, interpret_with_ig_gemma7b, codellama_7b_instruct_model_define
+from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define
 import pandas as pd
 import os
 import numpy as np
@@ -266,6 +266,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
          #openai.api_key = "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"
+         openai.api_key = "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"
     else:
         print('model name not correct')
         exit()
