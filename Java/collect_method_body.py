@@ -50,8 +50,13 @@ def extract_methods(code: bytes, class_name: str):
                 key = (current_class, method_name)
                 if key not in seen:
                     seen.add(key)
+                    start_line, _ = node.start_point
+                    end_line,   _ = node.end_point
                     body = code[node.start_byte:node.end_byte].decode()
-                    extracted.append((current_class, method_name, body))
+                    extracted.append((current_class, method_name, body,
+                            start_line + 1,
+                            end_line   + 1
+                            ))
 
             #if method_name and (current_class, method_name) in executed_methods:
             #    body = code[node.start_byte:node.end_byte].decode()
@@ -86,7 +91,7 @@ executed_meth_csv = slug+"_"+module_with_underscore+"_"+test_name+"_executed_met
 #with open(executed_meth_csv, "w", newline="") as f:
 with open(executed_meth_csv, "w", newline="") as f:
     writer = csv.writer(f)
-    writer.writerow(["Class", "Method", "Body"])
+    writer.writerow(["Class", "Method", "Body", "StartLine", "EndLine"])
     writer.writerows(extracted)
 
 print(executed_meth_csv)
