@@ -33,6 +33,7 @@ src_root = Path(module+"/src/main/java")
 
 # Store extracted method bodies
 extracted = []
+seen = set()     # will hold (class, method_name) we’ve already appended
 
 def extract_methods(code: bytes, class_name: str):
     tree = parser.parse(code)
@@ -46,8 +47,15 @@ def extract_methods(code: bytes, class_name: str):
                 code[name_node.start_byte:name_node.end_byte].decode() if name_node else None
             )
             if method_name and (current_class, method_name) in executed_methods:
-                body = code[node.start_byte:node.end_byte].decode()
-                extracted.append((current_class, method_name, body))
+                key = (current_class, method_name)
+                if key not in seen:
+                    seen.add(key)
+                    body = code[node.start_byte:node.end_byte].decode()
+                    extracted.append((current_class, method_name, body))
+
+            #if method_name and (current_class, method_name) in executed_methods:
+            #    body = code[node.start_byte:node.end_byte].decode()
+            #    extracted.append((current_class, method_name, body))
 
         # Handle nested classes
         if node.type == "class_declaration":
