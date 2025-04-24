@@ -1,4 +1,6 @@
 import time
+import subprocess
+
 import csv
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -19,54 +21,143 @@ import transformers
 from prompt_engineering import generate_prompt
 import torch
 import openai
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import ConversationChain
+from langchain.memory import ChatMessageHistory
+from helper import get_line_range
+from modify_java_file import hack_into_sut
 
 login(token="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")
 
-def gpt_score_finder(prompt, definition, max_retries=1):
+def gpt_score_finder(messages, max_retries=1):
+    try:
+        response = openai.ChatCompletion.create(
+            #model="gpt-4o-mini",
+            model="gpt-4o",
+            messages=messages,
+            temperature=0,
+            max_tokens=500
+        )
+        return response
+    except openai.error.APIError as e:
+        # Check if it's a server-side error (500, 502, 503, etc.)
+        if hasattr(e, 'response') and e.response.status_code >= 500:
+            print(f"Server error ({e.response.status_code}). Retrying in {initial_wait * (2 ** retry_count)} seconds.")
+            time.sleep(initial_wait * (2 ** retry_count))  # Exponential backoff
+            retry_count += 1
+        else:
+            print(f"API error: {str(e)}")
+            raise  # Re-raise the exception for non-server-side errors or if retries are exhausted
+    except Exception as e:
+        # Catch any other unexpected errors
+        print(f"Unexpected error: {str(e)}")
+        raise 
+    return None 
+max_retries = 3
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test):
+    prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
+    print(definition)
+    print(prompt)
+    # 1) build the message history
+    messages = [
+        {"role": "system", "content": definition},
+        {"role": "user",   "content": prompt}
+    ]
+
     retry_count = 0
     while retry_count < max_retries:
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": definition},
-                    {"role": "user", "content": prompt}
-                ],
-                #temperature=1,
-            )
-            return response
-        except openai.error.APIError as e:
-            # Check if it's a server-side error (500, 502, 503, etc.)
-            if hasattr(e, 'response') and e.response.status_code >= 500:
-                print(f"Server error ({e.response.status_code}). Retrying in {initial_wait * (2 ** retry_count)} seconds.")
-                time.sleep(initial_wait * (2 ** retry_count))  # Exponential backoff
-                retry_count += 1
-            else:
-                print(f"API error: {str(e)}")
-                raise  # Re-raise the exception for non-server-side errors or if retries are exhausted
-        except Exception as e:
-            # Catch any other unexpected errors
-            print(f"Unexpected error: {str(e)}")
-            raise 
-    print("Max retries reached, unable to complete request.")
-    return None 
+        print("messages=", messages)
+        response = gpt_score_finder(messages)
+        response = "I AM"
+        if not response: 
+            break
 
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, failure_log):
-    prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
-    response = gpt_score_finder(prompt, definition)
-    if response: 
         response_content = response['choices'][0]['message']['content']
-        
+
         print("RESPONSE CONTENT =============================")
         print(response_content)
-    
-        #scores = response_content.split()
-        #print("SCORES:")
-        #print(scores)
- 
-    
 
-def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, failure_log_df):
+        messages.append({"role": "assistant", "content": response_content})
+        if "</Output>" in response_content:
+            m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+            if m:
+                meth_code = m.group(1)
+            else:
+                meth_code = "No code found" #response_content
+
+
+        print(meth_code)
+        # 1) Extract the method name via a regex on the signature line
+        sig = next(
+            line for line in meth_code.splitlines()
+            if "(" in line and "{" in line
+        ).strip()
+        #m = re.match(r".*\b([A-Za-z0-9_]+)\s*\(.*\)\s*\{", sig)
+        m = re.match(r".*\b([A-Za-z_][A-Za-z0-9_]*)\s*(\([^)]*\))\s*\{", sig)
+
+        if not m:
+            raise RuntimeError("Couldn’t parse method name")
+        method_name = m.group(1) 
+        params = m.group(2) 
+        print("method_name=", method_name)
+        print("params=", params)
+        signature   = f"{method_name}{params}"
+        print("signature =", signature)
+
+        #Find the LineRange of this method  
+        line_range = None
+        method_bodies_csv = dataset_path #"traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_method_bodies.csv"   # or whatever your path is
+        
+        with open(method_bodies_csv, newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # match both class and your signature
+                if row["Method"] == method_name:
+                    class_name = row["Class"].replace('.', '/')
+                    line_range = row["LineRange"]
+                    break
+        
+        if line_range:
+            print(f"{method_name} spans lines {line_range}, class_name={class_name}")
+            base_path = "projects/apache/incubator-uniffle/common/src/main/java/"
+            hack_into_sut(meth_code, base_path+class_name+".java", method_name, line_range)
+
+            #script_path = os.path.abspath(__file__)
+            #script_dir = os.path.dirname(script_path)
+            #
+            #print("Script is located in:", script_dir)
+            #run_test(slug, module, test)
+            try:
+
+                result_run = subprocess.run(["./run_test.sh", slug, module, test, retry_count], check=True, text=True, capture_output=True)
+                print("test_run result, Script output:", result_run.stdout)
+                if result_run.stdout == "Failure not found.":
+                    feedback = (
+                                    "Your prior suggestion didn’t reproduce the failure. "
+                                    "Please inject the delay in the correct spot and "
+                                    "return only the modified method again."
+                                )
+                    messages.append({"role": "user", "content": feedback})
+                    retry_count += 1
+                    continue
+                else:
+                    break 
+                    #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
+
+
+            except subprocess.CalledProcessError as e:
+                print("run_test.sh failed with exit code", e.returncode)
+                print("--- stdout ---")
+                print(e.stdout)
+                print("--- stderr ---")
+                print(e.stderr)
+        else:
+            print(f"No LineRange found for {method_name}")
+
+
+     
+   
+def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
     n = 1  # len(x_test) / batch_size
     preds_chunks = None
@@ -254,7 +345,7 @@ check whether it is flaky or not. If it is flaky, you have to identify the type 
     #return total_preds, category_token_map
     return total_preds, category_token_map, top_tokens_per_test
 
-def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv):
+def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test):
     device, ml_technique, dataset_category, output_layer, where_data_comes = init_setup(technique, data_name_dir)
     
     if ml_technique == "qwen":
@@ -265,7 +356,8 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     elif ml_technique == "deep_seek_coder":
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
-         #openai.api_key = "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"
+        #openai.api_key = "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"
+        openai.api_key = "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"
     else:
         print('model name not correct')
         exit()
@@ -295,6 +387,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
                     engine='python'
                     )
     code_under_test_meths = df['Body'].tolist()
+    lineRange = df['LineRange'].tolist()
 
     #pd.read_csv(dataset_path['Body'])
     print(failure_log)
@@ -303,7 +396,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
 
     if ml_technique == "qwen":
         with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_qwen(test_code, tokenizer, auto_model, device, ml_technique, code_under_test_meths, failure_log)
+            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_qwen(test_code, tokenizer, auto_model, device, ml_technique, code_under_test_meths, lineRange, failure_log)
  
             #X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
             print('***************** All preds=')
@@ -319,7 +412,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-        gpt_output_calculate(test_code, ml_technique, code_under_test_meths, failure_log)
+        gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test)
     else:
         print('no model name found')
 
@@ -356,9 +449,10 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #FP = FP + fp
     #FN = FN + fn
     #TP = TP + tp
-    print("delete model")
-    del model
-    torch.cuda.empty_cache()
+    if ml_technique != "gpt":
+        print("delete model")
+        del auto_model
+        torch.cuda.empty_cache()
     
     #project_group = project_group+1
 
@@ -441,5 +535,9 @@ if __name__ == "__main__":
     technique = sys.argv[4] #deep-seek
     test_code_csv = sys.argv[5] #deep-seek
     fail_log_csv = sys.argv[6] #deep-seek
+    slug = sys.argv[7] #deep-seek
+    sha = sys.argv[8] #deep-seek
+    module = sys.argv[9] #deep-seek
+    test = sys.argv[10] #deep-seek
     initialize_environment(42)
-    run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv)
+    run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
