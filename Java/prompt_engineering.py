@@ -1,12 +1,15 @@
 
 def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
     prompt = f"""
-    I have an async-wait flaky test that sometimes passes and fails unpredictably.
+    I have an async-wait flaky test that sometimes passes and fails unpredictably timing-related issues—most commonly asynchronous waits.
+
     When the test fails, it produces the following failure log:
+
     #Failure
     {failure_log_df}
 
-    Below is the code that is executed during the test run:    
+    Below is the code that is executed during the test run:
+
     #Code-Under-Test
     {code_under_test_meths}
     
@@ -15,7 +18,8 @@ def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
     #Test-Code
     {test_meth_code_df}
     
-    Your task is to modify the code under test so that the test fails consistently, as shown in the failure log. Do not change the test code itself. Ensure that the modifications do not alter the intended behavior of the code under test, except to make the failure reproducible.
+    Your task is to identify the *one* method in the Code-Under-Test that needs a change to make the failure reproducible.  
+    **Return only that modified method’s source**, wrapped exactly like:
     
     Please provide your modified code within the following format:
     
