@@ -121,26 +121,18 @@ while IFS= read -r line
     cd $inputProj/$slug
     mvn clean install -pl $module -am -DskipTests
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
-    
+     
     cp $currentDir/jacococli.jar .
-    #fi
-    #if [[ $module == "." ]]; then
-    #    java -jar jacococli.jar report target/jacoco.exec \
+    java -jar jacococli.jar report $module/target/jacoco.exec \
+      --classfiles $module/target/classes \
+        --sourcefiles $module/src/main/java \
+          --xml $module/target/coverage.xml
+
+    #echo "
+    #    java -jar jacococli.jar report $module/target/jacoco.exec \
     #      --classfiles $module/target/classes \
     #        --sourcefiles $module/src/main/java \
-    #          --xml $module/target/coverage.xml
-    #else
-        java -jar jacococli.jar report $module/target/jacoco.exec \
-          --classfiles $module/target/classes \
-            --sourcefiles $module/src/main/java \
-              --xml $module/target/coverage.xml
-    #fi
-
-    echo "
-        java -jar jacococli.jar report $module/target/jacoco.exec \
-          --classfiles $module/target/classes \
-            --sourcefiles $module/src/main/java \
-              --xml $module/target/coverage.xml"
+    #          --xml $module/target/coverage.xml"
     
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
@@ -159,18 +151,6 @@ while IFS= read -r line
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
 
     echo "$base_package"
-    #git stash
-
-    #mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName  -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${base_package}.*;" >  "$currentDir/logs/$testName.txt"
-
-    #echo "mvn test -pl $module  -Dtest=$testName  -DargLine="-javaagent:/home/shanto/Latest/ICSE-Artifact/FlakeSync_Artifact_Full/scripts/NOD-Test-Repair/Java/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${base_package}.*;""
-
-    #mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
-    #exit
-    #How to get the api call by the test-code
-
-
-    exit
     cd $inputProj/$slug
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
     cd $currentDir
