@@ -53,8 +53,9 @@ def gpt_score_finder(messages, max_retries=1):
         print(f"Unexpected error: {str(e)}")
         raise 
     return None 
+
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
-    max_retries = 2
+    max_retries = 5
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
     print(definition)
     print(prompt)
@@ -129,8 +130,12 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             try:
                 print('*******retry_count=', retry_count)
                 result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
-                print("*** test_run result, Script output:", result_run.stdout)
-                if result_run.stdout == "Failure not found.":
+                out = result_run.stdout.strip()
+                firstLine = out.splitlines()[0]
+
+                print("*** test_run result, Script output: ",firstLine)
+                print(firstLine)
+                if firstLine == "Failure not found.":
                     feedback = (
                                     "Your prior suggestion didn’t reproduce the failure. "
                                     "Please inject the delay in the correct spot and "
@@ -139,7 +144,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     messages.append({"role": "user", "content": feedback})
                     retry_count += 1
                     continue
-                elif result_run.stdout == "Failure found.":
+                elif firstLine == "Failure found.":
                     print("Failure found.")
                     break 
                     #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
