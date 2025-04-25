@@ -19,9 +19,10 @@ cd $inputProj/$slug
 mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con-after-changedCode-$id.txt"
 bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs/$testName-con-after-changedCode-$id.txt")
 if [[ $bugCount -gt 0  ]]; then
-    echo "script is reproducing failure."
+    echo "Failure found."
 else
     echo "Failure not found."
+    git stash
 fi
 
 #outputDir="$2"

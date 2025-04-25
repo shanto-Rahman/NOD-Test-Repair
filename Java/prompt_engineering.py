@@ -18,14 +18,13 @@ def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
     #Test-Code
     {test_meth_code_df}
     
-    Your task is to identify the *one* method in the Code-Under-Test that needs a change to make the failure reproducible.  
+    Analyze the Code-Under-Test and pinpoint the single method whose logic must be altered to reliably reproduce the test failure. To do this, insert a deliberate delay (e.g. a Thread.sleep) at the precise point in that method’s body so that the timing-related issue causes the test to fail every time.
     **Return only that modified method’s source**, wrapped exactly like:
     
-    Please provide your modified code within the following format:
+    Output **only** the modified method wrapped in
     
     <Output>
-    Modified_code:
-    <Your modified code here>
+        ...
     </Output>
     """
     definitions = """You are an expert at identifying flaky tests and analyzing their type. Flaky tests are tests that pass and fail non-deterministically for the same code."""

@@ -53,8 +53,8 @@ def gpt_score_finder(messages, max_retries=1):
         print(f"Unexpected error: {str(e)}")
         raise 
     return None 
-max_retries = 3
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test):
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
+    max_retries = 2
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
     print(definition)
     print(prompt)
@@ -64,11 +64,10 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         {"role": "user",   "content": prompt}
     ]
 
-    retry_count = 0
     while retry_count < max_retries:
         print("messages=", messages)
         response = gpt_score_finder(messages)
-        response = "I AM"
+
         if not response: 
             break
 
@@ -128,9 +127,9 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             #print("Script is located in:", script_dir)
             #run_test(slug, module, test)
             try:
-
-                result_run = subprocess.run(["./run_test.sh", slug, module, test, retry_count], check=True, text=True, capture_output=True)
-                print("test_run result, Script output:", result_run.stdout)
+                print('*******retry_count=', retry_count)
+                result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
+                print("*** test_run result, Script output:", result_run.stdout)
                 if result_run.stdout == "Failure not found.":
                     feedback = (
                                     "Your prior suggestion didn’t reproduce the failure. "
@@ -140,9 +139,11 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     messages.append({"role": "user", "content": feedback})
                     retry_count += 1
                     continue
-                else:
+                elif result_run.stdout == "Failure found.":
+                    print("Failure found.")
                     break 
                     #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
+
 
 
             except subprocess.CalledProcessError as e:
@@ -357,7 +358,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
         #openai.api_key = "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"
-        openai.api_key = "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"
     else:
         print('model name not correct')
         exit()

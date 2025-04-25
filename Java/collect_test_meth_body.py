@@ -10,10 +10,6 @@ module_with_underscore = module.replace("/", "_")
 test_name = sys.argv[2]
 slug = sys.argv[3].replace("/", "_")
 test_file_name= sys.argv[4]
-#print(slug)
-#print(module)
-#print(test_name)
-#exit
 test_method_only = test_name.split("#")[1] 
 script_root_dir = sys.argv[5]
 
@@ -55,8 +51,6 @@ def extract_method_calls(node, code_bytes):
 # Load executed methods
 executed_methods = set()
 executed_csv_path = script_root_dir + "/traces/"+ slug + "_" + module_with_underscore+"_"+test_name +"_executed_methods.csv"
-#apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest#testGrpcExecutorPool
-# Step 1: Find method node
 method_body = find_test_method_node(root, test_method_only)
 called_method_names = extract_method_calls(method_body, code) if method_body else set()
 
@@ -67,14 +61,6 @@ with open(test_body_output_csv_path, "w", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=["test_code"])
     writer.writeheader()
     writer.writerow({"test_code": test_code_str})
-
-#test_code_str = code[method_body.start_byte:method_body.end_byte].decode()
-#
-#with open(test_body_output_csv_path, "w", newline="") as f:
-#    writer = csv.DictWriter(f, fieldnames=["test_code"])
-#    writer.writeheader()
-#    writer.writerows({"test_code": test_code_str})
-
 
 # Step 2: Add "Called-level" to executed_methods
 rows = []
@@ -93,11 +79,6 @@ with open(executed_csv_path, newline="") as f:
                 break
             else:
                 row["Called-level"] = ""
-
-        #if row["Method"] in called_method_names:
-        #    row["Called-level"] = "1"
-        #else:
-        #    row["Called-level"] = ""
         rows.append(row)
 
 output_csv_path = script_root_dir + "/traces/"+ slug + "_" + module_with_underscore+"_"+test_name +"_executed_methods_with_call_labels.csv" #executed_csv_path #script_root_dir+"/traces/tmp.csv"

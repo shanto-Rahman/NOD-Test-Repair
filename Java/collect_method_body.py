@@ -25,8 +25,9 @@ with open(executed_methods_file, newline='') as f:
     for row in reader:
         full_class_name = row["Class"]
         method_name = row["Method"]
-        executed_methods.add((full_class_name, method_name))
-        class_to_methods.setdefault(full_class_name, set()).add(method_name)
+        descriptor_name = row["Descriptor"]
+        executed_methods.add((full_class_name, method_name, descriptor_name))
+        class_to_methods.setdefault(full_class_name, set()).add((method_name, descriptor_name))
 
 # Root directory for source files
 src_root = Path(module+"/src/main/java")
@@ -46,21 +47,36 @@ def extract_methods(code: bytes, class_name: str):
             method_name = "<init>" if node.type == "constructor_declaration" else (
                 code[name_node.start_byte:name_node.end_byte].decode() if name_node else None
             )
-            if method_name and (current_class, method_name) in executed_methods:
-                key = (current_class, method_name)
-                if key not in seen:
-                    seen.add(key)
-                    start_line, _ = node.start_point
-                    end_line,   _ = node.end_point
-                    body = code[node.start_byte:node.end_byte].decode()
-                    extracted.append((current_class, method_name, body,
-                            start_line + 1,
-                            end_line   + 1
-                            ))
-
+            if method_name:
+                # look up all descriptors for this class+method
+                for descriptor in (d for (m,d) in class_to_methods.get(current_class, set())
+                                   if m == method_name):
+                    key = (current_class, method_name, descriptor)
+                    if key in executed_methods and key not in seen:
+                        seen.add(key)
+                        start_line, _ = node.start_point
+                        end_line,   _ = node.end_point
+                        rng = f"{start_line+1}-{end_line+1}"
+                        body = code[node.start_byte:node.end_byte].decode()
+                        # now carry the descriptor through as well
+                        extracted.append((
+                            current_class,
+                            method_name,
+                            descriptor,
+                            body,
+                            rng
+                        ))
             #if method_name and (current_class, method_name) in executed_methods:
-            #    body = code[node.start_byte:node.end_byte].decode()
-            #    extracted.append((current_class, method_name, body))
+            #    key = (current_class, method_name, )
+            #    if key not in seen:
+            #        seen.add(key)
+            #        start_line, _ = node.start_point
+            #        end_line,   _ = node.end_point
+            #        rng = f"{start_line+1}-{end_line+1}"
+            #        body = code[node.start_byte:node.end_byte].decode()
+            #        extracted.append((current_class, method_name, body,
+            #                rng
+            #                ))
 
         # Handle nested classes
         if node.type == "class_declaration":
@@ -91,7 +107,8 @@ executed_meth_csv = slug+"_"+module_with_underscore+"_"+test_name+"_executed_met
 #with open(executed_meth_csv, "w", newline="") as f:
 with open(executed_meth_csv, "w", newline="") as f:
     writer = csv.writer(f)
-    writer.writerow(["Class", "Method", "Body", "StartLine", "EndLine"])
+    #writer.writerow(["Class", "Method", "Body", "LineRange"])
+    writer.writerow(["Class", "Method", "Descriptor", "Body", "LineRange"])
     writer.writerows(extracted)
 
 print(executed_meth_csv)
