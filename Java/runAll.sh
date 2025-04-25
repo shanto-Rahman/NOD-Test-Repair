@@ -143,6 +143,7 @@ while IFS= read -r line
               --xml $module/target/coverage.xml"
     
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
+    echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     test_class_full_path=$(find $module -name "${testClass}.java")
     #matched_calls=$(
     python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #)

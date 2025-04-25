@@ -57,8 +57,8 @@ def gpt_score_finder(messages, max_retries=1):
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
     max_retries = 5
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
-    print(definition)
-    print(prompt)
+    #print(definition)
+    #print(prompt)
     # 1) build the message history
     messages = [
         {"role": "system", "content": definition},
@@ -86,7 +86,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 meth_code = "No code found" #response_content
 
 
-        print(meth_code)
+        #print(meth_code)
         # 1) Extract the method name via a regex on the signature line
         sig = next(
             line for line in meth_code.splitlines()
@@ -99,10 +99,10 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             raise RuntimeError("Couldn’t parse method name")
         method_name = m.group(1) 
         params = m.group(2) 
-        print("method_name=", method_name)
-        print("params=", params)
+        #print("method_name=", method_name)
+        #print("params=", params)
         signature   = f"{method_name}{params}"
-        print("signature =", signature)
+        #print("signature =", signature)
 
         #Find the LineRange of this method  
         line_range = None
@@ -137,9 +137,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 print(firstLine)
                 if firstLine == "Failure not found.":
                     feedback = (
-                                    "Your prior suggestion didn’t reproduce the failure. "
-                                    "Please inject the delay in the correct spot and "
-                                    "return only the modified method again."
+                    "Your previous change didn’t reproduce the failure. Please insert the delay at the precise point in the method (it can be slightly earlier or later) and return only the modified method."
                                 )
                     messages.append({"role": "user", "content": feedback})
                     retry_count += 1
