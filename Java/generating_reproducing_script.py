@@ -119,7 +119,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         
         if line_range:
             print(f"{method_name} spans lines {line_range}, class_name={class_name}")
-            base_path = "projects/apache/incubator-uniffle/common/src/main/java/"
+            base_path = "projects/"+slug+"/"+module+"/src/main/java/"
             hack_into_sut(meth_code, base_path+class_name+".java", method_name, line_range)
 
             #script_path = os.path.abspath(__file__)
