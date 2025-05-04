@@ -113,7 +113,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             for row in reader:
                 # match both class and your signature
                 if row["Method"] == method_name:
-                    class_name = row["Class"].replace('.', '/')
+                    class_name = row["Class"].replace('.', '/').split('$')[0]
                     line_range = row["LineRange"]
                     break
         
