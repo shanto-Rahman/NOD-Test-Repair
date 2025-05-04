@@ -15,6 +15,7 @@ tree-sitter-languages==1.10.2
 tree-sitter==0.21.3
 
 bash runAll.sh ../data/tmp.csv Result/
+bash search_for_failure_reproducing.sh ../data/tmp.csv X
 
 python3 generating_reproducing_script.py traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_method_bodies.csv "tmp"  "traces" "qwen" traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_test_code.csv "logs/tmp_failure.csv"
 
