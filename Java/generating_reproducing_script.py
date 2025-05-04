@@ -349,6 +349,31 @@ check whether it is flaky or not. If it is flaky, you have to identify the type 
     #return total_preds, category_token_map
     return total_preds, category_token_map, top_tokens_per_test
 
+import re
+
+def extract_block(path):
+    start_re = re.compile(r"Running org\.apache\.uniffle\.common\.rpc\.GrpcServerTest")
+    end_re   = re.compile(r"There are test failures")
+    drop_re  = re.compile(r'^\s*at\s+(org\.junit|org\.apache\.maven\.surefire|java.base)')
+    buf = []
+
+    in_block = False
+
+    with open(path) as f:
+        for line in f:
+            if not in_block and start_re.search(line):
+                in_block = True
+            if in_block:
+                if end_re.search(line):
+                    break
+                if drop_re.match(line):
+                    continue
+
+                buf.append(line.rstrip("\n"))
+                print(line, end="")
+    return buf
+
+
 def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test):
     device, ml_technique, dataset_category, output_layer, where_data_comes = init_setup(technique, data_name_dir)
     
@@ -379,6 +404,10 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #print(len(input_data))
 
     test_meth_code_df = pd.read_csv(test_code_csv) #read_data(test_code_csv)
+
+
+
+
     failure_log_df = pd.read_csv(failure_log_csv)
     test_code = test_meth_code_df.iloc[0] 
     failure_log = failure_log_df.iloc[0]
@@ -535,12 +564,33 @@ if __name__ == "__main__":
     dataset_path = sys.argv[1] #traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_methods_with_call_labels.csv
     results_file = sys.argv[2] #
     data_name_dir = sys.argv[3] #traces
-    technique = sys.argv[4] #deep-seek
-    test_code_csv = sys.argv[5] #deep-seek
-    fail_log_csv = sys.argv[6] #deep-seek
-    slug = sys.argv[7] #deep-seek
-    sha = sys.argv[8] #deep-seek
-    module = sys.argv[9] #deep-seek
-    test = sys.argv[10] #deep-seek
+    technique = sys.argv[4] 
+    test_code_csv = sys.argv[5] 
+    fail_log_csv = sys.argv[6]
+    slug = sys.argv[7] 
+    sha = sys.argv[8] 
+    module = sys.argv[9] 
+    test = sys.argv[10] 
     initialize_environment(42)
+    filtered_fail_log_txt = extract_block(fail_log_csv)
+    base, _ = os.path.splitext(fail_log_csv)
+    fail_log_csv = f"{base}.csv"
+
+    cleaned = [line for line in filtered_fail_log_txt if line.strip()]
+
+    # 2) drop lines that are just “[INFO]” (with optional spaces)
+    info_only = re.compile(r'^\[INFO\]\s*$')
+    cleaned = [line for line in cleaned if not info_only.match(line)]
+
+    #big_block = "\n".join(filtered_fail_log_txt)
+    big_block = "\n".join(cleaned)
+
+    with open(fail_log_csv, "w", newline="") as fw:
+        writer = csv.writer(fw,
+                        delimiter=",",
+                        quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
+        writer.writerow(["Failure"])
+        writer.writerow([big_block]) 
+
+    exit()
     run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
