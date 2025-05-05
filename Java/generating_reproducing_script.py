@@ -159,6 +159,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             print(f"No LineRange found for {method_name}")
 
 
+    return meth_code, base_path+class_name+".java", method_name, line_range, retry_count # retry_count = cot count
      
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
@@ -444,7 +445,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-        gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test)
+            changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test)
     else:
         print('no model name found')
 
@@ -486,7 +487,26 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         del auto_model
         torch.cuda.empty_cache()
     
-    #project_group = project_group+1
+    #Saving result for reproducing failure
+    with open("gpt.csv", "a", newline="") as fw:
+        writer = csv.writer(fw)
+        writer.writerow(["changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+        writer.writerow([
+            changed_code_output_to_get_fail,
+            java_file_path,
+            method_name,
+            line_range,
+            cot_count
+        ])
+    #output_row = f"{changed_code_output_to_get_fail}, {java_file_path}, {method_name}, {line_range}, {cot_count}"
+    #with open("gpt.csv", "w", newline="") as fw:
+    #    writer = csv.writer(fw)
+    #    # write a header row if you like:
+    #    writer.writerow(["changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+    #    # write your data rows
+    #    writer.writerows([output_row])
+
+
 
     #exit()
     #**Merging & Saving is done AFTER the loop**
@@ -592,5 +612,4 @@ if __name__ == "__main__":
         writer.writerow(["Failure"])
         writer.writerow([big_block]) 
 
-    exit()
     run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
