@@ -23,7 +23,10 @@ while read line
 
         filename="${slug}_${module_with_underscore}_${testName}"
         if [[ $module_org == "." ]]; then
-            fail_log_csv_name=$(find logs -name "${slug}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
+            proj_name_only=$(echo $slug_org | cut -d'/' -f2)
+            #echo "$proj_name_only; ${proj_name_only}-${testName}-FlakeDelay-Run-1-*.txt"
+            fail_log_csv_name=$(find logs -name "${proj_name_only}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
+            #echo "*** $fail_log_csv_name"
         else
             fail_log_csv_name=$(find logs -name "${module_with_dot}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
         fi
