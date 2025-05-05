@@ -79,37 +79,37 @@ while IFS= read -r line
     else
         mvn install -pl $module -am -DskipTests
     fi
-    find -name "*.class" | grep -v Tests | sed 's;.*target/classes/;;'| sed 's;/;.;g' | sed 's;.class$;;' > whitelist.txt
-    #To remove the test-classes
-    sed -i '/test-classes/d' whitelist.txt   
-    if [[ "$slug" == "TooTallNate/Java-WebSocket" ]]; then
-        sed -i '/org.java_websocket.server.WebSocketServer/d' "whitelist.txt"
-    fi
+    #find -name "*.class" | grep -v Tests | sed 's;.*target/classes/;;'| sed 's;/;.;g' | sed 's;.class$;;' > whitelist.txt
+    ##To remove the test-classes
+    #sed -i '/test-classes/d' whitelist.txt   
+    #if [[ "$slug" == "TooTallNate/Java-WebSocket" ]]; then
+    #    sed -i '/org.java_websocket.server.WebSocketServer/d' "whitelist.txt"
+    #fi
    
-    if [[ "$slug" == "square/okhttp" ]]; then
-        sed -i '/com.squareup.okhttp.Request/d' "whitelist.txt"
-    fi
+    #if [[ "$slug" == "square/okhttp" ]]; then
+    #    sed -i '/com.squareup.okhttp.Request/d' "whitelist.txt"
+    #fi
 
-    if [[ "$slug" == "alibaba/fastjson" ]]; then
-        sed -i '/com.alibaba.json.bvt.parser.deser.AbstractSerializeTest/d' "whitelist.txt"
-    fi
+    #if [[ "$slug" == "alibaba/fastjson" ]]; then
+    #    sed -i '/com.alibaba.json.bvt.parser.deser.AbstractSerializeTest/d' "whitelist.txt"
+    #fi
 
 
-    if [[ "$slug" == "square/okhttp" ]]; then
-        sed -i '/com.squareup.okhttp.Request/d' "whitelist.txt"
-        sed -i '/com.squareup.okhttp.internal.spdy.SpdyConnection/d' "whitelist.txt"
-        
-    fi  
-    
-    if [[ "$slug" == "apache/httpcore" ]]; then
-        sed -i '/org.apache.http.message.BasicLineParser/d' "whitelist.txt"
-        sed -i '/org.apache.http.message.BasicLineFormatter/d' "whitelist.txt"
-        sed -i '/org.apache.http.message.BasicHeaderValueParser/d' "whitelist.txt"
-    fi 
+    #if [[ "$slug" == "square/okhttp" ]]; then
+    #    sed -i '/com.squareup.okhttp.Request/d' "whitelist.txt"
+    #    sed -i '/com.squareup.okhttp.internal.spdy.SpdyConnection/d' "whitelist.txt"
+    #    
+    #fi  
+    #
+    #if [[ "$slug" == "apache/httpcore" ]]; then
+    #    sed -i '/org.apache.http.message.BasicLineParser/d' "whitelist.txt"
+    #    sed -i '/org.apache.http.message.BasicLineFormatter/d' "whitelist.txt"
+    #    sed -i '/org.apache.http.message.BasicHeaderValueParser/d' "whitelist.txt"
+    #fi 
    
-    if [[ "$slug" == "Alluxio/alluxio" ]]; then
-        sed -i '/org.eclipse.jetty.server.nio.SelectChannelConnector/d' "whitelist.txt"
-    fi
+    #if [[ "$slug" == "Alluxio/alluxio" ]]; then
+    #    sed -i '/org.eclipse.jetty.server.nio.SelectChannelConnector/d' "whitelist.txt"
+    #fi
 
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
@@ -119,7 +119,7 @@ while IFS= read -r line
     
     bash modify-project.sh $inputProj/$slug "jacoco"
     cd $inputProj/$slug
-    mvn clean install -pl $module -am -DskipTests
+    #mvn clean install -pl $module -am -DskipTests
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
      
     cp $currentDir/jacococli.jar .

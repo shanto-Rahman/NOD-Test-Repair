@@ -4,6 +4,7 @@ if [[ $1 == "" || $2 == "" ]]; then
     echo "arg2 - relative path to the output file (eg. Result/output.csv)"
     exit
 fi
+
 while read line
     do
         if [[ ${line} =~ ^\# ]]; then
@@ -15,16 +16,18 @@ while read line
         sha=$(echo $line | cut -d',' -f2)
         module_org=$(echo $line | cut -d',' -f3)
 
-        module=${module_org//\//_}
+        module_with_dot=${module_org//\//.}
+        module_with_underscore=${module_org//\//_}
         testName_with_dot=$(echo $line | cut -d',' -f4)
         testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
 
-        filename="${slug}_${module}_${testName}"
+        filename="${slug}_${module_with_underscore}_${testName}"
         if [[ $module_org == "." ]]; then
             fail_log_csv_name=$(find logs -name "${slug}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
         else
-            fail_log_csv_name=$(find logs -name "${module}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
+            fail_log_csv_name=$(find logs -name "${module_with_dot}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
         fi
+
 
        #chunk=$( sed -n '/Running org\.apache\.uniffle\.common\.rpc\.GrpcServerTest/,/Tests run: 1/p' $fail_log_csv_name)
        #echo $chunk
