@@ -31,6 +31,7 @@ while read line
             fail_log_csv_name=$(find logs -name "${module_with_dot}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
         fi
 
-        python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
+        #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
+        python3 generating_reproducing_script.py traces/${filename}_executed_with_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
 
     done < $1

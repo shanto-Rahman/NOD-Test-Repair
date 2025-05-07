@@ -85,15 +85,17 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             else:
                 meth_code = "No code found" #response_content
 
-
-        #print(meth_code)
+        print("meth_code=")
+        print(meth_code)
         # 1) Extract the method name via a regex on the signature line
         sig = next(
             line for line in meth_code.splitlines()
             if "(" in line and "{" in line
         ).strip()
         #m = re.match(r".*\b([A-Za-z0-9_]+)\s*\(.*\)\s*\{", sig)
-        m = re.match(r".*\b([A-Za-z_][A-Za-z0-9_]*)\s*(\([^)]*\))\s*\{", sig)
+        #m = re.match(r".*\b([A-Za-z_][A-Za-z0-9_]*)\s*(\([^)]*\))\s*\{", sig)
+        m = re.match(r"^[\w\s<>]*\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
+
 
         if not m:
             raise RuntimeError("Couldn’t parse method name")
@@ -137,7 +139,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 print(firstLine)
                 if firstLine == "Failure not found.":
                     feedback = (
-                    "Your previous change didn’t reproduce the failure. Please insert the delay at the precise point in the method (it can be slightly earlier or later) and return only the modified method."
+                    "Your previous change didn’t reproduce the failure. Please insert the delay at the precise point in the method (it can be slightly earlier or later, or any different method) and return only the modified method."
                                 )
                     messages.append({"role": "user", "content": feedback})
                     retry_count += 1
@@ -387,6 +389,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
         #openai.api_key = "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"
+        openai.api_key = "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"
     else:
         print('model name not correct')
         exit()
@@ -419,13 +422,14 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
                 encoding='utf-8',
                     engine='python'
                     )
-    code_under_test_meths = df['Body'].tolist()
-    lineRange = df['LineRange'].tolist()
 
-    #pd.read_csv(dataset_path['Body'])
+    depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
+
+    code_under_test_meths = depth_filtered_df['Body'].tolist()
+    lineRange = depth_filtered_df['LineRange'].tolist()
+
     print(failure_log)
     print(test_code)
-    #model = auto_model
 
     if ml_technique == "qwen":
         with torch.no_grad():
