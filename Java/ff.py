@@ -1,16 +1,24 @@
-
+import sys
 import pandas as pd
 import re
 from collections import defaultdict
 
+dyn_calltrace = sys.argv[1]
+executed_method_bodies = sys.argv[2]
+output_csv = sys.argv[3]
+
+print(dyn_calltrace)
+print(executed_method_bodies)
+print(output_csv)
+
 # Load executed methods CSV
-executed_df = pd.read_csv("traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario0_executed_method_bodies.csv")
+executed_df = pd.read_csv(executed_method_bodies)
 
 # Parse calltrace.txt
 depth_map = defaultdict(list)
 entry_pattern = re.compile(r'>\[(\d+)]\[\d+](.+?):(.+?)=')
 
-with open("projects/TooTallNate/Java-WebSocket/calltrace.txt", "r") as f:
+with open(dyn_calltrace, "r") as f:
     for line in f:
         match = entry_pattern.match(line)
         if match:
@@ -31,6 +39,6 @@ for _, row in executed_df.iterrows():
 executed_df["CallDepth"] = call_depths
 
 # Save or display result
-executed_df.to_csv("executed_with_call_depth.csv", index=False)
-print("Saved to executed_with_call_depth.csv")
+executed_df.to_csv(output_csv, index=False)
+print("Saved to ", output_csv)
 

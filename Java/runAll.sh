@@ -79,43 +79,16 @@ while IFS= read -r line
     else
         mvn install -pl $module -am -DskipTests
     fi
-    #find -name "*.class" | grep -v Tests | sed 's;.*target/classes/;;'| sed 's;/;.;g' | sed 's;.class$;;' > whitelist.txt
-    ##To remove the test-classes
-    #sed -i '/test-classes/d' whitelist.txt   
-    #if [[ "$slug" == "TooTallNate/Java-WebSocket" ]]; then
-    #    sed -i '/org.java_websocket.server.WebSocketServer/d' "whitelist.txt"
-    #fi
-   
-    #if [[ "$slug" == "square/okhttp" ]]; then
-    #    sed -i '/com.squareup.okhttp.Request/d' "whitelist.txt"
-    #fi
 
-    #if [[ "$slug" == "alibaba/fastjson" ]]; then
-    #    sed -i '/com.alibaba.json.bvt.parser.deser.AbstractSerializeTest/d' "whitelist.txt"
-    #fi
-
-
-    #if [[ "$slug" == "square/okhttp" ]]; then
-    #    sed -i '/com.squareup.okhttp.Request/d' "whitelist.txt"
-    #    sed -i '/com.squareup.okhttp.internal.spdy.SpdyConnection/d' "whitelist.txt"
-    #    
-    #fi  
-    #
-    #if [[ "$slug" == "apache/httpcore" ]]; then
-    #    sed -i '/org.apache.http.message.BasicLineParser/d' "whitelist.txt"
-    #    sed -i '/org.apache.http.message.BasicLineFormatter/d' "whitelist.txt"
-    #    sed -i '/org.apache.http.message.BasicHeaderValueParser/d' "whitelist.txt"
-    #fi 
-   
-    #if [[ "$slug" == "Alluxio/alluxio" ]]; then
-    #    sed -i '/org.eclipse.jetty.server.nio.SelectChannelConnector/d' "whitelist.txt"
-    #fi
+    slug_with_underscore="${slug//\//_}"
+    module_with_underscore="${module//\//_}"
+    echo "$slug_with_underscore"
 
     mvn test-compile
     mvn dependency:build-classpath -Dmdep.outputFile=$(pwd)/cp.txt
     mvn -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=org.java_websocket.*;" test -Dtest=${testName}
-    cp "calltrace.txt" "$currentDir/traces"
-    echo $(pwd)
+    cp "calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
+    #echo $(pwd)
 
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
@@ -147,9 +120,6 @@ while IFS= read -r line
     python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #)
     echo "matched_calls===$matched_calls"
     python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
-    slug_with_underscore="${slug//\//_}"
-    module_with_underscore="${module//\//_}"
-    echo "$slug_with_underscore"
 
 
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
@@ -161,6 +131,8 @@ while IFS= read -r line
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
 
     cd $currentDir
+
+    python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
     #rm -rf "$inputProj/$rootProj"
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
