@@ -85,8 +85,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             else:
                 meth_code = "No code found" #response_content
 
-        print("meth_code=")
-        print(meth_code)
+        #print("meth_code=")
+        #print(meth_code)
         # 1) Extract the method name via a regex on the signature line
         sig = next(
             line for line in meth_code.splitlines()
@@ -206,7 +206,7 @@ def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, m
         {"role": "system", "content": definitions},
         {"role": "user", "content": prompt}
     ]
-    print(messages)
+    #print(messages)
     
     text = tokenizer.apply_chat_template(
            messages,
@@ -354,8 +354,9 @@ check whether it is flaky or not. If it is flaky, you have to identify the type 
 
 import re
 
-def extract_block(path):
-    start_re = re.compile(r"Running org\.apache\.uniffle\.common\.rpc\.GrpcServerTest")
+def extract_block(path, test):
+    test_class = test.rsplit('.', 1)[0]
+    start_re = re.compile(fr"Running {test_class}")
     end_re   = re.compile(r"There are test failures")
     drop_re  = re.compile(r'^\s*at\s+(org\.junit|org\.apache\.maven\.surefire|java.base)')
     buf = []
@@ -492,7 +493,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         torch.cuda.empty_cache()
     
     #Saving result for reproducing failure
-    with open("gpt.csv", "a", newline="") as fw:
+    with open("results/gpt.csv", "a", newline="") as fw:
         writer = csv.writer(fw)
         writer.writerow(["changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
         writer.writerow([
@@ -555,7 +556,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     df_final.to_csv(csv_path, index=False)
     
     print("\nPredictions and tokens saved to", csv_path)
-    exit()
+    #exit()
 
 
     top_10_tokens_per_category = {}
@@ -596,7 +597,7 @@ if __name__ == "__main__":
     module = sys.argv[9] 
     test = sys.argv[10] 
     initialize_environment(42)
-    filtered_fail_log_txt = extract_block(fail_log_csv)
+    filtered_fail_log_txt = extract_block(fail_log_csv, test)
     base, _ = os.path.splitext(fail_log_csv)
     fail_log_csv = f"{base}.csv"
 
@@ -605,6 +606,7 @@ if __name__ == "__main__":
     # 2) drop lines that are just “[INFO]” (with optional spaces)
     info_only = re.compile(r'^\[INFO\]\s*$')
     cleaned = [line for line in cleaned if not info_only.match(line)]
+    print("fail cleaned=", cleaned)
 
     #big_block = "\n".join(filtered_fail_log_txt)
     big_block = "\n".join(cleaned)
@@ -615,5 +617,4 @@ if __name__ == "__main__":
                         quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
         writer.writerow(["Failure"])
         writer.writerow([big_block]) 
-
     run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
