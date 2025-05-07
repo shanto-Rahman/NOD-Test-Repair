@@ -111,6 +111,12 @@ while IFS= read -r line
     #    sed -i '/org.eclipse.jetty.server.nio.SelectChannelConnector/d' "whitelist.txt"
     #fi
 
+    mvn test-compile
+    mvn dependency:build-classpath -Dmdep.outputFile=$(pwd)/cp.txt
+    mvn -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=org.java_websocket.*;" test -Dtest=${testName}
+    cp "calltrace.txt" "$currentDir/traces"
+    echo $(pwd)
+
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
 
@@ -153,6 +159,7 @@ while IFS= read -r line
     echo "$base_package"
     cd $inputProj/$slug
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
+
     cd $currentDir
     #rm -rf "$inputProj/$rootProj"
 done < $1
