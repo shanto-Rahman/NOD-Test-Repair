@@ -423,8 +423,14 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
                     engine='python'
                     )
 
-    depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
-    #depth_filtered_df = df[(df['CallDepth'] <=1)]
+
+    # Convert LineRange to span
+    df["LineSpan"] = df["LineRange"].apply(
+        lambda x: abs(int(x.split("-")[1]) - int(x.split("-")[0])) if "-" in x else float("inf")
+        )
+
+    #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
+    depth_filtered_df = df[(df['CallDepth'] <=4) & (df["LineSpan"] <= 20)]
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
