@@ -84,9 +84,16 @@ while IFS= read -r line
     module_with_underscore="${module//\//_}"
     echo "$slug_with_underscore"
 
+    if [[ $slug == "apache/incubator-uniffle" ]]; then
+        incl_package="org.apache.uniffle.*;"
+
+    elif [[ $slug == "TooTallNate/Java-WebSocket" ]]; then
+        incl_package="org.java_websocket.*;"
+    fi
     mvn test-compile
     mvn dependency:build-classpath -Dmdep.outputFile=$(pwd)/cp.txt
-    mvn -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=org.java_websocket.*;" test -Dtest=${testName}
+   
+    mvn -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
     cp "calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
     #echo $(pwd)
 
