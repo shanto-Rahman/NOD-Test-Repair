@@ -1,0 +1,26 @@
+changed_code_to_get_fail,file,method,line_range,cot_count
+"public void setGauge(String tag, double value) {
+    if (isRegistered) {
+      try {
+        Thread.sleep(5000); // Deliberate delay to force test failure
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+      Gauge gauge = gaugeMap.get(tag);
+      if (gauge != null) {
+        gauge.set(value);
+      }
+    }
+  }",projects/apache/incubator-uniffle/common/src/main/java/org/apache/uniffle/common/metrics/GRPCMetrics.java,setGauge,78-85,4
+changed_code_to_get_fail,file,method,line_range,cot_count
+"private void write( ByteBuffer buf ) {
+    log.trace( ""write({}): {}"", buf.remaining(), buf.remaining() > 1000 ? ""too big to display"" : new String( buf.array() ));
+
+    outQueue.add( buf );
+    try {
+        Thread.sleep(5000); // Introduced delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    wsl.onWriteDemand( this );
+}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/WebSocketImpl.java,write,676-681,2

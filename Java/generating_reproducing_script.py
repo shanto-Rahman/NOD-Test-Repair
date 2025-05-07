@@ -425,6 +425,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
                     )
 
     depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
+    #depth_filtered_df = df[(df['CallDepth'] <=1)]
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
