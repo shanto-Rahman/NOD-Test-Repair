@@ -90,11 +90,11 @@ while IFS= read -r line
     elif [[ $slug == "TooTallNate/Java-WebSocket" ]]; then
         incl_package="org.java_websocket.*;"
     fi
-    mvn test-compile
-    mvn dependency:build-classpath -Dmdep.outputFile=$(pwd)/cp.txt
-   
-    mvn -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
-    cp "calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
+    mvn test-compile -pl $module -am
+    mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
+    echo "mvn -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}"
+    mvn  -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
+    mv "$module/calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
     #echo $(pwd)
 
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
