@@ -390,7 +390,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
         #openai.api_key = "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"
-        openai.api_key = "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"
     else:
         print('model name not correct')
         exit()
@@ -493,10 +492,16 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         del auto_model
         torch.cuda.empty_cache()
     
+
     #Saving result for reproducing failure
-    with open("results/gpt.csv", "a", newline="") as fw:
+    #with open("results/gpt.csv", "a", newline="") as fw:
+    file_path = "results/gpt.csv"
+    write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
+
+    with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
-        writer.writerow(["changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+        if write_header:
+            writer.writerow(["changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
         writer.writerow([
             changed_code_output_to_get_fail,
             java_file_path,
@@ -504,17 +509,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
             line_range,
             cot_count
         ])
-    #output_row = f"{changed_code_output_to_get_fail}, {java_file_path}, {method_name}, {line_range}, {cot_count}"
-    #with open("gpt.csv", "w", newline="") as fw:
-    #    writer = csv.writer(fw)
-    #    # write a header row if you like:
-    #    writer.writerow(["changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
-    #    # write your data rows
-    #    writer.writerows([output_row])
 
-
-
-    #exit()
     #**Merging & Saving is done AFTER the loop**
     '''df_predictions = pd.DataFrame.from_dict(predictions_per_project_group, orient="index").transpose()
     df_tokens = pd.DataFrame.from_dict(tokens_per_project_group, orient="index").transpose()
