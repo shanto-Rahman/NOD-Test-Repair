@@ -161,7 +161,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             print(f"No LineRange found for {method_name}")
 
 
-    return meth_code, base_path+class_name+".java", method_name, line_range, retry_count # retry_count = cot count
+    return meth_code, base_path+class_name+".java", method_name, line_range, retry_count, firstLine # retry_count = cot count
      
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
@@ -430,7 +430,10 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         )
 
     #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
-    depth_filtered_df = df[(df['CallDepth'] <=4) & (df["LineSpan"] <= 20)]
+    #depth_filtered_df = df[(df['CallDepth'] <=2) & (df["LineSpan"] <= 15)]
+    depth_filtered_df = df[(df['CallDepth'] <=2) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 15)]
+
+    #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
@@ -456,7 +459,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-            changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test)
+            changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test)
     else:
         print('no model name found')
 
@@ -503,18 +506,34 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #with open("results/gpt.csv", "a", newline="") as fw:
     file_path = "results/gpt.csv"
     write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
-
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
         if write_header:
-            writer.writerow(["changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
-        writer.writerow([
-            changed_code_output_to_get_fail,
-            java_file_path,
-            method_name,
-            line_range,
-            cot_count
-        ])
+            writer.writerow(["proj_name","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+
+        if test_output == "Failure found.":
+            writer.writerow([
+                slug,
+                module,
+                test,
+                changed_code_output_to_get_fail,
+                java_file_path,
+                method_name,
+                line_range,
+                cot_count
+            ])
+        else:
+            writer.writerow([
+                slug,
+                module,
+                test,
+                "",
+                "",
+                "",
+                "",
+                "5"
+            ])
+
 
     #**Merging & Saving is done AFTER the loop**
     '''df_predictions = pd.DataFrame.from_dict(predictions_per_project_group, orient="index").transpose()
