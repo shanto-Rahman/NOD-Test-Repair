@@ -63,3 +63,16 @@ TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBl
     closeLatch.countDown();
 }",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/client/WebSocketClient.java,onWebsocketClose,514-522,3
 TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue677Test.testIssue,,,,,5
+apache/incubator-uniffle,common,org.apache.uniffle.common.rpc.GrpcServerTest.testGrpcExecutorPool,"public void setGauge(String tag, double value) {
+    if (isRegistered) {
+      Gauge gauge = gaugeMap.get(tag);
+      if (gauge != null) {
+        try {
+            Thread.sleep(5000); // Introduce delay to force test failure
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        gauge.set(value);
+      }
+    }
+}",projects/apache/incubator-uniffle/common/src/main/java/org/apache/uniffle/common/metrics/GRPCMetrics.java,setGauge,78-85,4
