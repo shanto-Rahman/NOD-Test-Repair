@@ -151,14 +151,14 @@ while IFS= read -r line
     elif [[ $slug == "vmware/admiral" ]]; then
         incl_package="com.vmware.*;"
     fi
-    mvn test-compile -pl $module -am
-    #mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
-    mvn  -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
+    #mvn test-compile -pl $module -am
+    ##mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
+    #mvn  -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
 
-    echo "mvn -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}"
-    mv "$module/calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
-    echo $(pwd)
-    exit
+    #echo "mvn -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}"
+    #mv "$module/calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
+    #echo $(pwd)
+    #exit
 
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
@@ -196,7 +196,7 @@ while IFS= read -r line
 
     cd $currentDir
 
-    python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
+    #python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
 
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
