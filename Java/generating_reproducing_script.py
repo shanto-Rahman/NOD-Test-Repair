@@ -29,37 +29,41 @@ from modify_java_file import hack_into_sut
 
 login(token="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")
 
-def gpt_score_finder(messages, max_retries=1):
-    try:
-        response = openai.ChatCompletion.create(
-            #model="gpt-4o-mini",
-            model="gpt-4o",
-            messages=messages,
-            temperature=0,
-            max_tokens=500
-        )
-        return response
-    except openai.error.APIError as e:
-        # Check if it's a server-side error (500, 502, 503, etc.)
-        if hasattr(e, 'response') and e.response.status_code >= 500:
-            print(f"Server error ({e.response.status_code}). Retrying in {initial_wait * (2 ** retry_count)} seconds.")
-            time.sleep(initial_wait * (2 ** retry_count))  # Exponential backoff
-            retry_count += 1
-        else:
-            print(f"API error: {str(e)}")
-            raise  # Re-raise the exception for non-server-side errors or if retries are exhausted
-    except Exception as e:
-        # Catch any other unexpected errors
-        print(f"Unexpected error: {str(e)}")
-        raise 
+def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
+    retry_count = 0
+    while retry_count < max_retries:
+        try:
+            response = openai.ChatCompletion.create(
+                #model="gpt-4o-mini",
+                model="gpt-4o",
+                messages=messages,
+                temperature=0,
+                max_tokens=500
+            )
+            time.sleep(sleep_on_success)  # Optional: avoid hammering the API
+            return response
+        except openai.error.APIError as e:
+            # Check if it's a server-side error (500, 502, 503, etc.)
+            if hasattr(e, 'response') and e.response.status_code >= 500:
+                #time.sleep(initial_wait * (2 ** retry_count))  # Exponential backoff
+                wait_time = initial_wait * (2 ** retry_count)
+                print(f"Server error ({e.response.status_code}). Retrying in {initial_wait * (2 ** retry_count)} seconds.")
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                print(f"API error: {str(e)}")
+                raise  # Re-raise the exception for non-server-side errors or if retries are exhausted
+        except Exception as e:
+            # Catch any other unexpected errors
+            print(f"Unexpected error: {str(e)}")
+            raise
+
+    print("Max retries reached. Returning None.")
     return None 
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
-    max_retries = 5
+    max_retries = 10
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
-    #print(definition)
-    #print(prompt)
-    # 1) build the message history
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
@@ -88,13 +92,31 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         #print("meth_code=")
         #print(meth_code)
         # 1) Extract the method name via a regex on the signature line
-        sig = next(
-            line for line in meth_code.splitlines()
-            if "(" in line and "{" in line
-        ).strip()
+        #sig = next(
+        #    line for line in meth_code.splitlines()
+        #    if "(" in line and "{" in line
+        #).strip()
+        signature_lines = []
+        found_opening_brace = False
+        for line in meth_code.splitlines():
+            signature_lines.append(line.strip())
+            if "{" in line:
+                found_opening_brace = True
+                break
+        
+        if not found_opening_brace:
+            raise RuntimeError("Method signature with '{' not found.")
+        
+        sig = " ".join(signature_lines)
+        print(f"[DEBUG] Full signature line: {repr(sig)}")
+
         #m = re.match(r".*\b([A-Za-z0-9_]+)\s*\(.*\)\s*\{", sig)
         #m = re.match(r".*\b([A-Za-z_][A-Za-z0-9_]*)\s*(\([^)]*\))\s*\{", sig)
-        m = re.match(r"^[\w\s<>]*\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
+        #m = re.search(r"^[\w\s<>]*\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
+        #m = re.search(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
+        m = re.search(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
+
+
 
 
         if not m:
@@ -431,7 +453,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
 
     #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
     #depth_filtered_df = df[(df['CallDepth'] <=2) & (df["LineSpan"] <= 15)]
-    depth_filtered_df = df[(df['CallDepth'] <=2) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 15)]
+    depth_filtered_df = df[(df['CallDepth'] >=0) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 20)]
 
     #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods
 
