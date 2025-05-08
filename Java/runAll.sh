@@ -89,13 +89,76 @@ while IFS= read -r line
 
     elif [[ $slug == "TooTallNate/Java-WebSocket" ]]; then
         incl_package="org.java_websocket.*;"
+    
+    elif [[ $slug == "Accenture/mercury" ]]; then
+        incl_package="org.platformlambda.*;excl=org.platformlambda.core.util.CryptoApi"
+
+    elif [[ $slug == "Alluxio/alluxio" ]]; then
+        testClass_with_full_path="$(echo $testName_with_dot | rev | cut -d'.' -f2- | rev)"
+        echo $testClass_with_full_path
+        #incl_package="tachyon.*;excl=tachyon.conf.*,tachyon.CommonUtils,tachyon.Log4jFileAppender"
+        #incl_package="tachyon.*;excl=excl=tachyon.Master,tachyon.LocalTachyonCluster,tachyon.CommonUtils"
+        incl_package="$testClass_with_full_path,$testClass_with_full_path\$*;"
+        
+    elif [[ $slug == "activiti/activiti" ]]; then #Not possible to run
+        incl_package="org.activiti.*;"
+
+    elif [[ $slug == "alibaba/wasp" ]]; then #Not found dynamic call-graph
+        incl_package="com.alibaba.wasp.engine.*,com.alibaba.wasp.store.*"
+
+    elif [[ $slug == "apache/dubbo" ]]; then
+        incl_package="org.apache.dubbo.*;"
+
+    elif [[ $slug == "apache/httpcore" ]]; then
+        incl_package="org.apache.*;"
+
+    elif [[ $slug == "davidmoten/rxjava2-extras" ]]; then
+        incl_package="com.github.davidmoten.*;"
+        
+    elif [[ $slug == "doanduyhai/Achilles" ]]; then
+        incl_package="info.archinnov.achilles.*;"
+
+    elif [[ $slug == "elasticjob/elastic-job-lite" ]]; then
+        incl_package="org.apache.shardingsphere.*;"
+
+    elif [[ $slug == "feroult/yawp" ]]; then
+        incl_package="io.yawp.*;"
+
+    elif [[ $slug == "flaxsearch/luwak" ]]; then
+        incl_package="uk.co.flax.luwak.*;"
+
+    elif [[ $slug == "fluent/fluent-logger-java" ]]; then
+        incl_package="org.fluentd.*;"
+
+    elif [[ $slug == "javadelight/delight-nashorn-sandbox" ]]; then
+        incl_package="delight.nashornsandbox.*;"
+
+    elif [[ $slug == "kagkarlsson/db-scheduler" ]]; then
+        incl_package="com.github.kagkarlsson.*;"
+
+    elif [[ $slug == "nlighten/tomcat_exporter" ]]; then
+        incl_package="nl.nlighten.prometheus.*;"
+
+    elif [[ $slug == "qos-ch/logback" ]]; then
+        incl_package="ch.qos.logback.*;"
+        
+    elif [[ $slug == "square/okhttp" ]]; then
+        incl_package="com.squareup.okhttp.*;"
+
+    elif [[ $slug == "undertow-io/undertow" ]]; then
+        incl_package="io.undertow.*;"
+
+    elif [[ $slug == "vmware/admiral" ]]; then
+        incl_package="com.vmware.*;"
     fi
     mvn test-compile -pl $module -am
-    mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
-    echo "mvn -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}"
+    #mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
     mvn  -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
+
+    echo "mvn -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}"
     mv "$module/calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
-    #echo $(pwd)
+    echo $(pwd)
+    exit
 
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
@@ -113,13 +176,7 @@ while IFS= read -r line
       --classfiles $module/target/classes \
         --sourcefiles $module/src/main/java \
           --xml $module/target/coverage.xml
-
-    #echo "
-    #    java -jar jacococli.jar report $module/target/jacoco.exec \
-    #      --classfiles $module/target/classes \
-    #        --sourcefiles $module/src/main/java \
-    #          --xml $module/target/coverage.xml"
-    
+ 
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     test_class_full_path=$(find $module -name "${testClass}.java")
@@ -140,7 +197,7 @@ while IFS= read -r line
     cd $currentDir
 
     python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
-    #rm -rf "$inputProj/$rootProj"
+
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
 
