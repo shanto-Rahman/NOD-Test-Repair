@@ -1,146 +1,218 @@
-from collections import deque
-import os
-from tree_sitter import Language, Parser
 import sys
-import csv
-# Set up parser
-from tree_sitter_languages import get_language
-JAVA_LANGUAGE = get_language("java")
-parser = Parser()
-parser.set_language(JAVA_LANGUAGE)
+from collections import defaultdict, deque
 
+from collections import deque, defaultdict
+import re
 
-# ——————————————————————————————————————————————————————————————————————————————
-#  Helpers: AST traversal, invocation collection, method lookup
-# ——————————————————————————————————————————————————————————————————————————————
-def iterate(node):
-    yield node
-    for c in node.children:
-        yield from iterate(c)
+# Step 1: Parse the callgraph lines into caller → [callees]
+edges = defaultdict(list)
+with open("method_calls.txt") as f:
+    for line in f:
+        if line.startswith("M:"):
+            match = re.match(r"M:(.+?)\s+\(\w\)(.+)", line.strip())
+            if match:
+                caller, callee = match.groups()
+                edges[caller].append(callee)
 
-def find_method_node(root, name):
-    """Find the first method_declaration whose name matches."""
-    for n in iterate(root):
-        if n.type == "method_declaration":
-            nm = n.child_by_field_name("name")
-            if nm and nm.text.decode() == name:
-                return n
-    return None
+# Step 2: BFS traversal starting from your test method
+start_method = "org.java_websocket.issues.Issue580Test:runNoCloseBlockingTestScenario2()"
+visited = set()
+queue = deque([(start_method, 0)])
+max_depth = 20
+depth_map = defaultdict(list)
 
-def collect_invocations(body_node):
-    """Collect all simple method_invocation names under a block."""
-    calls = set()
-    for n in iterate(body_node):
-        if n.type == "method_invocation":
-            nm = n.child_by_field_name("name")
-            if nm:
-                calls.add(nm.text.decode())
-    return calls
+while queue:
+    current, depth = queue.popleft()
+    if current in visited or depth > max_depth:
+        continue
+    visited.add(current)
+    depth_map[depth].append(current)
+    for callee in edges.get(current, []):
+        queue.append((callee, depth + 1))
 
-# ——————————————————————————————————————————————————————————————————————————————
-#  Load executed_methods.csv into a set and map Method → Class (slash-notation)
-# ——————————————————————————————————————————————————————————————————————————————
-def load_executed(csv_path):
-    executed = set()
-    method_to_class = {}
-    with open(csv_path, newline='') as f:
-        r = csv.DictReader(f)
-        for row in r:
-            m = row["Method"]
-            executed.add(m)
-            # convert dot → slash so we can locate its .java
-            cls = row["Class"].replace('.', '/')
-            method_to_class[m] = cls
-    return executed, method_to_class
+# Step 3: Print output
+print(f"Call graph from '{start_method}' (up to depth {max_depth}):")
+for d in sorted(depth_map):
+    print(f"\nDepth {d}:")
+    for meth in depth_map[d]:
+        print(f"  {meth}")
 
-# ——————————————————————————————————————————————————————————————————————————————
-#  For a code-under-test method, parse its .java (based on class→file under src_root)
-# ——————————————————————————————————————————————————————————————————————————————
-def load_under_test_method_body(src_root, class_path, method_name):
-    """
-    class_path: e.g. 'org/java_websocket/client/WebSocketClient'
-    method_name: 'connectBlocking'
-    Returns its AST block node or None.
-    """
-    file_path = os.path.join(src_root, class_path + ".java")
-    if not os.path.isfile(file_path):
-        return None
-    src = open(file_path, encoding='utf8').read()
-    tree = parser.parse(src.encode())
-    root = tree.root_node
-    mnode = find_method_node(root, method_name)
-    if not mnode:
-        return None
-    return next((c for c in mnode.children if c.type == "block"), None)
+#def build_call_graph(callgraph_lines):
+#    graph = defaultdict(set)
+##    for line in callgraph_lines:
+#        if not line.startswith("M:"):
+#            continue
+#        line = line[2:].strip()
+##        if ')' not in line or '(' not in line:
+#            continue
+#        caller, rest = line.split(')', 1)
+#        rest = rest.strip()
+#        if not rest or ':' not in rest:
+#            continue
+#        # Remove tag like (M), (O), etc.
+#        callee = rest.split(')', 1)[-1].strip()
+#        graph[caller.strip()].add(callee)
+#    return graph
+#
+#def bfs_traversal(graph, start_method, max_depth=10):
+#    visited = set()
+#    queue = deque([(start_method, 0)])
+#    depth_map = defaultdict(list)
+#
+#    while queue:
+#        current, depth = queue.popleft()
+#        if depth > max_depth or current in visited:
+#            continue
+#        visited.add(current)
+#        depth_map[depth].append(current)
+#        for callee in graph.get(current, []):
+#            queue.append((callee, depth + 1))
+#
+#    return depth_map
+#
+#if __name__ == "__main__":
+#    if len(sys.argv) != 3:
+#        print("Usage: python bfs_call_graph.py <callgraph.txt> <starting_method>")
+#        sys.exit(1)
+#
+#    callgraph_file = sys.argv[1]
+#    start_method = sys.argv[2]
+#
+#    with open(callgraph_file, "r") as f:
+#        lines = f.readlines()
+#
+#    graph = build_call_graph(lines)
+#    result = bfs_traversal(graph, start_method)
+#
+#    print(f"\nCall graph from '{start_method}' (up to depth 10):\n")
+#    for depth in sorted(result.keys()):
+#        print(f"Depth {depth}:")
+#        for method in sorted(result[depth]):
+#            print(f"  {method}")
+#
+#
+#import sys
+#import re
+#from tree_sitter import Language, Parser
 
-# ——————————————————————————————————————————————————————————————————————————————
-#  Main: BFS up to depth 10
-# ——————————————————————————————————————————————————————————————————————————————
-if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        print("Usage: recurse_calls.py "
-              "<Test.java> <testMethod> <executed_methods.csv> "
-              "<src_root> <output.csv>")
-        sys.exit(1)
-
-    test_file, test_meth, executed_csv, src_root, out_csv = sys.argv[1:]
-    executed, method_to_class = load_executed(executed_csv)
-
-    # Parse the test class
-    test_src = open(test_file, encoding='utf8').read()
-    test_root = parser.parse(test_src.encode()).root_node
-    test_node = find_method_node(test_root, test_meth)
-    if not test_node:
-        print(f"❌ Could not find method `{test_meth}` in {test_file}")
-        sys.exit(1)
-
-    # Seed: direct calls in test → depth 0
-    test_block = next((c for c in test_node.children if c.type == "block"), None)
-    seed_calls = collect_invocations(test_block) if test_block else set()
-
-    # BFS queue: (method_name, depth, source), source is "test" or "code"
-    q = deque()
-    depths = {}
-    for m in seed_calls:
-        depths[m] = 0
-        q.append((m, 0, "test"))
-
-    # Explore up to depth 10
-    while q:
-        meth, d, src = q.popleft()
-        if d >= 10:
-            continue
-
-        # Find its body
-        if src == "test":
-            node = find_method_node(test_root, meth)
-            body = next((c for c in node.children if c.type=="block"), None) if node else None
-        else:
-            cls = method_to_class.get(meth)
-            body = load_under_test_method_body(src_root, cls, meth)
-
-        if not body:
-            continue
-
-        # For each invocation inside
-        for cal in collect_invocations(body):
-            if cal in depths:
-                continue
-            # only keep it if we can find its definition
-            in_test = find_method_node(test_root, cal) is not None
-            in_code = cal in executed
-            if not (in_test or in_code):
-                continue
-
-            depths[cal] = d + 1
-            next_src = "test" if in_test else "code"
-            q.append((cal, d + 1, next_src))
-
-    # Write out
-    with open(out_csv, "w", newline="") as f:
-        w = csv.writer(f)
-        w.writerow(["Method","Depth"])
-        for m, depth in sorted(depths.items(), key=lambda kv: kv[1]):
-            w.writerow([m, depth])
-
-    print(f"Wrote depths for {len(depths)} methods to {out_csv}")
+# Load Java grammar
+#Language.build_library(
+#    'build/my-languages.so',
+#    ['tree-sitter-java']
+#)
+#JAVA_LANGUAGE = Language('build/my-languages.so', 'java')
+#import sys
+#from collections import defaultdict, deque
+##
+#def parse_callgraph(file_path):
+#    call_map = defaultdict(set)
+#    with open(file_path, 'r') as f:
+#        for line in f:
+#            if not line.startswith("M:"):
+#                continue
+#            parts = line.strip()[2:].split(" ", 1)
+#            if len(parts) != 2:
+#                continue
+#            caller, callee = parts
+#            # Remove (O), (M), etc.
+#            callee = callee.strip()
+#            if callee.startswith(('(O)', '(M)', '(S)', '(I)', '(D)')):
+#                callee = callee[3:]
+#            call_map[caller].add(callee)
+#    return call_map
+#
+#def dfs_calls(start, call_map):
+#    visited = set()
+#    stack = [start]
+#    while stack:
+#        current = stack.pop()
+#        if current not in visited:
+#            visited.add(current)
+#            stack.extend(call_map.get(current, []))
+#    return visited
+#
+#if __name__ == "__main__":
+#    if len(sys.argv) != 3:
+#        print("Usage: python extract_test_calls.py <callgraph.txt> <testMethod>")
+#        sys.exit(1)
+#
+#    callgraph_file = sys.argv[1]
+#    test_method = sys.argv[2]  # e.g., org.java_websocket.issues.Issue580Test:runNoCloseBlockingTestScenario2
+#
+#    call_map = parse_callgraph(callgraph_file)
+#    reachable = dfs_calls(test_method, call_map)
+#
+#    print(f"Call graph starting from {test_method}:\n")
+#    for callee in sorted(reachable):
+#        print(callee)
+#
+#
+##from collections import deque
+##import os
+###from tree_sitter import Language, Parser
+##import sys
+##import csv
+### Set up parser
+##from tree_sitter_languages import get_language
+##JAVA_LANGUAGE = get_language("java")
+##parser = Parser()
+##parser.set_language(JAVA_LANGUAGE)
+##
+###parser = Parser()
+###parser.set_language(JAVA_LANGUAGE)
+##
+##import sys
+##from collections import defaultdict, deque
+##
+##def parse_call_graph(file_path):
+##    call_graph = defaultdict(set)
+##    method_lines = []
+##
+##    with open(file_path, "r") as f:
+##        for line in f:
+##            if line.startswith("M:"):
+##                method_lines.append(line.strip()[2:])
+##
+##    for line in method_lines:
+##        parts = line.split(" ")
+##        if len(parts) < 2:
+##            continue
+##        caller = parts[0]
+##        callee = parts[1].split(":")[1] if ":" in parts[1] else parts[1]
+##        call_graph[caller].add(parts[1])
+##
+##    return call_graph
+##
+##def collect_reachable_calls(call_graph, entry_point):
+##    visited = set()
+##    queue = deque([entry_point])
+##    result = set()
+##
+##    while queue:
+##        current = queue.popleft()
+##        if current in visited:
+##            continue
+##        visited.add(current)
+##        result.add(current)
+##        for callee in call_graph.get(current, []):
+##            if callee not in visited:
+##                queue.append(callee)
+##
+##    return result
+##
+##if __name__ == "__main__":
+##    if len(sys.argv) != 3:
+##        print("Usage: python extract_calls.py <callgraph.txt> <TestClass:testMethod>")
+##        sys.exit(1)
+##
+##    callgraph_file = sys.argv[1]
+##    entry = sys.argv[2]
+##
+##    call_graph = parse_call_graph(callgraph_file)
+##    reachable = collect_reachable_calls(call_graph, entry)
+##
+##    print(f"Call graph starting from {entry}:\n")
+##    for method in sorted(reachable):
+##        print(method)
+##
+##
