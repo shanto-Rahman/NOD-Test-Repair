@@ -110,7 +110,7 @@ while IFS= read -r line
         incl_package="org.apache.dubbo.*;"
 
     elif [[ $slug == "apache/httpcore" ]]; then
-        incl_package="org.apache.*;"
+        incl_package="org.apache.http.*,excl=.*\\$\\$EnhancerBy.*;"
 
     elif [[ $slug == "davidmoten/rxjava2-extras" ]]; then
         incl_package="com.github.davidmoten.*;"
@@ -153,12 +153,32 @@ while IFS= read -r line
     fi
     #mvn test-compile -pl $module -am
     ##mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
-    #mvn  -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
+    #mvn  -pl $module -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
 
     #echo "mvn -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}"
-    #mv "$module/calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
-    #echo $(pwd)
-    #exit
+    #if [[ -f "$module/calltrace.txt" ]]; then
+    #    mv "$module/calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
+    #else #do static analysis
+        #find all method-calls from test-method
+        #cd $currentDir
+        #python3 find_helper_meth_in_test.py projects/TooTallNate/Java-WebSocket/src/test/java/org/java_websocket/issues/Issue580Test.java "runNoCloseBlockingTestScenario2" 
+
+        module_jar_name=$(find ${module}/target -name "*.jar")
+        echo "module_jar_name= $module_jar_name"
+        java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name}  > "callgraph_on_module_jar.txt" # static-trace
+        grep '^M:' callgraph_on_module_jar.txt > method_calls.txt
+        cd $module/target/test-classes
+        jar cf $inputProj/$slug/test-classes.jar *
+        cd -
+        java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar test-classes.jar > "callgraph_on_test_classes.txt" # static-trace
+        grep '^M:' callgraph_on_test_classes.txt >> method_calls.txt
+
+        cd $currentDir
+        python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt "org.java_websocket.issues.Issue580Test:runNoCloseBlockingTestScenario2()"
+
+    #fi
+    echo $(pwd)
+    exit
 
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
@@ -192,11 +212,12 @@ while IFS= read -r line
 
     echo "$base_package"
     cd $inputProj/$slug
+    git stash
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
 
     cd $currentDir
 
-    #python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
+    python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
 
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
