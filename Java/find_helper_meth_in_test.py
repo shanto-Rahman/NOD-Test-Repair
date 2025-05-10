@@ -53,6 +53,11 @@ if __name__ == "__main__":
     max_depth = 20
 
     edges = parse_callgraph(callgraph_file)
+    if start_method not in edges:
+        print(f"[ERROR] Start method '{start_method}' not found in the call graph.")
+        print("Hint: Make sure the method name includes parentheses, e.g., MyClass:myMethod()")
+        sys.exit(1)
+
     depth_map = bfs_callgraph(edges, start_method, max_depth)
     write_callgraph_csv(depth_map, output_csv)
     print(f"Call graph written to {output_csv}")
