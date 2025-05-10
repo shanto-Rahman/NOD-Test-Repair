@@ -62,6 +62,21 @@ while IFS= read -r line
 	JMVNOPTIONS=""
     if [[ "$slug" == "doanduyhai/Achilles" ]]; then
         sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml
+        sed -i '/<plugin>/,/<\/plugin>/ {
+         /<groupId>org.apache.felix<\/groupId>/ {
+           N
+           /<artifactId>maven-bundle-plugin<\/artifactId>/ {
+             a\
+             <version>${felix.version}</version>
+           }
+         }
+       }' pom.xml
+
+        #sed -i '/<groupId>org.apache.felix<\/groupId>/{
+        #N
+        #/<artifactId>maven-bundle-plugin<\/artifactId>/a \ \ \ \ <version>${felix.version}</version>
+        #}' pom.xml
+
     elif [[ $slug == "apache/dubbo" ]]; then
         JMVNOPTIONS="-pl dubbo-dependencies-bom"
     fi  
@@ -264,8 +279,9 @@ while IFS= read -r line
 
     #fi
     echo $(pwd)
-    #exit
+    exit
 
+    cd $inputProj/$slug
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
 
@@ -304,6 +320,10 @@ while IFS= read -r line
     cd $currentDir
 
     #python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
+    
+    python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv"
+
+    echo "python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv""
 
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
