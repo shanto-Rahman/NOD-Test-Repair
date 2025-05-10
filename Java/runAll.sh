@@ -84,73 +84,73 @@ while IFS= read -r line
     module_with_underscore="${module//\//_}"
     echo "$slug_with_underscore"
 
-    if [[ $slug == "apache/incubator-uniffle" ]]; then
-        incl_package="org.apache.uniffle.*;"
+    #if [[ $slug == "apache/incubator-uniffle" ]]; then
+    #    incl_package="org.apache.uniffle.*;"
 
-    elif [[ $slug == "TooTallNate/Java-WebSocket" ]]; then
-        incl_package="org.java_websocket.*;"
-    
-    elif [[ $slug == "Accenture/mercury" ]]; then
-        incl_package="org.platformlambda.*;excl=org.platformlambda.core.util.CryptoApi"
+    #elif [[ $slug == "TooTallNate/Java-WebSocket" ]]; then
+    #    incl_package="org.java_websocket.*;"
+    #
+    #elif [[ $slug == "Accenture/mercury" ]]; then
+    #    incl_package="org.platformlambda.*;excl=org.platformlambda.core.util.CryptoApi"
 
-    elif [[ $slug == "Alluxio/alluxio" ]]; then
-        testClass_with_full_path="$(echo $testName_with_dot | rev | cut -d'.' -f2- | rev)"
-        echo $testClass_with_full_path
-        #incl_package="tachyon.*;excl=tachyon.conf.*,tachyon.CommonUtils,tachyon.Log4jFileAppender"
-        #incl_package="tachyon.*;excl=excl=tachyon.Master,tachyon.LocalTachyonCluster,tachyon.CommonUtils"
-        incl_package="$testClass_with_full_path,$testClass_with_full_path\$*;"
-        
-    elif [[ $slug == "activiti/activiti" ]]; then #Not possible to run
-        incl_package="org.activiti.*;"
+    #elif [[ $slug == "Alluxio/alluxio" ]]; then
+    #    testClass_with_full_path="$(echo $testName_with_dot | rev | cut -d'.' -f2- | rev)"
+    #    echo $testClass_with_full_path
+    #    #incl_package="tachyon.*;excl=tachyon.conf.*,tachyon.CommonUtils,tachyon.Log4jFileAppender"
+    #    #incl_package="tachyon.*;excl=excl=tachyon.Master,tachyon.LocalTachyonCluster,tachyon.CommonUtils"
+    #    incl_package="$testClass_with_full_path,$testClass_with_full_path\$*;"
+    #    
+    #elif [[ $slug == "activiti/activiti" ]]; then #Not possible to run
+    #    incl_package="org.activiti.*;"
 
-    elif [[ $slug == "alibaba/wasp" ]]; then #Not found dynamic call-graph
-        incl_package="com.alibaba.wasp.engine.*,com.alibaba.wasp.store.*"
+    #elif [[ $slug == "alibaba/wasp" ]]; then #Not found dynamic call-graph
+    #    incl_package="com.alibaba.wasp.engine.*,com.alibaba.wasp.store.*"
 
-    elif [[ $slug == "apache/dubbo" ]]; then
-        incl_package="org.apache.dubbo.*;"
+    #elif [[ $slug == "apache/dubbo" ]]; then
+    #    incl_package="org.apache.dubbo.*;"
 
-    elif [[ $slug == "apache/httpcore" ]]; then
-        incl_package="org.apache.http.*,excl=.*\\$\\$EnhancerBy.*;"
+    #elif [[ $slug == "apache/httpcore" ]]; then
+    #    incl_package="org.apache.http.*,excl=.*\\$\\$EnhancerBy.*;"
 
-    elif [[ $slug == "davidmoten/rxjava2-extras" ]]; then
-        incl_package="com.github.davidmoten.*;"
-        
-    elif [[ $slug == "doanduyhai/Achilles" ]]; then
-        incl_package="info.archinnov.achilles.*;"
+    #elif [[ $slug == "davidmoten/rxjava2-extras" ]]; then
+    #    incl_package="com.github.davidmoten.*;"
+    #    
+    #elif [[ $slug == "doanduyhai/Achilles" ]]; then
+    #    incl_package="info.archinnov.achilles.*;"
 
-    elif [[ $slug == "elasticjob/elastic-job-lite" ]]; then
-        incl_package="org.apache.shardingsphere.*;"
+    #elif [[ $slug == "elasticjob/elastic-job-lite" ]]; then
+    #    incl_package="org.apache.shardingsphere.*;"
 
-    elif [[ $slug == "feroult/yawp" ]]; then
-        incl_package="io.yawp.*;"
+    #elif [[ $slug == "feroult/yawp" ]]; then
+    #    incl_package="io.yawp.*;"
 
-    elif [[ $slug == "flaxsearch/luwak" ]]; then
-        incl_package="uk.co.flax.luwak.*;"
+    #elif [[ $slug == "flaxsearch/luwak" ]]; then
+    #    incl_package="uk.co.flax.luwak.*;"
 
-    elif [[ $slug == "fluent/fluent-logger-java" ]]; then
-        incl_package="org.fluentd.*;"
+    #elif [[ $slug == "fluent/fluent-logger-java" ]]; then
+    #    incl_package="org.fluentd.*;"
 
-    elif [[ $slug == "javadelight/delight-nashorn-sandbox" ]]; then
-        incl_package="delight.nashornsandbox.*;"
+    #elif [[ $slug == "javadelight/delight-nashorn-sandbox" ]]; then
+    #    incl_package="delight.nashornsandbox.*;"
 
-    elif [[ $slug == "kagkarlsson/db-scheduler" ]]; then
-        incl_package="com.github.kagkarlsson.*;"
+    #elif [[ $slug == "kagkarlsson/db-scheduler" ]]; then
+    #    incl_package="com.github.kagkarlsson.*;"
 
-    elif [[ $slug == "nlighten/tomcat_exporter" ]]; then
-        incl_package="nl.nlighten.prometheus.*;"
+    #elif [[ $slug == "nlighten/tomcat_exporter" ]]; then
+    #    incl_package="nl.nlighten.prometheus.*;"
 
-    elif [[ $slug == "qos-ch/logback" ]]; then
-        incl_package="ch.qos.logback.*;"
-        
-    elif [[ $slug == "square/okhttp" ]]; then
-        incl_package="com.squareup.okhttp.*;"
+    #elif [[ $slug == "qos-ch/logback" ]]; then
+    #    incl_package="ch.qos.logback.*;"
+    #    
+    #elif [[ $slug == "square/okhttp" ]]; then
+    #    incl_package="com.squareup.okhttp.*;"
 
-    elif [[ $slug == "undertow-io/undertow" ]]; then
-        incl_package="io.undertow.*;"
+    #elif [[ $slug == "undertow-io/undertow" ]]; then
+    #    incl_package="io.undertow.*;"
 
-    elif [[ $slug == "vmware/admiral" ]]; then
-        incl_package="com.vmware.*;"
-    fi
+    #elif [[ $slug == "vmware/admiral" ]]; then
+    #    incl_package="com.vmware.*;"
+    #fi
     #mvn test-compile -pl $module -am
     ##mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
     #mvn  -pl $module -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
@@ -162,9 +162,85 @@ while IFS= read -r line
         #find all method-calls from test-method
         #cd $currentDir
         #python3 find_helper_meth_in_test.py projects/TooTallNate/Java-WebSocket/src/test/java/org/java_websocket/issues/Issue580Test.java "runNoCloseBlockingTestScenario2" 
+        if [[ $slug == "apache/incubator-uniffle" ]]; then
+            module_jar_name="$module/target/rss-common-0.8.0-SNAPSHOT.jar" #module=common
 
-        module_jar_name=$(find ${module}/target -name "*.jar")
+        elif [[ $slug == "TooTallNate/Java-WebSocket" ]]; then
+            module_jar_name="target/Java-WebSocket-1.4.0-SNAPSHOT.jar"  #module=.
+
+        elif [[ $slug == "alibaba/wasp" ]]; then #Not found dynamic call-graph
+            module_jar_name="target/wasp-0.11.jar"
+
+        elif [[ $slug == "apache/dubbo" && $module == "dubbo-remoting/dubbo-remoting-netty" ]]; then
+            module_jar_name="$module/target/dubbo-remoting-netty-2.7.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "apache/dubbo" && $module == "dubbo-rpc/dubbo-rpc-dubbo" ]]; then
+            module_jar_name="$module/target/dubbo-rpc-dubbo-2.7.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "apache/httpcore" && $module == "httpcore" ]]; then
+            module_jar_name="$module/target/httpcore-4.2-alpha2-SNAPSHOT.jar"
+
+        elif [[ $slug == "apache/httpcore" &&  $module == "httpcore-nio" ]]; then
+            module_jar_name="$module/target/httpcore-nio-4.2-alpha2-SNAPSHOT.jar"
+
+        elif [[ $slug == "davidmoten/rxjava2-extras" ]]; then
+            module_jar_name="target/rxjava2-extras-0.2.3-SNAPSHOT.jar"
+
+
+        elif [[ $slug == "doanduyhai/Achilles" &&  $module == "integration-test-2_1" ]]; then
+            module_jar_name="$module/target/integration-test-2_1.jar"
+
+        elif [[ $slug == "doanduyhai/Achilles" &&  $module == "integration-test-2_2" ]]; then
+            module_jar_name="$module/target/integration-test-2_2.jar"
+
+        elif [[ $slug == "doanduyhai/Achilles" &&  $module == "integration-test-3_10" ]]; then
+            module_jar_name="$module/target/integration-test-3_10.jar"
+
+        elif [[ $slug == "doanduyhai/Achilles" &&  $module == "integration-test-3_7" ]]; then
+            module_jar_name="$module/target/integration-test-3_7.jar"
+        
+        elif [[ $slug == "elasticjob/elastic-job-lite" &&  $module == "elasticjob-infra/elasticjob-infra-common" ]]; then
+            module_jar_name="$module/target/apache-shardingsphere-elasticjob-3.1.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "feroult/yawp" &&  $module == "yawp-testing/yawp-testing-appengine" ]]; then
+            module_jar_name="$module/target/yawp-testing-2.0.4alpha.jar"
+
+        elif [[ $slug == "flaxsearch/luwak" &&  $module == "luwak" ]]; then
+            module_jar_name="$module/target/luwak-1.6.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "fluent/fluent-logger-java" ]]; then 
+            module_jar_name="target/fluent-logger-0.3.5-SNAPSHOT.jar"
+
+        elif [[ $slug == "javadelight/delight-nashorn-sandbox" ]]; then 
+            module_jar_name="target/delight-nashorn-sandbox-0.1.19-SNAPSHOT.jar"        
+         
+        elif [[ $slug == "kagkarlsson/db-scheduler" ]]; then
+            module_jar_name="target/db-scheduler-4.2-SNAPSHOT.jar"
+
+        elif [[ $slug == "nlighten/tomcat_exporter" && $module == "client" ]]; then
+            module_jar_name="$module/target/tomcat_exporter_client-0.0.18-SNAPSHOT.jar"
+
+        elif [[ $slug == "qos-ch/logback" && $module == "logback-classic" ]]; then
+            module_jar_name="$module/target/logback-classic-2.0.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "qos-ch/logback" && $module == "logback-core" ]]; then
+            module_jar_name="$module/target/logback-core-2.0.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "square/okhttp" && $module == "okhttp-tests" ]]; then
+            module_jar_name="$module/target/okhttp-tests-2.0.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "undertow-io/undertow" && $module == "websockets-jsr" ]]; then
+            module_jar_name="$module/target/undertow-websockets-jsr-2.0.14.Final-SNAPSHOT.jar"
+
+        elif [[ $slug == "vmware/admiral" && $module == "adapter/registry" ]]; then
+            module_jar_name="$module/target/admiral-adapter-registry-1.5.0-SNAPSHOT.jar"
+
+        elif [[ $slug == "Alluxio/alluxio" ]]; then
+            module_jar_name="$module/target/tachyon-0.3.0-SNAPSHOT.jar"
+
+        fi
         echo "module_jar_name= $module_jar_name"
+        echo "java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name} "
         java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name}  > "callgraph_on_module_jar.txt" # static-trace
         grep '^M:' callgraph_on_module_jar.txt > method_calls.txt
         cd $module/target/test-classes
@@ -172,13 +248,23 @@ while IFS= read -r line
         cd -
         java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar test-classes.jar > "callgraph_on_test_classes.txt" # static-trace
         grep '^M:' callgraph_on_test_classes.txt >> method_calls.txt
+        sort method_calls.txt | uniq > method_calls_deduped.txt
+        mv method_calls_deduped.txt method_calls.txt
 
+         
+        rm "callgraph_on_module_jar.txt"
+        rm "callgraph_on_test_classes.txt"
         cd $currentDir
-        python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt "org.java_websocket.issues.Issue580Test:runNoCloseBlockingTestScenario2()"
+        #$inputProj/$slug/method_calls.txt traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_method_calls.csv
+        testName_colon="${testName_with_dot%.*}:${testName_with_dot##*.}()"
+        echo "$testName_colon"
+        #exit
+        python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt ${testName_colon} traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv
+        rm $inputProj/$slug/method_calls.txt
 
     #fi
     echo $(pwd)
-    exit
+    #exit
 
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
     surefire_exists=$(grep -r "surefire-plugin" pom.xml | wc -l)
@@ -217,7 +303,7 @@ while IFS= read -r line
 
     cd $currentDir
 
-    python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
+    #python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
 
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
