@@ -76,7 +76,6 @@ while IFS= read -r line
         #N
         #/<artifactId>maven-bundle-plugin<\/artifactId>/a \ \ \ \ <version>${felix.version}</version>
         #}' pom.xml
-
     elif [[ $slug == "apache/dubbo" ]]; then
         JMVNOPTIONS="-pl dubbo-dependencies-bom"
     fi  
@@ -272,14 +271,13 @@ while IFS= read -r line
         cd $currentDir
         #$inputProj/$slug/method_calls.txt traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_method_calls.csv
         testName_colon="${testName_with_dot%.*}:${testName_with_dot##*.}()"
-        echo "$testName_colon"
+        #echo "$testName_colon"
         #exit
         python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt ${testName_colon} traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv
         rm $inputProj/$slug/method_calls.txt
 
     #fi
     echo $(pwd)
-    exit
 
     cd $inputProj/$slug
     #cp whitelist.txt "$currentDir/Locations/whitelist-$projName.txt"
@@ -294,19 +292,54 @@ while IFS= read -r line
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
      
     cp $currentDir/jacococli.jar .
+
+    #java -jar jacococli.jar report $module/target/jacoco.exec \
+    #  --classfiles $module/target/classes \
+    #    --sourcefiles $module/src/main/java \
+    #      --xml $module/target/coverage.xml
+    # Assume this is the root of your multi-module project
+    CLASSFILES=""
+    SOURCEFILES=""
+    
+    for mod in $(find . -name target -type d -prune); do
+      if [ -d "$mod/classes" ]; then
+        CLASSFILES+="--classfiles $mod/classes "
+      fi
+      if [ -d "$(dirname "$mod")/src/main/java" ]; then
+        SOURCEFILES+="--sourcefiles $(dirname "$mod")/src/main/java "
+      fi
+    done
+    
     java -jar jacococli.jar report $module/target/jacoco.exec \
-      --classfiles $module/target/classes \
-        --sourcefiles $module/src/main/java \
-          --xml $module/target/coverage.xml
- 
+      $CLASSFILES \
+      $SOURCEFILES \
+      --xml $module/target/coverage.xml
+    echo "java -jar jacococli.jar report $module/target/jacoco.exec \
+      $CLASSFILES \
+      $SOURCEFILES \
+      --xml $module/target/coverage.xml"
+    #echo "java -jar jacococli.jar report $module/target/jacoco.exec \
+    #  --classfiles $module/target/classes \
+    #    --sourcefiles $module/src/main/java \
+    #      --xml $module/target/coverage.xml"
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
+
     test_class_full_path=$(find $module -name "${testClass}.java")
     #matched_calls=$(
-    python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #)
-    echo "matched_calls===$matched_calls"
-    python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
+    #python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Most likely there is no-need of it.
+    #echo "matched_calls===$matched_calls"
 
+    echo " python3 $currentDir/collect_method_body.py $(find . -type d -name target | sed 's|/target||' | sort -u) "$module" "$testName" "$slug""
+    #python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
+    #all_dependent_modules_including_the_main_module=$(find . -type d -name target | sed 's|/target||' | sed 's|^\./||' | sort -u)  #$(find . -type d -name target | sed 's|/target||' | sort -u)
+    all_dependent_modules_including_the_main_module=$(find . -type d -name target -prune | sed 's|/target$||' | sed 's|^\./||' | sort -u)
+
+    echo $all_dependent_modules_including_the_main_module
+
+    python3 $currentDir/collect_method_body.py ${all_dependent_modules_including_the_main_module} $modules "$testName" "$slug"
+    echo "python3 $currentDir/collect_method_body.py ${all_dependent_modules_including_the_main_module} $module "$testName" "$slug""
+    exit
 
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
@@ -315,6 +348,7 @@ while IFS= read -r line
     echo "$base_package"
     cd $inputProj/$slug
     git stash
+    rm -rf $(find -name "target")
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
 
     cd $currentDir
