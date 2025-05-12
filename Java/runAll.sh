@@ -72,11 +72,20 @@ while IFS= read -r line
          }
        }' pom.xml
 
-        #exit
     elif [[ $slug == "apache/dubbo" ]]; then
         JMVNOPTIONS="-pl dubbo-dependencies-bom"
-    fi  
 
+    elif [[ $slug == "apache/httpcore" ]]; then
+       sed -i '/<build>/,/<\/build>/ {
+       /<plugins>/a\
+         <plugin>\n\
+           <groupId>org.apache.maven.plugins</groupId>\n\
+           <artifactId>maven-surefire-plugin</artifactId>\n\
+           <version>2.22.1</version>\n\
+         </plugin>
+     }' pom.xml
+ 
+    fi  
     echo -n "${slug},${sha},${module},${testName}" >> "$currentDir/$outputDir/Isolation-Result.csv"
     
     if [[ $module != "." ]]; then
