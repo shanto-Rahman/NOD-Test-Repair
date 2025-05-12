@@ -252,25 +252,40 @@ while IFS= read -r line
         fi
         echo "module_jar_name= $module_jar_name"
         echo "java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name} "
+
         java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name}  > "callgraph_on_module_jar.txt" # static-trace
         grep '^M:' callgraph_on_module_jar.txt > method_calls.txt
-        cd $module/target/test-classes
-        jar cf $inputProj/$slug/test-classes.jar *
-        cd -
-        java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar test-classes.jar > "callgraph_on_test_classes.txt" # static-trace
+
+        mkdir -p merged_classes
+        # Copy .class files from all related modules (excluding test classes)
+        #for mod in $(find . -type d -name classes | grep -v test-classes); do
+        #    cp -rn "$mod"/* merged_classes/ 2>/dev/null
+        #done
+        find . -type d -name classes | grep -v test-classes | while read mod; do
+            rsync -a "$mod/" merged_classes/
+        done
+        
+        # Add test classes from the main module
+        cp -r "$module/target/test-classes/"* merged_classes/ 2>/dev/null
+
+        # Create merged jar
+        jar cf merged-all-classes.jar -C merged_classes .
+
+        java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar merged-all-classes.jar > "callgraph_on_test_classes.txt" # static-trace
         grep '^M:' callgraph_on_test_classes.txt >> method_calls.txt
         sort method_calls.txt | uniq > method_calls_deduped.txt
         mv method_calls_deduped.txt method_calls.txt
 
          
-        rm "callgraph_on_module_jar.txt"
-        rm "callgraph_on_test_classes.txt"
+        #rm "callgraph_on_module_jar.txt"
+        #rm "callgraph_on_test_classes.txt"
         cd $currentDir
         #$inputProj/$slug/method_calls.txt traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_method_calls.csv
         testName_colon="${testName_with_dot%.*}:${testName_with_dot##*.}()"
         #echo "$testName_colon"
         python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt ${testName_colon} traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv
-        rm $inputProj/$slug/method_calls.txt
+        #exit
+        #rm $inputProj/$slug/method_calls.txt
 
     #fi
     echo $(pwd)
