@@ -305,7 +305,7 @@ while IFS= read -r line
       #  continue
       #fi
       # Skip all integration-test-* modules except the one matching $module
-      if [[ "$base_module" == ./integration-test-* && "$base_module" != ./$module ]]; then
+      if [[ "$slug" == "doanduyhai/Achilles" && "$base_module" == ./integration-test-* && "$base_module" != ./$module ]]; then
         continue
       fi
 
