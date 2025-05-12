@@ -277,15 +277,15 @@ while IFS= read -r line
         mv method_calls_deduped.txt method_calls.txt
 
          
-        #rm "callgraph_on_module_jar.txt"
-        #rm "callgraph_on_test_classes.txt"
+        rm "callgraph_on_module_jar.txt"
+        rm "callgraph_on_test_classes.txt"
         cd $currentDir
         #$inputProj/$slug/method_calls.txt traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_method_calls.csv
         testName_colon="${testName_with_dot%.*}:${testName_with_dot##*.}()"
         #echo "$testName_colon"
         python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt ${testName_colon} traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv
         #exit
-        #rm $inputProj/$slug/method_calls.txt
+        rm $inputProj/$slug/method_calls.txt
 
     #fi
     echo $(pwd)
@@ -377,7 +377,9 @@ while IFS= read -r line
     cd $inputProj/$slug
     git stash
     rm -rf $(find -name "target")
-    rm test-classes.jar 
+    #rm test-classes.jar 
+    rm -rf merged_classes/
+    rm merged-all-classes.jar
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
     cd $currentDir
 
