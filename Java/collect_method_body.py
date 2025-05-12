@@ -5,7 +5,18 @@ from tree_sitter import Parser
 from tree_sitter_languages import get_language
 
 # Parse input arguments
-*modules, main_module, test_name, slug = sys.argv[1:]
+#main_module, test_name, slug, *modules = sys.argv[1:]
+
+main_module = sys.argv[1]
+test_name = sys.argv[2]
+slug = sys.argv[3]
+modules = sys.argv[4:]
+
+print(main_module)
+print(test_name)
+print(slug)
+print(modules)
+
 module_with_underscore = "_".join([m.replace("/", "_") for m in modules])
 main_module_with_underscore = main_module.replace("/", "_")
 slug = slug.replace("/", "_")

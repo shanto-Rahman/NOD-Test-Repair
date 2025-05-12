@@ -72,10 +72,7 @@ while IFS= read -r line
          }
        }' pom.xml
 
-        #sed -i '/<groupId>org.apache.felix<\/groupId>/{
-        #N
-        #/<artifactId>maven-bundle-plugin<\/artifactId>/a \ \ \ \ <version>${felix.version}</version>
-        #}' pom.xml
+        #exit
     elif [[ $slug == "apache/dubbo" ]]; then
         JMVNOPTIONS="-pl dubbo-dependencies-bom"
     fi  
@@ -272,7 +269,6 @@ while IFS= read -r line
         #$inputProj/$slug/method_calls.txt traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_method_calls.csv
         testName_colon="${testName_with_dot%.*}:${testName_with_dot##*.}()"
         #echo "$testName_colon"
-        #exit
         python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt ${testName_colon} traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv
         rm $inputProj/$slug/method_calls.txt
 
@@ -302,12 +298,29 @@ while IFS= read -r line
     SOURCEFILES=""
     
     for mod in $(find . -name target -type d -prune); do
+      base_module=$(dirname "$mod")
+
+      # Skip integration-test-2_1 if module is integration-test-2_2
+      #if [[ "$module" == "integration-test-2_2" && "$base_module" == "./integration-test-2_1" ]]; then
+      #  continue
+      #fi
+      # Skip all integration-test-* modules except the one matching $module
+      if [[ "$base_module" == ./integration-test-* && "$base_module" != ./$module ]]; then
+        continue
+      fi
+
       if [ -d "$mod/classes" ]; then
         CLASSFILES+="--classfiles $mod/classes "
       fi
-      if [ -d "$(dirname "$mod")/src/main/java" ]; then
-        SOURCEFILES+="--sourcefiles $(dirname "$mod")/src/main/java "
+      if [ -d "$base_module/src/main/java" ]; then
+        SOURCEFILES+="--sourcefiles $base_module/src/main/java "
       fi
+      #if [ -d "$mod/classes" ]; then
+      #  CLASSFILES+="--classfiles $mod/classes "
+      #fi
+      #if [ -d "$(dirname "$mod")/src/main/java" ]; then
+      #  SOURCEFILES+="--sourcefiles $(dirname "$mod")/src/main/java "
+      #fi
     done
     
     java -jar jacococli.jar report $module/target/jacoco.exec \
@@ -330,27 +343,27 @@ while IFS= read -r line
     #python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Most likely there is no-need of it.
     #echo "matched_calls===$matched_calls"
 
-    echo " python3 $currentDir/collect_method_body.py $(find . -type d -name target | sed 's|/target||' | sort -u) "$module" "$testName" "$slug""
     #python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
     #all_dependent_modules_including_the_main_module=$(find . -type d -name target | sed 's|/target||' | sed 's|^\./||' | sort -u)  #$(find . -type d -name target | sed 's|/target||' | sort -u)
-    all_dependent_modules_including_the_main_module=$(find . -type d -name target -prune | sed 's|/target$||' | sed 's|^\./||' | sort -u)
+    #all_dependent_modules_including_the_main_module=$(find . -type d -name target -prune | sed 's|/target$||' | sed 's|^\./||' | sort -u)
+    readarray -t modules_array < <(find . -type d -name target -prune | sed 's|/target$||' | sed 's|^\./||' | sort -u)
 
-    echo $all_dependent_modules_including_the_main_module
 
-    python3 $currentDir/collect_method_body.py ${all_dependent_modules_including_the_main_module} $modules "$testName" "$slug"
-    echo "python3 $currentDir/collect_method_body.py ${all_dependent_modules_including_the_main_module} $module "$testName" "$slug""
-    exit
+    #echo $all_dependent_modules_including_the_main_module
+
+    echo " python3 $currentDir/collect_method_body.py $module $testName $slug ${modules_array[@]}"
+    python3 $currentDir/collect_method_body.py $module   "$testName" "$slug" "${modules_array[@]}"
+    #exit
 
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
-
     echo "$base_package"
     cd $inputProj/$slug
     git stash
     rm -rf $(find -name "target")
+    rm test-classes.jar 
     echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
-
     cd $currentDir
 
     #python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
