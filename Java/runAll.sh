@@ -360,7 +360,7 @@ while IFS= read -r line
 
     test_class_full_path=$(find $module -name "${testClass}.java")
     #matched_calls=$(
-    #python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Most likely there is no-need of it.
+    python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
     #echo "matched_calls===$matched_calls"
 
     #python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
@@ -391,7 +391,7 @@ while IFS= read -r line
     if [[ $trace_collection_way == "dynamic" ]]; then
         python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
 
-    elif [[ $trace_collection_way == "dynamic" ]]; then
+    elif [[ $trace_collection_way == "static" ]]; then
         python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv"
 
         echo "python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv""
