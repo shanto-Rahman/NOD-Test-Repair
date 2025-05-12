@@ -35,5 +35,19 @@ with open(executed_meth_csv, "w", newline="") as f:
     writer.writerow(["Package", "Class", "Method", "Descriptor"])
     writer.writerows(executed_methods)
 
-print(f"✅ Extracted {len(executed_methods)} executed methods to executed_methods.csv")
+
+def count_total_tokens(methods):
+    import re
+    total = 0
+    for _, _, _, desc in methods:
+        tokens = re.findall(r'\w+', desc)
+        total += len(tokens)
+    return total
+
+token_count = count_total_tokens(executed_methods)
+
+print(f"count_executed_methods = {len(executed_methods)} : total_token_count = {token_count}")
+
+
+#print(f"✅ Extracted {len(executed_methods)} executed methods to executed_methods.csv")
 

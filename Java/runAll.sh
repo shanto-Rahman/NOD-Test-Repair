@@ -32,8 +32,10 @@ then
     mkdir "$trace_dir"
 fi
 
-echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" >> "$currentDir/$outputDir/Isolation-Result.csv"
+test_specific_stat="$currentDir/$outputDir/Test-Specific-Stat.csv"
+echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
 
+echo "Project-Name,SHA,Module,Test-Name,Total-Executed-Meth,Total-tokens" > "$test_specific_stat"
 while IFS= read -r line
     do
     if [[ ${line} =~ ^\# ]]; then
@@ -355,7 +357,11 @@ while IFS= read -r line
     #  --classfiles $module/target/classes \
     #    --sourcefiles $module/src/main/java \
     #      --xml $module/target/coverage.xml"
-    python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
+    executed_methods_count_and_total_token_count=$(python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug")
+    executed_methods=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f2 | cut -d':' -f1 | tr -d ' ')
+    total_tokens=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f3 | tr -d ' ')
+    echo "$slug,$sha,$module,$testName,$executed_methods,$total_tokens" >> $test_specific_stat
+
     echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
 
     test_class_full_path=$(find $module -name "${testClass}.java")
