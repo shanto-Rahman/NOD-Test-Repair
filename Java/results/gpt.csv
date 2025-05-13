@@ -79,3 +79,21 @@ TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBl
     restartConnectionLostTimer();
 }",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/AbstractWebSocket.java,startConnectionLostTimer,143-151,0,29.867558479309082
 TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue677Test.testIssue,,,,,5,
+apache/httpcore,httpcore-nio,org.apache.http.nio.protocol.TestAsyncNHttpHandlers.testNoServiceHandler,,,,,5,
+Accenture/mercury,system/platform-core,org.platformlambda.core.MulticastTest.routingTest,"private void removeExpiredStore(File folder) {
+    try {
+        Thread.sleep(5000); // Deliberate delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    File f = new File(folder, RUNNING);
+    if (f.exists()) {
+        if (System.currentTimeMillis() - f.lastModified() > ONE_HOUR) {
+            util.cleanupDir(folder, runningInCloud);
+            log.info(""Holding area {} expired"", folder);
+        }
+    } else {
+        util.cleanupDir(folder, runningInCloud);
+        log.warn(""Unknown holding area {} removed"", folder);
+    }
+}",projects/Accenture/mercury/system/platform-core/src/main/java/org/platformlambda/core/util/ElasticQueue.java,removeExpiredStore,362-373,3,17.16671633720398
