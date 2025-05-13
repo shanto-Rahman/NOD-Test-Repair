@@ -1,89 +1,81 @@
-proj_name,module,test_name,changed_code_to_get_fail,file,method,line_range,cot_count
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,"public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-    stopConnectionLostTimer();
-    if( writeThread != null )
-        writeThread.interrupt();
-    try {
-        Thread.sleep(5000); // Introduce delay to force test failure
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
+proj_name,module,test_name,changed_code_to_get_fail,file,method,line_range,cot_count,Tool-runtime
+apache/incubator-uniffle,common,org.apache.uniffle.common.rpc.GrpcServerTest.testGrpcExecutorPool,"public void setGauge(String tag, double value) {
+    if (isRegistered) {
+      try {
+          Thread.sleep(5000); // Deliberate delay to force test failure
+      } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+      }
+      Gauge gauge = gaugeMap.get(tag);
+      if (gauge != null) {
+        gauge.set(value);
+      }
     }
-    onClose( code, reason, remote );
-    connectLatch.countDown();
-    closeLatch.countDown();
-}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/client/WebSocketClient.java,onWebsocketClose,514-522,3
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario3,"public void connect() {
-    if( connectReadThread != null )
-        throw new IllegalStateException( ""WebSocketClient objects are not reuseable"" );
-    connectReadThread = new Thread( this );
-    connectReadThread.setName( ""WebSocketConnectReadThread-"" + connectReadThread.getId() );
-    try {
-        Thread.sleep(5000); // Introduce delay to force test failure
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-    }
-    connectReadThread.start();
-}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/client/WebSocketClient.java,connect,280-286,0
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario4,"public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-    stopConnectionLostTimer();
-    if( writeThread != null )
-        writeThread.interrupt();
-    try {
-        Thread.sleep(5000); // Introduce delay to force test failure
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-    }
-    onClose( code, reason, remote );
-    connectLatch.countDown();
-    closeLatch.countDown();
-}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/client/WebSocketClient.java,onWebsocketClose,514-522,3
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario5,"public void connect() {
-    if( connectReadThread != null )
-        throw new IllegalStateException( ""WebSocketClient objects are not reuseable"" );
-    connectReadThread = new Thread( this );
-    connectReadThread.setName( ""WebSocketConnectReadThread-"" + connectReadThread.getId() );
-    try {
-        Thread.sleep(5000); // Introduce delay to force test failure
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-    }
-    connectReadThread.start();
-}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/client/WebSocketClient.java,connect,280-286,0
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario0,"public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-    stopConnectionLostTimer();
-    if( writeThread != null )
-        writeThread.interrupt();
+  }",projects/apache/incubator-uniffle/common/src/main/java/org/apache/uniffle/common/metrics/GRPCMetrics.java,setGauge,78-85,1,22.2221736907959
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,"private void setReadyState( ReadyState ReadyState ) {
     try {
         Thread.sleep(5000); // Deliberate delay to force test failure
     } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
     }
-    onClose( code, reason, remote );
-    connectLatch.countDown();
-    closeLatch.countDown();
-}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/client/WebSocketClient.java,onWebsocketClose,514-522,3
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue677Test.testIssue,,,,,5
-apache/incubator-uniffle,common,org.apache.uniffle.common.rpc.GrpcServerTest.testGrpcExecutorPool,"public void setGauge(String tag, double value) {
-    if (isRegistered) {
-      Gauge gauge = gaugeMap.get(tag);
-      if (gauge != null) {
-        try {
-            Thread.sleep(5000); // Introduce delay to force test failure
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        gauge.set(value);
-      }
+    this.readyState = ReadyState;
+}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/WebSocketImpl.java,setReadyState,731-733,2,54.46056938171387
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario3,"protected void startConnectionLostTimer() {
+    if (this.connectionLostTimeout <= 0) {
+        log.trace(""Connection lost timer deactivated"");
+        return;
     }
-}",projects/apache/incubator-uniffle/common/src/main/java/org/apache/uniffle/common/metrics/GRPCMetrics.java,setGauge,78-85,4
-apache/httpcore,httpcore-nio,org.apache.http.nio.protocol.TestAsyncNHttpHandlers.testNoServiceHandler,"public void waitFor() throws InterruptedException {
-        if (this.completed) {
-            return;
-        }
-        synchronized (this) {
-            Thread.sleep(5000); // Deliberate delay to force test failure
-            while (!this.completed) {
-                wait();
-            }
-        }
-    }",projects/apache/httpcore/httpcore-nio/src/main/java/org/apache/http/impl/nio/reactor/ListenerEndpointImpl.java,waitFor,77-86,7
+    log.trace(""Connection lost timer started"");
+    this.websocketRunning = true;
+    try {
+        Thread.sleep(5000); // Introduced delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    restartConnectionLostTimer();
+}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/AbstractWebSocket.java,startConnectionLostTimer,143-151,0,29.880268812179565
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario4,"private void setReadyState(ReadyState ReadyState) {
+    try {
+        Thread.sleep(5000); // Introduce delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    this.readyState = ReadyState;
+}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/WebSocketImpl.java,setReadyState,731-733,2,40.99457931518555
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario5,"protected void startConnectionLostTimer() {
+    if (this.connectionLostTimeout <= 0) {
+        log.trace(""Connection lost timer deactivated"");
+        return;
+    }
+    log.trace(""Connection lost timer started"");
+    this.websocketRunning = true;
+    try {
+        Thread.sleep(5000); // Deliberate delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    restartConnectionLostTimer();
+}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/AbstractWebSocket.java,startConnectionLostTimer,143-151,0,29.76231026649475
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario8,"private void setReadyState(ReadyState ReadyState) {
+    try {
+        Thread.sleep(5000); // Introduce delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    this.readyState = ReadyState;
+}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/WebSocketImpl.java,setReadyState,731-733,2,40.77277135848999
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario0,"protected void startConnectionLostTimer() {
+    if (this.connectionLostTimeout <= 0) {
+        log.trace(""Connection lost timer deactivated"");
+        return;
+    }
+    log.trace(""Connection lost timer started"");
+    this.websocketRunning = true;
+    try {
+        Thread.sleep(5000); // Introduce delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    restartConnectionLostTimer();
+}",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/AbstractWebSocket.java,startConnectionLostTimer,143-151,0,29.867558479309082
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue677Test.testIssue,,,,,5,
