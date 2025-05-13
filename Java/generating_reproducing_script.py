@@ -61,6 +61,34 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
     print("Max retries reached. Returning None.")
     return None 
 
+import os
+from pathlib import Path
+
+def find_class_file(class_name, slug, module):
+    # Convert class name to relative path
+    rel_path = class_name.replace('.', '/') + '.java'
+
+    # Step 1: Check in the given module
+    main_path = Path(f"projects/{slug}/{module}/src/main/java/{rel_path}")
+    if main_path.exists():
+        return str(main_path)
+
+    # Step 2: Search all modules under projects/<slug>/
+    base_dir = Path(f"projects/{slug}")
+    candidates = list(base_dir.glob(f"*/src/main/java/{rel_path}"))
+
+    # Step 3: Filter out matches from the given module itself
+    candidates = [c for c in candidates if module not in str(c)]
+
+    # Step 4: Return the first alternative match (if any)
+    if candidates:
+        print(f"[INFO] Class {class_name} not found in {module}, using {candidates[0]}")
+        return str(candidates[0])
+
+    print(f"[WARN] Class {class_name} not found in any module.")
+    return None
+
+
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
     max_retries = 5
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
@@ -143,8 +171,12 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         
         if line_range:
             print(f"{method_name} spans lines {line_range}, class_name={class_name}")
-            base_path = "projects/"+slug+"/"+module+"/src/main/java/"
-            hack_into_sut(meth_code, base_path+class_name+".java", method_name, line_range)
+            class_path = find_class_file(class_name, slug, module)
+
+            if class_path:
+                hack_into_sut(meth_code, class_path, method_name, line_range)
+            else:
+                print(f"[ERROR] Could not locate class source file for: {class_name}")
 
             #script_path = os.path.abspath(__file__)
             #script_dir = os.path.dirname(script_path)
@@ -183,7 +215,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             print(f"No LineRange found for {method_name}")
 
 
-    return meth_code, base_path+class_name+".java", method_name, line_range, retry_count, firstLine # retry_count = cot count
+    return meth_code, class_path, method_name, line_range, retry_count, firstLine # retry_count = cot count
      
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
@@ -453,10 +485,10 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         )
 
     #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
-    depth_filtered_df = df[(df['CallDepth'] >=0) & (df['CallDepth'] <=3) & (df["LineSpan"] <= 15)]
+    depth_filtered_df = df[(df['CallDepth'] <=0) & (df["LineSpan"] <= 15)]
     #depth_filtered_df = df[(df['CallDepth'] <= 1) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 20)]
 
-    #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods
+    depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
