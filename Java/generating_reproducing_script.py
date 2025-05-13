@@ -62,7 +62,7 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
     return None 
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
-    max_retries = 10
+    max_retries = 5
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
     messages = [
         {"role": "system", "content": definition},
@@ -412,6 +412,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
         #openai.api_key = "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"
+        openai.api_key = "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"
     else:
         print('model name not correct')
         exit()
@@ -452,8 +453,8 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         )
 
     #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
-    #depth_filtered_df = df[(df['CallDepth'] <=2) & (df["LineSpan"] <= 15)]
-    depth_filtered_df = df[(df['CallDepth'] >=0) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 20)]
+    depth_filtered_df = df[(df['CallDepth'] >=0) & (df['CallDepth'] <=3) & (df["LineSpan"] <= 15)]
+    #depth_filtered_df = df[(df['CallDepth'] <= 1) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 20)]
 
     #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods
 
@@ -523,39 +524,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         del auto_model
         torch.cuda.empty_cache()
     
-
-    #Saving result for reproducing failure
-    #with open("results/gpt.csv", "a", newline="") as fw:
-    file_path = "results/gpt.csv"
-    write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
-    with open(file_path, "a", newline="") as fw:
-        writer = csv.writer(fw)
-        if write_header:
-            writer.writerow(["proj_name","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
-
-        if test_output == "Failure found.":
-            writer.writerow([
-                slug,
-                module,
-                test,
-                changed_code_output_to_get_fail,
-                java_file_path,
-                method_name,
-                line_range,
-                cot_count
-            ])
-        else:
-            writer.writerow([
-                slug,
-                module,
-                test,
-                "",
-                "",
-                "",
-                "",
-                "5"
-            ])
-
+    return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
 
     #**Merging & Saving is done AFTER the loop**
     '''df_predictions = pd.DataFrame.from_dict(predictions_per_project_group, orient="index").transpose()
@@ -573,7 +542,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     df_combined.to_csv(where_data_comes+"-result/"+ml_technique+".csv", index=False)    
     print("\nPredictions and tokens saved to llama.csv")'''
     # Initialize empty list to store reshaped data
-    reshaped_data = []
+    '''reshaped_data = []
     
     # Iterate over each fold
     for fold in predictions_per_project_group.keys():  # Example: "Fold_1", "Fold_2", ...
@@ -621,13 +590,47 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         #print(f"Category {category}: {tokens}")
         print(f"Category {category}:")
         for token, count in tokens:
-            print(f"  - {token}: {count}")
+            print(f"  - {token}: {count}")'''
 
 def initialize_environment(seed_value):
     """Initializes the environment by setting the seed and configuring logging."""
     set_seed(seed_value)  # Set the seed for reproducibility
     setup_logging()  # Setup standardized logging
 
+def save_result(slug, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, seconds): 
+    #Saving result for reproducing failure
+    #with open("results/gpt.csv", "a", newline="") as fw:
+    file_path = "results/gpt.csv"
+    write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
+    with open(file_path, "a", newline="") as fw:
+        writer = csv.writer(fw)
+        if write_header:
+            writer.writerow(["proj_name","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+
+        if test_output == "Failure found.":
+            writer.writerow([
+                slug,
+                module,
+                test,
+                changed_code_output_to_get_fail,
+                java_file_path,
+                method_name,
+                line_range,
+                cot_count,
+                seconds
+            ])
+        else:
+            writer.writerow([
+                slug,
+                module,
+                test,
+                "",
+                "",
+                "",
+                "",
+                "5",
+                ""
+            ])
 if __name__ == "__main__":
     dataset_path = sys.argv[1] #traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_methods_with_call_labels.csv
     results_file = sys.argv[2] #
@@ -660,4 +663,12 @@ if __name__ == "__main__":
                         quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
         writer.writerow(["Failure"])
         writer.writerow([big_block]) 
-    run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
+
+    start_time = time.time()
+    changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
+    end_time = time.time()
+    duration = end_time - start_time
+    print("duration=", duration)
+    minutes, seconds = divmod(duration, 60)
+
+    save_result(slug, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, seconds)
