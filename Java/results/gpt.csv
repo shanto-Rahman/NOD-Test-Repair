@@ -137,3 +137,87 @@ doanduyhai/Achilles,integration-test-2_1,info.archinnov.achilles.it.TestALLEntit
             });
 }",projects/doanduyhai/Achilles/achilles-junit/src/main/java/info/archinnov/achilles/junit/AchillesTestResource.java,truncateTables,199-207,5,14.614439725875854
 doanduyhai/Achilles,integration-test-2_1,info.archinnov.achilles.it.TestDSLSimpleEntity.should_dsl_select_with_token_value,,,,,10,44.94977688789368
+doanduyhai/Achilles,integration-test-2_1,info.archinnov.achilles.it.TestEntityWithComplexIndices.should_query_using_collection_index,"private void executeStartupScripts(Session session, TypedMap parameters) {
+    ScriptExecutor scriptExecutor = null;
+    List<String> scriptLocations = parameters.getTypedOr(SCRIPT_LOCATIONS, new ArrayList<>());
+    if (scriptLocations.size() > 0) {
+        scriptExecutor = new ScriptExecutor(session);
+        scriptLocations.forEach(scriptExecutor::executeScript);
+    }
+
+    final Map<String, Map<String, Object>> scriptTemplates = parameters.getTypedOr(SCRIPT_TEMPLATES, new HashMap<>());
+    if (scriptTemplates.size() > 0) {
+        scriptExecutor = scriptExecutor == null
+                ? new ScriptExecutor(session)
+                : scriptExecutor;
+
+        final ScriptExecutor executor = scriptExecutor;
+
+        scriptTemplates
+                .entrySet()
+                .forEach(entry -> executor.executeScriptTemplate(entry.getKey(), entry.getValue()));
+    }
+    
+    // Introduce a delay to force the test to fail due to timing issues
+    try {
+        Thread.sleep(5000);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}",projects/doanduyhai/Achilles/achilles-embedded/src/main/java/info/archinnov/achilles/embedded/AchillesInitializer.java,executeStartupScripts,151-171,0,31.698232173919678
+doanduyhai/Achilles,integration-test-2_1,info.archinnov.achilles.it.TestEntityWithComplexIndices.should_query_using_full_collection_index,"private void executeStartupScripts(Session session, TypedMap parameters) {
+    ScriptExecutor scriptExecutor = null;
+    List<String> scriptLocations = parameters.getTypedOr(SCRIPT_LOCATIONS, new ArrayList<>());
+    if (scriptLocations.size() > 0) {
+        scriptExecutor = new ScriptExecutor(session);
+        scriptLocations.forEach(scriptExecutor::executeScript);
+    }
+
+    final Map<String, Map<String, Object>> scriptTemplates = parameters.getTypedOr(SCRIPT_TEMPLATES, new HashMap<>());
+    if (scriptTemplates.size() > 0) {
+        scriptExecutor = scriptExecutor == null
+                ? new ScriptExecutor(session)
+                : scriptExecutor;
+
+        final ScriptExecutor executor = scriptExecutor;
+
+        scriptTemplates
+                .entrySet()
+                .forEach(entry -> executor.executeScriptTemplate(entry.getKey(), entry.getValue()));
+    }
+    
+    // Introduce a delay to simulate timing issues
+    try {
+        Thread.sleep(5000);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}",projects/doanduyhai/Achilles/achilles-embedded/src/main/java/info/archinnov/achilles/embedded/AchillesInitializer.java,executeStartupScripts,151-171,0,30.282160758972168
+doanduyhai/Achilles,integration-test-2_1,info.archinnov.achilles.it.TestEntityWithComplexIndices.should_query_using_index_and_clustering_column,"private void executeStartupScripts(Session session, TypedMap parameters) {
+    ScriptExecutor scriptExecutor = null;
+    List<String> scriptLocations = parameters.getTypedOr(SCRIPT_LOCATIONS, new ArrayList<>());
+    if (scriptLocations.size() > 0) {
+        scriptExecutor = new ScriptExecutor(session);
+        scriptLocations.forEach(scriptExecutor::executeScript);
+    }
+
+    final Map<String, Map<String, Object>> scriptTemplates = parameters.getTypedOr(SCRIPT_TEMPLATES, new HashMap<>());
+    if (scriptTemplates.size() > 0) {
+        scriptExecutor = scriptExecutor == null
+                ? new ScriptExecutor(session)
+                : scriptExecutor;
+
+        final ScriptExecutor executor = scriptExecutor;
+
+        scriptTemplates
+                .entrySet()
+                .forEach(entry -> executor.executeScriptTemplate(entry.getKey(), entry.getValue()));
+    }
+    
+    // Introduce a delay to simulate timing issues
+    try {
+        Thread.sleep(5000);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}",projects/doanduyhai/Achilles/achilles-embedded/src/main/java/info/archinnov/achilles/embedded/AchillesInitializer.java,executeStartupScripts,151-171,0,29.8814640045166
