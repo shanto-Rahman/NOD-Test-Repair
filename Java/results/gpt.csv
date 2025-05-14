@@ -97,3 +97,11 @@ Accenture/mercury,system/platform-core,org.platformlambda.core.MulticastTest.rou
         log.warn(""Unknown holding area {} removed"", folder);
     }
 }",projects/Accenture/mercury/system/platform-core/src/main/java/org/platformlambda/core/util/ElasticQueue.java,removeExpiredStore,362-373,3,17.16671633720398
+elasticjob/elastic-job-lite,elasticjob-infra/elasticjob-infra-common,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest.assertCreateExecutorService,"public int getActiveThreadCount() {
+    try {
+        Thread.sleep(5000); // Deliberate delay to force test failure
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    return threadPoolExecutor.getActiveCount();
+}",projects/elasticjob/elastic-job-lite/elasticjob-infra/elasticjob-infra-common/src/main/java/org/apache/shardingsphere/elasticjob/infra/concurrent/ElasticJobExecutorService.java,getActiveThreadCount,68-70,1,43.753246784210205
