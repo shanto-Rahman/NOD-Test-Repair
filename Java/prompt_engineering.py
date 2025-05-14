@@ -5,7 +5,7 @@ def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
 
     I will give you:  
     1. A non-deterministic test failure log  
-    2. The full code under test  
+    2. The full code under test, ranked by cosine similarity to the test code
     3. The async-wait test code  
 
     Your job is to find a location from a method in the code under test where inserting a deliberate delay (e.g. `Thread.sleep(...)`) will force the test to fail every time.  You can start injecting delay from 5000 to 10000 milliseconds.

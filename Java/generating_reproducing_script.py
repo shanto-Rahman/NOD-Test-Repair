@@ -510,9 +510,13 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     )
     
     # Filter by LineSpan < 30, then get top 20
-    depth_filtered_df = ranked_df[ranked_df["LineSpan"] < 20].head(15)
+    depth_filtered_df = ranked_df[ranked_df["LineSpan"] <= 30].head(30)
     depth_filtered_df.to_csv("lll.csv", index=False) 
-    print(depth_filtered_df)
+    #print(depth_filtered_df)
+    #print('****',slug, module, test, len(depth_filtered_df))
+    with open("meta_data.csv", mode="a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([slug, module, test, len(depth_filtered_df)])
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
