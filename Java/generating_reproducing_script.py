@@ -157,24 +157,12 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         signature   = f"{method_name}{params}"
         #Find the LineRange of this method  
         line_range = None
-        #method_bodies_csv = dataset_path #"traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_method_bodies.csv"   # or whatever your path is 
-        #print("method_bodies_csv=", method_bodies_csv)
-        #with open(method_bodies_csv, newline="") as f:
-        #    reader = csv.DictReader(f)
-        #    for row in reader:
-        #        # match both class and your signature
-        #        if row["Method"] == method_name: # Bug because many classes may have this same method
-        #            class_name = row["Class"].replace('.', '/').split('$')[0]
-        #            line_range = row["LineRange"]
-        #            break
-        # method_df is passed directly as a DataFrame, not a CSV file
         for _, row in filtered_df.iterrows():
             if row["Method"] == method_name:
                 class_name = row["Class"].replace('.', '/').split('$')[0]
                 line_range = row["LineRange"]
                 break
-
-        
+ 
         if line_range:
             print(f"{method_name} spans lines {line_range}, class_name={class_name}")
             class_path = find_class_file(class_name, slug, module)
