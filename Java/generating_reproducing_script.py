@@ -101,7 +101,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
     ]
     print(messages)
     while retry_count < max_retries:
-        print("messages=", messages)
+        #print("messages=", messages)
         response = gpt_score_finder(messages)
 
         if not response: 
@@ -112,7 +112,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         print("RESPONSE CONTENT =============================")
         print(response_content)
 
-        #messages.append({"role": "assistant", "content": response_content})
+        messages.append({"role": "assistant", "content": response_content})
 
         if "</Output>" in response_content:
             m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
@@ -157,10 +157,20 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         signature   = f"{method_name}{params}"
         #Find the LineRange of this method  
         line_range = None
+        filtered_df.to_csv("ppp.csv", index=False)
         for _, row in filtered_df.iterrows():
+            class_simple_name = row["Class"].split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
+            if method_name == class_simple_name:
+                method_name = "<init>"  # Java constructor indicator
+                break  # We only need to fix this once
+
+        for _, row in filtered_df.iterrows():
+            print("method_name=", method_name,", row[Method]=" , row["Method"])
             if row["Method"] == method_name:
                 class_name = row["Class"].replace('.', '/').split('$')[0]
                 line_range = row["LineRange"]
+                print("***SHANTO line_range=", line_range)
+                print("method_name=", method_name,", row[Method]=" , row["Method"])
                 break
  
         if line_range:
@@ -192,8 +202,9 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
                         feedback = (
                             f"Your previous change didn’t reproduce the failure.\n"
-                            f"You've already tried modifying these methods:\n{tried_method_list}\n"
-                            f"Please try a different method or inject the delay at a different point."
+                            f"You've already tried modifying these methods:\n{method_name} like this:\n\n"
+                            f"{meth_code}\n\n"
+                            f"Please suggest a **different method** or a **different location** inside a method for inserting the delay."
                         )
                         messages.append({"role": "user", "content": feedback}) 
                         retry_count += 1
