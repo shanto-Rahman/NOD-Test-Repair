@@ -176,12 +176,14 @@ while IFS= read -r line
         fi
         mvn test-compile -pl $module -am
         #mvn dependency:build-classpath -pl $module -am -Dmdep.outputFile=$(pwd)/cp.txt
-        mvn  -pl $module -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}
+        mvn test -pl $module -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" -Dtest=${testName}
 
-        echo "mvn -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" test -Dtest=${testName}"
+        echo "mvn test -pl $module -am -DargLine="-javaagent:$currentDir/java-callgraph/target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=${incl_package}" -Dtest=${testName}"
+        exit
         if [[ -f "$module/calltrace.txt" ]]; then
             mv "$module/calltrace.txt" "$currentDir/traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt"
         fi
+
     elif [[ $trace_collection_way == "static" ]]; then #do static analysis
         if [[ $slug == "apache/incubator-uniffle" ]]; then
             module_jar_name="$module/target/rss-common-0.8.0-SNAPSHOT.jar" #module=common
@@ -259,8 +261,8 @@ while IFS= read -r line
         elif [[ $slug == "Alluxio/alluxio" ]]; then
             module_jar_name="$module/target/tachyon-0.3.0-SNAPSHOT.jar"
         fi
-        echo "module_jar_name= $module_jar_name"
-        echo "java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name} "
+        #echo "module_jar_name= $module_jar_name"
+        #echo "java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name} "
 
         java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar ${module_jar_name}  > "callgraph_on_module_jar.txt" # static-trace
         grep '^M:' callgraph_on_module_jar.txt > method_calls.txt
@@ -280,12 +282,20 @@ while IFS= read -r line
         # Create merged jar
         jar cf merged-all-classes.jar -C merged_classes .
 
+        ## Gather all built JARs including the main module
+        #jars=$(find . -type f -path '*/target/*.jar' \
+        #  ! -name '*-sources.jar' \
+        #  ! -name '*-javadoc.jar' \
+        #  | tr '\n' ' ')
+        #echo "$jars"
+        #echo " java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar $jars"
+        #java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar $jars > "callgraph_on_test_classes.txt" # static-trace
+
         java -jar ../../../java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar merged-all-classes.jar > "callgraph_on_test_classes.txt" # static-trace
-        grep '^M:' callgraph_on_test_classes.txt >> method_calls.txt
+
+        grep '^M:' "callgraph_on_test_classes.txt" >> method_calls.txt
         sort method_calls.txt | uniq > method_calls_deduped.txt
         mv method_calls_deduped.txt method_calls.txt
-
-         
         rm "callgraph_on_module_jar.txt"
         rm "callgraph_on_test_classes.txt"
         cd $currentDir
@@ -293,6 +303,7 @@ while IFS= read -r line
         testName_colon="${testName_with_dot%.*}:${testName_with_dot##*.}()"
         #echo "$testName_colon"
         python3 find_helper_meth_in_test.py $inputProj/$slug/method_calls.txt ${testName_colon} traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv
+        #exit
         rm $inputProj/$slug/method_calls.txt
     fi
     echo $(pwd)
@@ -379,19 +390,21 @@ while IFS= read -r line
 
     echo " python3 $currentDir/collect_method_body.py $module $testName $slug ${modules_array[@]}"
     python3 $currentDir/collect_method_body.py $module   "$testName" "$slug" "${modules_array[@]}"
-    #exit
 
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
     echo "$base_package"
     cd $inputProj/$slug
-    git stash
-    rm -rf $(find -name "target")
-    #rm test-classes.jar 
-    rm -rf merged_classes/
-    rm merged-all-classes.jar
-    echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
+    #exit
+    if [[ $trace_collection_way == "static" ]]; then
+        git stash
+        rm -rf $(find -name "target")
+        #rm test-classes.jar 
+        rm -rf merged_classes/
+        rm merged-all-classes.jar
+        echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
+    fi
     cd $currentDir
 
     if [[ $trace_collection_way == "dynamic" ]]; then
@@ -403,6 +416,7 @@ while IFS= read -r line
         echo "python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv""
 
     fi
+    #exit
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
 

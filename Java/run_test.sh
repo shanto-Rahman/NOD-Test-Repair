@@ -16,7 +16,7 @@ testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
 id=$4
 
 cd $inputProj/$slug
-mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt"
+mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName -Dcheckstyle.skip=true >  "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt"
 bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt")
 if [[ $bugCount -gt 0  ]]; then
     echo "Failure found."

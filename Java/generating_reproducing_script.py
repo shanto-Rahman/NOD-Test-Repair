@@ -26,6 +26,7 @@ from langchain.chains import ConversationChain
 from langchain.memory import ChatMessageHistory
 from helper import get_line_range
 from modify_java_file import hack_into_sut
+from heuristics import rank_methods_by_similarity
 
 login(token="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")
 
@@ -90,13 +91,13 @@ def find_class_file(class_name, slug, module):
 
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
-    max_retries = 5
+    max_retries = 10
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
     ]
-
+    print(messages)
     while retry_count < max_retries:
         print("messages=", messages)
         response = gpt_score_finder(messages)
@@ -485,10 +486,12 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         )
 
     #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
-    depth_filtered_df = df[(df['CallDepth'] <=0) & (df["LineSpan"] <= 15)]
-    #depth_filtered_df = df[(df['CallDepth'] <= 1) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 20)]
+    #depth_filtered_df = df[(df['CallDepth'] >=0) & (df['CallDepth'] <=1) & (df["LineSpan"] <= 15)]
+    #depth_filtered_df = df[(df['CallDepth'] >= 1) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 20)]
 
-    depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods
+    #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods; works mainly for Java-WebSocket, or when used dynamic trace
+    #depth_filtered_df = df[df["LineSpan"] <= 20].sample(n=min(25, len(df[df["LineSpan"] <= 20])), random_state=42) # when use static trace
+    depth_filtered_df = rank_methods_by_similarity(test_code_csv , dataset_path)
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
