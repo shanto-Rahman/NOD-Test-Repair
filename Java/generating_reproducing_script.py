@@ -76,7 +76,7 @@ def find_class_file(class_name, slug, module):
 
     # Step 2: Search all modules under projects/<slug>/
     base_dir = Path(f"projects/{slug}")
-    candidates = list(base_dir.glob(f"*/src/main/java/{rel_path}"))
+    candidates = list(base_dir.glob(f"**/src/main/java/{rel_path}"))
 
     # Step 3: Filter out matches from the given module itself
     candidates = [c for c in candidates if module not in str(c)]
@@ -84,7 +84,6 @@ def find_class_file(class_name, slug, module):
     # Step 4: Return the first alternative match (if any)
     if candidates:
         print(f"[INFO] Class {class_name} not found in {module}, using {candidates[0]}")
-        exit()
         return str(candidates[0])
 
     print(f"[WARN] Class {class_name} not found in any module.")
@@ -195,7 +194,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 print("*** test_run result, Script output: ",firstLine)
                 print(firstLine)
                 if firstLine == "Failure not found.":
-                    exit()
+                    #exit()
                     #retry_count += 1
                     #continue
                     if method_name in tried_methods:
