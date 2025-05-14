@@ -1,0 +1,10 @@
+org/apache/http/pool/TestConnPool$GetPoolEntryThread:run:0
+org/apache/http/pool/TestConnPool$GetPoolEntryThread:run:203
+org/apache/http/pool/PoolEntryFuture:get:89
+org/apache/http/pool/PoolEntryFuture:get:90
+org/apache/http/pool/AbstractConnPool:getPoolEntryBlocking:172
+org/apache/http/pool/AbstractConnPool:getPoolEntryBlocking:173
+org/apache/http/pool/AbstractConnPool:getPoolEntryBlocking:175
+org/apache/http/pool/AbstractConnPool:getPoolEntryBlocking:176
+org/apache/http/pool/PoolEntryFuture:await:110
+org/apache/http/pool/PoolEntryFuture:await:111
