@@ -105,3 +105,15 @@ elasticjob/elastic-job-lite,elasticjob-infra/elasticjob-infra-common,org.apache.
     }
     return threadPoolExecutor.getActiveCount();
 }",projects/elasticjob/elastic-job-lite/elasticjob-infra/elasticjob-infra-common/src/main/java/org/apache/shardingsphere/elasticjob/infra/concurrent/ElasticJobExecutorService.java,getActiveThreadCount,68-70,1,43.753246784210205
+apache/httpcore,httpcore,org.apache.http.pool.TestConnPool.testLeaseTimeout,"public E getPoolEntryBlocking(
+        final T route,
+        final Object state,
+        long timeout,
+        final TimeUnit tunit,
+        final PoolEntryFuture<E> future)
+        throws IOException, InterruptedException, TimeoutException {
+    // Introduce a delay to force the test to fail due to timing issues
+    Thread.sleep(5000);
+    // Existing logic of the method
+    return null; // Placeholder for actual implementation
+}",projects/apache/httpcore/httpcore/src/main/java/org/apache/http/pool/AbstractConnPool.java,getPoolEntryBlocking,163-261,8,39.04920482635498
