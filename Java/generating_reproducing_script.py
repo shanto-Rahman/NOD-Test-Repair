@@ -481,9 +481,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
 
 
     # Convert LineRange to span
-    df["LineSpan"] = df["LineRange"].apply(
-        lambda x: abs(int(x.split("-")[1]) - int(x.split("-")[0])) if "-" in x else float("inf")
-        )
+    #df["LineSpan"] = df["LineRange"].apply(
+    #    lambda x: abs(int(x.split("-")[1]) - int(x.split("-")[0])) if "-" in x else float("inf")
+    #    )
 
     #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
     #depth_filtered_df = df[(df['CallDepth'] >=0) & (df['CallDepth'] <=1) & (df["LineSpan"] <= 15)]
@@ -491,7 +491,17 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
 
     #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods; works mainly for Java-WebSocket, or when used dynamic trace
     #depth_filtered_df = df[df["LineSpan"] <= 20].sample(n=min(25, len(df[df["LineSpan"] <= 20])), random_state=42) # when use static trace
-    depth_filtered_df = rank_methods_by_similarity(test_code_csv , dataset_path)
+    ranked_df = rank_methods_by_similarity(test_code_csv , dataset_path)
+
+    # Compute line span from LineRange column (e.g., "38-43" → 6 lines)
+    ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
+        lambda x: int(x.split("-")[1]) - int(x.split("-")[0]) + 1 if "-" in x else 0
+    )
+    
+    # Filter by LineSpan < 30, then get top 20
+    depth_filtered_df = ranked_df[ranked_df["LineSpan"] < 20].head(15)
+ 
+    print(depth_filtered_df)
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
@@ -663,8 +673,8 @@ def save_result(slug, module, test, changed_code_output_to_get_fail, java_file_p
                 "",
                 "",
                 "",
-                "5",
-                ""
+                "10",
+                seconds
             ])
 if __name__ == "__main__":
     dataset_path = sys.argv[1] #traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_methods_with_call_labels.csv
