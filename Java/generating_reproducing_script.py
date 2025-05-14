@@ -165,16 +165,16 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 break  # We only need to fix this once
 
         for _, row in filtered_df.iterrows():
-            print("method_name=", method_name,", row[Method]=" , row["Method"])
+            #print("method_name=", method_name,", row[Method]=" , row["Method"])
             if row["Method"] == method_name:
                 class_name = row["Class"].replace('.', '/').split('$')[0]
                 line_range = row["LineRange"]
-                print("***SHANTO line_range=", line_range)
-                print("method_name=", method_name,", row[Method]=" , row["Method"])
+                #print("***SHANTO line_range=", line_range)
+                #print("method_name=", method_name,", row[Method]=" , row["Method"])
                 break
  
         if line_range:
-            print(f"{method_name} spans lines {line_range}, class_name={class_name}")
+            #print(f"{method_name} spans lines {line_range}, class_name={class_name}")
             class_path = find_class_file(class_name, slug, module)
 
             if class_path:
