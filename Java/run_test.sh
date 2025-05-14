@@ -25,6 +25,8 @@ if [[ $bugCount -gt 0  ]]; then
 else
     echo "Failure not found."
     #git stash
-    git checkout $(find -name "*.java")
+    #git checkout $(find -name "*.java")
+    git checkout -- '**/*.java'
+
 fi
 

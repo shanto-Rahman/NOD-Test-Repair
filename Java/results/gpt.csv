@@ -117,3 +117,23 @@ apache/httpcore,httpcore,org.apache.http.pool.TestConnPool.testLeaseTimeout,"pub
     // Existing logic of the method
     return null; // Placeholder for actual implementation
 }",projects/apache/httpcore/httpcore/src/main/java/org/apache/http/pool/AbstractConnPool.java,getPoolEntryBlocking,163-261,8,39.04920482635498
+apache/dubbo,dubbo-remoting/dubbo-remoting-netty,org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest.testHeartbeat,,,,,10,26.821333646774292
+apache/dubbo,dubbo-remoting/dubbo-remoting-netty,org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest.testHeartbeat,,,,,10,24.5798659324646
+apache/dubbo,dubbo-remoting/dubbo-remoting-netty,org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest.testHeartbeat,,,,,10,19.620298385620117
+apache/dubbo,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest.testDemoProtocol,,,,,10,52.89345860481262
+davidmoten/rxjava2-extras,.,com.github.davidmoten.rx2.FlowablesTest.testCache,,,,,10,48.05728316307068
+doanduyhai/Achilles,integration-test-2_1,info.archinnov.achilles.it.TestALLEntityAsChild.should_insert,"public void truncateTables() {
+    truncateStatements
+            .forEach(statement -> {
+                if (DML_LOG.isDebugEnabled()) {
+                    DML_LOG.debug(statement.getQueryString());
+                }
+                session.execute(statement.bind());
+                try {
+                    Thread.sleep(5000); // Introduce delay to force test failure
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+}",projects/doanduyhai/Achilles/achilles-junit/src/main/java/info/archinnov/achilles/junit/AchillesTestResource.java,truncateTables,199-207,5,14.614439725875854
+doanduyhai/Achilles,integration-test-2_1,info.archinnov.achilles.it.TestDSLSimpleEntity.should_dsl_select_with_token_value,,,,,10,44.94977688789368
