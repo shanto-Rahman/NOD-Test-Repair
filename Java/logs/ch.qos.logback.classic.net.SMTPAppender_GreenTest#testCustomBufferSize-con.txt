@@ -1,0 +1,98 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-core:jar:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 178, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ ch.qos.logback:logback-parent:2.0.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/qos-ch/logback/pom.xml, line 389, column 21
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-classic:jar:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 381, column 21
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-access:jar:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 176, column 21
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-site:jar:2.0.0-SNAPSHOT
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter. @ line 52, column 24
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-examples:jar:2.0.0-SNAPSHOT
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-parent:pom:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 389, column 21
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter. @ line 311, column 24
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -------------------< ch.qos.logback:logback-classic >-------------------
+[INFO] Building Logback Classic Module 2.0.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ logback-classic ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/qos-ch/logback/logback-classic/target/jacoco.exec
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:generateStubs (default) @ logback-classic ---
+[INFO] Generated 9 Java stubs
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ logback-classic ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ logback-classic ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:compile (default) @ logback-classic ---
+[INFO] Compiled 15 Groovy classes
+[INFO] 
+[INFO] --- maven-bundle-plugin:2.1.0:manifest (bundle-manifest) @ logback-classic ---
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:generateTestStubs (default) @ logback-classic ---
+[INFO] Generated 4 Java stubs
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ logback-classic ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 11 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ logback-classic ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:testCompile (default) @ logback-classic ---
+[INFO] Compiled 23 Groovy classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ logback-classic ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running ch.qos.logback.classic.net.SMTPAppender_GreenTest
+17:53:57,294 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
+17:53:57,313 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.classic.net.SMTPAppender]
+17:53:57,322 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [EMAIL]
+17:53:57,358 |-ERROR in ch.qos.logback.core.joran.spi.Interpreter@16:42 - no applicable action for [outputPatternAsPresentationHeader], current ElementPath  is [[configuration][appender][layout][outputPatternAsPresentationHeader]]
+17:53:57,372 |-INFO in ch.qos.logback.classic.joran.action.RootLoggerAction - Setting level of ROOT logger to DEBUG
+17:53:57,373 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [EMAIL] to Logger[ROOT]
+17:53:57,373 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
+17:53:57,374 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@15f193b8 - Registering current configuration as safe fallback point
+17:53:57,378 |-INFO in ch.qos.logback.classic.net.SMTPAppender[EMAIL] - SMTPAppender [EMAIL] is tracking [1] buffers
+17:53:57,393 |-INFO in ch.qos.logback.classic.net.SMTPAppender[EMAIL] - About to send out SMTP message "testCustomBufferSize ch.qos.logback.classic.net.SMTPAppender_GreenTest - hello" to [nospam@qos.ch]
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.286 sec - in ch.qos.logback.classic.net.SMTPAppender_GreenTest
+testCustomBufferSize(ch.qos.logback.classic.net.SMTPAppender_GreenTest)  Time elapsed: 0.247 sec
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (jacoco-report) @ logback-classic ---
+[INFO] Loading execution data file /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/qos-ch/logback/logback-classic/target/jacoco.exec
+[INFO] Analyzed bundle 'Logback Classic Module' with 161 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.033 s
+[INFO] Finished at: 2025-05-12T17:53:58-05:00
+[INFO] ------------------------------------------------------------------------

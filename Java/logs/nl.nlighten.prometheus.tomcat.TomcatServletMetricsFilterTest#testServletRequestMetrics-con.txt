@@ -1,0 +1,60 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for nl.nlighten:tomcat_exporter_client:jar:0.0.18-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 116, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ nl.nlighten:tomcat_exporter:0.0.18-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/pom.xml, line 153, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for nl.nlighten:tomcat_exporter:pom:0.0.18-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 153, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] Inspecting build with total of 1 modules...
+[INFO] Installing Nexus Staging features:
+[INFO]   ... total of 1 executions of maven-deploy-plugin replaced with nexus-staging-maven-plugin
+[INFO] 
+[INFO] -----------------< nl.nlighten:tomcat_exporter_client >-----------------
+[INFO] Building Prometheus client for Apache Tomcat 0.0.18-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ tomcat_exporter_client ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/client/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ tomcat_exporter_client ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/client/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ tomcat_exporter_client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ tomcat_exporter_client ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/client/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ tomcat_exporter_client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ tomcat_exporter_client ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.149 sec - in nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (jacoco-report) @ tomcat_exporter_client ---
+[INFO] Loading execution data file /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/client/target/jacoco.exec
+[INFO] Analyzed bundle 'Prometheus client for Apache Tomcat' with 5 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.933 s
+[INFO] Finished at: 2025-05-12T17:53:40-05:00
+[INFO] ------------------------------------------------------------------------

@@ -1,0 +1,167 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:achilles-model:jar:6.0.1-SNAPSHOT
+[WARNING] 'dependencyManagement.dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: info.archinnov:achilles-junit:jar -> duplicate declaration of version ${project.version} @ info.archinnov:achilles:6.0.1-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/pom.xml, line 187, column 25
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ info.archinnov:achilles:6.0.1-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/pom.xml, line 628, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:achilles-core:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-resources-plugin is missing. @ line 158, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:achilles-junit:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-resources-plugin is missing. @ line 88, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:achilles-schema-generator:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-shade-plugin is missing. @ line 56, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-2_1:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 96, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-2_2:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 102, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-3_0:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 102, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-3_2:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 102, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-3_6:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 102, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-3_7:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 102, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-3_8:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 102, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:integration-test-3_10:jar:6.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 102, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for info.archinnov:achilles:pom:6.0.1-SNAPSHOT
+[WARNING] 'dependencyManagement.dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: info.archinnov:achilles-junit:jar -> duplicate declaration of version ${project.version} @ line 187, column 25
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 628, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] ----------------< info.archinnov:integration-test-2_2 >-----------------
+[INFO] Building Achilles Integration Test Cassandra 2.2.X 6.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0.1:enforce (enforce-maven) @ integration-test-2_2 ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0.1:enforce (enforce-versions) @ integration-test-2_2 ---
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ integration-test-2_2 ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ integration-test-2_2 ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.2:compile (default-compile) @ integration-test-2_2 ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-bundle-plugin:3.2.0:manifest (bundle-manifest) @ integration-test-2_2 ---
+[WARNING] Manifest info.archinnov:integration-test-2_2:jar:6.0.1-SNAPSHOT : Export info.archinnov.achilles.generated.function,  has 1,  private references [info.archinnov.achilles.internals.entities], 
+[WARNING] Manifest info.archinnov:integration-test-2_2:jar:6.0.1-SNAPSHOT : Export info.archinnov.achilles.generated.manager,  has 1,  private references [info.archinnov.achilles.internals.entities], 
+[WARNING] Manifest info.archinnov:integration-test-2_2:jar:6.0.1-SNAPSHOT : Export info.archinnov.achilles.generated.dsl,  has 1,  private references [info.archinnov.achilles.internals.entities], 
+[WARNING] Manifest info.archinnov:integration-test-2_2:jar:6.0.1-SNAPSHOT : Export info.archinnov.achilles.generated.meta.entity,  has 1,  private references [info.archinnov.achilles.internals.entities], 
+[WARNING] Manifest info.archinnov:integration-test-2_2:jar:6.0.1-SNAPSHOT : Export info.archinnov.achilles.generated.meta.udt,  has 1,  private references [info.archinnov.achilles.internals.entities], 
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ integration-test-2_2 ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 6 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.2:testCompile (default-testCompile) @ integration-test-2_2 ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ integration-test-2_2 ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running info.archinnov.achilles.it.TestEntityWithIndicesForJSON
+17:38:00,500 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+17:38:00,500 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.groovy]
+17:38:00,500 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/classes/logback.xml]
+17:38:00,500 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs multiple times on the classpath.
+17:38:00,501 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [jar:file:/home/sr53282/.m2/repository/info/archinnov/integration-test-2_1/6.0.1-SNAPSHOT/integration-test-2_1-6.0.1-SNAPSHOT.jar!/logback.xml]
+17:38:00,501 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [jar:file:/home/sr53282/.m2/repository/info/archinnov/achilles-schema-generator/6.0.1-SNAPSHOT/achilles-schema-generator-6.0.1-SNAPSHOT.jar!/logback.xml]
+17:38:00,501 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/classes/logback.xml]
+17:38:00,558 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
+17:38:00,566 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Will scan for changes in [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/classes/logback.xml] 
+17:38:00,566 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Setting ReconfigureOnChangeTask scanning period to 30 seconds
+17:38:00,567 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+17:38:00,571 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [STDOUT]
+17:38:00,578 |-INFO in ch.qos.logback.core.joran.action.NestedComplexPropertyIA - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+17:38:00,617 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles.embedded] to INFO
+17:38:00,617 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles.embedded] to false
+17:38:00,617 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles.embedded]
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles] to WARN
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles] to false
+17:38:00,618 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles]
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.cql3.QueryProcessor] to OFF
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.cql3.QueryProcessor] to false
+17:38:00,618 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.cql3.QueryProcessor]
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.db.Memtable] to OFF
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.db.Memtable] to false
+17:38:00,618 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.db.Memtable]
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.utils.CLibrary] to OFF
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.utils.CLibrary] to false
+17:38:00,618 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.utils.CLibrary]
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.utils.SigarLibrary] to OFF
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.utils.SigarLibrary] to false
+17:38:00,618 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.utils.SigarLibrary]
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.LevelAction - ROOT level set to WARN
+17:38:00,618 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ROOT]
+17:38:00,618 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
+17:38:00,619 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@5d52e3ef - Registering current configuration as safe fallback point
+
+17:38:00.680 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/data
+17:38:00.692 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/commitlog
+17:38:00.692 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/saved_caches
+17:38:00.692 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/hints
+17:38:00.692 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/cdc_raw
+17:38:00.708 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/data'
+17:38:00.710 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/commitlog'
+17:38:00.710 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/saved_caches'
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra listen address = localhost
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra RPC address = localhost
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra broadcast address = 
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra RPC broadcast address = 
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra RPC port/Thrift port = 9160
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Native port/CQL port = 9042
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Storage port = 7099
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Storage SSL port = 7882
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Remote JMX port = null
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter -  Embedded Cassandra triggers directory = /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/target/cassandra_embedded/cassandra_triggers
+17:38:00.754 [main] INFO  i.a.achilles.embedded.ServerStarter - Starting Cassandra...
+17:38:01.146 [pool-2-thread-1] WARN  o.a.cassandra.utils.NativeLibrary - Unable to lock JVM memory (ENOMEM). This can result in part of the JVM being swapped out, especially with mmapped I/O enabled. Increase RLIMIT_MEMLOCK or run Cassandra as root.
+17:38:01.146 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - jemalloc shared library could not be preloaded to speed up memory allocations
+17:38:01.146 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - JMX is not enabled to receive remote connections. Please see cassandra-env.sh for more info.
+17:38:01.147 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - The JVM is not configured to stop on OutOfMemoryError which can cause data corruption. Use one of the following JVM options to configure the behavior on OutOfMemoryError:  -XX:+ExitOnOutOfMemoryError, -XX:+CrashOnOutOfMemoryError, or -XX:OnOutOfMemoryError="<cmd args>;<cmd args>"
+17:38:01.185 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - Maximum number of memory map areas per process (vm.max_map_count) 65530 is too low, recommended value: 1048575, you can change it with sysctl.
+17:38:03.104 [pool-2-thread-1] WARN  o.apache.cassandra.db.SystemKeyspace - No host ID found, created a3f62bcc-cfa8-40fa-b3ff-0d4aa5d554ad (Note: This should happen exactly once per node).
+17:38:04.471 [main] INFO  i.a.a.embedded.AchillesInitializer - Creating keyspace : CREATE keyspace IF NOT EXISTS achilles_embedded WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES=false
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.673 sec - in info.archinnov.achilles.it.TestEntityWithIndicesForJSON
+17:38:07.075 [Thread-2] INFO  i.a.achilles.embedded.ServerStarter - Calling stop on Embedded Cassandra server
+17:38:07.142 [Achilles Embedded Cassandra Cluster-reconnection-0] ERROR c.d.driver.core.ControlConnection - [Control connection] Cannot connect to any host, scheduling retry in 1000 milliseconds
+17:38:08.143 [Achilles Embedded Cassandra Cluster-reconnection-1] ERROR c.d.driver.core.ControlConnection - [Control connection] Cannot connect to any host, scheduling retry in 2000 milliseconds
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (jacoco-report) @ integration-test-2_2 ---
+[INFO] Loading execution data file /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_2/target/jacoco.exec
+[INFO] Analyzed bundle 'Achilles Integration Test Cassandra 2.2.X' with 490 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  17.621 s
+[INFO] Finished at: 2025-05-12T17:38:13-05:00
+[INFO] ------------------------------------------------------------------------

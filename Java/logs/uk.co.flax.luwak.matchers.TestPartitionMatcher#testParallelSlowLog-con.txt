@@ -1,0 +1,77 @@
+[INFO] Scanning for projects...
+[INFO] Inspecting build with total of 1 modules...
+[INFO] Installing Nexus Staging features:
+[INFO]   ... total of 1 executions of maven-deploy-plugin replaced with nexus-staging-maven-plugin
+[INFO] 
+[INFO] --------------------< com.github.flaxsearch:luwak >---------------------
+[INFO] Building luwak 1.6.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ luwak ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/flaxsearch/luwak/luwak/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ luwak ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/flaxsearch/luwak/luwak/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ luwak ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ luwak ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 20 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ luwak ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ luwak ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running uk.co.flax.luwak.matchers.TestPartitionMatcher
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.792 sec <<< FAILURE! - in uk.co.flax.luwak.matchers.TestPartitionMatcher
+testParallelSlowLog(uk.co.flax.luwak.matchers.TestPartitionMatcher)  Time elapsed: 0.747 sec  <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting:
+ <"Limit: 2000000
+	1 [254625961ns]
+	2 [2474608ns]
+	3 [254450160ns]
+">
+not to contain:
+ <"2 ["> 
+
+
+Results :
+
+Failed tests: 
+  TestPartitionMatcher>ConcurrentMatcherTestBase.testParallelSlowLog:113 
+Expecting:
+ <"Limit: 2000000
+	1 [254625961ns]
+	2 [2474608ns]
+	3 [254450160ns]
+">
+not to contain:
+ <"2 ["> 
+
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.201 s
+[INFO] Finished at: 2025-05-12T17:53:09-05:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.19.1:test (default-test) on project luwak: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/flaxsearch/luwak/luwak/target/surefire-reports for the individual test results.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

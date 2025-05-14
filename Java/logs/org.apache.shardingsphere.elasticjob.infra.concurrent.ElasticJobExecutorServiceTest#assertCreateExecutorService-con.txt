@@ -1,0 +1,73 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.apache.shardingsphere.elasticjob:elasticjob-api:jar:3.1.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ org.apache.shardingsphere.elasticjob:elasticjob:3.1.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/elasticjob/elastic-job-lite/pom.xml, line 682, column 17
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.apache.shardingsphere.elasticjob:elasticjob:pom:3.1.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 682, column 17
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] ----< org.apache.shardingsphere.elasticjob:elasticjob-infra-common >----
+[INFO] Building elasticjob-infra-common 3.1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.1.0:enforce (enforce-maven-version) @ elasticjob-infra-common ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.1.0:enforce (enforce-banned-dependencies) @ elasticjob-infra-common ---
+[INFO] 
+[INFO] --- maven-checkstyle-plugin:3.1.0:check (validate) @ elasticjob-infra-common ---
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default) @ elasticjob-infra-common ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/elasticjob/elastic-job-lite/elasticjob-infra/elasticjob-infra-common/target/jacoco.exec
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ elasticjob-infra-common ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/elasticjob/elastic-job-lite/elasticjob-infra/elasticjob-infra-common/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-remote-resources-plugin:1.5:process (process-resource-bundles) @ elasticjob-infra-common ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.7:resources (default-resources) @ elasticjob-infra-common ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 3 resources
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.0:compile (default-compile) @ elasticjob-infra-common ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:2.7:testResources (default-testResources) @ elasticjob-infra-common ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 4 resources
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.0:testCompile (default-testCompile) @ elasticjob-infra-common ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ elasticjob-infra-common ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.279 sec - in org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorServiceTest
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (report) @ elasticjob-infra-common ---
+[INFO] Loading execution data file /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/elasticjob/elastic-job-lite/elasticjob-infra/elasticjob-infra-common/target/jacoco.exec
+[INFO] Analyzed bundle 'elasticjob-infra-common' with 38 classes
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (jacoco-report) @ elasticjob-infra-common ---
+[INFO] Loading execution data file /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/elasticjob/elastic-job-lite/elasticjob-infra/elasticjob-infra-common/target/jacoco.exec
+[INFO] Analyzed bundle 'elasticjob-infra-common' with 38 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.669 s
+[INFO] Finished at: 2025-05-13T20:58:41-05:00
+[INFO] ------------------------------------------------------------------------

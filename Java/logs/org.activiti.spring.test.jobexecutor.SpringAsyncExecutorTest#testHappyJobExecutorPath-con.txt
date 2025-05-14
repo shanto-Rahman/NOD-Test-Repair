@@ -1,0 +1,15 @@
+[INFO] Scanning for projects...
+[ERROR] [ERROR] Some problems were encountered while processing the POMs:
+[FATAL] Non-resolvable parent POM for org.activiti:activiti-root:7.0.0-SNAPSHOT: Failure to find org.activiti.build:activiti-parent:pom:7.0.28 in https://artifacts.alfresco.com/nexus/content/repositories/activiti-releases/ was cached in the local repository, resolution will not be reattempted until the update interval of alfresco has elapsed or updates are forced and 'parent.relativePath' points at no local POM @ line 3, column 11
+ @ 
+[ERROR] The build could not read 1 project -> [Help 1]
+[ERROR]   
+[ERROR]   The project org.activiti:activiti-root:7.0.0-SNAPSHOT (/home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/activiti/activiti/pom.xml) has 1 error
+[ERROR]     Non-resolvable parent POM for org.activiti:activiti-root:7.0.0-SNAPSHOT: Failure to find org.activiti.build:activiti-parent:pom:7.0.28 in https://artifacts.alfresco.com/nexus/content/repositories/activiti-releases/ was cached in the local repository, resolution will not be reattempted until the update interval of alfresco has elapsed or updates are forced and 'parent.relativePath' points at no local POM @ line 3, column 11 -> [Help 2]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/ProjectBuildingException
+[ERROR] [Help 2] http://cwiki.apache.org/confluence/display/MAVEN/UnresolvableModelException

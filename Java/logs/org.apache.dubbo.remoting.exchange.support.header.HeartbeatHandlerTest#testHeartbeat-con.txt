@@ -1,0 +1,102 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.apache.dubbo:dubbo-common:jar:2.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ org.apache.dubbo:dubbo-parent:2.7.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/apache/dubbo/pom.xml, line 547, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ org.apache.dubbo:dubbo-parent:2.7.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/apache/dubbo/pom.xml, line 567, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.apache.dubbo:dubbo-parent:pom:2.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 547, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 567, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] dubbo-remoting-netty                                               [jar]
+[INFO] dubbo-dependencies-bom                                             [pom]
+[INFO] 
+[INFO] ---------------< org.apache.dubbo:dubbo-remoting-netty >----------------
+[INFO] Building dubbo-remoting-netty 2.7.0-SNAPSHOT                       [1/2]
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.4.1:enforce (enforce-maven-version) @ dubbo-remoting-netty ---
+[INFO] 
+[INFO] --- maven-checkstyle-plugin:3.0.0:check (checkstyle-validation) @ dubbo-remoting-netty ---
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (jacoco-initialize) @ dubbo-remoting-netty ---
+[INFO] jacocoArgLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/apache/dubbo/dubbo-remoting/dubbo-remoting-netty/target/jacoco.exec
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ dubbo-remoting-netty ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/apache/dubbo/dubbo-remoting/dubbo-remoting-netty/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-remote-resources-plugin:1.5:process (process-resource-bundles) @ dubbo-remoting-netty ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.0.2:resources (default-resources) @ dubbo-remoting-netty ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] Copying 2 resources to META-INF/
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.6.0:compile (default-compile) @ dubbo-remoting-netty ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:3.0.2:testResources (default-testResources) @ dubbo-remoting-netty ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.6.0:testCompile (default-testCompile) @ dubbo-remoting-netty ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ dubbo-remoting-netty ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest
+2025-05-12 17:11:40,233 INFO [org.apache.dubbo.common.logger.LoggerFactory:?] - using logger: org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter
+2025-05-12 17:11:40,535 INFO [org.apache.dubbo.remoting.transport.AbstractServer:<init>] -  [DUBBO] Start NettyServer bind /0.0.0.0:55555, export localhost/127.0.0.1:55555, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+Server bind successfully
+2025-05-12 17:11:40,566 INFO [org.apache.dubbo.remoting.transport.AbstractClient:connect] -  [DUBBO] Successed connect to server /172.17.0.1:55555 from NettyClient 172.17.0.1 using dubbo version 2.7.0-SNAPSHOT, channel is NettyChannel [channel=[id: 0x4aed311e, /172.17.0.1:55136 => /172.17.0.1:55555]], dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-12 17:11:40,567 INFO [org.apache.dubbo.remoting.transport.AbstractClient:<init>] -  [DUBBO] Start NettyClient /172.17.0.1 connect to the server /172.17.0.1:55555, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-12 17:11:50,570 INFO [org.apache.dubbo.remoting.transport.netty.NettyChannel:close] -  [DUBBO] Close netty channel [id: 0x4aed311e, /172.17.0.1:55136 => /172.17.0.1:55555], dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-12 17:11:50,571 WARN [org.apache.dubbo.remoting.transport.AbstractServer:disconnected] -  [DUBBO] All clients has discontected from /172.17.0.1:55555. You can graceful shutdown now., dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-12 17:11:50,572 INFO [org.apache.dubbo.remoting.transport.AbstractServer:close] -  [DUBBO] Close NettyServer bind /0.0.0.0:55555, export localhost/127.0.0.1:55555, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.472 sec - in org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (jacoco-report) @ dubbo-remoting-netty ---
+[INFO] Loading execution data file /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/apache/dubbo/dubbo-remoting/dubbo-remoting-netty/target/jacoco.exec
+[INFO] Analyzed bundle 'dubbo-remoting-netty' with 15 classes
+[INFO] 
+[INFO] --------------< org.apache.dubbo:dubbo-dependencies-bom >---------------
+[INFO] Building dubbo-dependencies-bom 2.7.0-SNAPSHOT                     [2/2]
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.4.1:enforce (enforce-maven-version) @ dubbo-dependencies-bom ---
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ dubbo-dependencies-bom ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/apache/dubbo/dubbo-dependencies-bom/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-remote-resources-plugin:1.5:process (process-resource-bundles) @ dubbo-dependencies-bom ---
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (jacoco-report) @ dubbo-dependencies-bom ---
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for dubbo-remoting-netty 2.7.0-SNAPSHOT:
+[INFO] 
+[INFO] dubbo-remoting-netty ............................... SUCCESS [ 12.348 s]
+[INFO] dubbo-dependencies-bom ............................. SUCCESS [  0.013 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.616 s
+[INFO] Finished at: 2025-05-12T17:11:51-05:00
+[INFO] ------------------------------------------------------------------------

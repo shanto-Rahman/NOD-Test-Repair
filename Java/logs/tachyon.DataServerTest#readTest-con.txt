@@ -1,0 +1,73 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.tachyonproject:tachyon:jar:0.3.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 267, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] ---------------------< org.tachyonproject:tachyon >---------------------
+[INFO] Building Tachyon Project POM 0.3.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ tachyon ---
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:prepare-agent (default-prepare-agent) @ tachyon ---
+[INFO] argLine set to -javaagent:/home/sr53282/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-replacer-plugin:1.4.0:replace (default) @ tachyon ---
+[INFO] Replacement run on 1 file.
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ tachyon ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ tachyon ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 114 source files to /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/target/classes
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeUtils.java:[5,16] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeDirectByteBufferReader.java:[9,16] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeHeapByteBufferWriter.java:[7,16] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeDirectByteBufferWriter.java:[9,16] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeHeapByteBufferReader.java:[7,16] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeUtils.java:[12,17] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeUtils.java:[15,23] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeUtils.java:[17,13] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeDirectByteBufferReader.java:[15,11] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeHeapByteBufferWriter.java:[13,11] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeDirectByteBufferWriter.java:[15,11] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/io/UnsafeHeapByteBufferReader.java:[13,11] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/thrift/ClientFileInfo.java: Some input files use unchecked or unsafe operations.
+[WARNING] /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/src/main/java/tachyon/thrift/ClientFileInfo.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ tachyon ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ tachyon ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ tachyon ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running tachyon.DataServerTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.414 sec - in tachyon.DataServerTest
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.8:report (jacoco-report) @ tachyon ---
+[INFO] Loading execution data file /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/Alluxio/alluxio/target/jacoco.exec
+[INFO] Analyzed bundle 'Tachyon Project POM' with 488 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.657 s
+[INFO] Finished at: 2025-05-12T17:59:39-05:00
+[INFO] ------------------------------------------------------------------------

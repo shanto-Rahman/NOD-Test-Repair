@@ -1,0 +1,188 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for io.undertow:undertow-core:jar:2.0.14.Final-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 247, column 17
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for io.undertow:undertow-servlet:jar:2.0.14.Final-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 228, column 17
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for io.undertow:undertow-websockets-jsr:jar:2.0.14.Final-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 187, column 17
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] ----------------< io.undertow:undertow-websockets-jsr >-----------------
+[INFO] Building Undertow WebSockets JSR356 implementations 2.0.14.Final-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0-M2:enforce (enforce-java-version) @ undertow-websockets-jsr ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:3.0.0-M2:enforce (enforce-maven-version) @ undertow-websockets-jsr ---
+[INFO] 
+[INFO] --- buildnumber-maven-plugin:1.4:create (get-scm-revision) @ undertow-websockets-jsr ---
+[INFO] Executing: /bin/sh -c cd '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/undertow-io/undertow/websockets-jsr' && 'git' 'rev-parse' '--verify' 'HEAD'
+[INFO] Working directory: /home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/undertow-io/undertow/websockets-jsr
+[INFO] Storing buildNumber: d0efffad5d2034bb07525cac9b299dac72c3045d at timestamp: 1746404852071
+[WARNING] Cannot get the branch information from the git repository: 
+Detecting the current branch failed: fatal: ref HEAD is not a symbolic ref
+
+[INFO] Executing: /bin/sh -c cd '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/undertow-io/undertow/websockets-jsr' && 'git' 'rev-parse' '--verify' 'HEAD'
+[INFO] Working directory: /home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/undertow-io/undertow/websockets-jsr
+[INFO] Storing buildScmBranch: UNKNOWN
+[INFO] 
+[INFO] --- maven-resources-plugin:3.1.0:resources (default-resources) @ undertow-websockets-jsr ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 4 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.7.0:compile (default-compile) @ undertow-websockets-jsr ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-checkstyle-plugin:3.0.0:checkstyle (check-style) @ undertow-websockets-jsr ---
+[INFO] Starting audit...
+Audit done.
+[INFO] 
+[INFO] --- maven-bundle-plugin:3.2.0:manifest (generate-manifest) @ undertow-websockets-jsr ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.1.0:testResources (default-testResources) @ undertow-websockets-jsr ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/undertow-io/undertow/websockets-jsr/src/test/resources
+[INFO] Copying 0 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.7.0:testCompile (default-testCompile) @ undertow-websockets-jsr ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.0:test (default-test) @ undertow-websockets-jsr ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.undertow.websockets.jsr.test.JsrWebSocketServer13Test
+[ERROR] Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 148.903 s <<< FAILURE! - in io.undertow.websockets.jsr.test.JsrWebSocketServer13Test
+[ERROR] testErrorHandling(io.undertow.websockets.jsr.test.JsrWebSocketServer13Test)  Time elapsed: 128.718 s  <<< ERROR!
+java.io.IOException: UT003035: Connection timed out
+	at io.undertow.websockets.jsr.ServerWebSocketContainer.connectToServerInternal(ServerWebSocketContainer.java:504)
+	at io.undertow.websockets.jsr.ServerWebSocketContainer.connectToServerInternal(ServerWebSocketContainer.java:485)
+	at io.undertow.websockets.jsr.ServerWebSocketContainer.connectToServer(ServerWebSocketContainer.java:225)
+	at io.undertow.websockets.jsr.test.JsrWebSocketServer07Test.testErrorHandling(JsrWebSocketServer07Test.java:648)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at io.undertow.testutils.DefaultServer.runChild(DefaultServer.java:514)
+	at io.undertow.testutils.DefaultServer.runChild(DefaultServer.java:103)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at io.undertow.testutils.DefaultServer.run(DefaultServer.java:287)
+	at org.junit.runners.Suite.runChild(Suite.java:128)
+	at org.junit.runners.Suite.runChild(Suite.java:27)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.apache.maven.surefire.junitcore.JUnitCore.run(JUnitCore.java:55)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.createRequestAndRun(JUnitCoreWrapper.java:137)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.executeEager(JUnitCoreWrapper.java:107)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.execute(JUnitCoreWrapper.java:83)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.execute(JUnitCoreWrapper.java:75)
+	at org.apache.maven.surefire.junitcore.JUnitCoreProvider.invoke(JUnitCoreProvider.java:158)
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:383)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:344)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:125)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:417)
+
+[ERROR] testErrorHandling(io.undertow.websockets.jsr.test.JsrWebSocketServer13Test)  Time elapsed: 148.882 s  <<< ERROR!
+java.lang.RuntimeException: Buffer Leak io.undertow.websockets.jsr.test.JsrWebSocketServer13Test.testErrorHandling
+	at io.undertow.testutils.DefaultServer$1.testFinished(DefaultServer.java:279)
+	at org.junit.runner.notification.SynchronizedRunListener.testFinished(SynchronizedRunListener.java:56)
+	at org.junit.runner.notification.RunNotifier$7.notifyListener(RunNotifier.java:190)
+	at org.junit.runner.notification.RunNotifier$SafeNotifier.run(RunNotifier.java:72)
+	at org.junit.runner.notification.RunNotifier.fireTestFinished(RunNotifier.java:187)
+	at org.junit.internal.runners.model.EachTestNotifier.fireTestFinished(EachTestNotifier.java:38)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:331)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at io.undertow.testutils.DefaultServer.runChild(DefaultServer.java:514)
+	at io.undertow.testutils.DefaultServer.runChild(DefaultServer.java:103)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at io.undertow.testutils.DefaultServer.run(DefaultServer.java:287)
+	at org.junit.runners.Suite.runChild(Suite.java:128)
+	at org.junit.runners.Suite.runChild(Suite.java:27)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.apache.maven.surefire.junitcore.JUnitCore.run(JUnitCore.java:55)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.createRequestAndRun(JUnitCoreWrapper.java:137)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.executeEager(JUnitCoreWrapper.java:107)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.execute(JUnitCoreWrapper.java:83)
+	at org.apache.maven.surefire.junitcore.JUnitCoreWrapper.execute(JUnitCoreWrapper.java:75)
+	at org.apache.maven.surefire.junitcore.JUnitCoreProvider.invoke(JUnitCoreProvider.java:158)
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:383)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:344)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:125)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:417)
+Caused by: java.lang.RuntimeException: java.nio.DirectByteBuffer[pos=0 lim=16364 cap=16364] NO: 1 [NO_CONTEXT]
+	at io.undertow.testutils.DebuggingSlicePool$DebuggingBuffer.<init>(DebuggingSlicePool.java:84)
+	at io.undertow.testutils.DebuggingSlicePool.allocate(DebuggingSlicePool.java:45)
+	at io.undertow.server.protocol.http.HttpReadListener.handleEventWithNoRunningRequest(HttpReadListener.java:147)
+	at io.undertow.server.protocol.http.HttpReadListener.handleEvent(HttpReadListener.java:136)
+	at io.undertow.server.protocol.http.HttpOpenListener.handleEvent(HttpOpenListener.java:147)
+	at io.undertow.server.protocol.http.HttpOpenListener.handleEvent(HttpOpenListener.java:93)
+	at io.undertow.server.protocol.http.HttpOpenListener.handleEvent(HttpOpenListener.java:52)
+	at org.xnio.ChannelListeners.invokeChannelListener(ChannelListeners.java:92)
+	at org.xnio.ChannelListeners$10.handleEvent(ChannelListeners.java:291)
+	at org.xnio.ChannelListeners$10.handleEvent(ChannelListeners.java:286)
+	at org.xnio.ChannelListeners.invokeChannelListener(ChannelListeners.java:92)
+	at org.xnio.nio.QueuedNioTcpServer$1.run(QueuedNioTcpServer.java:129)
+	at org.xnio.nio.WorkerThread.safeRun(WorkerThread.java:582)
+	at org.xnio.nio.WorkerThread.run(WorkerThread.java:466)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR] io.undertow.websockets.jsr.test.JsrWebSocketServer13Test.testErrorHandling(io.undertow.websockets.jsr.test.JsrWebSocketServer13Test)
+[ERROR]   Run 1: JsrWebSocketServer13Test>JsrWebSocketServer07Test.testErrorHandling:648 » IO U...
+[ERROR]   Run 2: JsrWebSocketServer13Test.testErrorHandling » Runtime Buffer Leak io.undertow.w...
+[INFO] 
+[INFO] 
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  08:51 min
+[INFO] Finished at: 2025-05-04T19:36:23-05:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.0:test (default-test) on project undertow-websockets-jsr: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/undertow-io/undertow/websockets-jsr/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date]-jvmRun[N].dump, [date].dumpstream and [date]-jvmRun[N].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
