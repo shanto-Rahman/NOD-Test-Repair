@@ -68,7 +68,7 @@ from pathlib import Path
 def find_class_file(class_name, slug, module):
     # Convert class name to relative path
     rel_path = class_name.replace('.', '/') + '.java'
-
+    print("class_name=", class_name)
     # Step 1: Check in the given module
     main_path = Path(f"projects/{slug}/{module}/src/main/java/{rel_path}")
     if main_path.exists():
@@ -84,14 +84,17 @@ def find_class_file(class_name, slug, module):
     # Step 4: Return the first alternative match (if any)
     if candidates:
         print(f"[INFO] Class {class_name} not found in {module}, using {candidates[0]}")
+        exit()
         return str(candidates[0])
 
     print(f"[WARN] Class {class_name} not found in any module.")
+    
     return None
 
 
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, retry_count = 0):
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 10
+    tried_methods = set()
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
     messages = [
         {"role": "system", "content": definition},
@@ -110,7 +113,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         print("RESPONSE CONTENT =============================")
         print(response_content)
 
-        messages.append({"role": "assistant", "content": response_content})
+        #messages.append({"role": "assistant", "content": response_content})
+
         if "</Output>" in response_content:
             m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
             if m:
@@ -118,13 +122,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             else:
                 meth_code = "No code found" #response_content
 
-        #print("meth_code=")
-        #print(meth_code)
-        # 1) Extract the method name via a regex on the signature line
-        #sig = next(
-        #    line for line in meth_code.splitlines()
-        #    if "(" in line and "{" in line
-        #).strip()
         signature_lines = []
         found_opening_brace = False
         for line in meth_code.splitlines():
@@ -138,37 +135,46 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         
         sig = " ".join(signature_lines)
         print(f"[DEBUG] Full signature line: {repr(sig)}")
-
-        #m = re.match(r".*\b([A-Za-z0-9_]+)\s*\(.*\)\s*\{", sig)
-        #m = re.match(r".*\b([A-Za-z_][A-Za-z0-9_]*)\s*(\([^)]*\))\s*\{", sig)
-        #m = re.search(r"^[\w\s<>]*\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
-        #m = re.search(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
         m = re.search(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
-
-
-
 
         if not m:
             raise RuntimeError("Couldn’t parse method name")
         method_name = m.group(1) 
         params = m.group(2) 
-        #print("method_name=", method_name)
-        #print("params=", params)
-        signature   = f"{method_name}{params}"
-        #print("signature =", signature)
+        method_key = (method_name, hash(meth_code))
+        print("*** method_key=", method_key)
+        #exit()
+        if method_key in tried_methods:
+            print(f"[INFO] Already tried method {method_name} with same body, asking for a different one...")
+            feedback = (
+                f"The method `{method_name}` was already modified this way and didn't reproduce the failure. "
+                "Please try a different method or a different point in this method to inject the delay."
+            )
+            messages.append({"role": "user", "content": feedback})
+            retry_count += 1
+            continue
+        tried_methods.add(method_key)
 
+        signature   = f"{method_name}{params}"
         #Find the LineRange of this method  
         line_range = None
-        method_bodies_csv = dataset_path #"traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_method_bodies.csv"   # or whatever your path is
-        
-        with open(method_bodies_csv, newline="") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                # match both class and your signature
-                if row["Method"] == method_name:
-                    class_name = row["Class"].replace('.', '/').split('$')[0]
-                    line_range = row["LineRange"]
-                    break
+        #method_bodies_csv = dataset_path #"traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_method_bodies.csv"   # or whatever your path is 
+        #print("method_bodies_csv=", method_bodies_csv)
+        #with open(method_bodies_csv, newline="") as f:
+        #    reader = csv.DictReader(f)
+        #    for row in reader:
+        #        # match both class and your signature
+        #        if row["Method"] == method_name: # Bug because many classes may have this same method
+        #            class_name = row["Class"].replace('.', '/').split('$')[0]
+        #            line_range = row["LineRange"]
+        #            break
+        # method_df is passed directly as a DataFrame, not a CSV file
+        for _, row in filtered_df.iterrows():
+            if row["Method"] == method_name:
+                class_name = row["Class"].replace('.', '/').split('$')[0]
+                line_range = row["LineRange"]
+                break
+
         
         if line_range:
             print(f"{method_name} spans lines {line_range}, class_name={class_name}")
@@ -179,26 +185,33 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             else:
                 print(f"[ERROR] Could not locate class source file for: {class_name}")
 
-            #script_path = os.path.abspath(__file__)
-            #script_dir = os.path.dirname(script_path)
-            #
-            #print("Script is located in:", script_dir)
-            #run_test(slug, module, test)
             try:
                 print('*******retry_count=', retry_count)
                 result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
                 out = result_run.stdout.strip()
+                print("***out****")
                 firstLine = out.splitlines()[0]
 
                 print("*** test_run result, Script output: ",firstLine)
                 print(firstLine)
                 if firstLine == "Failure not found.":
-                    feedback = (
-                    "Your previous change didn’t reproduce the failure. Please insert the delay at the precise point in the method (it can be slightly earlier or later, or any different method) and return only the modified method."
-                                )
-                    messages.append({"role": "user", "content": feedback})
-                    retry_count += 1
-                    continue
+                    exit()
+                    #retry_count += 1
+                    #continue
+                    if method_name in tried_methods:
+                        print(f"[INFO] Already tried {method_name}, skipping to next retry.")
+                    else:
+                        #tried_methods.add(method_name)
+                        tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+                        feedback = (
+                            f"Your previous change didn’t reproduce the failure.\n"
+                            f"You've already tried modifying these methods:\n{tried_method_list}\n"
+                            f"Please try a different method or inject the delay at a different point."
+                        )
+                        messages.append({"role": "user", "content": feedback}) 
+                        retry_count += 1
+                        continue
+
                 elif firstLine == "Failure found.":
                     print("Failure found.")
                     break 
@@ -500,7 +513,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     
     # Filter by LineSpan < 30, then get top 20
     depth_filtered_df = ranked_df[ranked_df["LineSpan"] < 20].head(15)
- 
+    depth_filtered_df.to_csv("lll.csv", index=False) 
     print(depth_filtered_df)
 
     code_under_test_meths = depth_filtered_df['Body'].tolist()
@@ -527,7 +540,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-            changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test)
+            changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
     else:
         print('no model name found')
 
