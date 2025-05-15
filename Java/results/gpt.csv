@@ -586,3 +586,23 @@ Alluxio/alluxio,.,tachyon.client.TachyonFSTest.deleteFileTest,"public boolean de
 Alluxio/alluxio,.,tachyon.client.TachyonFSTest.lockBlockTest1,,,,,10,316.6949837207794
 Alluxio/alluxio,.,tachyon.client.TachyonFSTest.unlockBlockTest1,,,,,10,323.42444896698
 Alluxio/alluxio,.,tachyon.client.TachyonFSTest.unlockBlockTest3,,,,,10,425.8558268547058
+alibaba/wasp,.,com.alibaba.wasp.executor.TestExecutorService.testExecutorService,"public void run() {
+    Span chunk = Trace.startSpan(Thread.currentThread().getName(), parent,
+        Sampler.ALWAYS);
+    try {
+      if (getListener() != null)
+        getListener().beforeProcess(this);
+      try {
+          Thread.sleep(7000); // Deliberate delay to trigger async-wait flakiness
+      } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+      }
+      process();
+      if (getListener() != null)
+        getListener().afterProcess(this);
+    } catch (Throwable t) {
+      LOG.error(""Caught throwable while processing event "" + eventType, t);
+    } finally {
+      chunk.stop();
+    }
+}",projects/alibaba/wasp/src/main/java/com/alibaba/wasp/executor/EventHandler.java,run,192-206,2,156.7821009159088
