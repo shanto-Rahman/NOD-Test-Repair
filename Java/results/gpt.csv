@@ -451,3 +451,26 @@ fluent/fluent-logger-java,.,org.fluentd.logger.TestFluentLogger.testInMultiThrea
 
         return (timestamp - errorHistory.getLast()) >= suppressMillis;
     }",projects/fluent/fluent-logger-java/src/main/java/org/fluentd/logger/sender/ExponentialDelayReconnector.java,enableReconnection,52-66,2,353.3668110370636
+javadelight/delight-nashorn-sandbox,.,delight.nashornsandbox.TestGetFunction.test,"@Override
+    public Object executeScriptEngineOperation(ScriptEngine scriptEngine) throws ScriptException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(""--- Running JS ---"");
+            LOG.debug(js);
+            LOG.debug(""--- JS END ---"");
+        }
+        
+        // Introduce a delay here to simulate async-wait flakiness
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+       
+        if (bindings != null) {
+            return scriptEngine.eval(js, bindings);
+        } else if (scriptContext != null) {
+            return scriptEngine.eval(js, scriptContext);
+        } else {
+            return scriptEngine.eval(js);
+        }
+    }",projects/javadelight/delight-nashorn-sandbox/src/main/java/delight/nashornsandbox/internal/EvaluateOperation.java,executeScriptEngineOperation,34-49,1,34.5209105014801
