@@ -32,8 +32,9 @@ def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
     </Output>
     """
     definitions = """You are an expert at identifying flaky tests and analyzing their type. Flaky tests are tests that pass and fail non-deterministically for the same code. Always obey these rules exactly:
-    1. Never output Markdown fences (```java``` etc).
-    2. Wrap your answer **only** in `<Output>` and `</Output>`, with no extra text before or after.
-    3. Inside those tags, output the full modified method source."""
+    1. Never choose a location inside any `synchronized { … }` block or lock context.
+    2. Never output Markdown fences (```java``` etc).
+    3. Wrap your answer **only** in `<Output>` and `</Output>`, with no extra text before or after.
+    4. Inside those tags, output the full modified method source."""
 
     return prompt, definitions
