@@ -606,3 +606,45 @@ alibaba/wasp,.,com.alibaba.wasp.executor.TestExecutorService.testExecutorService
       chunk.stop();
     }
 }",projects/alibaba/wasp/src/main/java/com/alibaba/wasp/executor/EventHandler.java,run,192-206,2,156.7821009159088
+doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestALLEntityAsChild.should_insert,"public static ResultSet triggerLWTListeners(Optional<List<LWTResultListener>> lwtResultListeners, ResultSet resultSet, String queryString) {
+        if (isLWTOperation(queryString)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(format(""Trigger LWT listeners for query : %s"", queryString));
+            }
+
+            final Row lwtResult = resultSet.one();
+            if (!resultSet.wasApplied()) {
+                TreeMap<String, Object> currentValues = new TreeMap<>();
+                for (ColumnDefinitions.Definition columnDef : lwtResult.getColumnDefinitions()) {
+                    final String columnDefName = columnDef.getName();
+                    Object columnValue = lwtResult.getObject(columnDefName);
+                    currentValues.put(columnDefName, columnValue);
+                }
+
+                LWTOperation lwtOperation = UPDATE;
+                if (isLWTInsert(queryString)) {
+                    lwtOperation = INSERT;
+                }
+                notifyLWTError(lwtResultListeners, new LWTResult(lwtOperation, TypedMap.fromMap(currentValues)));
+            } else {
+                notifyCASSuccess(lwtResultListeners);
+            }
+        }
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return resultSet;
+    }",projects/doanduyhai/Achilles/achilles-core/src/main/java/info/archinnov/achilles/internals/dsl/LWTHelper.java,triggerLWTListeners,77-102,0,30.9950590133667
+flaxsearch/luwak,c27ec08c803db6ca6be1b6e8017f45667e603161,luwak,uk.co.flax.luwak.matchers.TestPartitionMatcher.testParallelSlowLog,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
+        CandidateMatcher<T> matcher = factory.createMatcher(docs);
+        matcher.setSlowLogLimit(slowLogLimit);
+        try {
+            Thread.sleep(7000); // Introduce delay to trigger test failure
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        match(matcher);
+        return matcher.getMatches();
+    }",projects/flaxsearch/luwak/luwak/src/main/java/uk/co/flax/luwak/Monitor.java,match,445-450,0,19.24147391319275
