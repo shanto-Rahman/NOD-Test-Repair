@@ -727,8 +727,8 @@ if __name__ == "__main__":
     start_time = time.time()
     changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
     end_time = time.time()
-    duration = end_time - start_time
-    print("duration=", duration)
-    minutes, seconds = divmod(duration, 60)
+    duration_in_seconds = end_time - start_time
+    #print("duration=", duration)
+    #minutes, seconds = divmod(duration, 60)
 
-    save_result(slug, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, seconds)
+    save_result(slug, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, duration_in_seconds)
