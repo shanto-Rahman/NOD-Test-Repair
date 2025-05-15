@@ -38,7 +38,7 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
                 #model="gpt-4o-mini",
                 model="gpt-4o",
                 messages=messages,
-                temperature=0,
+                temperature=0.2,
                 max_tokens=500
             )
             time.sleep(sleep_on_success)  # Optional: avoid hammering the API
