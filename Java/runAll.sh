@@ -376,8 +376,16 @@ while IFS= read -r line
     echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
 
     test_class_full_path=$(find $module -name "${testClass}.java")
-    #matched_calls=$(
-    python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
+    echo "test_class_full_path=$test_class_full_path"
+
+    if [[ $testName == "io.undertow.websockets.jsr.test.JsrWebSocketServer08Test#testErrorHandling" || $testName == "io.undertow.websockets.jsr.test.JsrWebSocketServer13Test#testErrorHandling" ]]; then #These classes extend JsrWebSocketServer07Test.java, and the actual method is JsrWebSocketServer07Test.java
+        test_class_full_path="websockets-jsr/src/test/java/io/undertow/websockets/jsr/test/JsrWebSocketServer07Test.java"
+        python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
+    else
+        python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
+    fi
+    echo "python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir"
+    #exit
     #echo "matched_calls===$matched_calls"
 
     #python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
@@ -398,7 +406,8 @@ while IFS= read -r line
     cd $inputProj/$slug
     #exit
     if [[ $trace_collection_way == "static" ]]; then
-        git stash
+        #git stash
+        git checkout $(find -name "*.java")
         rm -rf $(find -name "target")
         #rm test-classes.jar 
         rm -rf merged_classes/
