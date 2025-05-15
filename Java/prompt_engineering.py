@@ -1,14 +1,13 @@
-
 def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
     prompt = f"""
     You are an expert Java developer diagnosing async-wait flakiness. 
 
     I will give you:  
     1. A non-deterministic test failure log  
-    2. The full code under test, ranked by cosine similarity to the test code
+    2. The full code-under-test (only the methods below, each labeled with its Class and Method name)
     3. The async-wait test code  
 
-    Your job is to find a location from a method in the code under test where inserting a deliberate delay (e.g. `Thread.sleep(...)`) will force the test to fail every time.  You can start injecting delay from 5000 to 10000 milliseconds.
+    Your job is to find a location in one of the provided methods where inserting a deliberate delay (e.g. Thread.sleep(...)) between 5000 and 10000 milliseconds will consistently trigger the test failure. Avoid placing the delay at the very end of the method, as that is less likely to affect program behavior. Prefer injecting the delay near the **Beginning* or in the **Middle** of the method logic. When injecting delay, always wrap it in a try-catch block that handles InterruptedException.
 
 <Input>
     <Failure>  
@@ -18,14 +17,14 @@ def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
     <Code-Under-Test>  
         {code_under_test_meths}  
     </Code-Under-Test>  
-
+ 
     <Test-Code>  
         {test_meth_code_df}  
     </Test-Code>  
 </Input>
 
-   Analyze the Code-Under-Test and pinpoint the single method whose logic must be altered to reliably reproduce the test failure. To do this, insert a deliberate delay (e.g. a Thread.sleep) at the precise point in that method’s body so that the timing-related issue causes the test to fail every time.
-    
+   Analyze the Code-Under-Test and pinpoint the single method whose logic must be altered to reliably reproduce the test failure. 
+ 
     Return **only** the modified method wrapped in
     
     <Output>
