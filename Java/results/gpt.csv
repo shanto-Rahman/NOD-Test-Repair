@@ -474,3 +474,38 @@ javadelight/delight-nashorn-sandbox,.,delight.nashornsandbox.TestGetFunction.tes
             return scriptEngine.eval(js);
         }
     }",projects/javadelight/delight-nashorn-sandbox/src/main/java/delight/nashornsandbox/internal/EvaluateOperation.java,executeScriptEngineOperation,34-49,1,34.5209105014801
+nlighten/tomcat_exporter,client,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest.testServletRequestMetrics,"@Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        if (!(servletRequest instanceof HttpServletRequest)) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+
+        if (!request.isAsyncStarted()) {
+            String context = getContext(request);
+
+            servletConcurrentRequest.labels(context).inc();
+
+            Histogram.Timer timer = servletLatency
+                    .labels(context, request.getMethod())
+                    .startTimer();
+
+            try {
+                filterChain.doFilter(servletRequest, servletResponse);
+            } finally {
+                // Introduce delay to simulate async-wait flakiness
+                try {
+                    Thread.sleep(7000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                timer.observeDuration();
+                servletConcurrentRequest.labels(context).dec();
+                servletStatusCodes.labels(context, Integer.toString(getStatus((HttpServletResponse) servletResponse))).inc();
+            }
+        } else {
+            filterChain.doFilter(servletRequest, servletResponse);
+        }
+    }",projects/nlighten/tomcat_exporter/client/src/main/java/nl/nlighten/prometheus/tomcat/TomcatServletMetricsFilter.java,doFilter,97-125,3,79.37436747550964
