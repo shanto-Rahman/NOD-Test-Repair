@@ -509,3 +509,27 @@ nlighten/tomcat_exporter,client,nl.nlighten.prometheus.tomcat.TomcatServletMetri
             filterChain.doFilter(servletRequest, servletResponse);
         }
     }",projects/nlighten/tomcat_exporter/client/src/main/java/nl/nlighten/prometheus/tomcat/TomcatServletMetricsFilter.java,doFilter,97-125,3,79.37436747550964
+qos-ch/logback,logback-classic,ch.qos.logback.classic.net.SMTPAppender_GreenTest.testCustomBufferSize,,,,,10,149.62972831726074
+qos-ch/logback,logback-classic,ch.qos.logback.classic.net.SMTPAppender_GreenTest.testCustomEvaluator,,,,,10,195.23985934257507
+qos-ch/logback,logback-core,ch.qos.logback.core.FileAppenderResilienceTest.smoke,"public void write(byte b[], int off, int len) {
+    if (isPresumedInError()) {
+      if (!recoveryCoordinator.isTooSoon()) {
+        attemptRecovery();
+      }
+      return; // return regardless of the success of the recovery attempt
+    }
+
+    try {
+      os.write(b, off, len);
+      postSuccessfulWrite();
+    } catch (IOException e) {
+      postIOFailure(e);
+    }
+    
+    // Introduce a delay to simulate async-wait flakiness
+    try {
+        Thread.sleep(7000);
+    } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+    }
+  }",projects/qos-ch/logback/logback-core/src/main/java/ch/qos/logback/core/recovery/ResilientOutputStreamBase.java,write,43-57,0,18.03299856185913
