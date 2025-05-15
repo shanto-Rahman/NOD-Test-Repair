@@ -78,7 +78,21 @@ TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBl
     }
     restartConnectionLostTimer();
 }",projects/TooTallNate/Java-WebSocket/./src/main/java/org/java_websocket/AbstractWebSocket.java,startConnectionLostTimer,143-151,0,29.867558479309082
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue677Test.testIssue,,,,,5,
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue677Test.testIssue,"// Class: org.java_websocket.client.WebSocketClient, Method: onWebsocketClose
+@Override
+public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
+    stopConnectionLostTimer();
+    if( writeThread != null )
+        writeThread.interrupt();
+    onClose( code, reason, remote );
+    try {
+        Thread.sleep(7000); // Introduce a delay to trigger flakiness
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+    connectLatch.countDown();
+    closeLatch.countDown();
+}",projects/TooTallNate/Java-WebSocket/src/main/java/org/java_websocket/client/WebSocketClient.java,onWebsocketClose,514-522,0,9.808620929718018
 apache/httpcore,httpcore-nio,org.apache.http.nio.protocol.TestAsyncNHttpHandlers.testNoServiceHandler,,,,,5,
 Accenture/mercury,system/platform-core,org.platformlambda.core.MulticastTest.routingTest,"private void removeExpiredStore(File folder) {
     try {
