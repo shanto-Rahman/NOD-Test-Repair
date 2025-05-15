@@ -90,10 +90,29 @@ def find_class_file(class_name, slug, module):
     
     return None
 
+# Filter out methods with empty or trivial bodies
+def is_non_empty_body(body):
+    code_lines = [line.strip() for line in body.strip().splitlines() if line.strip()]
+    return len(code_lines) > 1  # >1 to ensure at least one actual code line beyond signature
+
+def is_synchronized_signature(body):
+    lines = [line.strip() for line in body.strip().splitlines() if line.strip()]
+    for line in lines:
+        if line.startswith("@"):
+            continue  # Skip annotations like @Override
+        return "synchronized" in line
+    return False
+
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 10
     tried_methods = set()
+    #Making code_under_test_meths with the Class
+    code_under_test_meths = "\n\n".join(
+    f"// Class: {row['Class']}, Method: {row['Method']}\n{row['Body']}"
+    for _, row in filtered_df.iterrows()
+    )
+
     prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
     messages = [
         {"role": "system", "content": definition},
@@ -187,6 +206,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
                 out = result_run.stdout.strip()
                 print("***out****")
+                #exit()
                 firstLine = out.splitlines()[0]
 
                 print("*** test_run result, Script output: ",firstLine)
@@ -225,8 +245,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 print(e.stderr)
         else:
             print(f"No LineRange found for {method_name}")
-
-
     return meth_code, class_path, method_name, line_range, retry_count, firstLine # retry_count = cot count
      
    
@@ -508,9 +526,15 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
         lambda x: int(x.split("-")[1]) - int(x.split("-")[0]) + 1 if "-" in x else 0
     )
-    
+
+    print(ranked_df["Body"])
+    ranked_df["HasBody"] = ranked_df["Body"].apply(is_non_empty_body)
+    ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
+ 
     # Filter by LineSpan < 30, then get top 20
-    depth_filtered_df = ranked_df[ranked_df["LineSpan"] <= 30].head(30)
+    depth_filtered_df = ranked_df[(ranked_df["LineSpan"] <= 30) & 
+                                  (ranked_df["HasBody"]) &
+                                  (~ranked_df["IsSynchronized"])].head(30)
     depth_filtered_df.to_csv("lll.csv", index=False) 
     #print(depth_filtered_df)
     #print('****',slug, module, test, len(depth_filtered_df))
