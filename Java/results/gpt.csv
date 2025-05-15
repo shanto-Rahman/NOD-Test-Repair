@@ -533,3 +533,42 @@ qos-ch/logback,logback-core,ch.qos.logback.core.FileAppenderResilienceTest.smoke
         Thread.currentThread().interrupt();
     }
   }",projects/qos-ch/logback/logback-core/src/main/java/ch/qos/logback/core/recovery/ResilientOutputStreamBase.java,write,43-57,0,18.03299856185913
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest.receiveGoAway,,,,,10,86.02441740036011
+undertow-io/undertow,websockets-jsr,io.undertow.websockets.jsr.test.JsrWebSocketServer07Test.testErrorHandling,,,,,10,159.93996858596802
+undertow-io/undertow,websockets-jsr,io.undertow.websockets.jsr.test.JsrWebSocketServer08Test.testErrorHandling,,,,,10,171.35608792304993
+undertow-io/undertow,websockets-jsr,io.undertow.websockets.jsr.test.JsrWebSocketServer13Test.testErrorHandling,,,,,10,160.50522756576538
+vmware/admiral,adapter/registry,com.vmware.admiral.adapter.registry.service.RegistryAdapterServiceTest.testDockerHubListImageTags,,,,,10,185.7386646270752
+vmware/admiral,adapter/registry,com.vmware.admiral.adapter.registry.service.RegistryAdapterServiceTest.testSameRegistryAsGlobalAndProject,,,,,10,121.65399885177612
+vmware/admiral,adapter/registry,com.vmware.admiral.adapter.registry.service.RegistryAdapterServiceTest.testSameRegistryTwoDifferentProjectsNotRemoveOldTenantLinkShouldFail,,,,,10,113.76316404342651
+Alluxio/alluxio,.,tachyon.DataServerTest.readTest,,,,,10,772.1099619865417
+Alluxio/alluxio,.,tachyon.WorkerServiceHandlerTest.evictionTest,"@Override
+public Command worker_heartbeat(long workerId, long usedBytes, List<Long> removedBlockIds)
+    throws BlockInfoException, TException {
+  try {
+    Thread.sleep(7000); // Introduced delay to trigger test failure
+  } catch (InterruptedException e) {
+    Thread.currentThread().interrupt();
+  }
+  return mMasterInfo.workerHeartbeat(workerId, usedBytes, removedBlockIds);
+}",projects/Alluxio/alluxio/src/main/java/tachyon/MasterServiceHandler.java,worker_heartbeat,288-292,2,205.70752024650574
+Alluxio/alluxio,.,tachyon.client.TachyonFSTest.deleteFileTest,"public boolean delete(String path, boolean recursive) throws IOException {
+    File file = new File(path);
+    boolean success = true;
+    if (recursive && file.isDirectory()) {
+      String[] files = file.list();
+      for (String child : files) {
+        success = success && delete(path + ""/"" + child, true);
+      }
+    }
+    
+    try {
+      Thread.sleep(7000); // Introduce delay to simulate async-wait flakiness
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+
+    return success && file.delete();
+  }",projects/Alluxio/alluxio/src/main/java/tachyon/UnderFileSystemSingleLocal.java,delete,49-61,0,154.09682989120483
+Alluxio/alluxio,.,tachyon.client.TachyonFSTest.lockBlockTest1,,,,,10,316.6949837207794
+Alluxio/alluxio,.,tachyon.client.TachyonFSTest.unlockBlockTest1,,,,,10,323.42444896698
+Alluxio/alluxio,.,tachyon.client.TachyonFSTest.unlockBlockTest3,,,,,10,425.8558268547058
