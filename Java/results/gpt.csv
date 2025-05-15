@@ -430,3 +430,24 @@ doanduyhai/Achilles,integration-test-3_7,info.archinnov.achilles.it.TestEntityWi
 doanduyhai/Achilles,integration-test-3_7,info.archinnov.achilles.it.TestEntityWithSASIIndices.should_search_using_like,,,,,10,206.30048060417175
 doanduyhai/Achilles,integration-test-3_7,info.archinnov.achilles.it.TestEntityWithSASIIndices.should_search_using_like_non_tokenizer,,,,,10,215.1564474105835
 doanduyhai/Achilles,integration-test-3_7,info.archinnov.achilles.it.TestEntityWithSASIIndices.should_search_using_prefix_non_tokenizer,,,,,10,162.06742238998413
+feroult/yawp,yawp-testing/yawp-testing-appengine,io.yawp.testing.appengine.pipes.flow.FlowDropsTest.testFlowDropsToSameSink,,,,,10,101.19120454788208
+fluent/fluent-logger-java,.,org.fluentd.logger.TestFluentLogger.testInMultiThreading,"public boolean enableReconnection(long timestamp) {
+        int size = errorHistory.size();
+        if (size == 0) {
+            try {
+                Thread.sleep(7000); // Introduced delay to trigger flakiness
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return true;
+        }
+
+        double suppressMillis;
+        if (size < waitMaxCount) {
+            suppressMillis = WAIT_MILLIS * Math.pow(WAIT_INCR_RATE, size - 1);
+        } else {
+            suppressMillis = WAIT_MAX_MILLIS;
+        }
+
+        return (timestamp - errorHistory.getLast()) >= suppressMillis;
+    }",projects/fluent/fluent-logger-java/src/main/java/org/fluentd/logger/sender/ExponentialDelayReconnector.java,enableReconnection,52-66,2,353.3668110370636
