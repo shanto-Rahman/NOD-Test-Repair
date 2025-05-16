@@ -1,0 +1,225 @@
+Class,Method,Descriptor,Body,LineRange,CallDepth
+org.fluentd.logger.FluentLoggerFactory,<init>,()V,"public FluentLoggerFactory() {
+        loggers = new WeakHashMap<FluentLogger, String>();
+    }",38-40,-1
+org.fluentd.logger.FluentLoggerFactory,getLogger,(Ljava/lang/String;Ljava/lang/String;IIILorg/fluentd/logger/sender/Reconnector;)Lorg/fluentd/logger/FluentLogger;,"public FluentLogger getLogger(String tagPrefix) {
+        return getLogger(tagPrefix, ""localhost"", 24224);
+    }",42-44,-1
+org.fluentd.logger.FluentLoggerFactory,getLogger,(Ljava/lang/String;Ljava/lang/String;III)Lorg/fluentd/logger/FluentLogger;,"public FluentLogger getLogger(String tagPrefix) {
+        return getLogger(tagPrefix, ""localhost"", 24224);
+    }",42-44,-1
+org.fluentd.logger.FluentLoggerFactory,purgeLogger,(Lorg/fluentd/logger/FluentLogger;)V,"protected synchronized void purgeLogger(FluentLogger logger) {
+		Iterator<Entry<FluentLogger, String>> it = loggers.entrySet().iterator();
+		while (it.hasNext()) {
+			if (it.next().getKey() == logger) {
+				it.remove();
+				return;
+			}
+		}
+	}",88-96,-1
+org.fluentd.logger.FluentLogger,getLogger,(Ljava/lang/String;Ljava/lang/String;I)Lorg/fluentd/logger/FluentLogger;,"public static FluentLogger getLogger(String tagPrefix) {
+        return factory.getLogger(tagPrefix, ""localhost"", 24224);
+    }",31-33,-1
+org.fluentd.logger.FluentLogger,<init>,(Ljava/lang/String;Lorg/fluentd/logger/sender/Sender;)V,"protected FluentLogger() {
+    }",67-68,-1
+org.fluentd.logger.FluentLogger,log,(Ljava/lang/String;Ljava/util/Map;J)Z,"public boolean log(String tag, String key, Object value) {
+        return log(tag, key, value, 0);
+    }",75-77,-1
+org.fluentd.logger.FluentLogger,log,(Ljava/lang/String;Ljava/util/Map;)Z,"public boolean log(String tag, String key, Object value) {
+        return log(tag, key, value, 0);
+    }",75-77,-1
+org.fluentd.logger.FluentLogger,flush,()V,"public void flush() {
+        sender.flush();
+    }",105-107,-1
+org.fluentd.logger.FluentLogger,close,()V,"public void close() {
+        if (sender != null) {
+            sender.flush();
+            sender.close();
+            sender = null;
+        }
+        factory.purgeLogger(this);
+    }",109-116,1
+org.fluentd.logger.sender.ExponentialDelayReconnector,<init>,()V,"public ExponentialDelayReconnector() {
+        waitMaxCount = getWaitMaxCount();
+        errorHistory = new LinkedList<Long>();
+    }",21-24,3
+org.fluentd.logger.sender.ExponentialDelayReconnector,getWaitMaxCount,()I,"private int getWaitMaxCount() {
+        double r = WAIT_MAX_MILLIS / WAIT_MILLIS;
+        for (int j = 1; j <= 100; j++) {
+            if (r < WAIT_INCR_RATE) {
+                return j + 1;
+            }
+            r = r / WAIT_INCR_RATE;
+        }
+        return 100;
+    }",26-35,4
+org.fluentd.logger.sender.ExponentialDelayReconnector,clearErrorHistory,()V,"public void clearErrorHistory() {
+        errorHistory.clear();
+    }",48-50,-1
+org.fluentd.logger.sender.ExponentialDelayReconnector,enableReconnection,(J)Z,"public boolean enableReconnection(long timestamp) {
+            int size = errorHistory.size();
+            if (size == 0) {
+                try {
+                    Thread.sleep(7000); // Introduced delay to trigger flakiness
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                return true;
+            }
+    
+            double suppressMillis;
+            if (size < waitMaxCount) {
+                suppressMillis = WAIT_MILLIS * Math.pow(WAIT_INCR_RATE, size - 1);
+            } else {
+                suppressMillis = WAIT_MAX_MILLIS;
+            }
+    
+            return (timestamp - errorHistory.getLast()) >= suppressMillis;
+        }",54-73,-1
+org.fluentd.logger.sender.RawSocketSender,<init>,(Ljava/lang/String;IIILorg/fluentd/logger/sender/Reconnector;)V,"public RawSocketSender() {
+        this(""localhost"", 24224);
+    }",58-60,-1
+org.fluentd.logger.sender.RawSocketSender,connect,()V,"private void connect() throws IOException {
+        try {
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(host, port), timeout);
+            out = new BufferedOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            throw e;
+        }
+    }",82-90,-1
+org.fluentd.logger.sender.RawSocketSender,reconnect,()V,"private void reconnect() throws IOException {
+        if (socket == null) {
+            connect();
+        } else if (socket.isClosed() || (!socket.isConnected())) {
+            close();
+            connect();
+        }
+    }",92-99,-1
+org.fluentd.logger.sender.RawSocketSender,close,()V,"@Override
+    public synchronized void close() {
+        // close output stream
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) { // ignore
+            } finally {
+                out = null;
+            }
+        }
+
+        // close socket
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch (IOException e) { // ignore
+            } finally {
+                socket = null;
+            }
+        }
+    }",101-122,-1
+org.fluentd.logger.sender.RawSocketSender,emit,(Ljava/lang/String;Ljava/util/Map;)Z,"@Override
+    public boolean emit(String tag, Map<String, Object> data) {
+        return emit(tag, System.currentTimeMillis() / 1000, data);
+    }",124-127,-1
+org.fluentd.logger.sender.RawSocketSender,emit,(Lorg/fluentd/logger/sender/Event;)Z,"@Override
+    public boolean emit(String tag, Map<String, Object> data) {
+        return emit(tag, System.currentTimeMillis() / 1000, data);
+    }",124-127,-1
+org.fluentd.logger.sender.RawSocketSender,emit,(Ljava/lang/String;JLjava/util/Map;)Z,"@Override
+    public boolean emit(String tag, Map<String, Object> data) {
+        return emit(tag, System.currentTimeMillis() / 1000, data);
+    }",124-127,-1
+org.fluentd.logger.sender.RawSocketSender,send,([B)Z,"private synchronized boolean send(byte[] bytes) {
+        // buffering
+        if (pendings.position() + bytes.length > pendings.capacity()) {
+            if (!flushBuffer()) {
+                return false;
+            }
+            if (bytes.length > pendings.remaining()) {
+                LOG.error(""Log data {} larger than remaining buffer size {}"", bytes.length, pendings.remaining());
+                return false;
+            }
+        }
+        pendings.put(bytes);
+
+        // suppress reconnection burst
+        if (!reconnector.enableReconnection(System.currentTimeMillis())) {
+            return true;
+        }
+
+        // send pending data
+        flush();
+
+        return true;
+    }",165-187,-1
+org.fluentd.logger.sender.RawSocketSender,flush,()V,"@Override
+    public synchronized void flush() {
+        try {
+            // check whether connection is established or not
+            reconnect();
+            // write data
+            out.write(getBuffer());
+            out.flush();
+            clearBuffer();
+            reconnector.clearErrorHistory();
+        } catch (IOException e) {
+            try {
+                errorHandler.handleNetworkError(e);
+            }
+            catch (Exception handlerException) {
+                LOG.warn(""ErrorHandler.handleNetworkError failed"", handlerException);
+            }
+            LOG.error(this.getClass().getName(), ""flush"", e);
+            reconnector.addErrorHistory(System.currentTimeMillis());
+            close();
+        }
+    }",189-210,-1
+org.fluentd.logger.sender.RawSocketSender,getBuffer,()[B,"synchronized byte[] getBuffer() {
+        int len = pendings.position();
+        pendings.position(0);
+        byte[] ret = new byte[len];
+        pendings.get(ret, 0, len);
+        return ret;
+    }",212-218,-1
+org.fluentd.logger.sender.RawSocketSender,clearBuffer,()V,"private void clearBuffer() {
+        pendings.clear();
+    }",220-222,-1
+org.fluentd.logger.sender.RawSocketSender$1,<init>,()V,"public RawSocketSender() {
+        this(""localhost"", 24224);
+    }",58-60,-1
+org.fluentd.logger.sender.Event$EventTemplate,<init>,()V,"public Event() {
+    }",36-37,-1
+org.fluentd.logger.sender.Event$EventTemplate,write,(Lorg/msgpack/packer/Packer;Lorg/fluentd/logger/sender/Event;Z)V,"public void write(Packer pk, Event v, boolean required) throws IOException {
+            if (v == null) {
+                if (required) {
+                    throw new MessageTypeException(""Attempted to write null"");
+                }
+                pk.writeNil();
+                return;
+            }
+
+            pk.writeArrayBegin(3);
+            {
+                Templates.TString.write(pk, v.tag, required);
+                Templates.TLong.write(pk, v.timestamp, required);
+                pk.writeMapBegin(v.data.size());
+                {
+                    for (Map.Entry<String, Object> entry : v.data.entrySet()) {
+                        Templates.TString.write(pk, entry.getKey(), required);
+                        try {
+                            pk.write(entry.getValue());
+                        } catch (MessageTypeException e) {
+                            String val = entry.getValue().toString();
+                            Templates.TString.write(pk, val, required);
+                        }
+                    }
+                }
+                pk.writeMapEnd();
+            }
+            pk.writeArrayEnd();
+        }",58-86,-1
+org.fluentd.logger.sender.Event,<init>,(Ljava/lang/String;JLjava/util/Map;)V,"public Event() {
+    }",36-37,-1
+org.fluentd.logger.sender.Event,<init>,()V,"public Event() {
+    }",36-37,-1

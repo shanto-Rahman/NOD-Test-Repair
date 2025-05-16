@@ -1,0 +1,8 @@
+Depth,Method
+0,com.vmware.admiral.adapter.registry.service.RegistryAdapterServiceTest:testSameRegistryAsGlobalAndProject()
+1,java.util.List:add(java.lang.Object)
+1,"com.vmware.admiral.adapter.registry.service.RegistryAdapterServiceTest:doPost(com.vmware.xenon.common.ServiceDocument,java.lang.String)"
+1,com.vmware.admiral.service.common.RegistryService$RegistryState:<init>()
+1,java.util.ArrayList:<init>()
+2,com.vmware.admiral.service.common.MultiTenantDocument:<init>()
+3,com.vmware.xenon.common.ServiceDocument:<init>()

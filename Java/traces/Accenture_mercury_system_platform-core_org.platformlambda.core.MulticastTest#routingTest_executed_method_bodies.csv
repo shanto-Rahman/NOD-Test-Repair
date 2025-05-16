@@ -1,0 +1,2385 @@
+Class,Method,Descriptor,Body,LineRange
+org.platformlambda.core.models.VersionInfo,getArtifactId,()Ljava/lang/String;,"public String getArtifactId() {
+        return artifactId;
+    }",29-31
+org.platformlambda.core.models.VersionInfo,setGroupId,(Ljava/lang/String;)Lorg/platformlambda/core/models/VersionInfo;,"public VersionInfo setGroupId(String groupId) {
+        this.groupId = groupId;
+        return this;
+    }",37-40
+org.platformlambda.core.models.VersionInfo,setArtifactId,(Ljava/lang/String;)Lorg/platformlambda/core/models/VersionInfo;,"public VersionInfo setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+        return this;
+    }",42-45
+org.platformlambda.core.models.VersionInfo,setVersion,(Ljava/lang/String;)Lorg/platformlambda/core/models/VersionInfo;,"public VersionInfo setVersion(String version) {
+        this.version = version;
+        return this;
+    }",47-50
+org.platformlambda.core.models.ProcessStatus,isDelivered,()Z,"public boolean isDelivered() {
+        return delivered;
+    }",40-42
+org.platformlambda.core.models.ProcessStatus,setExecutionTime,(F)Lorg/platformlambda/core/models/ProcessStatus;,"public ProcessStatus setExecutionTime(float executionTime) {
+        this.executionTime = executionTime;
+        this.success = true;
+        return this;
+    }",48-52
+org.platformlambda.core.models.ProcessStatus,setInputOutput,(Ljava/util/Map;)Lorg/platformlambda/core/models/ProcessStatus;,"public ProcessStatus setInputOutput(Map<String, Object> inputOutput) {
+        this.inputOutput = inputOutput;
+        return this;
+    }",62-65
+org.platformlambda.core.models.EventEnvelope,<init>,()V,"public EventEnvelope() {
+        this.id = Utility.getInstance().getUuid();
+    }",115-117
+org.platformlambda.core.models.EventEnvelope,getTo,()Ljava/lang/String;,"public String getTo() {
+        return to;
+    }",131-133
+org.platformlambda.core.models.EventEnvelope,getFrom,()Ljava/lang/String;,"public String getFrom() {
+        return from;
+    }",135-137
+org.platformlambda.core.models.EventEnvelope,getReplyTo,()Ljava/lang/String;,"public String getReplyTo() {
+        return replyTo;
+    }",139-141
+org.platformlambda.core.models.EventEnvelope,getTraceId,()Ljava/lang/String;,"public String getTraceId() {
+        return traceId;
+    }",143-145
+org.platformlambda.core.models.EventEnvelope,getTracePath,()Ljava/lang/String;,"public String getTracePath() {
+        return tracePath;
+    }",147-149
+org.platformlambda.core.models.EventEnvelope,getCorrelationId,()Ljava/lang/String;,"public String getCorrelationId() {
+        return cid;
+    }",151-153
+org.platformlambda.core.models.EventEnvelope,getExtra,()Ljava/lang/String;,"public String getExtra() {
+        return extra;
+    }",155-157
+org.platformlambda.core.models.EventEnvelope,getStatus,()I,"public int getStatus() {
+        return status == null? 200 : status;
+    }",159-161
+org.platformlambda.core.models.EventEnvelope,getBroadcastLevel,()I,"public int getBroadcastLevel() {
+        return broadcastLevel;
+    }",171-173
+org.platformlambda.core.models.EventEnvelope,isEndOfRoute,()Z,"public boolean isEndOfRoute() {
+        return endOfRoute;
+    }",175-177
+org.platformlambda.core.models.EventEnvelope,isBinary,()Z,"public boolean isBinary() {
+        return binary;
+    }",179-181
+org.platformlambda.core.models.EventEnvelope,getHeaders,()Ljava/util/Map;,"public Map<String, String> getHeaders() {
+        return headers;
+    }",201-203
+org.platformlambda.core.models.EventEnvelope,getParametricType,()Ljava/lang/String;,"public String getParametricType() {
+        return parametricType;
+    }",205-207
+org.platformlambda.core.models.EventEnvelope,getType,()Ljava/lang/String;,"public String getType() {
+        return type;
+    }",209-211
+org.platformlambda.core.models.EventEnvelope,isOptional,()Z,"public boolean isOptional() {
+        return optional;
+    }",213-215
+org.platformlambda.core.models.EventEnvelope,getRawBody,()Ljava/lang/Object;,"public Object getRawBody() {
+        return body;
+    }",222-224
+org.platformlambda.core.models.EventEnvelope,getBody,()Ljava/lang/Object;,"@SuppressWarnings(""unchecked"")
+    public Object getBody() {
+        if (!encoded) {
+            if (type == null) {
+                setBody(body);
+            }
+            TypedPayload typed = new TypedPayload(type, body);
+            if (parametricType != null) {
+                typed.setParametricType(parametricType);
+            }
+            try {
+                // validate class name in safe data model list
+                if (typed.getType().contains(""."")) {
+                    SimpleMapper.getInstance().getSafeMapper(typed.getType());
+                }
+                Object obj = converter.decode(typed);
+                if (obj instanceof PoJoList) {
+                    PoJoList<Object> list = (PoJoList<Object>) obj;
+                    encodedBody = list.getList();
+                } else {
+                    encodedBody = obj;
+                }
+
+            } catch (Exception e) {
+                log.warn(""Fall back to Map - {}"", simpleError(e.getMessage()));
+                encodedBody = body;
+            }
+            encoded = true;
+        }
+        return optional? Optional.ofNullable(encodedBody) : encodedBody;
+    }",231-261
+org.platformlambda.core.models.EventEnvelope,setTo,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setTo(String to) {
+        this.to = to;
+        return this;
+    }",334-337
+org.platformlambda.core.models.EventEnvelope,setFrom,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setFrom(String from) {
+        this.from = from;
+        return this;
+    }",345-348
+org.platformlambda.core.models.EventEnvelope,setReplyTo,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
+        return this;
+    }",356-359
+org.platformlambda.core.models.EventEnvelope,setTraceId,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setTraceId(String traceId) {
+        this.traceId = traceId;
+        return this;
+    }",382-385
+org.platformlambda.core.models.EventEnvelope,setTracePath,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setTracePath(String tracePath) {
+        this.tracePath = tracePath;
+        return this;
+    }",394-397
+org.platformlambda.core.models.EventEnvelope,setCorrelationId,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setCorrelationId(String cid) {
+        this.cid = cid;
+        return this;
+    }",405-408
+org.platformlambda.core.models.EventEnvelope,setExtra,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setExtra(String extra) {
+        this.extra = extra;
+        return this;
+    }",419-422
+org.platformlambda.core.models.EventEnvelope,extraToKeyValues,()Ljava/util/Map;,"private Map<String, String> extraToKeyValues() {
+        Map<String, String> map = new HashMap<>();
+        List<String> tags = Utility.getInstance().split(this.extra, ""|"");
+        for (String t: tags) {
+            int sep = t.indexOf('=');
+            if (sep != -1) {
+                map.put(t.substring(0, sep), t.substring(sep+1));
+            } else {
+                map.put(t, """");
+            }
+        }
+        return map;
+    }",424-436
+org.platformlambda.core.models.EventEnvelope,getTag,(Ljava/lang/String;)Ljava/lang/String;,"public String getTag(String key) {
+        return key != null && key.length() > 0? extraToKeyValues().get(key) : null;
+    }",501-503
+org.platformlambda.core.models.EventEnvelope,setStatus,(I)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setStatus(int status) {
+        this.status = status;
+        return this;
+    }",511-514
+org.platformlambda.core.models.EventEnvelope,setHeaders,(Ljava/util/Map;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setHeaders(Map<String, String> headers) {
+        // make a shallow copy
+        if (headers != null) {
+            headers.forEach(this::setHeader);
+        }
+        return this;
+    }",570-576
+org.platformlambda.core.models.EventEnvelope,setBody,(Ljava/lang/Object;)Lorg/platformlambda/core/models/EventEnvelope;,"@SuppressWarnings(""unchecked"")
+    public EventEnvelope setBody(Object body) {
+        final Object payload;
+        if (body instanceof Optional) {
+            this.optional = true;
+            Optional<Object> o = (Optional<Object>) body;
+            payload = o.orElse(null);
+        } else if (body instanceof EventEnvelope) {
+            EventEnvelope nested = (EventEnvelope) body;
+            log.warn(""Setting body from nested EventEnvelope is discouraged - system will remove the outer envelope"");
+            return setBody(nested.getBody());
+        } else if (body instanceof AsyncHttpRequest) {
+            AsyncHttpRequest request = (AsyncHttpRequest) body;
+            return setBody(request.toMap());
+        } else {
+            payload = body;
+        }
+        // encode body and save object type
+        this.encoded = true;
+        this.encodedBody = payload instanceof Date? Utility.getInstance().date2str((Date) payload) : payload;
+        TypedPayload typed = converter.encode(payload, binary);
+        this.body = typed.getPayload();
+        this.type = typed.getType();
+        this.parametricType = typed.getParametricType();
+        return this;
+    }",584-609
+org.platformlambda.core.models.EventEnvelope,setBroadcastLevel,(I)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setBroadcastLevel(int level) {
+        this.broadcastLevel = level;
+        return this;
+    }",660-663
+org.platformlambda.core.models.EventEnvelope,setBinary,(Z)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setBinary(boolean binary) {
+        this.binary = binary;
+        return this;
+    }",687-690
+org.platformlambda.core.models.EventEnvelope,setType,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setType(String type) {
+        this.type = type;
+        return this;
+    }",700-703
+org.platformlambda.core.models.EventEnvelope,setParametricType,(Ljava/lang/String;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope setParametricType(Class<?>... parameterClass) {
+        StringBuilder sb = new StringBuilder();
+        for (Class<?> cls: parameterClass) {
+            sb.append(cls.getName());
+            sb.append(',');
+        }
+        if (sb.length() > 0) {
+            this.parametricType = sb.substring(0, sb.length()-1);
+        }
+        return this;
+    }",712-722
+org.platformlambda.core.models.EventEnvelope,copy,()Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope copy() {
+        EventEnvelope event = new EventEnvelope();
+        event.encodedBody = this.encodedBody;
+        event.body = this.body;
+        event.setTo(this.getTo());
+        event.setHeaders(this.getHeaders());
+        event.setType(this.getType());
+        event.setParametricType(this.getParametricType());
+        event.setBroadcastLevel(this.getBroadcastLevel());
+        event.setFrom(this.getFrom());
+        event.setBinary(this.isBinary());
+        event.setCorrelationId(this.getCorrelationId());
+        if (this.isEndOfRoute()) {
+            event.setEndOfRoute();
+        }
+        event.setExtra(this.getExtra());
+        event.setStatus(this.getStatus());
+        event.setReplyTo(this.getReplyTo());
+        event.setTraceId(this.getTraceId());
+        event.setTracePath(this.getTracePath());
+        return event;
+    }",736-757
+org.platformlambda.core.models.EventEnvelope,load,([B)V,"@SuppressWarnings(""unchecked"")
+    public void load(byte[] bytes) throws IOException {
+        Object o = msgPack.unpack(bytes);
+        if (o instanceof Map) {
+            Utility util = Utility.getInstance();
+            Map<String, Object> message = (Map<String, Object>) o;
+            if (message.containsKey(ID_FLAG)) {
+                id = (String) message.get(ID_FLAG);
+            }
+            if (message.containsKey(TO_FLAG)) {
+                to = (String) message.get(TO_FLAG);
+            }
+            if (message.containsKey(FROM_FLAG)) {
+                from = (String) message.get(FROM_FLAG);
+            }
+            if (message.containsKey(REPLY_TO_FLAG)) {
+                replyTo = (String) message.get(REPLY_TO_FLAG);
+            }
+            if (message.containsKey(TRACE_ID_FLAG)) {
+                traceId = (String) message.get(TRACE_ID_FLAG);
+            }
+            if (message.containsKey(TRACE_PATH_FLAG)) {
+                tracePath = (String) message.get(TRACE_PATH_FLAG);
+            }
+            if (message.containsKey(CID_FLAG)) {
+                cid = (String) message.get(CID_FLAG);
+            }
+            if (message.containsKey(EXTRA_FLAG)) {
+                extra = (String) message.get(EXTRA_FLAG);
+            }
+            if (message.containsKey(OPTIONAL_FLAG)) {
+                optional = true;
+            }
+            if (message.containsKey(STATUS_FLAG)) {
+                if (message.get(STATUS_FLAG) instanceof Integer) {
+                    status = Math.max(0, (Integer) message.get(STATUS_FLAG));
+                } else {
+                    status = Math.max(0, util.str2int(message.get(STATUS_FLAG).toString()));
+                }
+            }
+            if (message.containsKey(HEADERS_FLAG)) {
+                setHeaders((Map<String, String>) message.get(HEADERS_FLAG));
+            }
+            if (message.containsKey(END_ROUTE_FLAG)) {
+                endOfRoute = (Boolean) message.get(END_ROUTE_FLAG);
+            }
+            if (message.get(BROADCAST_FLAG) instanceof Integer) {
+                broadcastLevel = (Integer) message.get(BROADCAST_FLAG);
+            }
+            if (message.containsKey(BODY_FLAG)) {
+                body = message.get(BODY_FLAG);
+            }
+            if (message.containsKey(EXCEPTION_FLAG)) {
+                exceptionBytes = (byte[]) message.get(EXCEPTION_FLAG);
+            }
+            if (message.containsKey(OBJ_TYPE_FLAG)) {
+                type = (String) message.get(OBJ_TYPE_FLAG);
+            }
+            if (message.containsKey(PARA_TYPES_FLAG)) {
+                parametricType = (String) message.get(PARA_TYPES_FLAG);
+            }
+            if (message.containsKey(EXECUTION_FLAG)) {
+                if (message.get(EXECUTION_FLAG) instanceof Float) {
+                    executionTime = Math.max(0, (Float) message.get(EXECUTION_FLAG));
+                } else {
+                    executionTime = Math.max(0, util.str2float((message.get(EXECUTION_FLAG).toString())));
+                }
+            }
+            if (message.containsKey(ROUND_TRIP_FLAG)) {
+                if (message.get(ROUND_TRIP_FLAG) instanceof Float) {
+                    roundTrip = Math.max(0, (Float) message.get(ROUND_TRIP_FLAG));
+                } else {
+                    roundTrip = Math.max(0, util.str2float((message.get(ROUND_TRIP_FLAG).toString())));
+                }
+            }
+            if (message.containsKey(JSON_FLAG)) {
+                binary = false;
+            }
+        }
+    }",765-844
+org.platformlambda.core.models.EventEnvelope,toBytes,()[B,"public byte[] toBytes() throws IOException {
+        Map<String, Object> message = new HashMap<>();
+        if (id != null) {
+            message.put(ID_FLAG, id);
+        }
+        if (to != null) {
+            message.put(TO_FLAG, to);
+        }
+        if (from != null) {
+            message.put(FROM_FLAG, from);
+        }
+        if (replyTo != null) {
+            message.put(REPLY_TO_FLAG, replyTo);
+        }
+        if (traceId != null) {
+            message.put(TRACE_ID_FLAG, traceId);
+        }
+        if (tracePath != null) {
+            message.put(TRACE_PATH_FLAG, tracePath);
+        }
+        if (cid != null) {
+            message.put(CID_FLAG, cid);
+        }
+        if (extra != null) {
+            message.put(EXTRA_FLAG, extra);
+        }
+        if (status != null) {
+            message.put(STATUS_FLAG, status);
+        }
+        if (!headers.isEmpty()) {
+            message.put(HEADERS_FLAG, headers);
+        }
+        if (endOfRoute) {
+            message.put(END_ROUTE_FLAG, true);
+        }
+        if (broadcastLevel > 0) {
+            message.put(BROADCAST_FLAG, broadcastLevel);
+        }
+        if (optional) {
+            message.put(OPTIONAL_FLAG, true);
+        }
+        if (body != null) {
+            message.put(BODY_FLAG, body);
+        }
+        if (exceptionBytes != null) {
+            message.put(EXCEPTION_FLAG, exceptionBytes);
+        }
+        if (type != null) {
+            message.put(OBJ_TYPE_FLAG, type);
+        }
+        if (parametricType != null) {
+            message.put(PARA_TYPES_FLAG, parametricType);
+        }
+        if (executionTime != null) {
+            message.put(EXECUTION_FLAG, executionTime);
+        }
+        if (roundTrip != null) {
+            message.put(ROUND_TRIP_FLAG, roundTrip);
+        }
+        if (!binary) {
+            message.put(JSON_FLAG, true);
+        }
+        return msgPack.pack(message);
+    }",865-928
+org.platformlambda.core.models.TraceInfo,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V,"public TraceInfo(String route, String id, String path) {
+        this.route = route;
+        this.startTime = Utility.getInstance().date2str(new Date());
+        if (id == null) {
+            this.id = null;
+            this.path = null;
+        } else {
+            this.id = id;
+            this.path = path;
+        }
+    }",35-45
+org.platformlambda.core.models.TypedPayload,<init>,(Ljava/lang/String;Ljava/lang/Object;)V,"public TypedPayload(String type, Object payload) {
+        this.type = type;
+        this.payload = payload;
+    }",27-30
+org.platformlambda.core.models.TypedPayload,getType,()Ljava/lang/String;,"public String getType() {
+        return type;
+    }",32-34
+org.platformlambda.core.models.TypedPayload,getPayload,()Ljava/lang/Object;,"public Object getPayload() {
+        return payload;
+    }",36-38
+org.platformlambda.core.models.TypedPayload,getParametricType,()Ljava/lang/String;,"public String getParametricType() {
+        return parametricType;
+    }",45-47
+org.platformlambda.core.models.TargetRoute,<init>,(Lorg/platformlambda/core/system/ServiceQueue;Z)V,"public TargetRoute(ServiceQueue manager, boolean cloud) {
+        this.manager = manager;
+        this.cloud = cloud;
+    }",28-31
+org.platformlambda.core.models.TargetRoute,isCloud,()Z,"public boolean isCloud() {
+        return cloud;
+    }",33-35
+org.platformlambda.core.models.TargetRoute,getManager,()Lorg/platformlambda/core/system/ServiceQueue;,"public ServiceQueue getManager() {
+        return manager;
+    }",37-39
+org.platformlambda.core.util.ElasticQueue,<init>,(Ljava/lang/String;)V,"public ElasticQueue(String id) {
+        this.id = util.validServiceName(id)? id : util.filteredServiceName(id);
+        resetCounter();
+        if (initCounter.incrementAndGet() == 1) {
+            Platform platform = Platform.getInstance();
+            try {
+                platform.registerPrivate(CLEAN_UP_TASK, new Cleanup(), 1);
+            } catch (IOException e) {
+                log.error(""Unable to register {} - {}"", CLEAN_UP_TASK, e.getMessage());
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(ElasticQueue::shutdown));
+            AppConfigReader config = AppConfigReader.getInstance();
+            runningInCloud = ""true"".equals(config.getProperty(""running.in.cloud"", ""false""));
+            File tmpRoot = new File(config.getProperty(""transient.data.store"", ""/tmp/reactive""));
+            if (runningInCloud) {
+                dbFolder = tmpRoot;
+            } else {
+                String instanceId = platform.getName() + ""-"" + platform.getOrigin();
+                dbFolder = new File(tmpRoot, instanceId);
+            }
+            if (!dbFolder.exists() && dbFolder.mkdirs()) {
+                log.info(""{} created"", dbFolder);
+            }
+            // save a signature file first
+            util.str2file(new File(dbFolder, RUNNING), util.getTimestamp());
+            /*
+             * Normally the system should initialize commit log before using the elastic queue.
+             */
+            boolean deferred = ""true"".equals(config.getProperty(""deferred.commit.log"", ""false""));
+            if (!deferred) {
+                getDatabase();
+                log.info(""Commit log started"");
+            }
+            scanExpiredStores(tmpRoot);
+            platform.getVertx().setPeriodic(KEEP_ALIVE_INTERVAL, t -> keepAlive());
+            platform.getVertx().setPeriodic(HOUSEKEEPING_INTERVAL, t -> housekeeping());
+            log.info(""Housekeeper started"");
+        }
+        if (initCounter.get() > 10000) {
+            initCounter.set(10);
+        }
+    }",78-119
+org.platformlambda.core.util.ElasticQueue,close,()V,"@Override
+    public void close() {
+        if (!isClosed()) {
+            if (dbEnv != null && !dbEnv.isClosed()) {
+                if (readCounter < writeCounter && writeCounter > MEMORY_BUFFER) {
+                    try {
+                        EventEmitter.getInstance().send(CLEAN_UP_TASK, id + SLASH + currentVersion);
+                    } catch (IOException e) {
+                        log.error(""Unable to run {} - {}"", CLEAN_UP_TASK, e.getMessage());
+                    }
+                } else {
+                    dbEnv.cleanLog();
+                }
+            }
+            resetCounter();
+        }
+    }",180-196
+org.platformlambda.core.util.ElasticQueue,isClosed,()Z,"public boolean isClosed() {
+        return writeCounter == 0;
+    }",213-215
+org.platformlambda.core.util.ElasticQueue,shutdown,()V,"private static void shutdown() {
+        if (dbLoaded) {
+            dbLoaded = false;
+            try {
+                db.close();
+            } catch (Exception e) {
+                log.debug(""Exception while closing - {}"", e.getMessage());
+            }
+            try {
+                dbEnv.close();
+            } catch (Exception e) {
+                log.debug(""Exception while closing - {}"", e.getMessage());
+            }
+            if (dbFolder.exists()) {
+                util.cleanupDir(dbFolder, runningInCloud);
+                log.info(""Holding area {} cleared"", dbFolder);
+            }
+        }
+    }",217-235
+org.platformlambda.core.util.ElasticQueue,resetCounter,()V,"private void resetCounter() {
+        if (!empty) {
+            empty = true;
+            readCounter = writeCounter = 0;
+            memory.clear();
+            currentVersion = generation.incrementAndGet();
+        }
+    }",237-244
+org.platformlambda.core.util.ElasticQueue,setupCommitLog,(Ljava/io/File;)V,"private static void setupCommitLog(File dir) {
+        try {
+            long t1 = System.currentTimeMillis();
+            dbEnv = new Environment(dir,
+                    new EnvironmentConfig()
+                            .setAllowCreate(true)
+                            .setConfigParam(EnvironmentConfig.MAX_DISK, ""0"")
+                            .setConfigParam(EnvironmentConfig.FREE_DISK, ""0""));
+            dbEnv.checkpoint(new CheckpointConfig().setMinutes(1));
+            db = dbEnv.openDatabase(null, ""kv"",
+                    new DatabaseConfig().setAllowCreate(true).setTemporary(false));
+            dbLoaded = true;
+            long diff = System.currentTimeMillis() - t1;
+            log.info(""Created holding area {} in {} ms"", dir, diff);
+
+        } catch (Exception e) {
+            log.error(""Unable to create holding area in {} - {}"", dir, e.getMessage());
+            System.exit(-1);
+        }
+    }",246-265
+org.platformlambda.core.util.ElasticQueue,getDatabase,()Lcom/sleepycat/je/Database;,"private static Database getDatabase() {
+        if (db == null) {
+            lock.lock();
+            try {
+                if (dbEnv == null) {
+                    setupCommitLog(dbFolder);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        return db;
+    }",267-279
+org.platformlambda.core.util.ElasticQueue,read,()[B,"public byte[] read() {
+        if (peeked != null) {
+            byte[] result = peeked;
+            peeked = null;
+            return result;
+        }
+        if (readCounter >= writeCounter) {
+            // catch up with writes and thus nothing to read
+            close();
+            return null;
+        }
+        if (readCounter < MEMORY_BUFFER) {
+            byte[] event = memory.poll();
+            if (event != null) {
+                readCounter++;
+            }
+            return event;
+        }
+        boolean hasRecord = false;
+        String key = id + SLASH + currentVersion + SLASH + util.zeroFill(readCounter, MAX_EVENTS);
+        DatabaseEntry k = new DatabaseEntry(util.getUTF(key));
+        DatabaseEntry v = new DatabaseEntry();
+        try {
+            OperationStatus status = getDatabase().get(null, k, v, LockMode.DEFAULT);
+            if (status == OperationStatus.SUCCESS) {
+                // must be an exact match
+                String ks = util.getUTF(k.getData());
+                if (ks.equals(key)) {
+                    hasRecord = true;
+                    readCounter++;
+                    return v.getData();
+                } else {
+                    log.error(""Expected {}, Actual: {}"", key, ks);
+                }
+            }
+            return null;
+        } finally {
+            if (hasRecord) {
+                db.delete(null, k);
+            }
+        }
+    }",304-345
+org.platformlambda.core.util.ElasticQueue,scanExpiredStores,(Ljava/io/File;)V,"private void scanExpiredStores(File tmpRoot) {
+        if (runningInCloud) {
+            removeExpiredStore(tmpRoot);
+        } else {
+            File[] dirs = tmpRoot.listFiles();
+            if (dirs != null) {
+                for (File d : dirs) {
+                    if (d.isDirectory()) {
+                        removeExpiredStore(d);
+                    }
+                }
+            }
+        }
+    }",347-360
+org.platformlambda.core.util.ElasticQueue,removeExpiredStore,(Ljava/io/File;)V,"private void removeExpiredStore(File folder) {
+        File f = new File(folder, RUNNING);
+        if (f.exists()) {
+            if (System.currentTimeMillis() - f.lastModified() > ONE_HOUR) {
+                util.cleanupDir(folder, runningInCloud);
+                log.info(""Holding area {} expired"", folder);
+            }
+        } else {
+            util.cleanupDir(folder, runningInCloud);
+            log.warn(""Unknown holding area {} removed"", folder);
+        }
+    }",362-373
+org.platformlambda.core.util.AppConfigReader,getInstance,()Lorg/platformlambda/core/util/AppConfigReader;,"public static AppConfigReader getInstance() {
+        return INSTANCE;
+    }",36-38
+org.platformlambda.core.util.AppConfigReader,<init>,()V,"private AppConfigReader() {
+        ConfigReader.setBaseConfig(this);
+        /*
+         * Load application.properties
+         * property substitution not required because this is the top level config file
+         */
+        propReader = new ConfigReader();
+        try {
+            propReader.load(APP_PROPS);
+        } catch (IOException e) {
+            // ok to ignore
+        }
+        /*
+         * Load application.yml
+         * property substitution not required because this is the top level config file
+         */
+        yamlReader = new ConfigReader();
+        try {
+            yamlReader.load(APP_YML);
+        } catch (IOException e) {
+            // ok to ignore
+        }
+        if (propReader.isEmpty() && yamlReader.isEmpty()) {
+            log.error(""Application config not loaded. Please check {} or {}"", APP_PROPS, APP_YML);
+        }
+    }",46-71
+org.platformlambda.core.util.AppConfigReader,get,(Ljava/lang/String;)Ljava/lang/Object;,"@Override
+    public Object get(String key) {
+        return propReader.exists(key) ? propReader.get(key) : yamlReader.get(key);
+    }",79-82
+org.platformlambda.core.util.AppConfigReader,getProperty,(Ljava/lang/String;)Ljava/lang/String;,"@Override
+    public String getProperty(String key) {
+        Object value = get(key);
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            return value == null? null : String.valueOf(value);
+        }
+    }",104-112
+org.platformlambda.core.util.AppConfigReader,getProperty,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,"@Override
+    public String getProperty(String key) {
+        Object value = get(key);
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            return value == null? null : String.valueOf(value);
+        }
+    }",104-112
+org.platformlambda.core.util.MultiLevelMap,<init>,(Ljava/util/Map;)V,"public MultiLevelMap() {
+        this.multiLevels = new HashMap<>();
+    }",32-34
+org.platformlambda.core.util.MultiLevelMap,getMap,()Ljava/util/Map;,"public Map<String, Object> getMap() {
+        return multiLevels;
+    }",50-52
+org.platformlambda.core.util.MultiLevelMap,getElement,(Ljava/lang/String;)Ljava/lang/Object;,"public Object getElement(String compositePath) {
+        Object element = getElement(compositePath, multiLevels);
+        return element instanceof NotFound? null : element;
+    }",95-98
+org.platformlambda.core.util.MultiLevelMap,getElement,(Ljava/lang/String;Ljava/util/Map;)Ljava/lang/Object;,"public Object getElement(String compositePath) {
+        Object element = getElement(compositePath, multiLevels);
+        return element instanceof NotFound? null : element;
+    }",95-98
+org.platformlambda.core.util.MultiLevelMap,getListElement,(Ljava/util/List;Ljava/util/List;)Ljava/lang/Object;,"@SuppressWarnings(""unchecked"")
+    private Object getListElement(List<Integer> indexes, List<Object> data) {
+        List<Object> current = data;
+        int n = 0;
+        int len = indexes.size();
+        for (Integer i: indexes) {
+            n++;
+            if (i < 0 || i >= current.size()) {
+                break;
+            }
+            Object o = current.get(i);
+            if (n == len) {
+                return o;
+            }
+            if (o instanceof List) {
+                current = (List<Object>) o;
+            } else {
+                break;
+            }
+        }
+        return null;
+    }",115-136
+org.platformlambda.core.util.MultiLevelMap,setElement,(Ljava/lang/String;Ljava/lang/Object;Ljava/util/Map;Z)V,"public MultiLevelMap setElement(String compositePath, Object value) {
+        validateCompositePathSyntax(compositePath);
+        setElement(compositePath, value, multiLevels, false);
+        return this;
+    }",199-203
+org.platformlambda.core.util.MultiLevelMap,setElement,(Ljava/lang/String;Ljava/lang/Object;)Lorg/platformlambda/core/util/MultiLevelMap;,"public MultiLevelMap setElement(String compositePath, Object value) {
+        validateCompositePathSyntax(compositePath);
+        setElement(compositePath, value, multiLevels, false);
+        return this;
+    }",199-203
+org.platformlambda.core.util.MultiLevelMap,setListElement,(Ljava/util/List;Ljava/util/List;Ljava/lang/Object;)V,"@SuppressWarnings(""unchecked"")
+    private void setListElement(List<Integer> indexes, List<Object> dataset, Object value) {
+        List<Object> current = expandList(indexes, dataset);
+        int len = indexes.size();
+        for (int i=0; i < len; i++) {
+            int idx = indexes.get(i);
+            if (i == len - 1) {
+                current.set(idx, value);
+            } else {
+                Object o = current.get(idx);
+                if (o instanceof List) {
+                    current = (List<Object>) o;
+                }
+            }
+        }
+    }",287-302
+org.platformlambda.core.util.MultiLevelMap,expandList,(Ljava/util/List;Ljava/util/List;)Ljava/util/List;,"@SuppressWarnings(""unchecked"")
+    private List<Object> expandList(List<Integer> indexes, List<Object> dataset) {
+        List<Object> current = dataset;
+        int len = indexes.size();
+        for (int i=0; i < len; i++) {
+            int idx = indexes.get(i);
+            if (idx >= current.size()) {
+                int diff = idx - current.size();
+                while (diff-- >= 0) {
+                    current.add(null);
+                }
+            }
+            if (i == len - 1) {
+                break;
+            }
+            Object o = current.get(idx);
+            if (o instanceof List) {
+                current = (List<Object>) o;
+            } else {
+                List<Object> newList = new ArrayList<>();
+                current.set(idx, newList);
+                current = newList;
+            }
+        }
+        return dataset;
+    }",304-329
+org.platformlambda.core.util.MultiLevelMap,isComposite,(Ljava/lang/String;)Z,"private boolean isComposite(String item) {
+        return item.contains(""."") || item.contains(""/"") || item.contains(""["") || item.contains(""]"");
+    }",331-333
+org.platformlambda.core.util.MultiLevelMap,isListElement,(Ljava/lang/String;)Z,"private boolean isListElement(String item) {
+        return (item.contains(""["") && item.endsWith(""]"") && !item.startsWith(""[""));
+    }",335-337
+org.platformlambda.core.util.MultiLevelMap,getIndexes,(Ljava/lang/String;)Ljava/util/List;,"private List<Integer> getIndexes(String indexSegment) {
+        Utility util = Utility.getInstance();
+        List<String> indexes = util.split(indexSegment, ""[]"");
+        List<Integer> result = new ArrayList<>();
+        for (String s: indexes) {
+            result.add(util.str2int(s));
+        }
+        return result;
+    }",339-347
+org.platformlambda.core.util.MultiLevelMap,validateCompositePathSyntax,(Ljava/lang/String;)V,"public void validateCompositePathSyntax(String path) {
+        Utility util = Utility.getInstance();
+        List<String> segments = util.split(path, ""./"");
+        if (segments.isEmpty()) {
+            throw new IllegalArgumentException(""Missing composite path"");
+        }
+        for (String s: segments) {
+            if (s.contains(""["") || s.contains(""]"")) {
+                if (!s.contains(""["")) {
+                    throw new IllegalArgumentException(""Invalid composite path - missing start bracket"");
+                }
+                if (!s.endsWith(""]"")) {
+                    throw new IllegalArgumentException(""Invalid composite path - missing end bracket"");
+                }
+                // check start-end pair
+                int sep1 = s.indexOf('[');
+                int sep2 = s.indexOf(']');
+                if (sep2 < sep1) {
+                    throw new IllegalArgumentException(""Invalid composite path - missing start bracket"");
+                }
+                boolean start = false;
+                for (char c: s.substring(sep1).toCharArray()) {
+                    if (c == '[') {
+                        if (start) {
+                            throw new IllegalArgumentException(""Invalid composite path - missing end bracket"");
+                        } else {
+                            start = true;
+                        }
+                    } else if (c == ']') {
+                        if (!start) {
+                            throw new IllegalArgumentException(""Invalid composite path - duplicated end bracket"");
+                        } else {
+                            start = false;
+                        }
+                    } else {
+                        if (start) {
+                            if (c < '0' || c > '9') {
+                                throw new IllegalArgumentException(""Invalid composite path - indexes must be digits"");
+                            }
+                        } else {
+                            throw new IllegalArgumentException(""Invalid composite path - invalid indexes"");
+                        }
+                    }
+                }
+            }
+        }
+    }",355-401
+org.platformlambda.core.util.ConfigReader,setBaseConfig,(Lorg/platformlambda/core/util/AppConfigReader;)V,"public static void setBaseConfig(AppConfigReader config) {
+        if (ConfigReader.baseConfig == null) {
+            ConfigReader.baseConfig = config;
+        }
+    }",63-67
+org.platformlambda.core.util.ConfigReader,get,(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/String;)Ljava/lang/Object;,"@Override
+    public Object get(String key) {
+        return get(key, null);
+    }",90-93
+org.platformlambda.core.util.ConfigReader,get,(Ljava/lang/String;)Ljava/lang/Object;,"@Override
+    public Object get(String key) {
+        return get(key, null);
+    }",90-93
+org.platformlambda.core.util.ConfigReader,getSystemProperty,(Ljava/lang/String;)Ljava/lang/String;,"private String getSystemProperty(String key) {
+        if (key.isEmpty()) {
+            return null;
+        }
+        return System.getProperty(key);
+    }",95-100
+org.platformlambda.core.util.ConfigReader,getProperty,(Ljava/lang/String;)Ljava/lang/String;,"@Override
+    public String getProperty(String key) {
+        Object o = get(key);
+        return o != null? String.valueOf(o) : null;
+    }",178-182
+org.platformlambda.core.util.ConfigReader,getMap,()Ljava/util/Map;,"public Map<String, Object> getMap() {
+        return isNormalized? config.getMap() : properties;
+    }",203-205
+org.platformlambda.core.util.ConfigReader,exists,(Ljava/lang/String;)Z,"@Override
+    public boolean exists(String key) {
+        if (key == null || key.length() == 0) {
+            return false;
+        }
+        return isNormalized? config.exists(key) : properties.containsKey(key);
+    }",213-219
+org.platformlambda.core.util.ConfigReader,isEmpty,()Z,"@Override
+    public boolean isEmpty() {
+        return isNormalized? config.isEmpty() : properties.isEmpty();
+    }",226-229
+org.platformlambda.core.util.ConfigReader,load,(Ljava/lang/String;)V,"@SuppressWarnings(""unchecked"")
+    public void load(String path) throws IOException {
+        InputStream in = null;
+        if (path.startsWith(CLASSPATH)) {
+            in = ConfigReader.class.getResourceAsStream(path.substring(CLASSPATH.length()));
+        } else if (path.startsWith(FILEPATH)) {
+            try {
+                in = Files.newInputStream(Paths.get(path.substring(FILEPATH.length())));
+            } catch (IOException e) {
+                // ok to ignore
+            }
+        } else {
+            in = ConfigReader.class.getResourceAsStream(path);
+        }
+        if (in == null) {
+            throw new IOException(path+"" not found"");
+        }
+        try {
+            if (path.endsWith(YML) || path.endsWith(YAML)) {
+                Yaml yaml = new Yaml();
+                String data = Utility.getInstance().stream2str(in);
+                Map<String, Object> m = yaml.load(data.contains(""\t"")? data.replace(""\t"", ""  "") : data);
+                enforceKeysAsText(m);
+                config = new MultiLevelMap(normalizeMap(m));
+                isNormalized = true;
+            } else if (path.endsWith(JSON)) {
+                Map<String, Object> m = SimpleMapper.getInstance().getMapper().readValue(in, Map.class);
+                enforceKeysAsText(m);
+                config = new MultiLevelMap(normalizeMap(m));
+                isNormalized = true;
+            } else if (path.endsWith(DOT_PROPERTIES)) {
+                properties = new HashMap<>();
+                Properties p = new Properties();
+                p.load(in);
+                p.forEach((k, v) -> properties.put(String.valueOf(k), v));
+                isNormalized = false;
+            }
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                //
+            }
+        }
+    }",237-281
+org.platformlambda.core.util.ConfigReader,normalizeMap,(Ljava/util/Map;)Ljava/util/Map;,"private Map<String, Object> normalizeMap(Map<String, Object> map) {
+        Map<String, Object> flat = Utility.getInstance().getFlatMap(map);
+        MultiLevelMap multiMap = new MultiLevelMap(new HashMap<>());
+        flat.forEach(multiMap::setElement);
+        return multiMap.getMap();
+    }",294-299
+org.platformlambda.core.util.ConfigReader,enforceKeysAsText,(Ljava/util/Map;)V,"@SuppressWarnings({""rawtypes"", ""unchecked""})
+    private void enforceKeysAsText(Map raw) {
+        Set keys = new HashSet(raw.keySet());
+        for (Object k: keys) {
+            Object v = raw.get(k);
+            // key is assumed to be string
+            if (!(k instanceof String)) {
+                raw.remove(k);
+                raw.put(String.valueOf(k), v);
+            }
+            if (v instanceof Map) {
+                enforceKeysAsText((Map) v);
+            }
+        }
+    }",301-315
+org.platformlambda.core.util.SimpleCache,<init>,(Ljava/lang/String;J)V,"private SimpleCache(String name, long expiryMs) {
+        this.name = name;
+        this.expiry = expiryMs;
+        if (INIT_COUNTER.incrementAndGet() == 1) {
+            Platform.getInstance().getVertx().setPeriodic(HOUSEKEEPING_INTERVAL, t -> removeExpiredCache());
+            log.info(""Housekeeper started"");
+        }
+        if (INIT_COUNTER.get() > 10000) {
+            INIT_COUNTER.set(10);
+        }
+    }",52-62
+org.platformlambda.core.util.SimpleCache,createCache,(Ljava/lang/String;J)Lorg/platformlambda/core/util/SimpleCache;,"public static synchronized SimpleCache createCache(String name, long expiryMs) {
+        SimpleCache simpleCache = getInstance(name);
+        if (simpleCache != null) {
+            return simpleCache;
+        }
+        long expiryTimer = Math.max(expiryMs, MIN_EXPIRY);
+        simpleCache = new SimpleCache(name, expiryTimer);
+        COLLECTION.put(name, simpleCache);
+        String timer = Utility.getInstance().elapsedTime(expiryTimer);
+        log.info(""Created cache ({}), expiry {}"", name, timer);
+        return simpleCache;
+    }",71-82
+org.platformlambda.core.util.SimpleCache,getInstance,(Ljava/lang/String;)Lorg/platformlambda/core/util/SimpleCache;,"public static SimpleCache getInstance(String name) {
+        return COLLECTION.get(name);
+    }",84-86
+org.platformlambda.core.util.Utility,getInstance,()Lorg/platformlambda/core/util/Utility;,"public static Utility getInstance() {
+        return instance;
+    }",106-108
+org.platformlambda.core.util.Utility,getJarList,(Ljava/lang/String;)Ljava/util/List;,"private List<String> getJarList(String path) {
+        List<String> list = new ArrayList<>();
+        try (ScanResult scan = new ClassGraph().acceptPathsNonRecursive(path).scan()) {
+            ResourceList resources = scan.getResourcesWithExtension(JAR);
+            for (Resource r: resources) {
+                String name = r.getPath();
+                name = name.substring(0, name.length() - JAR.length() - 1);
+                list.add(name.contains(""/"")? name.substring(name.lastIndexOf('/') + 1) : name);
+            }
+        }
+        return list;
+    }",110-121
+org.platformlambda.core.util.Utility,scanLibInfo,()V,"private void scanLibInfo() {
+        if (!loaded) {
+            synchronized (ORDERLY_SCAN) {
+                List<String> list = new ArrayList<>();
+                for (String r : JAR_PATHS) {
+                    list.addAll(getJarList(r));
+                }
+                if (list.size() > 1) {
+                    Collections.sort(list);
+                }
+                libs = list;
+                // Get default version info from application.properties
+                AppConfigReader reader = AppConfigReader.getInstance();
+                String name = filteredServiceName(reader.getProperty(SPRING_APPNAME,
+                        reader.getProperty(APPNAME, DEFAULT_APPNAME)));
+                versionInfo.setGroupId("""");
+                versionInfo.setArtifactId(name);
+                versionInfo.setVersion(reader.getProperty(APP_VERSION, DEFAULT_APP_VERSION));
+                // get version information from JAR if not running in IDE
+                if (!list.isEmpty()) {
+                    // find /META-INF/maven/*/{ApplicationName}/pom.properties
+                    String pomFileName = ""/"" + name + ""/pom.properties"";
+                    try (ScanResult scan = new ClassGraph().acceptPaths(POM_PROPERTIES).scan()) {
+                        ResourceList resources = scan.getResourcesWithExtension(""properties"");
+                        for (Resource r: resources) {
+                            if (r.getPath().endsWith(pomFileName)) {
+                                Properties p = new Properties();
+                                p.load(new ByteArrayInputStream(stream2bytes(r.open())));
+                                if (p.containsKey(GROUP_ID) && p.containsKey(ARTIFACT_ID) &&
+                                        p.containsKey(VERSION) && name.equals(p.getProperty(ARTIFACT_ID))) {
+                                        versionInfo.setGroupId(p.getProperty(GROUP_ID))
+                                                    .setVersion(p.getProperty(VERSION));
+                                }
+                                break;
+                            }
+                        }
+                    } catch (IOException ignore) {
+                        // ok to ignore
+                    }
+                }
+            }
+            loaded = true;
+        }
+    }",123-166
+org.platformlambda.core.util.Utility,getVersionInfo,()Lorg/platformlambda/core/models/VersionInfo;,"public VersionInfo getVersionInfo() {
+        scanLibInfo();
+        return versionInfo;
+    }",168-171
+org.platformlambda.core.util.Utility,getPackageName,()Ljava/lang/String;,"public String getPackageName() {
+        return getVersionInfo().getArtifactId();
+    }",178-180
+org.platformlambda.core.util.Utility,getUuid,()Ljava/lang/String;,"public String getUuid() {
+        return UUID.randomUUID().toString().replace(""-"", """");
+    }",194-196
+org.platformlambda.core.util.Utility,split,(Ljava/lang/String;Ljava/lang/String;Z)Ljava/util/List;,"public List<String> split(String str, String chars) {
+        return split(str, chars, false);
+    }",214-216
+org.platformlambda.core.util.Utility,split,(Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;,"public List<String> split(String str, String chars) {
+        return split(str, chars, false);
+    }",214-216
+org.platformlambda.core.util.Utility,getFlatMap,(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V,"public Map<String, Object> getFlatMap(Map<String, Object> src) {
+        Map<String, Object> target = new HashMap<>();
+        getFlatMap(null, src, target);
+        return target;
+    }",262-266
+org.platformlambda.core.util.Utility,getFlatMap,(Ljava/util/Map;)Ljava/util/Map;,"public Map<String, Object> getFlatMap(Map<String, Object> src) {
+        Map<String, Object> target = new HashMap<>();
+        getFlatMap(null, src, target);
+        return target;
+    }",262-266
+org.platformlambda.core.util.Utility,getTimestamp,(J)Ljava/lang/String;,"public String getTimestamp() {
+        return getTimestamp(System.currentTimeMillis());
+    }",314-316
+org.platformlambda.core.util.Utility,getTimestamp,()Ljava/lang/String;,"public String getTimestamp() {
+        return getTimestamp(System.currentTimeMillis());
+    }",314-316
+org.platformlambda.core.util.Utility,getDateOnly,(Ljava/util/Date;)Ljava/lang/String;,"public String getDateOnly(Date date) {
+        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), UTC_TIME);
+        return zdt.format(DATE_ONLY);
+    }",333-336
+org.platformlambda.core.util.Utility,stream2bytes,(Ljava/io/InputStream;Z)[B,"public byte[] stream2bytes(InputStream stream) {
+        return stream2bytes(stream, true);
+    }",387-389
+org.platformlambda.core.util.Utility,stream2bytes,(Ljava/io/InputStream;ZI)[B,"public byte[] stream2bytes(InputStream stream) {
+        return stream2bytes(stream, true);
+    }",387-389
+org.platformlambda.core.util.Utility,stream2bytes,(Ljava/io/InputStream;)[B,"public byte[] stream2bytes(InputStream stream) {
+        return stream2bytes(stream, true);
+    }",387-389
+org.platformlambda.core.util.Utility,stream2str,(Ljava/io/InputStream;)Ljava/lang/String;,"public String stream2str(InputStream stream) {
+        return getUTF(stream2bytes(stream));
+    }",435-437
+org.platformlambda.core.util.Utility,str2file,(Ljava/io/File;Ljava/lang/String;)Z,"public boolean str2file(File f, String s) {
+        return bytes2file(f, getUTF(s));
+    }",439-441
+org.platformlambda.core.util.Utility,bytes2file,(Ljava/io/File;[B)Z,"public boolean bytes2file(File f, byte[] b) {
+        try (FileOutputStream out = new FileOutputStream(f)) {
+            out.write(b);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }",443-450
+org.platformlambda.core.util.Utility,str2int,(Ljava/lang/String;)I,"public int str2int(String str) {
+        if (str == null || str.length() == 0) {
+            return -1;
+        }
+        try {
+            // drop decimal point
+            int dot = str.indexOf('.');
+            return Integer.parseInt(dot > 0 ? str.substring(0, dot) : str);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }",517-528
+org.platformlambda.core.util.Utility,getUTF,([B)Ljava/lang/String;,"public byte[] getUTF(String str) {
+        if (str == null || str.length() == 0) return new byte[0];
+        return str.getBytes(StandardCharsets.UTF_8);
+    }",602-605
+org.platformlambda.core.util.Utility,getUTF,(Ljava/lang/String;)[B,"public byte[] getUTF(String str) {
+        if (str == null || str.length() == 0) return new byte[0];
+        return str.getBytes(StandardCharsets.UTF_8);
+    }",602-605
+org.platformlambda.core.util.Utility,validServiceName,(Ljava/lang/String;)Z,"public boolean validServiceName(String str) {
+        if (str == null || str.length() == 0) return false;
+        if (str.startsWith(""."") || str.startsWith(""_"") || str.startsWith(""-"")
+                || str.contains("".."")
+                || str.endsWith(""."") || str.endsWith(""_"") || str.endsWith(""-"")) return false;
+        for (int i=0; i < str.length(); i++) {
+            if (str.charAt(i) >= '0' && str.charAt(i) <= '9') continue;
+            if (str.charAt(i) >= 'a' && str.charAt(i) <= 'z') continue;
+            if (str.charAt(i) == '.' || str.charAt(i) == '_' || str.charAt(i) == '-') continue;
+            return false;
+        }
+        return true;
+    }",619-631
+org.platformlambda.core.util.Utility,filteredServiceName,(Ljava/lang/String;)Ljava/lang/String;,"public String filteredServiceName(String name) {
+        String str = name.toLowerCase();
+        boolean dot = true;
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i < str.length(); i++) {
+            if (dot) {
+                if (str.charAt(i) == '.') {
+                    continue;
+                } else {
+                    dot = false;
+                }
+            }
+            if (str.charAt(i) >= '0' && str.charAt(i) <= '9') {
+                sb.append(str.charAt(i));
+                continue;
+            }
+            if (str.charAt(i) >= 'a' && str.charAt(i) <= 'z') {
+                sb.append(str.charAt(i));
+                continue;
+            }
+            if (str.charAt(i) == '.' || str.charAt(i) == '_' || str.charAt(i) == '-') {
+                sb.append(str.charAt(i));
+            }
+        }
+        return sb.toString();
+    }",633-658
+org.platformlambda.core.util.Utility,reservedFilename,(Ljava/lang/String;)Z,"public boolean reservedFilename(String name) {
+        for (String filename: RESERVED_FILENAMES) {
+            if (name.equals(filename)) {
+                return true;
+            }
+        }
+        return false;
+    }",660-667
+org.platformlambda.core.util.Utility,reservedExtension,(Ljava/lang/String;)Z,"public boolean reservedExtension(String name) {
+        for (String ext: RESERVED_EXTENSIONS) {
+            if (name.endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
+    }",669-676
+org.platformlambda.core.util.Utility,date2str,(Ljava/util/Date;)Ljava/lang/String;,"public String date2str(Date date) {
+        return date2str(date, false);
+    }",678-680
+org.platformlambda.core.util.Utility,date2str,(Ljava/util/Date;Z)Ljava/lang/String;,"public String date2str(Date date) {
+        return date2str(date, false);
+    }",678-680
+org.platformlambda.core.util.Utility,isDigits,(Ljava/lang/String;)Z,"public boolean isDigits(String str) {
+        if (str == null) {
+            return false;
+        }
+        for (int i=0; i < str.length(); i++) {
+            if (str.charAt(i) >= '0' && str.charAt(i) <= '9') continue;
+            return false;
+        }
+        return str.length() > 0;
+    }",816-825
+org.platformlambda.core.util.Utility,elapsedTime,(J)Ljava/lang/String;,"public String elapsedTime(long milliseconds) {
+        StringBuilder sb = new StringBuilder();
+        long time = milliseconds;
+        if (time > ONE_DAY_MS) {
+            long days = time / ONE_DAY_MS;
+            sb.append(days);
+            sb.append(days == 1? "" day "" : "" days "");
+            time -= days * ONE_DAY_MS;
+        }
+        if (time > ONE_HOUR_MS) {
+            long hours = time / ONE_HOUR_MS;
+            sb.append(hours);
+            sb.append(hours == 1? "" hour "" : "" hours "");
+            time -= hours * ONE_HOUR_MS;
+        }
+        if (time > ONE_MINUTE_MS) {
+            long minutes = time / ONE_MINUTE_MS;
+            sb.append(minutes);
+            sb.append(minutes == 1? "" minute "" : "" minutes "");
+            time -= minutes * ONE_MINUTE_MS;
+        }
+        if (time >= ONE_SECOND_MS) {
+            long seconds = time / ONE_SECOND_MS;
+            sb.append(seconds);
+            sb.append(seconds == 1 ? "" second"" : "" seconds"");
+        }
+        return sb.length() == 0? time + "" ms"" : sb.toString().trim();
+    }",999-1026
+org.platformlambda.core.serializers.PayloadMapper,getInstance,()Lorg/platformlambda/core/serializers/PayloadMapper;,"public static PayloadMapper getInstance() {
+        return PAYLOAD_MAPPER_INSTANCE;
+    }",39-41
+org.platformlambda.core.serializers.PayloadMapper,encode,(Ljava/lang/Object;Z)Lorg/platformlambda/core/models/TypedPayload;,"@SuppressWarnings(""unchecked"")
+    public TypedPayload encode(Object obj, boolean binary) {
+        if (obj == null) {
+            return new TypedPayload(NOTHING, null);
+        } else if (obj instanceof Map) {
+            return new TypedPayload(MAP, obj);
+        } else if (obj instanceof Object[]) {
+            return encodeList(Arrays.asList((Object[]) obj), binary);
+        } else if (obj instanceof List) {
+            return encodeList((List<Object>) obj, binary);
+        } else if (obj instanceof Date) {
+            return new TypedPayload(PRIMITIVE, Utility.getInstance().date2str((Date) obj));
+        } else if (isPrimitive(obj)) {
+            return new TypedPayload(PRIMITIVE, obj);
+        } else {
+            return getTypedPayload(obj, binary);
+        }
+    }",43-60
+org.platformlambda.core.serializers.PayloadMapper,decode,(Lorg/platformlambda/core/models/TypedPayload;)Ljava/lang/Object;,"public Object decode(TypedPayload typed) throws ClassNotFoundException {
+        String type = typed.getType();
+        if (NOTHING.equals(type)) {
+            return null;
+        }
+        if (PRIMITIVE.equals(type) || LIST.equals(type) || MAP.equals(type)) {
+            return typed.getPayload();
+        }
+        if (type.contains(""."")) {
+            Class<?> cls = getClassByName(type);
+            if (cls != null) {
+                List<String> paraClass = Utility.getInstance().split(typed.getParametricType(), "", "");
+                SimpleObjectMapper mapper = SimpleMapper.getInstance().getMapper();
+                if (paraClass.isEmpty()) {
+                    return mapper.readValue(typed.getPayload(), cls);
+                } else {
+                    Class<?>[] paraClsList = new Class<?>[paraClass.size()];
+                    for (int i=0; i < paraClass.size(); i++) {
+                        Class<?> pc = getClassByName(paraClass.get(i));
+                        if (pc == null) {
+                            throw new ClassNotFoundException(paraClass.get(i)+"" not found"");
+                        }
+                        paraClsList[i] = pc;
+                    }
+                    return mapper.restoreGeneric(typed.getPayload(), cls, paraClsList);
+                }
+            } else {
+                throw new ClassNotFoundException(type+"" not found"");
+            }
+
+        } else {
+            return typed.getPayload();
+        }
+    }",108-141
+org.platformlambda.core.serializers.PayloadMapper,isPrimitive,(Ljava/lang/Object;)Z,"public boolean isPrimitive(Object obj) {
+        return (obj instanceof String || obj instanceof byte[] || obj instanceof Number || obj instanceof Boolean);
+    }",162-164
+org.platformlambda.core.serializers.MsgPack,unpack,([BII)Ljava/lang/Object;,"@SuppressWarnings(""unchecked"")
+    public Object unpack(byte[] bytes) throws IOException  {
+        Object result = unpack(bytes, 0, bytes.length);
+        if (result instanceof Map) {
+            // is this an encoded payload
+            Map<String, Object> map = (Map<String, Object>) result;
+            if (map.containsKey(TYPE)) {
+                if (map.size() == 2 && map.containsKey(DATA)) {
+                    try {
+                        return converter.decode(new TypedPayload((String) map.get(TYPE), map.get(DATA)));
+                    } catch (ClassNotFoundException e) {
+                        return map.get(DATA);
+                    }
+                }
+                if (map.size() == 1 && map.get(TYPE).equals(PayloadMapper.NOTHING)) {
+                    return null;
+                }
+            }
+        }
+        return result;
+    }",48-68
+org.platformlambda.core.serializers.MsgPack,unpack,([B)Ljava/lang/Object;,"@SuppressWarnings(""unchecked"")
+    public Object unpack(byte[] bytes) throws IOException  {
+        Object result = unpack(bytes, 0, bytes.length);
+        if (result instanceof Map) {
+            // is this an encoded payload
+            Map<String, Object> map = (Map<String, Object>) result;
+            if (map.containsKey(TYPE)) {
+                if (map.size() == 2 && map.containsKey(DATA)) {
+                    try {
+                        return converter.decode(new TypedPayload((String) map.get(TYPE), map.get(DATA)));
+                    } catch (ClassNotFoundException e) {
+                        return map.get(DATA);
+                    }
+                }
+                if (map.size() == 1 && map.get(TYPE).equals(PayloadMapper.NOTHING)) {
+                    return null;
+                }
+            }
+        }
+        return result;
+    }",48-68
+org.platformlambda.core.serializers.MsgPack,unpack,(Lorg/msgpack/core/MessageUnpacker;Ljava/util/Map;)Ljava/util/Map;,"@SuppressWarnings(""unchecked"")
+    public Object unpack(byte[] bytes) throws IOException  {
+        Object result = unpack(bytes, 0, bytes.length);
+        if (result instanceof Map) {
+            // is this an encoded payload
+            Map<String, Object> map = (Map<String, Object>) result;
+            if (map.containsKey(TYPE)) {
+                if (map.size() == 2 && map.containsKey(DATA)) {
+                    try {
+                        return converter.decode(new TypedPayload((String) map.get(TYPE), map.get(DATA)));
+                    } catch (ClassNotFoundException e) {
+                        return map.get(DATA);
+                    }
+                }
+                if (map.size() == 1 && map.get(TYPE).equals(PayloadMapper.NOTHING)) {
+                    return null;
+                }
+            }
+        }
+        return result;
+    }",48-68
+org.platformlambda.core.serializers.MsgPack,unpackValue,(Lorg/msgpack/core/MessageUnpacker;Lorg/msgpack/core/MessageFormat;)Ljava/lang/Object;,"private Object unpackValue(MessageUnpacker unpacker, MessageFormat mf) throws IOException {
+        ValueType type = mf.getValueType();
+        switch (type) {
+            case STRING:
+                return unpacker.unpackString();
+
+            /*
+             * Type information is lost for numbers.
+             * This is the best effort to keep int/long and float/double value.
+             *
+             * Make int/long handling consistent between SimpleMapper and MsgPack
+             *
+             * Note: ternary conditional operator does not work due to different return types
+             */
+            case INTEGER:
+                Long asLong = unpacker.unpackLong();
+                if (asLong > Integer.MAX_VALUE || asLong < Integer.MIN_VALUE) {
+                    return asLong;
+                } else {
+                    return asLong.intValue();
+                }
+
+            case FLOAT:
+                if (mf == MessageFormat.FLOAT64) {
+                    return unpacker.unpackDouble();
+                } else {
+                    return unpacker.unpackFloat();
+                }
+
+            case BINARY:
+                int bytesLen = unpacker.unpackBinaryHeader();
+                byte[] bytesValue = new byte[bytesLen];
+                unpacker.readPayload(bytesValue);
+                return bytesValue;
+
+            case BOOLEAN:
+                return unpacker.unpackBoolean();
+
+            case NIL:
+                unpacker.unpackNil();
+                return null;
+
+            default:
+                // for simplicity, custom types are not supported
+                unpacker.skipValue();
+                return null;
+        }
+    }",150-197
+org.platformlambda.core.serializers.MsgPack,pack,(Ljava/lang/Object;)[B,"public byte[] pack(Object obj) throws IOException {
+        if (obj instanceof Map || obj instanceof List) {
+            // select low level processing for faster performance
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            MessagePacker packer = null;
+            try {
+                packer = MessagePack.newDefaultPacker(out);
+                pack(packer, obj).close();
+                packer = null;
+            } finally {
+                if (packer != null) {
+                    packer.close();
+                }
+            }
+            return out.toByteArray();
+        } else {
+            // PoJo
+            TypedPayload typed = converter.encode(obj, true);
+            Map<String, Object> map = new HashMap<>();
+            map.put(TYPE, typed.getType());
+            map.put(DATA, typed.getPayload());
+            return pack(map);
+        }
+    }",206-229
+org.platformlambda.core.serializers.MsgPack,pack,(Lorg/msgpack/core/MessagePacker;Ljava/lang/Object;)Lorg/msgpack/core/MessagePacker;,"public byte[] pack(Object obj) throws IOException {
+        if (obj instanceof Map || obj instanceof List) {
+            // select low level processing for faster performance
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            MessagePacker packer = null;
+            try {
+                packer = MessagePack.newDefaultPacker(out);
+                pack(packer, obj).close();
+                packer = null;
+            } finally {
+                if (packer != null) {
+                    packer.close();
+                }
+            }
+            return out.toByteArray();
+        } else {
+            // PoJo
+            TypedPayload typed = converter.encode(obj, true);
+            Map<String, Object> map = new HashMap<>();
+            map.put(TYPE, typed.getType());
+            map.put(DATA, typed.getPayload());
+            return pack(map);
+        }
+    }",206-229
+org.platformlambda.core.system.WorkerHandler,<init>,(Lorg/platformlambda/core/system/ServiceDef;Ljava/lang/String;IZZZ)V,"public WorkerHandler(ServiceDef def, String route, int instance,
+                         boolean tracing, boolean interceptor, boolean useEnvelope) {
+        this.route = route;
+        this.parentRoute = route.contains(""#"")? route.substring(0, route.lastIndexOf('#')) : route;
+        this.instance = instance;
+        this.def = def;
+        this.tracing = tracing;
+        this.interceptor = interceptor;
+        this.useEnvelope = useEnvelope;
+        this.myOrigin = Platform.getInstance().getOrigin();
+    }",77-87
+org.platformlambda.core.system.WorkerHandler,executeFunction,(Lorg/platformlambda/core/models/EventEnvelope;)V,"public void executeFunction(EventEnvelope event) {
+        String rpc = event.getTag(EventEmitter.RPC);
+        EventEmitter po = EventEmitter.getInstance();
+        String ref = tracing? po.startTracing(parentRoute, event.getTraceId(), event.getTracePath(), instance) : ""?"";
+        ProcessStatus ps = processEvent(event);
+        TraceInfo trace = po.stopTracing(ref);
+        if (tracing && trace != null && trace.id != null && trace.path != null) {
+            try {
+                boolean journaled = po.isJournaled(def.getRoute());
+                if (journaled || rpc == null || !ps.isDelivered()) {
+                    // Send tracing information to distributed trace logger
+                    EventEnvelope dt = new EventEnvelope().setTo(EventEmitter.DISTRIBUTED_TRACING);
+                    Map<String, Object> payload = new HashMap<>();
+                    payload.put(ANNOTATIONS, trace.annotations);
+                    // send input/output dataset to journal if configured in journal.yaml
+                    if (journaled) {
+                        payload.put(JOURNAL, ps.getInputOutput());
+                    }
+                    Map<String, Object> metrics = new HashMap<>();
+                    metrics.put(ORIGIN, myOrigin);
+                    metrics.put(ID, trace.id);
+                    metrics.put(PATH, trace.path);
+                    metrics.put(SERVICE, def.getRoute());
+                    metrics.put(START, trace.startTime);
+                    metrics.put(SUCCESS, ps.isSuccess());
+                    metrics.put(FROM, event.getFrom() == null ? UNKNOWN : event.getFrom());
+                    metrics.put(EXEC_TIME, ps.getExecutionTime());
+                    if (!ps.isSuccess()) {
+                        metrics.put(STATUS, ps.getStatus());
+                        metrics.put(EXCEPTION, ps.getException());
+                    }
+                    if (!ps.isDelivered()) {
+                        metrics.put(REMARK, ""Response not delivered - ""+ps.getDeliveryError());
+                    }
+                    payload.put(TRACE, metrics);
+                    dt.setHeader(DELIVERED, ps.isDelivered());
+                    dt.setHeader(RPC, rpc != null);
+                    dt.setHeader(JOURNAL, journaled);
+                    po.send(dt.setBody(payload));
+                }
+            } catch (Exception e) {
+                log.error(""Unable to send to "" + EventEmitter.DISTRIBUTED_TRACING, e);
+            }
+        } else {
+            if (!ps.isDelivered()) {
+                log.error(""Delivery error - {}, from={}, to={}, type={}, exec_time={}"",
+                        ps.getDeliveryError(),
+                        event.getFrom() == null? UNKNOWN : event.getFrom(), event.getTo(),
+                        ps.isSuccess()? ""response"" : ""exception(""+ps.getStatus()+"", ""+ps.getException()+"")"",
+                        ps.getExecutionTime());
+            }
+        }
+        /*
+         * Send a ready signal to inform the system this worker is ready for next event.
+         * This guarantee that this future task is executed orderly
+         */
+        Platform.getInstance().getEventSystem().send(def.getRoute(), READY+route);
+    }",89-146
+org.platformlambda.core.system.WorkerHandler,processEvent,(Lorg/platformlambda/core/models/EventEnvelope;)Lorg/platformlambda/core/models/ProcessStatus;,"@SuppressWarnings({""rawtypes"", ""unchecked""})
+    private ProcessStatus processEvent(EventEnvelope event) {
+        Map<String, String> eventHeaders = event.getHeaders();
+        ProcessStatus ps = new ProcessStatus();
+        EventEmitter po = EventEmitter.getInstance();
+        Map<String, Object> inputOutput = new HashMap<>();
+        Map<String, Object> input = new HashMap<>();
+        input.put(HEADERS, eventHeaders);
+        input.put(BODY, event.getRawBody());
+        inputOutput.put(INPUT, input);
+        TypedLambdaFunction f = def.getFunction();
+        long begin = System.nanoTime();
+        try {
+            /*
+             * Interceptor can read any input (i.e. including case for empty headers and null body).
+             * The system therefore disables ping when the target function is an interceptor.
+             */
+            boolean ping = !interceptor && !event.isOptional() && event.getRawBody() == null && eventHeaders.isEmpty();
+            /*
+             * If the service is an interceptor or the input argument is EventEnvelope,
+             * we will pass the original event envelope instead of the message body.
+             */
+            final Object inputBody;
+            if (useEnvelope || (interceptor && def.getInputClass() == null)) {
+                inputBody = event;
+            } else {
+                if (event.getRawBody() instanceof Map && def.getInputClass() != null) {
+                    if (def.getInputClass() == AsyncHttpRequest.class) {
+                        // handle special case
+                        event.setType(null);
+                        inputBody = new AsyncHttpRequest(event.getRawBody());
+                    } else {
+                        // automatically convert Map to PoJo
+                        event.setType(def.getInputClass().getName());
+                        inputBody = event.getBody();
+                    }
+                } else {
+                    inputBody = event.getBody();
+                }
+            }
+            // Insert READ only metadata into function input headers
+            Map<String, String> parameters = new HashMap<>(eventHeaders);
+            parameters.put(MY_ROUTE, parentRoute);
+            if (event.getTraceId() != null) {
+                parameters.put(MY_TRACE_ID, event.getTraceId());
+            }
+            if (event.getTracePath() != null) {
+                parameters.put(MY_TRACE_PATH, event.getTracePath());
+            }
+            Object result = ping? null : f.handleEvent(parameters, inputBody, instance);
+            float delta = ping? 0 : (float) (System.nanoTime() - begin) / EventEmitter.ONE_MILLISECOND;
+            // adjust precision to 3 decimal points
+            float diff = Float.parseFloat(String.format(""%.3f"", Math.max(0.0f, delta)));
+            Map<String, Object> output = new HashMap<>();
+            String replyTo = event.getReplyTo();
+            if (replyTo != null) {
+                boolean serviceTimeout = false;
+                EventEnvelope response = new EventEnvelope();
+                response.setTo(replyTo);
+                response.setFrom(def.getRoute());
+                /*
+                 * Preserve correlation ID and notes
+                 *
+                 * ""Notes"" is usually used by event interceptors. The system does not restrict the content of the notes.
+                 * For example, to save some metadata from the original sender.
+                 */
+                if (event.getCorrelationId() != null) {
+                    response.setCorrelationId(event.getCorrelationId());
+                }
+                if (event.getExtra() != null) {
+                    response.setExtra(event.getExtra());
+                }
+                // propagate the trace to the next service if any
+                if (event.getTraceId() != null) {
+                    response.setTrace(event.getTraceId(), event.getTracePath());
+                }
+                if (result instanceof EventEnvelope) {
+                    EventEnvelope resultEvent = (EventEnvelope) result;
+                    Map<String, String> headers = resultEvent.getHeaders();
+                    if (headers.isEmpty() && resultEvent.getStatus() == 408 && resultEvent.getRawBody() == null) {
+                        /*
+                         * An empty event envelope with timeout status
+                         * is used by the ObjectStreamService to simulate a READ timeout.
+                         */
+                        serviceTimeout = true;
+                    } else {
+                        /*
+                         * When EventEnvelope is used as a return type, the system will transport
+                         * 1. payload
+                         * 2. key-values (as headers)
+                         * 3. optional parametric types for Java class that uses generic types
+                         */
+                        response.setBody(resultEvent.getRawBody());
+                        response.setType(resultEvent.getType());
+                        if (resultEvent.getParametricType() != null) {
+                            response.setParametricType(resultEvent.getParametricType());
+                        }
+                        for (Map.Entry<String, String> kv: headers.entrySet()) {
+                            String k = kv.getKey();
+                            if (!k.equals(MY_ROUTE) && !k.equals(MY_TRACE_ID) && !k.equals(MY_TRACE_PATH)) {
+                                response.setHeader(k, kv.getValue());
+                            }
+                        }
+                        response.setStatus(resultEvent.getStatus());
+                    }
+                    if (!response.getHeaders().isEmpty()) {
+                        output.put(HEADERS, response.getHeaders());
+                    }
+                } else {
+                    response.setBody(result);
+                }
+                output.put(BODY, response.getRawBody() == null? ""null"" : response.getRawBody());
+                output.put(STATUS, response.getStatus());
+                inputOutput.put(OUTPUT, output);
+                try {
+                    if (ping) {
+                        String parent = route.contains(HASH) ? route.substring(0, route.lastIndexOf(HASH)) : route;
+                        Platform platform = Platform.getInstance();
+                        // execution time is not set because there is no need to execute the lambda function
+                        Map<String, Object> pong = new HashMap<>();
+                        pong.put(TYPE, PONG);
+                        pong.put(TIME, new Date());
+                        pong.put(APP, platform.getName());
+                        pong.put(ORIGIN, platform.getOrigin());
+                        pong.put(SERVICE, parent);
+                        pong.put(REASON, ""This response is generated when you send an event without headers and body"");
+                        pong.put(MESSAGE, ""you have reached "" + parent);
+                        response.setBody(pong);
+                        po.send(response);
+                    } else {
+                        if (!interceptor && !serviceTimeout) {
+                            response.setExecutionTime(diff);
+                            encodeTraceAnnotations(response);
+                            po.send(response);
+                        }
+                    }
+                } catch (Exception e2) {
+                    ps.setUnDelivery(e2.getMessage());
+                }
+            } else {
+                EventEnvelope response = new EventEnvelope().setBody(result);
+                output.put(BODY, response.getRawBody() == null? ""null"" : response.getRawBody());
+                output.put(STATUS, response.getStatus());
+                output.put(ASYNC, true);
+                inputOutput.put(OUTPUT, output);
+            }
+            return ps.setExecutionTime(diff).setInputOutput(inputOutput);
+
+        } catch (Exception e) {
+            float delta = (float) (System.nanoTime() - begin) / EventEmitter.ONE_MILLISECOND;
+            float diff = Float.parseFloat(String.format(""%.3f"", Math.max(0.0f, delta)));
+            ps.setExecutionTime(diff);
+            final String replyTo = event.getReplyTo();
+            final int status;
+            if (e instanceof AppException) {
+                status = ((AppException) e).getStatus();
+            } else if (e instanceof TimeoutException) {
+                status = 408;
+            } else if (e instanceof IllegalArgumentException) {
+                status = 400;
+            } else {
+                status = 500;
+            }
+            Throwable ex = util.getRootCause(e);
+            if (f instanceof PoJoMappingExceptionHandler) {
+                String error = simplifyCastError(ex.getMessage());
+                PoJoMappingExceptionHandler handler = (PoJoMappingExceptionHandler) f;
+                try {
+                    handler.onError(parentRoute, new AppException(status, error), event, instance);
+                } catch (Exception e3) {
+                    ps.setUnDelivery(e3.getMessage());
+                }
+                Map<String, Object> output = new HashMap<>();
+                output.put(STATUS, status);
+                output.put(EXCEPTION, error);
+                inputOutput.put(OUTPUT, output);
+                return ps.setException(status, error).setInputOutput(inputOutput);
+            }
+            Map<String, Object> output = new HashMap<>();
+            if (replyTo != null) {
+                EventEnvelope response = new EventEnvelope();
+                response.setTo(replyTo).setStatus(status).setBody(ex.getMessage());
+                response.setException(e).setExecutionTime(diff).setFrom(def.getRoute());
+                if (event.getCorrelationId() != null) {
+                    response.setCorrelationId(event.getCorrelationId());
+                }
+                if (event.getExtra() != null) {
+                    response.setExtra(event.getExtra());
+                }
+                // propagate the trace to the next service if any
+                if (event.getTraceId() != null) {
+                    response.setTrace(event.getTraceId(), event.getTracePath());
+                }
+                encodeTraceAnnotations(response);
+                try {
+                    po.send(response);
+                } catch (Exception e4) {
+                    ps.setUnDelivery(e4.getMessage());
+                }
+            } else {
+                output.put(ASYNC, true);
+                if (status >= 500) {
+                    log.error(""Unhandled exception for ""+route, ex);
+                } else {
+                    log.warn(""Unhandled exception for {} - {}"", route, ex.getMessage());
+                }
+            }
+            output.put(STATUS, status);
+            output.put(EXCEPTION, ex.getMessage());
+            inputOutput.put(OUTPUT, output);
+            return ps.setException(status, ex.getMessage()).setInputOutput(inputOutput);
+        }
+    }",148-360
+org.platformlambda.core.system.ServiceQueue$ServiceHandler,<init>,(Lorg/platformlambda/core/system/ServiceQueue;)V,"public ServiceQueue(ServiceDef service) {
+        this.route = service.getRoute();
+        this.readyPrefix = READY+"":"" + service.getRoute() + HASH;
+        this.elasticQueue = new ElasticQueue(route);
+        // create consumer
+        system = Platform.getInstance().getEventSystem();
+        consumer = system.localConsumer(service.getRoute(), new ServiceHandler());
+        if (service.isStream()) {
+            streamRoute = route + HASH + 1;
+            StreamQueue worker = new StreamQueue(service, streamRoute);
+            workers.add(worker);
+            boolean coroutine = service.getStreamFunction().getClass().getAnnotation(CoroutineRunner.class) != null;
+            log.info(""{} {} started {}"", STREAM, route, coroutine ? AS_COROUTINE : """");
+        } else {
+            streamRoute = null;
+            int instances = service.getConcurrency();
+            for (int i = 0; i < instances; i++) {
+                int n = i + 1;
+                WorkerQueue worker = new WorkerQueue(service, route + HASH + n, n);
+                workers.add(worker);
+            }
+            if (service.isKotlin()) {
+                if (instances == 1) {
+                    log.info(""{} {} started as suspend function"", service.isPrivate() ? PRIVATE : PUBLIC, route);
+                } else {
+                    log.info(""{} {} with {} instances started as suspend function"",
+                            service.isPrivate() ? PRIVATE : PUBLIC, route, instances);
+                }
+            } else {
+                boolean coroutine = service.getFunction().getClass().getAnnotation(CoroutineRunner.class) != null;
+                if (instances == 1) {
+                    log.info(""{} {} started {}"", service.isPrivate() ? PRIVATE : PUBLIC,
+                            route, coroutine? AS_COROUTINE : WORKER_POOL);
+                } else {
+                    log.info(""{} {} with {} instances started {}"", service.isPrivate() ? PRIVATE : PUBLIC,
+                            route, instances, coroutine? AS_COROUTINE : WORKER_POOL);
+                }
+            }
+        }
+    }",57-96
+org.platformlambda.core.system.ServiceQueue$ServiceHandler,handle,(Lio/vertx/core/eventbus/Message;)V,"@Override
+        public void handle(Message<Object> message) {
+            Object body = message.body();
+            if (body instanceof String) {
+                String worker = getWorker((String) body);
+                if (worker != null && !stopped) {
+                    // Just for the safe side, this guarantees that a unique worker is inserted
+                    idx.computeIfAbsent(worker, d -> {
+                        fifo.offer(worker);
+                        return true;
+                    });
+                    if (buffering) {
+                        byte[] event = elasticQueue.read();
+                        if (event == null) {
+                            // Close elastic queue when all messages are cleared
+                            buffering = false;
+                            elasticQueue.close();
+                        } else {
+                            // Guarantees that there is an available worker
+                            String nextWorker = fifo.poll();
+                            if (nextWorker != null) {
+                                idx.remove(nextWorker);
+                                system.send(nextWorker, event);
+                            }
+                        }
+                    }
+                }
+            }
+            if (body instanceof byte[]) {
+                byte[] event = (byte[]) body;
+                if (!stopped) {
+                    if (buffering) {
+                        // Once elastic queue is started, we will continue buffering.
+                        elasticQueue.write(event);
+                    } else {
+                        // Check if a next worker is available
+                        String nextWorker = fifo.peek();
+                        if (nextWorker == null) {
+                            // Start persistent queue when no workers are available
+                            buffering = true;
+                            elasticQueue.write(event);
+                        } else {
+                            // Deliver event to the next worker
+                            nextWorker = fifo.poll();
+                            if (nextWorker != null) {
+                                idx.remove(nextWorker);
+                                system.send(nextWorker, event);
+                            }
+                        }
+                    }
+                }
+            }
+        }",132-184
+org.platformlambda.core.system.ServiceQueue$ServiceHandler,getWorker,(Ljava/lang/String;)Ljava/lang/String;,"private String getWorker(String input) {
+            if (input.startsWith(readyPrefix)) {
+                return input.substring(READY.length()+1);
+            } else if (READY.equals(input) && streamRoute != null) {
+                return streamRoute;
+            }
+            return null;
+        }",186-193
+org.platformlambda.core.system.ServiceQueue,<init>,(Lorg/platformlambda/core/system/ServiceDef;)V,"public ServiceQueue(ServiceDef service) {
+        this.route = service.getRoute();
+        this.readyPrefix = READY+"":"" + service.getRoute() + HASH;
+        this.elasticQueue = new ElasticQueue(route);
+        // create consumer
+        system = Platform.getInstance().getEventSystem();
+        consumer = system.localConsumer(service.getRoute(), new ServiceHandler());
+        if (service.isStream()) {
+            streamRoute = route + HASH + 1;
+            StreamQueue worker = new StreamQueue(service, streamRoute);
+            workers.add(worker);
+            boolean coroutine = service.getStreamFunction().getClass().getAnnotation(CoroutineRunner.class) != null;
+            log.info(""{} {} started {}"", STREAM, route, coroutine ? AS_COROUTINE : """");
+        } else {
+            streamRoute = null;
+            int instances = service.getConcurrency();
+            for (int i = 0; i < instances; i++) {
+                int n = i + 1;
+                WorkerQueue worker = new WorkerQueue(service, route + HASH + n, n);
+                workers.add(worker);
+            }
+            if (service.isKotlin()) {
+                if (instances == 1) {
+                    log.info(""{} {} started as suspend function"", service.isPrivate() ? PRIVATE : PUBLIC, route);
+                } else {
+                    log.info(""{} {} with {} instances started as suspend function"",
+                            service.isPrivate() ? PRIVATE : PUBLIC, route, instances);
+                }
+            } else {
+                boolean coroutine = service.getFunction().getClass().getAnnotation(CoroutineRunner.class) != null;
+                if (instances == 1) {
+                    log.info(""{} {} started {}"", service.isPrivate() ? PRIVATE : PUBLIC,
+                            route, coroutine? AS_COROUTINE : WORKER_POOL);
+                } else {
+                    log.info(""{} {} with {} instances started {}"", service.isPrivate() ? PRIVATE : PUBLIC,
+                            route, instances, coroutine? AS_COROUTINE : WORKER_POOL);
+                }
+            }
+        }
+    }",57-96
+org.platformlambda.core.system.ServiceQueue,getRoute,()Ljava/lang/String;,"public String getRoute() {
+        return route;
+    }",98-100
+org.platformlambda.core.system.PostOffice,<init>,(Ljava/util/Map;I)V,"public PostOffice(Map<String, String> headers, int instance) {
+        myRoute = headers.get(MY_ROUTE);
+        myTraceId = headers.get(MY_TRACE_ID);
+        myTracePath = headers.get(MY_TRACE_PATH);
+        this.instance = instance;
+    }",33-38
+org.platformlambda.core.system.PostOffice,exists,([Ljava/lang/String;)Z,"public boolean exists(String... route) {
+        return po.exists(route);
+    }",91-93
+org.platformlambda.core.system.PostOffice,send,(Lorg/platformlambda/core/models/EventEnvelope;)V,"public void send(String to, Kv... parameters) throws IOException {
+        send(touch(po.asEnvelope(to, null, parameters)));
+    }",169-171
+org.platformlambda.core.system.PostOffice,touch,(Lorg/platformlambda/core/models/EventEnvelope;)Lorg/platformlambda/core/models/EventEnvelope;,"private EventEnvelope touch(final EventEnvelope event) {
+        if (event == null) {
+            throw new IllegalArgumentException(MISSING_EVENT);
+        }
+        if (event.getFrom() == null) {
+            event.setFrom(myRoute);
+        }
+        if (event.getTraceId() == null) {
+            event.setTraceId(myTraceId);
+        }
+        if (event.getTracePath() == null) {
+            event.setTracePath(myTracePath);
+        }
+        return event;
+    }",324-338
+org.platformlambda.core.system.Platform,<init>,()V,"private Platform() {
+        // singleton
+    }",65-67
+org.platformlambda.core.system.Platform,getInstance,()Lorg/platformlambda/core/system/Platform;,"public static Platform getInstance() {
+        initialize();
+        return INSTANCE;
+    }",69-72
+org.platformlambda.core.system.Platform,initialize,()V,"private static void initialize() {
+        if (initCounter.incrementAndGet() == 1) {
+            AppConfigReader config = AppConfigReader.getInstance();
+            int poolSize = Math.max(32, Utility.getInstance().str2int(config.getProperty(""event.worker.pool"", ""100"")));
+            system = Vertx.vertx().eventBus();
+            vertx = Vertx.vertx();
+            cache = SimpleCache.createCache(""system.log.cache"", 30000);
+            executor = Executors.newWorkStealingPool(poolSize);
+            log.info(""Event system started with up to {} kernel threads"", poolSize);
+        }
+        if (initCounter.get() > 10000) {
+            initCounter.set(10);
+        }
+    }",74-87
+org.platformlambda.core.system.Platform,getVertx,()Lio/vertx/core/Vertx;,"public Vertx getVertx() {
+        return vertx;
+    }",134-136
+org.platformlambda.core.system.Platform,getEventSystem,()Lio/vertx/core/eventbus/EventBus;,"public EventBus getEventSystem() {
+        return system;
+    }",147-149
+org.platformlambda.core.system.Platform,getEventExecutor,()Ljava/util/concurrent/ExecutorService;,"public ExecutorService getEventExecutor() {
+        return executor;
+    }",156-158
+org.platformlambda.core.system.Platform,getName,()Ljava/lang/String;,"public String getName() {
+        return Utility.getInstance().getPackageName();
+    }",167-169
+org.platformlambda.core.system.Platform,getOrigin,()Ljava/lang/String;,"public String getOrigin() {
+        if (originId == null) {
+            Utility util = Utility.getInstance();
+            String id = util.getUuid();
+            if (Platform.appId != null) {
+                byte[] hash = crypto.getSHA256(util.getUTF(Platform.appId));
+                id = util.bytes2hex(hash).substring(0, id.length());
+            }
+            originId = util.getDateOnly(new Date()) + id;
+        }
+        return originId;
+    }",180-191
+org.platformlambda.core.system.Platform,isCloudSelected,()Z,"public static boolean isCloudSelected() {
+        return Platform.cloudSelected;
+    }",235-237
+org.platformlambda.core.system.Platform,register,(Ljava/lang/String;Lorg/platformlambda/core/models/TypedLambdaFunction;ZI)V,"@SuppressWarnings(""rawtypes"")
+    public void register(String route, TypedLambdaFunction lambda, int instances) throws IOException {
+        register(route, lambda, false, instances);
+    }",334-337
+org.platformlambda.core.system.Platform,registerPrivate,(Ljava/lang/String;Lorg/platformlambda/core/models/TypedLambdaFunction;I)V,"@SuppressWarnings(""rawtypes"")
+    public void registerPrivate(String route, TypedLambdaFunction lambda, int instances) throws IOException {
+        register(route, lambda, true, instances);
+    }",349-352
+org.platformlambda.core.system.Platform,getValidatedRoute,(Ljava/lang/String;)Ljava/lang/String;,"private String getValidatedRoute(String route) {
+        if (route == null) {
+            throw new IllegalArgumentException(""Missing service routing path"");
+        }
+        // guarantee that only valid service name is registered
+        Utility util = Utility.getInstance();
+        if (!util.validServiceName(route)) {
+            throw new IllegalArgumentException(INVALID_ROUTE +
+                    ""name - use 0-9, a-z, period, hyphen or underscore characters"");
+        }
+        String path = util.filteredServiceName(route);
+        if (path.length() == 0) {
+            throw new IllegalArgumentException(INVALID_ROUTE + ""name"");
+        }
+        if (!path.contains(""."")) {
+            throw new IllegalArgumentException(INVALID_ROUTE + route +
+                    "" because it is missing dot separator(s). e.g. hello.world"");
+        }
+        if (util.reservedExtension(path)) {
+            throw new IllegalArgumentException(INVALID_ROUTE + route + "" which is use a reserved extension"");
+        }
+        if (util.reservedFilename(path)) {
+            throw new IllegalArgumentException(INVALID_ROUTE + route + "" which is a reserved Windows filename"");
+        }
+        return path;
+    }",558-583
+org.platformlambda.core.system.Platform,hasRoute,(Ljava/lang/String;)Z,"public boolean hasRoute(List<String> routes) {
+        if (routes.isEmpty()) {
+            return false;
+        }
+        int n = 0;
+        for (String r: routes) {
+            if (hasRoute(r)) {
+                n++;
+            }
+        }
+        return n == routes.size();
+    }",636-647
+org.platformlambda.core.system.Platform,hasRoute,(Ljava/util/List;)Z,"public boolean hasRoute(List<String> routes) {
+        if (routes.isEmpty()) {
+            return false;
+        }
+        int n = 0;
+        for (String r: routes) {
+            if (hasRoute(r)) {
+                n++;
+            }
+        }
+        return n == routes.size();
+    }",636-647
+org.platformlambda.core.system.Platform,getManager,(Ljava/lang/String;)Lorg/platformlambda/core/system/ServiceQueue;,"public ServiceQueue getManager(String route) {
+        return route != null && registry.containsKey(route)? registry.get(route).getManager() : null;
+    }",670-672
+org.platformlambda.core.system.Platform,waitForProvider,(Ljava/lang/String;I)Lio/vertx/core/Future;,"public Future<Boolean> waitForProvider(String provider, int seconds) {
+        return waitForProviders(Collections.singletonList(provider), seconds);
+    }",681-683
+org.platformlambda.core.system.Platform,waitForProviders,(Ljava/util/List;I)Lio/vertx/core/Future;,"public Future<Boolean> waitForProviders(List<String> providers, int seconds) {
+        return Future.future(promise -> {
+            if (hasRoute(providers)) {
+                getEventExecutor().submit(() -> promise.complete(true));
+            } else {
+                getVertx().setTimer(2000, t ->
+                        waitForProviders(promise, providers, 0, Math.max(2, seconds) / 2));
+            }
+        });
+    }",692-701
+org.platformlambda.core.system.Platform,waitForProviders,(Lio/vertx/core/Promise;Ljava/util/List;II)V,"public Future<Boolean> waitForProviders(List<String> providers, int seconds) {
+        return Future.future(promise -> {
+            if (hasRoute(providers)) {
+                getEventExecutor().submit(() -> promise.complete(true));
+            } else {
+                getVertx().setTimer(2000, t ->
+                        waitForProviders(promise, providers, 0, Math.max(2, seconds) / 2));
+            }
+        });
+    }",692-701
+org.platformlambda.core.system.ServiceDef,<init>,(Ljava/lang/String;Lorg/platformlambda/core/models/TypedLambdaFunction;)V,"@SuppressWarnings(""rawtypes"")
+    public ServiceDef(String route, TypedLambdaFunction lambda) {
+        this.trackable = lambda.getClass().getAnnotation(ZeroTracing.class) == null;
+        this.interceptor = lambda.getClass().getAnnotation(EventInterceptor.class) != null;
+        this.coroutine = lambda.getClass().getAnnotation(CoroutineRunner.class) != null;
+        this.id = Utility.getInstance().getUuid();
+        this.route = route;
+        this.lambda = lambda;
+        this.stream = null;
+        this.suspendFunction = null;
+        this.runAsStream = false;
+        this.runAsKotlin = false;
+        Method[] methods = lambda.getClass().getDeclaredMethods();
+        for (Method m: methods) {
+            Class<?>[] arguments = m.getParameterTypes();
+            // HANDLE_EVENT method may be found more than once
+            if (HANDLE_EVENT.equals(m.getName()) && arguments.length == 3) {
+                String clsName = arguments[1].getName();
+                if (clsName.contains(""."") && !clsName.startsWith(""java."")) {
+                    inputClass = arguments[1];
+                }
+            }
+        }
+    }",54-77
+org.platformlambda.core.system.ServiceDef,getRoute,()Ljava/lang/String;,"public String getRoute() {
+        return route;
+    }",126-128
+org.platformlambda.core.system.ServiceDef,getFunction,()Lorg/platformlambda/core/models/TypedLambdaFunction;,"@SuppressWarnings(""rawtypes"")
+    public TypedLambdaFunction getFunction() {
+        return lambda;
+    }",130-133
+org.platformlambda.core.system.ServiceDef,isPrivate,()Z,"public boolean isPrivate() {
+        return isPrivateFunction;
+    }",144-146
+org.platformlambda.core.system.ServiceDef,isTrackable,()Z,"public boolean isTrackable() {
+        return trackable;
+    }",148-150
+org.platformlambda.core.system.ServiceDef,isCoroutine,()Z,"public boolean isCoroutine() {
+        return coroutine;
+    }",152-154
+org.platformlambda.core.system.ServiceDef,isInterceptor,()Z,"public boolean isInterceptor() {
+        return interceptor;
+    }",156-158
+org.platformlambda.core.system.ServiceDef,getConcurrency,()I,"public int getConcurrency() {
+        return instances;
+    }",160-162
+org.platformlambda.core.system.ServiceDef,setConcurrency,(I)Lorg/platformlambda/core/system/ServiceDef;,"public ServiceDef setConcurrency(int instances) {
+        this.instances = Math.max(1, (Math.min(instances, MAX_INSTANCES)));
+        return this;
+    }",164-167
+org.platformlambda.core.system.ServiceDef,setPrivate,(Z)Lorg/platformlambda/core/system/ServiceDef;,"public ServiceDef setPrivate(boolean isPrivateFunction) {
+        this.isPrivateFunction = isPrivateFunction;
+        return this;
+    }",169-172
+org.platformlambda.core.system.ServiceDef,getManager,()Lorg/platformlambda/core/system/ServiceQueue;,"public ServiceQueue getManager() {
+        return manager;
+    }",174-176
+org.platformlambda.core.system.ServiceDef,setManager,(Lorg/platformlambda/core/system/ServiceQueue;)V,"public void setManager(ServiceQueue manager) {
+        this.manager = manager;
+    }",178-180
+org.platformlambda.core.system.ServiceDef,isStream,()Z,"public boolean isStream() {
+        return runAsStream;
+    }",182-184
+org.platformlambda.core.system.ServiceDef,isKotlin,()Z,"public boolean isKotlin() {
+        return runAsKotlin;
+    }",186-188
+org.platformlambda.core.system.ServiceDef,inputIsEnvelope,()Z,"public boolean inputIsEnvelope() {
+        return EventEnvelope.class == inputClass;
+    }",190-192
+org.platformlambda.core.system.WorkerQueues,<init>,(Lorg/platformlambda/core/system/ServiceDef;Ljava/lang/String;)V,"protected WorkerQueues(ServiceDef def, String route) {
+        this.def = def;
+        this.route = route;
+        this.parentRoute = route.contains(""#"")? route.substring(0, route.lastIndexOf('#')) : route;
+    }",39-43
+org.platformlambda.core.system.WorkerQueues,started,()V,"protected void started() {
+        log.debug(""{} started"", route);
+    }",45-47
+org.platformlambda.core.system.LocalPubSub$LocalPublisher,<init>,()V,"private LocalPubSub() {
+        // singleton
+    }",45-47
+org.platformlambda.core.system.LocalPubSub$LocalPublisher,handleEvent,(Ljava/util/Map;Lorg/platformlambda/core/models/EventEnvelope;I)Ljava/lang/Void;,"@Override
+        public Void handleEvent(Map<String, String> headers, EventEnvelope input, int instance) throws Exception {
+            String myRoute = headers.getOrDefault(MY_ROUTE, ""?"");
+            List<String> members = topics.get(myRoute);
+            if (members != null && !members.isEmpty()) {
+                PostOffice po = new PostOffice(headers, instance);
+                for (String target: members) {
+                    if (po.exists(target)) {
+                        try {
+                            po.send(input.copy().setTo(target));
+                        } catch (Exception e) {
+                            log.debug(""Unable to relay {} -> {} - {}"", myRoute, target, e.getMessage());
+                        }
+                    }
+                }
+            }
+            return null;
+        }",127-144
+org.platformlambda.core.system.EventEmitter,<init>,()V,"private EventEmitter() {
+        Platform platform = Platform.getInstance();
+        log.info(""Starting application instance {}"", platform.getOrigin());
+        AppConfigReader config = AppConfigReader.getInstance();
+        String multicast = config.getProperty(MULTICAST_YAML);
+        if (multicast != null) {
+            platform.getEventExecutor().submit(() -> {
+                log.info(""Loading multicast config from {}"", multicast);
+                ConfigReader reader = new ConfigReader();
+                try {
+                    reader.load(multicast);
+                    loadMulticast(multicast, reader.getMap());
+                } catch (IOException e) {
+                    log.error(""Unable to load multicast config - {}"", e.getMessage());
+                }
+            });
+        }
+        String journal = config.getProperty(JOURNAL_YAML);
+        if (journal != null) {
+            platform.getEventExecutor().submit(() -> {
+                log.info(""Loading journal config from {}"", journal);
+                ConfigReader reader = new ConfigReader();
+                try {
+                    reader.load(journal);
+                } catch (IOException e) {
+                    log.error(""Unable to load journal config - {}"", e.getMessage());
+                }
+                loadJournalRoutes(reader.getMap());
+            });
+        }
+        // load route substitution table if any
+        if (config.getProperty(ROUTE_SUBSTITUTION_FEATURE, ""false"").equals(""true"")) {
+            platform.getEventExecutor().submit(this::loadRouteSubstitution);
+        }
+    }",78-112
+org.platformlambda.core.system.EventEmitter,getInstance,()Lorg/platformlambda/core/system/EventEmitter;,"public static EventEmitter getInstance() {
+        return INSTANCE;
+    }",114-116
+org.platformlambda.core.system.EventEmitter,loadJournalRoutes,(Ljava/util/Map;)V,"@SuppressWarnings(""unchecked"")
+    private void loadJournalRoutes(Map<String, Object> map) {
+        Object o = map.get(""journal"");
+        if (o == null) {
+            log.warn(""Missing 'journal' section"");
+        } else if (o instanceof List) {
+            List<Object> entries = (List<Object>) o;
+            for (Object item: entries) {
+                String route = item.toString();
+                journaledRoutes.put(route, true);
+            }
+            log.info(""Total {} route{} will be recorded in journal"", journaledRoutes.size(),
+                    journaledRoutes.size() == 1? """" : ""s"");
+        } else {
+            log.warn(""Invalid 'journal' section - it must be a list of route names"");
+        }
+    }",134-150
+org.platformlambda.core.system.EventEmitter,loadMulticast,(Ljava/lang/String;Ljava/util/Map;)V,"@SuppressWarnings(""unchecked"")
+    private void loadMulticast(String file, Map<String, Object> map) {
+        MultiLevelMap multi = new MultiLevelMap(map);
+        Object o = multi.getElement(""multicast"");
+        if (o instanceof List) {
+            List<Object> multicastList = (List<Object>) o;
+            for (int i=0; i < multicastList.size(); i++) {
+                String source = (String) multi.getElement(""multicast[""+i+""].source"");
+                List<String> targets = (List<String>) multi.getElement(""multicast[""+i+""].targets"");
+                if (source != null && targets != null && !targets.isEmpty()) {
+                    List<String> targetList = new ArrayList<>(targets);
+                    targetList.remove(source);
+                    Set<String> members = new HashSet<>(targetList);
+                    if (members.size() < targets.size()) {
+                        log.warn(""Multicast config error - {} -> {} becomes {} -> {}"",
+                                source, targets, source, members);
+                    }
+                    LocalPubSub ps = LocalPubSub.getInstance();
+                    try {
+                        ps.createTopic(source);
+                        for (String member: members) {
+                            ps.subscribe(source, member);
+                        }
+                    } catch (IOException e) {
+                        log.error(""Unable to register multicast {} -> {}, - {}"", source, members, e.getMessage());
+                    }
+                }
+            }
+        } else {
+            log.error(""Invalid config {} - the multicast section should be a list of source and targets"", file);
+        }
+    }",152-183
+org.platformlambda.core.system.EventEmitter,loadRouteSubstitution,()V,"@SuppressWarnings(""unchecked"")
+    private void loadRouteSubstitution() {
+        AppConfigReader config = AppConfigReader.getInstance();
+        String location = config.getProperty(ROUTE_SUBSTITUTION_FILE);
+        if (location != null) {
+            try {
+                // try loading from location(s) given in route.substitution.file
+                ConfigReader reader = getRouteSubstitutionConfig(location);
+                Object o = reader.get(ROUTE_SUBSTITUTION);
+                if (o instanceof List) {
+                    List<Object> list = (List<Object>) o;
+                    for (int i=0; i < list.size(); i++) {
+                        String entry = reader.getProperty(ROUTE_SUBSTITUTION+""[""+i+""]"");
+                        int sep = entry.indexOf(""->"");
+                        if (sep == -1) {
+                            log.error(""Invalid route substitution entry {}"", entry);
+                        } else {
+                            String route = entry.substring(0, sep).trim();
+                            String replacement = entry.substring(sep+2).trim();
+                            addRouteSubstitution(entry, route, replacement);
+                        }
+                    }
+                } else {
+                    throw new IOException(""route.substitution should be a list of strings"");
+                }
+            } catch (IOException e) {
+                log.error(""Unable to load route substitution entries - {}"", e.getMessage());
+            }
+        } else {
+            // load route substitution list from application.properties
+            Utility util = Utility.getInstance();
+            List<String> substitutionList = util.split(config.getProperty(ROUTE_SUBSTITUTION, """"), "", "");
+            for (String entry : substitutionList) {
+                int colon = entry.indexOf(':');
+                String route = entry.substring(0, colon).trim();
+                String replacement = entry.substring(colon + 1).trim();
+                addRouteSubstitution(entry, route, replacement);
+            }
+        }
+    }",185-224
+org.platformlambda.core.system.EventEmitter,addRouteSubstitution,(Ljava/lang/String;Ljava/lang/String;)V,"private void addRouteSubstitution(String entry, String original, String replacement) {
+        try {
+            addRouteSubstitution(original, replacement);
+        } catch (IllegalArgumentException e) {
+            log.error(""Unable to add route substitution {} - {}"", entry, e.getMessage());
+        }
+    }",226-232
+org.platformlambda.core.system.EventEmitter,addRouteSubstitution,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V,"private void addRouteSubstitution(String entry, String original, String replacement) {
+        try {
+            addRouteSubstitution(original, replacement);
+        } catch (IllegalArgumentException e) {
+            log.error(""Unable to add route substitution {} - {}"", entry, e.getMessage());
+        }
+    }",226-232
+org.platformlambda.core.system.EventEmitter,getRouteSubstitutionConfig,(Ljava/lang/String;)Lorg/platformlambda/core/util/ConfigReader;,"private ConfigReader getRouteSubstitutionConfig(String location) throws IOException {
+        List<String> paths = Utility.getInstance().split(location, "", "");
+        for (String p: paths) {
+            ConfigReader config = new ConfigReader();
+            try {
+                config.load(p);
+                log.info(""Loading route substitutions from {}"", p);
+                return config;
+            } catch (IOException e) {
+                log.warn(""Skipping {} - {}"", p, e.getMessage());
+            }
+        }
+        throw new IOException(""Route substitutions not found in ""+paths);
+    }",251-264
+org.platformlambda.core.system.EventEmitter,startTracing,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String;,"public String startTracing(String route, String traceId, String tracePath, int instance) {
+        String ref = Thread.currentThread().getId() + ""/"" + instance + ""/"" + route;
+        if (route != null && route.contains(""."")) {
+            traces.put(ref, new TraceInfo(route, traceId, tracePath));
+        }
+        return ref;
+    }",288-294
+org.platformlambda.core.system.EventEmitter,stopTracing,(Ljava/lang/String;)Lorg/platformlambda/core/models/TraceInfo;,"public TraceInfo stopTracing(String ref) {
+        if (ref != null) {
+            TraceInfo trace = traces.get(ref);
+            if (trace != null) {
+                traces.remove(ref);
+                return trace;
+            }
+        }
+        return null;
+    }",301-310
+org.platformlambda.core.system.EventEmitter,discover,(Ljava/lang/String;Z)Lorg/platformlambda/core/models/TargetRoute;,"public TargetRoute discover(String to, boolean endOfRoute) throws IOException {
+        boolean checkCloud = !endOfRoute && !to.equals(CLOUD_CONNECTOR);
+        Platform platform = Platform.getInstance();
+        if (to.contains(""@"")) {
+            int at = to.indexOf('@');
+            String origin = to.substring(at+1);
+            String target = to.substring(0, at);
+            if (origin.equals(platform.getOrigin())) {
+                if (platform.hasRoute(target)) {
+                    return new TargetRoute(platform.getManager(target), false);
+                }
+            } else if (checkCloud) {
+                TargetRoute cloud = getCloudRoute();
+                if (cloud != null && (origin.startsWith(APP_GROUP_PREFIX) || cloudOrigins.containsKey(origin))) {
+                    return cloud;
+                }
+            }
+
+        } else {
+            if (platform.hasRoute(to)) {
+                return new TargetRoute(platform.getManager(to), false);
+            } else if (checkCloud) {
+                TargetRoute cloud = getCloudRoute();
+                if (cloud != null && exists(to)) {
+                    return cloud;
+                }
+            }
+        }
+        throw new IOException(""Route ""+to+"" not found"");
+    }",320-349
+org.platformlambda.core.system.EventEmitter,send,(Ljava/lang/String;Ljava/lang/Object;)V,"public void send(String to, Kv... parameters) throws IOException {
+        send(asEnvelope(to, null, parameters));
+    }",407-409
+org.platformlambda.core.system.EventEmitter,send,(Lorg/platformlambda/core/models/EventEnvelope;)V,"public void send(String to, Kv... parameters) throws IOException {
+        send(asEnvelope(to, null, parameters));
+    }",407-409
+org.platformlambda.core.system.EventEmitter,asEnvelope,(Ljava/lang/String;Ljava/lang/Object;[Lorg/platformlambda/core/models/Kv;)Lorg/platformlambda/core/models/EventEnvelope;,"public EventEnvelope asEnvelope(String to, Object body, Kv... parameters) {
+        EventEnvelope event = new EventEnvelope().setTo(to).setBody(body);
+        if (parameters != null) {
+            for (Kv kv: parameters) {
+                if (kv.key != null && kv.value != null) {
+                    event.setHeader(kv.key, kv.value);
+                }
+            }
+        }
+        return event;
+    }",441-451
+org.platformlambda.core.system.EventEmitter,substituteRouteIfAny,(Ljava/lang/String;)Ljava/lang/String;,"public String substituteRouteIfAny(String to) {
+        if (to != null) {
+            int slash = to.indexOf('@');
+            if (slash > 0) {
+                String replacement = reRoutes.get(to.substring(0, slash));
+                return replacement != null? replacement+to.substring(slash) : to;
+            } else {
+                String replacement = reRoutes.get(to);
+                return replacement != null? replacement : to;
+            }
+        } else {
+            throw new IllegalArgumentException(""Missing to"");
+        }
+    }",561-574
+org.platformlambda.core.system.EventEmitter,exists,([Ljava/lang/String;)Z,"public boolean exists(String... routes) {
+        if (routes == null || routes.length == 0) {
+            return false;
+        }
+        if (routes.length == 1) {
+            return routeExists(routes[0]);
+        }
+        for (String r: routes) {
+            if (!routeExists(r)) {
+                return false;
+            }
+        }
+        return true;
+    }",944-957
+org.platformlambda.core.system.EventEmitter,routeExists,(Ljava/lang/String;)Z,"private boolean routeExists(String route) {
+        if (route == null) {
+            return false;
+        }
+        Platform platform = Platform.getInstance();
+        if (route.equals(platform.getOrigin())) {
+            return true;
+        }
+        String dest = substituteRouteIfAny(route);
+        if (platform.hasRoute(dest)) {
+            return true;
+        }
+        // check if the remote service is reachable
+        if (Platform.isCloudSelected() &&
+                (platform.hasRoute(ServiceDiscovery.SERVICE_QUERY) || platform.hasRoute(CLOUD_CONNECTOR))) {
+            if (dest.contains(""."")) {
+                ConcurrentMap<String, String> targets = cloudRoutes.get(dest);
+                return targets != null && !targets.isEmpty();
+            } else {
+                return cloudOrigins.containsKey(dest);
+            }
+        }
+        return false;
+    }",966-989
+org.platformlambda.core.system.LocalPubSub,getInstance,()Lorg/platformlambda/core/system/LocalPubSub;,"public static LocalPubSub getInstance() {
+        return INSTANCE;
+    }",49-51
+org.platformlambda.core.system.LocalPubSub,createTopic,(Ljava/lang/String;)V,"public void createTopic(String topic) throws IOException {
+        Utility util = Utility.getInstance();
+        if (util.validServiceName(topic)) {
+            topics.computeIfAbsent(topic, d -> {
+                log.info(""Topic {} created"", topic);
+                return new ArrayList<>();
+            });
+            Platform platform = Platform.getInstance();
+            platform.registerPrivate(topic, new LocalPublisher(), 1);
+        } else {
+            throw new IllegalArgumentException(""Invalid topic name - use 0-9, a-z, period, hyphen or underscore characters"");
+        }
+    }",53-65
+org.platformlambda.core.system.LocalPubSub,topicExists,(Ljava/lang/String;)Z,"public boolean topicExists(String topic) {
+        return topic != null && topics.containsKey(topic);
+    }",80-82
+org.platformlambda.core.system.LocalPubSub,subscribe,(Ljava/lang/String;Ljava/lang/String;)Z,"public boolean subscribe(String topic, String memberRoute) {
+        Utility util = Utility.getInstance();
+        if (!util.validServiceName(topic)) {
+            throw new IllegalArgumentException(""Invalid topic name"");
+        }
+        if (!util.validServiceName(memberRoute)) {
+            throw new IllegalArgumentException(""Invalid member route"");
+        }
+        if (topicExists(topic)) {
+            List<String> members = topics.getOrDefault(topic, new ArrayList<>());
+            if (members.contains(memberRoute)) {
+                log.warn(""{} already subscribed to {}"", memberRoute, topic);
+                return false;
+            } else {
+                members.add(memberRoute);
+                topics.put(topic, members);
+                log.info(""{} subscribed to {}"", memberRoute, topic);
+                return true;
+            }
+        } else {
+            throw new IllegalArgumentException(""Topic ""+topic+"" does not exist"");
+        }
+    }",88-110

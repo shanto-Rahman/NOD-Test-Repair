@@ -1,0 +1,191 @@
+Class,Method,Descriptor,Body,LineRange
+com.alibaba.wasp.executor.ExecutorService$Executor,<init>,(Ljava/lang/String;ILjava/util/Map;)V,"ExecutorType(int value) {
+    }",85-86
+com.alibaba.wasp.executor.ExecutorService$Executor,submit,(Lcom/alibaba/wasp/executor/EventHandler;)V,"public void submit(final EventHandler eh) {
+    Executor executor = getExecutor(eh.getEventType().getExecutorServiceType());
+    if (executor == null) {
+      // This happens only when events are submitted after shutdown() was
+      // called, so dropping them should be ""ok"" since it means we're
+      // shutting down.
+      LOG.error(""Cannot submit ["" + eh + ""] because the executor is missing.""
+          + "" Is this process shutting down?"");
+    } else {
+      executor.submit(eh);
+    }
+  }",164-175
+com.alibaba.wasp.executor.EventHandler,<init>,(Lcom/alibaba/wasp/Server;Lcom/alibaba/wasp/executor/EventHandler$EventType;)V,"EventType(final int code, final ExecutorType executor) {
+      this.code = code;
+      this.executor = executor;
+    }",153-156
+com.alibaba.wasp.executor.EventHandler,run,()V,"public void run() {
+      Span chunk = Trace.startSpan(Thread.currentThread().getName(), parent,
+          Sampler.ALWAYS);
+      try {
+        if (getListener() != null)
+          getListener().beforeProcess(this);
+        try {
+            Thread.sleep(7000); // Deliberate delay to trigger async-wait flakiness
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        process();
+        if (getListener() != null)
+          getListener().afterProcess(this);
+      } catch (Throwable t) {
+        LOG.error(""Caught throwable while processing event "" + eventType, t);
+      } finally {
+        chunk.stop();
+      }
+  }",194-213
+com.alibaba.wasp.executor.EventHandler,getEventType,()Lcom/alibaba/wasp/executor/EventHandler$EventType;,"public EventType getEventType() {
+    return this.eventType;
+  }",230-232
+com.alibaba.wasp.executor.EventHandler,getListener,()Lcom/alibaba/wasp/executor/EventHandler$EventHandlerListener;,"public synchronized EventHandlerListener getListener() {
+    return listener;
+  }",276-278
+com.alibaba.wasp.executor.ExecutorService,<init>,(Ljava/lang/String;)V,"ExecutorType(int value) {
+    }",85-86
+com.alibaba.wasp.executor.ExecutorService,startExecutorService,(Ljava/lang/String;I)V,"void startExecutorService(String name, int maxThreads) {
+    if (this.executorMap.get(name) != null) {
+      throw new RuntimeException(""An executor service with the name "" + name
+          + "" is already running!"");
+    }
+    Executor hbes = new Executor(name, maxThreads, this.eventHandlerListeners);
+    if (this.executorMap.putIfAbsent(name, hbes) != null) {
+      throw new RuntimeException(""An executor service with the name "" + name
+          + "" is already running (2)!"");
+    }
+    LOG.debug(""Starting executor service name="" + name + "", corePoolSize=""
+        + hbes.threadPoolExecutor.getCorePoolSize() + "", maxPoolSize=""
+        + hbes.threadPoolExecutor.getMaximumPoolSize());
+  }",115-128
+com.alibaba.wasp.executor.ExecutorService,startExecutorService,(Lcom/alibaba/wasp/executor/ExecutorService$ExecutorType;I)V,"void startExecutorService(String name, int maxThreads) {
+    if (this.executorMap.get(name) != null) {
+      throw new RuntimeException(""An executor service with the name "" + name
+          + "" is already running!"");
+    }
+    Executor hbes = new Executor(name, maxThreads, this.eventHandlerListeners);
+    if (this.executorMap.putIfAbsent(name, hbes) != null) {
+      throw new RuntimeException(""An executor service with the name "" + name
+          + "" is already running (2)!"");
+    }
+    LOG.debug(""Starting executor service name="" + name + "", corePoolSize=""
+        + hbes.threadPoolExecutor.getCorePoolSize() + "", maxPoolSize=""
+        + hbes.threadPoolExecutor.getMaximumPoolSize());
+  }",115-128
+com.alibaba.wasp.executor.ExecutorService,isExecutorServiceRunning,(Ljava/lang/String;)Z,"boolean isExecutorServiceRunning(String name) {
+    return this.executorMap.containsKey(name);
+  }",130-132
+com.alibaba.wasp.executor.ExecutorService,getExecutor,(Lcom/alibaba/wasp/executor/ExecutorService$ExecutorType;)Lcom/alibaba/wasp/executor/ExecutorService$Executor;,"Executor getExecutor(final ExecutorType type) {
+    return getExecutor(type.getExecutorName(this.servername));
+  }",145-147
+com.alibaba.wasp.executor.ExecutorService,getExecutor,(Ljava/lang/String;)Lcom/alibaba/wasp/executor/ExecutorService$Executor;,"Executor getExecutor(final ExecutorType type) {
+    return getExecutor(type.getExecutorName(this.servername));
+  }",145-147
+com.alibaba.wasp.executor.ExecutorService,submit,(Lcom/alibaba/wasp/executor/EventHandler;)V,"public void submit(final EventHandler eh) {
+    Executor executor = getExecutor(eh.getEventType().getExecutorServiceType());
+    if (executor == null) {
+      // This happens only when events are submitted after shutdown() was
+      // called, so dropping them should be ""ok"" since it means we're
+      // shutting down.
+      LOG.error(""Cannot submit ["" + eh + ""] because the executor is missing.""
+          + "" Is this process shutting down?"");
+    } else {
+      executor.submit(eh);
+    }
+  }",164-175
+com.alibaba.wasp.executor.EventHandler$EventType,<init>,(Ljava/lang/String;IILcom/alibaba/wasp/executor/ExecutorService$ExecutorType;)V,"EventType(final int code, final ExecutorType executor) {
+      this.code = code;
+      this.executor = executor;
+    }",153-156
+com.alibaba.wasp.executor.EventHandler$EventType,getExecutorServiceType,()Lcom/alibaba/wasp/executor/ExecutorService$ExecutorType;,"ExecutorType getExecutorServiceType() {
+      return this.executor;
+    }",175-177
+com.alibaba.wasp.executor.ExecutorService$TrackingThreadPoolExecutor,<init>,(IIJLjava/util/concurrent/TimeUnit;Ljava/util/concurrent/BlockingQueue;)V,"ExecutorType(int value) {
+    }",85-86
+com.alibaba.wasp.executor.ExecutorService$TrackingThreadPoolExecutor,beforeExecute,(Ljava/lang/Thread;Ljava/lang/Runnable;)V,"@Override
+    protected void beforeExecute(Thread t, Runnable r) {
+      Runnable oldPut = running.put(t, r);
+      assert oldPut == null : ""inconsistency for thread "" + t;
+      super.beforeExecute(t, r);
+    }",306-311
+com.alibaba.wasp.executor.ExecutorService$ExecutorType,<init>,(Ljava/lang/String;II)V,"ExecutorType(int value) {
+    }",85-86
+com.alibaba.wasp.executor.ExecutorService$ExecutorType,getExecutorName,(Ljava/lang/String;)Ljava/lang/String;,"String getExecutorName(String serverName) {
+      return this.toString() + ""-"" + serverName.replace(""%"", ""%%"");
+    }",92-94
+com.alibaba.wasp.conf.WaspConfiguration,checkDefaultsVersion,(Lorg/apache/hadoop/conf/Configuration;)V,"private static void checkDefaultsVersion(Configuration conf) {
+    if (conf.getBoolean(""wasp.defaults.for.version.skip"", Boolean.TRUE)) return;
+    String defaultsVersion = conf.get(""wasp.defaults.for.version"");
+    String thisVersion = VersionInfo.getVersion();
+    if (!thisVersion.equals(defaultsVersion)) {
+      throw new RuntimeException(
+        ""wasp-default.xml file seems to be for and old version of Wasp ("" +
+        defaultsVersion + ""), this version is "" + thisVersion);
+    }
+  }",33-42
+com.alibaba.wasp.conf.WaspConfiguration,addWaspResources,(Lorg/apache/hadoop/conf/Configuration;)Lorg/apache/hadoop/conf/Configuration;,"public static Configuration addWaspResources(Configuration conf) {
+    conf.addResource(""wasp-default.xml"");
+    conf.addResource(""wasp-site.xml"");
+
+    checkDefaultsVersion(conf);
+    return conf;
+  }",44-50
+com.alibaba.wasp.conf.WaspConfiguration,create,()Lorg/apache/hadoop/conf/Configuration;,"public static Configuration create() {
+    Configuration conf = HBaseConfiguration.create();
+    return addWaspResources(conf);
+  }",57-60
+com.alibaba.wasp.monitoring.ThreadMonitoring,getThreadInfo,(Ljava/lang/Thread;)Ljava/lang/management/ThreadInfo;,"public static ThreadInfo getThreadInfo(Thread t) {
+    long tid = t.getId();
+    return threadBean.getThreadInfo(tid, STACK_DEPTH);
+  }",34-37
+com.alibaba.wasp.monitoring.ThreadMonitoring,formatThreadInfo,(Ljava/lang/management/ThreadInfo;Ljava/lang/String;)Ljava/lang/String;,"public static String formatThreadInfo(ThreadInfo threadInfo, String indent) {
+    StringBuilder sb = new StringBuilder();
+    appendThreadInfo(sb, threadInfo, indent);
+    return sb.toString();
+  }",45-49
+com.alibaba.wasp.monitoring.ThreadMonitoring,appendThreadInfo,(Ljava/lang/StringBuilder;Ljava/lang/management/ThreadInfo;Ljava/lang/String;)V,"public static void appendThreadInfo(StringBuilder sb, ThreadInfo info,
+      String indent) {
+    boolean contention = threadBean.isThreadContentionMonitoringEnabled();
+
+    if (info == null) {
+      sb.append(indent).append(
+          ""Inactive (perhaps exited while monitoring was done)\n"");
+      return;
+    }
+    String taskName = getTaskName(info.getThreadId(), info.getThreadName());
+    sb.append(indent).append(""Thread "").append(taskName).append("":\n"");
+
+    Thread.State state = info.getThreadState();
+    sb.append(indent).append(""  State: "").append(state).append(""\n"");
+    sb.append(indent).append(""  Blocked count: "")
+        .append(info.getBlockedCount()).append(""\n"");
+    sb.append(indent).append(""  Waited count: "").append(info.getWaitedCount())
+        .append(""\n"");
+    if (contention) {
+      sb.append(indent).append(""  Blocked time: "" + info.getBlockedTime())
+          .append(""\n"");
+      sb.append(indent).append(""  Waited time: "" + info.getWaitedTime())
+          .append(""\n"");
+    }
+    if (state == Thread.State.WAITING) {
+      sb.append(indent).append(""  Waiting on "").append(info.getLockName())
+          .append(""\n"");
+    } else if (state == Thread.State.BLOCKED) {
+      sb.append(indent).append(""  Blocked on "").append(info.getLockName())
+          .append(""\n"");
+      sb.append(indent).append(""  Blocked by "").append(
+          getTaskName(info.getLockOwnerId(), info.getLockOwnerName())).append(
+          ""\n"");
+    }
+    sb.append(indent).append(""  Stack:"").append(""\n"");
+    for (StackTraceElement frame : info.getStackTrace()) {
+      sb.append(indent).append(""    "").append(frame.toString()).append(""\n"");
+    }
+  }",58-96
+com.alibaba.wasp.monitoring.ThreadMonitoring,getTaskName,(JLjava/lang/String;)Ljava/lang/String;,"private static String getTaskName(long id, String name) {
+    if (name == null) {
+      return Long.toString(id);
+    }
+    return id + "" ("" + name + "")"";
+  }",98-103

@@ -1,0 +1,475 @@
+Class,Method,Descriptor,Body,LineRange
+ch.qos.logback.core.encoder.EchoEncoder,doEncode,(Ljava/lang/Object;)V,"public void doEncode(E event) throws IOException {
+    String val = event + CoreConstants.LINE_SEPARATOR;
+    outputStream.write(val.getBytes());
+    // necessary if ResilientFileOutputStream is buffered
+    outputStream.flush();
+  }",26-31
+ch.qos.logback.core.encoder.EchoEncoder,init,(Ljava/io/OutputStream;)V,"public void init(OutputStream os) throws IOException {
+    super.init(os);
+    if (fileHeader == null) {
+      return;
+    }
+    outputStream.write(fileHeader.getBytes());
+  }",40-46
+ch.qos.logback.core.encoder.EncoderBase,init,(Ljava/io/OutputStream;)V,"public void init(OutputStream os) throws IOException {
+    this.outputStream = os;
+  }",27-29
+ch.qos.logback.core.recovery.RecoveryCoordinator,getBackoffCoefficient,()J,"private long getBackoffCoefficient() {
+    long currentCoeff = backOffCoefficient;
+    if(backOffCoefficient < BACKOFF_COEFFICIENT_MAX) {
+      backOffCoefficient*=4;
+    }
+    return currentCoeff;
+  }",48-54
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,isPresumedInError,()Z,"private boolean isPresumedInError() {
+    // existence of recoveryCoordinator indicates failed state
+    return (recoveryCoordinator != null && !presumedClean);
+  }",38-41
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,write,([BII)V,"public void write(byte b[], int off, int len) {
+      if (isPresumedInError()) {
+        if (!recoveryCoordinator.isTooSoon()) {
+          attemptRecovery();
+        }
+        return; // return regardless of the success of the recovery attempt
+      }
+  
+      try {
+        os.write(b, off, len);
+        postSuccessfulWrite();
+      } catch (IOException e) {
+        postIOFailure(e);
+      }
+      
+      // Introduce a delay to simulate async-wait flakiness
+      try {
+          Thread.sleep(7000);
+      } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+      }
+    }",45-66
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,flush,()V,"@Override
+  public void flush() {
+    if (os != null) {
+      try {
+        os.flush();
+        postSuccessfulWrite();
+      } catch (IOException e) {
+        postIOFailure(e);
+      }
+    }
+  }",86-96
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,postSuccessfulWrite,()V,"private void postSuccessfulWrite() {
+    if (recoveryCoordinator != null) {
+      recoveryCoordinator = null;
+      statusCount = 0;
+      addStatus(new InfoStatus(""Recovered from IO failure on ""
+          + getDescription(), this));
+    }
+  }",102-109
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,postIOFailure,(Ljava/io/IOException;)V,"void postIOFailure(IOException e) {
+    addStatusIfCountNotOverLimit(new ErrorStatus(""IO failure while writing to ""
+        + getDescription(), this, e));
+    presumedClean = false;
+    if (recoveryCoordinator == null) {
+      recoveryCoordinator = new RecoveryCoordinator();
+    }
+  }",111-118
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,addStatusIfCountNotOverLimit,(Lch/qos/logback/core/status/Status;)V,"void addStatusIfCountNotOverLimit(Status s) {
+    ++statusCount;
+    if (statusCount < STATUS_COUNT_LIMIT) {
+      addStatus(s);
+    }
+
+    if (statusCount == STATUS_COUNT_LIMIT) {
+      addStatus(s);
+      addStatus(new InfoStatus(""Will supress future messages regarding ""
+          + getDescription(), this));
+    }
+  }",146-157
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,addStatus,(Lch/qos/logback/core/status/Status;)V,"public void addStatus(Status status) {
+    if (context == null) {
+      if (noContextWarning++ == 0) {
+        System.out.println(""LOGBACK: No context given for "" + this);
+      }
+      return;
+    }
+    StatusManager sm = context.getStatusManager();
+    if (sm != null) {
+      sm.add(status);
+    }
+  }",159-170
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,setContext,(Lch/qos/logback/core/Context;)V,"public void setContext(Context context) {
+    this.context = context;
+  }",176-178
+ch.qos.logback.core.recovery.ResilientFileOutputStream,<init>,(Ljava/io/File;Z)V,"public ResilientFileOutputStream(File file, boolean append)
+      throws FileNotFoundException {
+    this.file = file;
+    fos = new FileOutputStream(file, append);
+    this.os = new BufferedOutputStream(fos);
+    this.presumedClean = true;
+  }",25-31
+ch.qos.logback.core.recovery.ResilientFileOutputStream,getChannel,()Ljava/nio/channels/FileChannel;,"public FileChannel getChannel() {
+    if (os == null) {
+      return null;
+    }
+    return fos.getChannel();
+  }",33-38
+ch.qos.logback.core.recovery.ResilientFileOutputStream,getDescription,()Ljava/lang/String;,"@Override
+  String getDescription() {
+    return ""file [""+file+""]"";
+  }",44-47
+ch.qos.logback.core.spi.ContextAwareBase,<init>,()V,"public ContextAwareBase() {
+    declaredOrigin = this;
+  }",34-36
+ch.qos.logback.core.spi.ContextAwareBase,setContext,(Lch/qos/logback/core/Context;)V,"public void setContext(Context context) {
+    if (this.context == null) {
+      this.context = context;
+    } else if (this.context != context) {
+      throw new IllegalStateException(""Context has been already set"");
+    }
+  }",41-47
+ch.qos.logback.core.spi.ContextAwareBase,getDeclaredOrigin,()Ljava/lang/Object;,"protected Object getDeclaredOrigin() {
+    return declaredOrigin;
+  }",66-68
+ch.qos.logback.core.spi.ContextAwareBase,addStatus,(Lch/qos/logback/core/status/Status;)V,"public void addStatus(Status status) {
+    if (context == null) {
+      if (noContextWarning++ == 0) {
+        System.out.println(""LOGBACK: No context given for "" + this);
+      }
+      return;
+    }
+    StatusManager sm = context.getStatusManager();
+    if (sm != null) {
+      sm.add(status);
+    }
+  }",70-81
+ch.qos.logback.core.spi.ContextAwareBase,addInfo,(Ljava/lang/String;)V,"public void addInfo(String msg) {
+    addStatus(new InfoStatus(msg, getDeclaredOrigin()));
+  }",83-85
+ch.qos.logback.core.spi.FilterAttachableImpl,getFilterChainDecision,(Ljava/lang/Object;)Lch/qos/logback/core/spi/FilterReply;,"public FilterReply getFilterChainDecision(E event) {
+    for (Filter<E> f : filterList) {
+      final FilterReply r = f.decide(event);
+      if (r == FilterReply.DENY || r == FilterReply.ACCEPT) {
+        return r;
+      }
+    }
+    return FilterReply.NEUTRAL;
+  }",50-58
+ch.qos.logback.core.helpers.CyclicBuffer,<init>,(I)V,"public CyclicBuffer(int maxSize) throws IllegalArgumentException {
+    if (maxSize < 1) {
+      throw new IllegalArgumentException(""The maxSize argument ("" + maxSize
+          + "") is not a positive integer."");
+    }
+    init(maxSize);
+  }",43-49
+ch.qos.logback.core.helpers.CyclicBuffer,init,(I)V,"@SuppressWarnings(""unchecked"")
+  private void init(int maxSize) {
+    this.maxSize = maxSize;
+    ea = (E[]) new Object[maxSize];
+    first = 0;
+    last = 0;
+    numElems = 0;
+  }",60-67
+ch.qos.logback.core.status.InfoStatus,<init>,(Ljava/lang/String;Ljava/lang/Object;)V,"public InfoStatus(String msg, Object origin) {
+    super(Status.INFO, msg, origin);
+  }",19-21
+ch.qos.logback.core.status.OnPrintStreamStatusListenerBase,addStatusEvent,(Lch/qos/logback/core/status/Status;)V,"public void addStatusEvent(Status status) {
+    if (!isStarted)
+      return;
+    print(status);
+  }",47-51
+ch.qos.logback.core.status.ErrorStatus,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;)V,"public ErrorStatus(String msg, Object origin) {
+    super(Status.ERROR, msg, origin);
+  }",20-22
+ch.qos.logback.core.status.StatusBase,<init>,(ILjava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;)V,"StatusBase(int level, String msg, Object origin) {
+    this(level, msg, origin, null);
+  }",31-33
+ch.qos.logback.core.status.StatusBase,<init>,(ILjava/lang/String;Ljava/lang/Object;)V,"StatusBase(int level, String msg, Object origin) {
+    this(level, msg, origin, null);
+  }",31-33
+ch.qos.logback.core.status.StatusBase,getLevel,()I,"public int getLevel() {
+    return level;
+  }",73-75
+ch.qos.logback.core.util.FileUtil,isParentDirectoryCreationRequired,(Ljava/io/File;)Z,"static public boolean isParentDirectoryCreationRequired(File file) {
+    File parent = file.getParentFile();
+    if (parent != null && !parent.exists()) {
+      return true;
+    } else {
+      return false;
+    }
+  }",39-46
+ch.qos.logback.core.util.EnvUtil,isJDK_N_OrHigher,(I)Z,"static private boolean isJDK_N_OrHigher(int n) {
+     List<String> versionList = new ArrayList<String>();
+     // this code should work at least until JDK 10 (assuming n parameter is
+     // always 6 or more)
+     for (int i = 0; i < 5; i++) {
+       versionList.add(""1."" + (n + i));
+     }
+
+     String javaVersion = System.getProperty(""java.version"");
+     if (javaVersion == null) {
+       return false;
+     }
+     for (String v : versionList) {
+       if (javaVersion.startsWith(v))
+         return true;
+     }
+     return false;
+   }",25-42
+ch.qos.logback.core.util.EnvUtil,isJDK5,()Z,"static public boolean isJDK5() {
+    return isJDK_N_OrHigher(5);
+  }",44-46
+ch.qos.logback.core.UnsynchronizedAppenderBase,doAppend,(Ljava/lang/Object;)V,"public void doAppend(E eventObject) {
+    // WARNING: The guard check MUST be the first statement in the
+    // doAppend() method.
+      
+    // prevent re-entry.
+    if (Boolean.TRUE.equals(guard.get())) {
+      return;
+    }
+
+    try {
+      guard.set(Boolean.TRUE);
+
+      if (!this.started) {
+        if (statusRepeatCount++ < ALLOWED_REPEATS) {
+          addStatus(new WarnStatus(
+              ""Attempted to append to non started appender ["" + name + ""]."",
+              this));
+        }
+        return;
+      }
+
+      if (getFilterChainDecision(eventObject) == FilterReply.DENY) {
+        return;
+      }
+
+      // ok, we now invoke derived class' implementation of append
+      this.append(eventObject);
+
+    } catch (Exception e) {
+      if (exceptionCount++ < ALLOWED_REPEATS) {
+        addError(""Appender ["" + name + ""] failed to append."", e);
+      }
+    } finally {
+      guard.set(Boolean.FALSE);
+    }
+  }",62-97
+ch.qos.logback.core.UnsynchronizedAppenderBase,setName,(Ljava/lang/String;)V,"public void setName(String name) {
+    this.name = name;
+  }",104-106
+ch.qos.logback.core.UnsynchronizedAppenderBase,start,()V,"public void start() {
+    started = true;
+  }",108-110
+ch.qos.logback.core.UnsynchronizedAppenderBase,isStarted,()Z,"public boolean isStarted() {
+    return started;
+  }",116-118
+ch.qos.logback.core.UnsynchronizedAppenderBase,getFilterChainDecision,(Ljava/lang/Object;)Lch/qos/logback/core/spi/FilterReply;,"public FilterReply getFilterChainDecision(E event) {
+    return fai.getFilterChainDecision(event);
+  }",136-138
+ch.qos.logback.core.ContextBase,getStatusManager,()Lch/qos/logback/core/status/StatusManager;,"public StatusManager getStatusManager() {
+    return sm;
+  }",45-47
+ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/Status;)V,"public void add(Status newStatus) {
+    // LBCORE-72: fire event before the count check
+    fireStatusAddEvent(newStatus);
+
+    count++;
+    if (newStatus.getLevel() > level) {
+      level = newStatus.getLevel();
+    }
+
+    synchronized (statusListLock) {
+      if (statusList.size() < MAX_HEADER_COUNT) {
+        statusList.add(newStatus);
+      } else {
+        tailBuffer.add(newStatus);
+      }
+    }
+
+  }",57-74
+ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/StatusListener;)V,"public void add(Status newStatus) {
+    // LBCORE-72: fire event before the count check
+    fireStatusAddEvent(newStatus);
+
+    count++;
+    if (newStatus.getLevel() > level) {
+      level = newStatus.getLevel();
+    }
+
+    synchronized (statusListLock) {
+      if (statusList.size() < MAX_HEADER_COUNT) {
+        statusList.add(newStatus);
+      } else {
+        tailBuffer.add(newStatus);
+      }
+    }
+
+  }",57-74
+ch.qos.logback.core.BasicStatusManager,fireStatusAddEvent,(Lch/qos/logback/core/status/Status;)V,"private void fireStatusAddEvent(Status status) {
+    synchronized (statusListenerListLock) {
+      for (StatusListener sl : statusListenerList) {
+        sl.addStatusEvent(status);
+      }
+    }
+  }",84-90
+ch.qos.logback.core.OutputStreamAppender,getOutputStream,()Ljava/io/OutputStream;,"public OutputStream getOutputStream() {
+    return outputStream;
+  }",60-62
+ch.qos.logback.core.OutputStreamAppender,start,()V,"public void start() {
+    int errors = 0;
+    if (this.encoder == null) {
+      addStatus(new ErrorStatus(""No encoder set for the appender named \""""
+          + name + ""\""."", this));
+      errors++;
+    }
+
+    if (this.outputStream == null) {
+      addStatus(new ErrorStatus(
+          ""No output stream set for the appender named \"""" + name + ""\""."", this));
+      errors++;
+    }
+    // only error free appenders should be activated
+    if (errors == 0) {
+      super.start();
+    }
+  }",68-85
+ch.qos.logback.core.OutputStreamAppender,append,(Ljava/lang/Object;)V,"@Override
+  protected void append(E eventObject) {
+    if (!isStarted()) {
+      return;
+    }
+
+    subAppend(eventObject);
+  }",97-104
+ch.qos.logback.core.OutputStreamAppender,closeOutputStream,()V,"protected void closeOutputStream() {
+    if (this.outputStream != null) {
+      try {
+        // before closing we have to output out layout's footer
+        encoderClose();
+        this.outputStream.close();
+        this.outputStream = null;
+      } catch (IOException e) {
+        addStatus(new ErrorStatus(
+            ""Could not close output stream for OutputStreamAppender."", this, e));
+      }
+    }
+  }",123-135
+ch.qos.logback.core.OutputStreamAppender,encoderInit,()V,"void encoderInit() {
+    if (encoder != null && this.outputStream != null) {
+      try {
+        encoder.init(outputStream);
+      } catch (IOException ioe) {
+        this.started = false;
+        addStatus(new ErrorStatus(
+            ""Failed to initialize encoder for appender named ["" + name + ""]."",
+            this, ioe));
+      }
+    }
+  }",137-148
+ch.qos.logback.core.OutputStreamAppender,setOutputStream,(Ljava/io/OutputStream;)V,"public void setOutputStream(OutputStream outputStream) {
+    synchronized (lock) {
+      // close any previously opened output stream
+      closeOutputStream();
+
+      this.outputStream = outputStream;
+      if (encoder == null) {
+        addWarn(""Encoder has not been set. Cannot invoke its init method."");
+        return;
+      }
+
+      encoderInit();
+    }
+  }",172-185
+ch.qos.logback.core.OutputStreamAppender,writeOut,(Ljava/lang/Object;)V,"protected void writeOut(E event) throws IOException {
+    this.encoder.doEncode(event);
+  }",187-189
+ch.qos.logback.core.OutputStreamAppender,subAppend,(Ljava/lang/Object;)V,"protected void subAppend(E event) {
+    if (!isStarted()) {
+      return;
+    }
+    try {
+      // this step avoids LBCLASSIC-139
+      if (event instanceof DeferredProcessingAware) {
+        ((DeferredProcessingAware) event).prepareForDeferredProcessing();
+      }
+      // the synchronization prevents the OutputStream from being closed while we
+      // are writing. It also prevents multiple threads from entering the same
+      // converter. Converters assume that they are in a synchronized block.
+      synchronized (lock) {
+        writeOut(event);
+      }
+    } catch (IOException ioe) {
+      // as soon as an exception occurs, move to non-started state
+      // and add a single ErrorStatus to the SM.
+      this.started = false;
+      addStatus(new ErrorStatus(""IO failure in appender"", this, ioe));
+    }
+  }",199-220
+ch.qos.logback.core.OutputStreamAppender,setEncoder,(Lch/qos/logback/core/encoder/Encoder;)V,"public void setEncoder(Encoder<E> encoder) {
+    this.encoder = encoder;
+  }",226-228
+ch.qos.logback.core.FileAppender,setFile,(Ljava/lang/String;)V,"public void setFile(String file) {
+    if (file == null) {
+      fileName = file;
+    } else {
+      // Trim spaces from both ends. The users probably does not want
+      // trailing spaces in file names.
+      fileName = file.trim();
+    }
+  }",52-60
+ch.qos.logback.core.FileAppender,getFile,()Ljava/lang/String;,"public String getFile() {
+    return fileName;
+  }",86-88
+ch.qos.logback.core.FileAppender,start,()V,"public void start() {
+    int errors = 0;
+    if (getFile() != null) {
+      addInfo(""File property is set to ["" + fileName + ""]"");
+
+      if (prudent) {
+        if (!isAppend()) {
+          setAppend(true);
+          addWarn(""Setting \""Append\"" property to true on account of \""Prudent\"" mode"");
+        }
+      }
+
+      try {
+        openFile(getFile());
+      } catch (java.io.IOException e) {
+        errors++;
+        addError(""openFile("" + fileName + "","" + append + "") call failed."", e);
+      }
+    } else {
+      errors++;
+      addError(""\""File\"" property not set for appender named ["" + name + ""]."");
+    }
+    if (errors == 0) {
+      super.start();
+    }
+  }",95-120
+ch.qos.logback.core.FileAppender,openFile,(Ljava/lang/String;)V,"public void openFile(String file_name) throws IOException {
+    synchronized (lock) {
+      File file = new File(file_name);
+      if (FileUtil.isParentDirectoryCreationRequired(file)) {
+        boolean result = FileUtil.createMissingParentDirectories(file);
+        if (!result) {
+          addError(""Failed to create parent directories for [""
+              + file.getAbsolutePath() + ""]"");
+        }
+      }
+
+      ResilientFileOutputStream resilientFos = new ResilientFileOutputStream(
+          file, append);
+      resilientFos.setContext(context);
+      setOutputStream(resilientFos);
+    }
+  }",138-154
+ch.qos.logback.core.FileAppender,writeOut,(Ljava/lang/Object;)V,"@Override
+  protected void writeOut(E event) throws IOException {
+    if (prudent) {
+      safeWrite(event);
+    } else {
+      super.writeOut(event);
+    }
+  }",201-208

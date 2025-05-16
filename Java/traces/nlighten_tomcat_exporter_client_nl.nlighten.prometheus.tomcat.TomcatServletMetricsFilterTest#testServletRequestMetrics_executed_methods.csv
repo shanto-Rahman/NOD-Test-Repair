@@ -1,0 +1,15 @@
+Package,Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatJdbcInterceptor,<init>,()V,2,2,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatJdbcInterceptor,setProperties,(Ljava/util/Map;)V,44,46,95.7%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatJdbcInterceptor,reportFailedQuery,(Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;JLjava/lang/Throwable;)Ljava/lang/String;,7,7,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatJdbcInterceptor,reportQuery,(Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;JJ)Ljava/lang/String;,5,5,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatJdbcInterceptor,closeInvoked,()V,1,1,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatJdbcInterceptor,poolStarted,(Lorg/apache/tomcat/jdbc/pool/ConnectionPool;)V,2,2,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatJdbcInterceptor,reset,(Lorg/apache/tomcat/jdbc/pool/ConnectionPool;Lorg/apache/tomcat/jdbc/pool/PooledConnection;)V,2,2,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilter,<init>,()V,1,1,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilter,init,(Ljavax/servlet/FilterConfig;)V,24,25,96.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilter,doFilter,(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;)V,16,21,76.2%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilter,getStatus,(Ljavax/servlet/http/HttpServletResponse;)I,1,3,33.3%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilter,getContext,(Ljavax/servlet/http/HttpServletRequest;)Ljava/lang/String;,2,3,66.7%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilter,destroy,()V,1,1,100.0%
+nl/nlighten/prometheus/tomcat,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilter,<clinit>,()V,1,1,100.0%

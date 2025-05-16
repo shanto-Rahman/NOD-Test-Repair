@@ -1,4 +1,4 @@
-Class,Method,Descriptor,Body,LineRange
+Class,Method,Descriptor,Body,LineRange,CallDepth
 org.apache.uniffle.common.metrics.GRPCMetrics,register,(Lio/prometheus/client/CollectorRegistry;)V,"public void register(CollectorRegistry collectorRegistry) {
     if (!isRegistered) {
       metricsManager = new MetricsManager(collectorRegistry);
@@ -6,7 +6,7 @@ org.apache.uniffle.common.metrics.GRPCMetrics,register,(Lio/prometheus/client/Co
       registerMetrics();
       isRegistered = true;
     }
-  }",52-59
+  }",52-59,-1
 org.apache.uniffle.common.metrics.GRPCMetrics,registerGeneralMetrics,()V,"private void registerGeneralMetrics() {
     gaugeGrpcOpen = metricsManager.addGauge(GRPC_OPEN);
     counterGrpcTotal = metricsManager.addCounter(GRPC_TOTAL);
@@ -22,7 +22,7 @@ org.apache.uniffle.common.metrics.GRPCMetrics,registerGeneralMetrics,()V,"privat
             GRPC_SERVER_CONNECTION_NUMBER_KEY,
         metricsManager.addGauge(GRPC_SERVER_CONNECTION_NUMBER)
     );
-  }",61-76
+  }",61-76,2
 org.apache.uniffle.common.metrics.GRPCMetrics,setGauge,(Ljava/lang/String;D)V,"public void setGauge(String tag, double value) {
     if (isRegistered) {
       Gauge gauge = gaugeMap.get(tag);
@@ -30,37 +30,37 @@ org.apache.uniffle.common.metrics.GRPCMetrics,setGauge,(Ljava/lang/String;D)V,"p
         gauge.set(value);
       }
     }
-  }",78-85
+  }",78-85,-1
 org.apache.uniffle.common.metrics.GRPCMetrics,incGauge,(Ljava/lang/String;D)V,"public void incGauge(String tag) {
     incGauge(tag, 1);
-  }",87-89
+  }",87-89,-1
 org.apache.uniffle.common.metrics.GRPCMetrics,incGauge,(Ljava/lang/String;)V,"public void incGauge(String tag) {
     incGauge(tag, 1);
-  }",87-89
+  }",87-89,-1
 org.apache.uniffle.common.metrics.GRPCMetrics,decGauge,(Ljava/lang/String;)V,"public void decGauge(String tag) {
     decGauge(tag, 1);
-  }",100-102
+  }",100-102,-1
 org.apache.uniffle.common.metrics.GRPCMetrics,decGauge,(Ljava/lang/String;D)V,"public void decGauge(String tag) {
     decGauge(tag, 1);
-  }",100-102
+  }",100-102,-1
 org.apache.uniffle.common.metrics.GRPCMetrics,getGaugeMap,()Ljava/util/Map;,"public Map<String, Gauge> getGaugeMap() {
     return gaugeMap;
-  }",160-162
+  }",160-162,1
 org.apache.uniffle.common.metrics.MetricsManager,<init>,(Lio/prometheus/client/CollectorRegistry;)V,"public MetricsManager() {
     this(null);
-  }",31-33
+  }",31-33,-1
 org.apache.uniffle.common.metrics.MetricsManager,addCounter,(Ljava/lang/String;[Ljava/lang/String;)Lio/prometheus/client/Counter;,"public Counter addCounter(String name, String... labels) {
     return addCounter(name, ""Counter "" + name, labels);
-  }",47-49
+  }",47-49,-1
 org.apache.uniffle.common.metrics.MetricsManager,addCounter,(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Lio/prometheus/client/Counter;,"public Counter addCounter(String name, String... labels) {
     return addCounter(name, ""Counter "" + name, labels);
-  }",47-49
+  }",47-49,-1
 org.apache.uniffle.common.metrics.MetricsManager,addGauge,(Ljava/lang/String;[Ljava/lang/String;)Lio/prometheus/client/Gauge;,"public Gauge addGauge(String name, String... labels) {
     return addGauge(name, ""Gauge "" + name, labels);
-  }",55-57
+  }",55-57,-1
 org.apache.uniffle.common.metrics.MetricsManager,addGauge,(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Lio/prometheus/client/Gauge;,"public Gauge addGauge(String name, String... labels) {
     return addGauge(name, ""Gauge "" + name, labels);
-  }",55-57
+  }",55-57,-1
 org.apache.uniffle.common.rpc.GrpcServer$GrpcThreadPoolExecutor,<init>,(IIJLjava/util/concurrent/TimeUnit;Ljava/util/concurrent/BlockingQueue;Ljava/util/concurrent/ThreadFactory;Lorg/apache/uniffle/common/metrics/GRPCMetrics;)V,"protected GrpcServer(
       RssBaseConf conf,
       List<Pair<BindableService, List<ServerInterceptor>>> servicesWithInterceptors,
@@ -98,21 +98,21 @@ org.apache.uniffle.common.rpc.GrpcServer$GrpcThreadPoolExecutor,<init>,(IIJLjava
       builder.addService(ServerInterceptors.intercept(serviceWithInterceptors.getLeft(), interceptors));
     });
     this.server = builder.build();
-  }",54-91
+  }",54-91,-1
 org.apache.uniffle.common.rpc.GrpcServer$GrpcThreadPoolExecutor,beforeExecute,(Ljava/lang/Thread;Ljava/lang/Runnable;)V,"@Override
     protected void beforeExecute(Thread t, Runnable r) {
       grpcMetrics.incGauge(GRPCMetrics.GRPC_SERVER_EXECUTOR_ACTIVE_THREADS_KEY);
       grpcMetrics.setGauge(GRPCMetrics.GRPC_SERVER_EXECUTOR_BLOCKING_QUEUE_SIZE_KEY,
           getQueue().size());
       super.beforeExecute(t, r);
-    }",140-146
+    }",140-146,-1
 org.apache.uniffle.common.rpc.GrpcServer$GrpcThreadPoolExecutor,afterExecute,(Ljava/lang/Runnable;Ljava/lang/Throwable;)V,"@Override
     protected void afterExecute(Runnable r, Throwable t) {
       grpcMetrics.decGauge(GRPCMetrics.GRPC_SERVER_EXECUTOR_ACTIVE_THREADS_KEY);
       grpcMetrics.setGauge(GRPCMetrics.GRPC_SERVER_EXECUTOR_BLOCKING_QUEUE_SIZE_KEY,
           getQueue().size());
       super.afterExecute(r, t);
-    }",148-154
+    }",148-154,-1
 org.apache.uniffle.common.util.ThreadUtils,getThreadFactory,(Ljava/lang/String;)Ljava/util/concurrent/ThreadFactory;,"public static ThreadFactory getThreadFactory(String factoryName) {
     return new ThreadFactoryBuilder().setDaemon(true).setNameFormat(factoryName).build();
-  }",29-31
+  }",29-31,-1
