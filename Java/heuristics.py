@@ -40,3 +40,33 @@ def rank_methods_by_similarity(test_code_csv: str, method_csv: str) -> pd.DataFr
 
     return method_df
 
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+
+def clustering_methods(test_code_csv: str, method_csv: str, n_clusters: int = 5) -> pd.DataFrame:
+    
+    # Load the test and method CSVs
+    #test_code_csv = "test_code.csv"
+    #method_csv = "method-under-test.csv"
+    
+    # Read method CSV
+    method_df = pd.read_csv(method_csv)
+    
+    # Extract method bodies
+    method_bodies = method_df["Body"].fillna("")
+    
+    # Convert method bodies to TF-IDF features
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(method_bodies)
+    
+    # Perform clustering (e.g., into 5 clusters)
+    n_clusters = 5
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    clusters = kmeans.fit_predict(X)
+    
+    # Add cluster label to dataframe
+    method_df["Cluster"] = clusters
+    print(method_df)
+    return method_df
+
