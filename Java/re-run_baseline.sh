@@ -30,8 +30,7 @@ then
 fi
 
 
-test_specific_stat="$currentDir/$outputDir/Test-Specific-Stat.csv"
-echo "Project-Name,SHA,Module,Test-Name,Failure-Found" > "$currentDir/$outputDir/Re-run-Baseline-Result.csv"
+echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Time" > "$currentDir/$outputDir/Re-run-Baseline-Result.csv"
 
 while IFS= read -r line
     do
@@ -99,22 +98,25 @@ while IFS= read -r line
     slug_with_underscore="${slug//\//_}"
     module_with_underscore="${module//\//_}"
     echo "$slug_with_underscore"
-    
-    for i in {1..10000}; do
+   
+    start=$(date +%s.%N)
+    for i in {1..5}; do
         echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName"
         #exit
         mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$logs/$id-$testName-$i.txt"
 
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$id-$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
-
             echo -n "${bugCount};" >> "$currentDir/$outputDir/Re-run-Baseline-Result.csv"
             echo "Failure found."
         else
             echo -n "${bugCount};" >> "$currentDir/$outputDir/Re-run-Baseline-Result.csv"
             echo "Failure not found."
         fi
-
-        echo "" >> "$currentDir/$outputDir/Re-run-Baseline-Result.csv"
     done
+    end=$(date +%s.%N)
+    take=$(echo "scale=2; ${end} - ${start}" | bc)
+    take=$(echo $take | awk '{printf("%.2f\n", $1) }')
+    echo ",$take" >> "$currentDir/$outputDir/Re-run-Baseline-Result.csv"
+    exit
 done < $1
