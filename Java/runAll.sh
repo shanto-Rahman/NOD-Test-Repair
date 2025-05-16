@@ -102,7 +102,6 @@ while IFS= read -r line
     else
         mvn install -pl $module -am -DskipTests
     fi
-
     slug_with_underscore="${slug//\//_}"
     module_with_underscore="${module//\//_}"
     echo "$slug_with_underscore"
@@ -383,6 +382,7 @@ while IFS= read -r line
     fi
     python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
     echo "python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir"
+
     #exit
     #echo "matched_calls===$matched_calls"
 
@@ -396,14 +396,15 @@ while IFS= read -r line
 
     echo " python3 $currentDir/collect_method_body.py $module $testName $slug ${modules_array[@]}"
     result=$(python3 $currentDir/collect_method_body.py $module   "$testName" "$slug" "${modules_array[@]}")
+    echo "result=$result"
     executed_methods=$(echo "$result" | cut -d'=' -f2 | cut -d':' -f1)
     total_tokens=$(echo "$result" | cut -d'=' -f3)
 
     echo "Executed methods: $executed_methods"
     echo "Total tokens:      $total_tokens"
 
-    echo "$slug,$sha,$module,$testName,$executed_methods,$tokens" >> $test_specific_stat
 
+    echo "$slug,$sha,$module,$testName,$executed_methods,$total_tokens" >> $test_specific_stat
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")

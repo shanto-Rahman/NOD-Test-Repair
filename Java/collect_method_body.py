@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from tree_sitter import Parser
 from tree_sitter_languages import get_language
+import re
 
 # Parse input arguments
 #main_module, test_name, slug, *modules = sys.argv[1:]
