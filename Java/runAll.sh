@@ -364,17 +364,13 @@ while IFS= read -r line
       $CLASSFILES \
       $SOURCEFILES \
       --xml $module/target/coverage.xml"
-    #echo "java -jar jacococli.jar report $module/target/jacoco.exec \
-    #  --classfiles $module/target/classes \
-    #    --sourcefiles $module/src/main/java \
-    #      --xml $module/target/coverage.xml"
-    executed_methods_count_and_total_token_count=$(python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug")
-    executed_methods=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f2 | cut -d':' -f1 | tr -d ' ')
-    total_tokens=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f3 | tr -d ' ')
-    echo "$slug,$sha,$module,$testName,$executed_methods,$total_tokens" >> $test_specific_stat
+    #executed_methods_count_and_total_token_count=$(
+    python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug" 
+    #)
+    #executed_methods=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f2 | cut -d':' -f1 | tr -d ' ')
+    #total_tokens_desc=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f3 | tr -d ' ')
 
     echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
-
     test_class_full_path=$(find $module -name "${testClass}.java")
     echo "test_class_full_path=$test_class_full_path"
 
@@ -399,7 +395,14 @@ while IFS= read -r line
     #echo $all_dependent_modules_including_the_main_module
 
     echo " python3 $currentDir/collect_method_body.py $module $testName $slug ${modules_array[@]}"
-    python3 $currentDir/collect_method_body.py $module   "$testName" "$slug" "${modules_array[@]}"
+    result=$(python3 $currentDir/collect_method_body.py $module   "$testName" "$slug" "${modules_array[@]}")
+    executed_methods=$(echo "$result" | cut -d'=' -f2 | cut -d':' -f1)
+    total_tokens=$(echo "$result" | cut -d'=' -f3)
+
+    echo "Executed methods: $executed_methods"
+    echo "Total tokens:      $total_tokens"
+
+    echo "$slug,$sha,$module,$testName,$executed_methods,$tokens" >> $test_specific_stat
 
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"

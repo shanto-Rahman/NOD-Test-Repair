@@ -21,25 +21,44 @@ for package in root.findall("package"):
             method_name = method.get("name")
             desc = method.get("desc")
             # Determine if the method was executed
-            line_counters = method.findall("counter[@type='LINE']")
-            for counter in line_counters:
+            line_counter = method.find("counter[@type='LINE']")
+
+            if line_counter is None:
+                continue
+            covered = int(line_counter.get("covered", 0))
+            missed  = int(line_counter.get("missed", 0))
+            total   = covered + missed
+            if total == 0:
+                pct = 0.0
+            else:
+                pct = covered / total * 100.0
+            
+            # record only methods that were executed at least once
+            if covered > 0:
+                executed_methods.append([
+                    package_name, class_name, method_name, desc,
+                    covered, total, f"{pct:.1f}%"
+                ])
+            
+            '''for counter in line_counters:
                 covered = int(counter.get("covered", 0))
                 if covered > 0:
                     executed_methods.append([package_name, class_name, method_name, desc])
-                    break  # If covered once, record and skip rest
+                    break'''  # If covered once, record and skip rest
 
 # Write to CSV
 executed_meth_csv = slug+"_"+module_with_underscore+"_"+test_name+"_executed_methods.csv"
 with open(executed_meth_csv, "w", newline="") as f:
     writer = csv.writer(f)
-    writer.writerow(["Package", "Class", "Method", "Descriptor"])
+    writer.writerow(["Package", "Class", "Method", "Descriptor", "Lines Covered", "Total Lines", "Coverage %"])
     writer.writerows(executed_methods)
 
 
 def count_total_tokens(methods):
     import re
     total = 0
-    for _, _, _, desc in methods:
+    for _, _, _, desc, _, _, _ in methods:
+        print('***desc=', desc)
         tokens = re.findall(r'\w+', desc)
         total += len(tokens)
     return total

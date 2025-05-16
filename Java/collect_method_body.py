@@ -12,10 +12,10 @@ test_name = sys.argv[2]
 slug = sys.argv[3]
 modules = sys.argv[4:]
 
-print(main_module)
-print(test_name)
-print(slug)
-print(modules)
+#print(main_module)
+#print(test_name)
+#print(slug)
+#print(modules)
 
 module_with_underscore = "_".join([m.replace("/", "_") for m in modules])
 main_module_with_underscore = main_module.replace("/", "_")
@@ -103,7 +103,18 @@ with open(output_csv, "w", newline="") as f:
     writer.writerow(["Class", "Method", "Descriptor", "Body", "LineRange"])
     writer.writerows(extracted)
 
-print(f"[INFO] Extracted {len(extracted)} method bodies to: {output_csv}")
+# 1) Number of executed methods we actually extracted
+executed_methods_count = len(extracted)
+
+# 2) Total token count across all extracted method bodies
+total_token_count = sum(
+    len(re.findall(r"\w+", body))
+        for (_, _, _, body, _) in extracted
+            )
+
+print(f"executed_methods_count={executed_methods_count}:total_token_count={total_token_count}")
+
+#print(f"[INFO] Extracted {len(extracted)} method bodies to: {output_csv}")
 
 
 #import csv
