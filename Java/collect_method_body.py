@@ -95,7 +95,8 @@ for class_name in class_to_methods:
             found = True
             break
     if not found:
-        print(f"[WARN] Source not found for: {class_name}")
+        #print(f"[WARN] Source not found for: {class_name}")
+        print(f"[WARN] Source not found for: {class_name}", file=sys.stderr)
 
 # Save extracted methods
 output_csv = f"{slug}_{main_module_with_underscore}_{test_name}_executed_method_bodies.csv"
