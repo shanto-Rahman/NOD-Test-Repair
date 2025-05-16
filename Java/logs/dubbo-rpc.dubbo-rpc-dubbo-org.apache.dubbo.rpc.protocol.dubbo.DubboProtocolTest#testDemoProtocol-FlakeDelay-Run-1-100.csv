@@ -1,0 +1,29 @@
+Failure
+"Running org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest
+2025-05-04 12:27:18,421 INFO [org.apache.dubbo.common.logger.LoggerFactory:?] - using logger: org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter
+2025-05-04 12:34:28,181 INFO [org.apache.dubbo.remoting.transport.AbstractServer:<init>] -  [DUBBO] Start NettyServer bind /0.0.0.0:9020, export /127.0.0.1:9020, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-04 12:35:27,098 INFO [org.apache.dubbo.remoting.transport.AbstractClient:connect] -  [DUBBO] Successed connect to server /172.17.0.1:9020 from NettyClient 172.17.0.1 using dubbo version 2.7.0-SNAPSHOT, channel is NettyChannel [channel=[id: 0x56322ae0, L:/172.17.0.1:39850 - R:/172.17.0.1:9020]], dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-04 12:35:28,201 INFO [org.apache.dubbo.remoting.transport.AbstractClient:<init>] -  [DUBBO] Start NettyClient /172.17.0.1 connect to the server /172.17.0.1:9020, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 607.573 sec <<< FAILURE! - in org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest
+testDemoProtocol(org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest)  Time elapsed: 521.76 sec  <<< ERROR!
+org.apache.dubbo.rpc.RpcException: Invoke remote method timeout. method: getSize, provider: dubbo://127.0.0.1:9020/org.apache.dubbo.rpc.protocol.dubbo.support.DemoService?codec=exchange, cause: Sending request timeout in client-side. start time: 2025-05-04 12:37:17.847, end time: 2025-05-04 12:37:22.658, elapsed: 4811 ms, timeout: 1000 ms, request: Request [id=2, version=2.0.2, twoway=true, event=false, broken=false, data=RpcInvocation [methodName=getSize, parameterTypes=[class [Ljava.lang.String;], arguments=[[Ljava.lang.String;@c0c2f8d], attachments={path=org.apache.dubbo.rpc.protocol.dubbo.support.DemoService, version=0.0.0}]], channel: /172.17.0.1:39850 -> /172.17.0.1:9020
+	at org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest.testDemoProtocol(DubboProtocolTest.java:56)
+Caused by: org.apache.dubbo.remoting.TimeoutException: Sending request timeout in client-side. start time: 2025-05-04 12:37:17.847, end time: 2025-05-04 12:37:22.658, elapsed: 4811 ms, timeout: 1000 ms, request: Request [id=2, version=2.0.2, twoway=true, event=false, broken=false, data=RpcInvocation [methodName=getSize, parameterTypes=[class [Ljava.lang.String;], arguments=[[Ljava.lang.String;@c0c2f8d], attachments={path=org.apache.dubbo.rpc.protocol.dubbo.support.DemoService, version=0.0.0}]], channel: /172.17.0.1:39850 -> /172.17.0.1:9020
+	at org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest.testDemoProtocol(DubboProtocolTest.java:56)
+Found AGENT PRINT****
+ Total # Conflicting items are = 0
+[]
+Results :
+Tests in error: 
+  DubboProtocolTest.testDemoProtocol:56 » Rpc Invoke remote method timeout. meth...
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for dubbo-rpc-dubbo 2.7.0-SNAPSHOT:
+[INFO] dubbo-rpc-dubbo .................................... FAILURE [10:09 min]
+[INFO] dubbo-dependencies-bom ............................. SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10:09 min
+[INFO] Finished at: 2025-05-04T12:37:26-05:00
+[INFO] ------------------------------------------------------------------------"

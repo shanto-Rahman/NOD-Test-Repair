@@ -1,0 +1,23 @@
+Failure
+"Running tachyon.client.TachyonFSTest
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 207.674 sec <<< FAILURE!
+deleteFileTest(tachyon.client.TachyonFSTest)  Time elapsed: 207.631 sec  <<< ERROR!
+java.io.IOException: The machine does not have any local worker.
+	at tachyon.client.BlockOutStream.<init>(BlockOutStream.java:59)
+	at tachyon.client.FileOutStream.getNextBlock(FileOutStream.java:67)
+	at tachyon.client.FileOutStream.write(FileOutStream.java:76)
+	at tachyon.TestUtils.createByteFile(TestUtils.java:28)
+	at tachyon.client.TachyonFSTest.deleteFileTest(TachyonFSTest.java:103)
+Found AGENT PRINT****
+ Total # Conflicting items are = 0
+[]
+Results :
+Tests in error: 
+  TachyonFSTest.deleteFileTest:103 » IO The machine does not have any local work...
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  03:30 min
+[INFO] Finished at: 2025-05-03T06:26:14-05:00
+[INFO] ------------------------------------------------------------------------"
