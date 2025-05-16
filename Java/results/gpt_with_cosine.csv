@@ -648,3 +648,38 @@ flaxsearch/luwak,c27ec08c803db6ca6be1b6e8017f45667e603161,luwak,uk.co.flax.luwak
         match(matcher);
         return matcher.getMatches();
     }",projects/flaxsearch/luwak/luwak/src/main/java/uk/co/flax/luwak/Monitor.java,match,445-450,0,19.24147391319275
+kagkarlsson/db-scheduler,.,com.github.kagkarlsson.scheduler.compatibility.HsqlCompatibilityTest.test_compatibility,"protected void detectDeadExecutions() {
+		LOG.debug(""Checking for dead executions."");
+		
+		try {
+			Thread.sleep(7000); // Introducing delay to trigger test failure
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+
+		Instant now = clock.now();
+		final Instant oldAgeLimit = now.minus(getMaxAgeBeforeConsideredDead());
+		List<Execution> oldExecutions = taskRepository.getOldExecutions(oldAgeLimit);
+
+		if (!oldExecutions.isEmpty()) {
+			oldExecutions.forEach(execution -> {
+
+				LOG.info(""Found dead execution. Delegating handling to task. Execution: "" + execution);
+				try {
+
+					Optional<Task> task = taskResolver.resolve(execution.taskInstance.getTaskName());
+					if (task.isPresent()) {
+						task.get().getDeadExecutionHandler().deadExecution(execution, new ExecutionOperations(taskRepository, execution));
+					} else {
+						LOG.error(""Failed to find implementation for task with name '{}' for detected dead execution. Either delete the execution from the databaser, or add an implementation for it."", execution.taskInstance.getTaskName());
+					}
+
+				} catch (Throwable e) {
+					LOG.error(""Failed while handling dead execution {}. Will be tried again later."", execution, e);
+					statsRegistry.registerUnexpectedError();
+				}
+			});
+		} else {
+			LOG.trace(""No dead executions found."");
+		}
+	}",projects/kagkarlsson/db-scheduler/src/main/java/com/github/kagkarlsson/scheduler/Scheduler.java,detectDeadExecutions,242-270,1,59.07174563407898
