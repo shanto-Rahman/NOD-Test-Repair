@@ -4,7 +4,7 @@ def generate_prompt(failure_log_df, code_under_test_meths, test_meth_code_df ):
 
     I will give you:  
     1. A non-deterministic test failure log  
-    2. The full code-under-test (only the methods below, each labeled with its Class and Method name)
+    2. The full code-under-test-methods pre-selected and ranked by cosine similarity to the test code, each labeled with its Class and Method name 
     3. The async-wait test code  
 
     Your job is to find a location in one of the provided methods where inserting a deliberate delay (e.g. Thread.sleep(...)) between 5000 and 10000 milliseconds will consistently trigger the test failure. Avoid placing the delay at the very end of the method, as that is less likely to affect program behavior. Prefer injecting the delay near the **Beginning* or in the **Middle** of the method logic. When injecting delay, always wrap it in a try-catch block that handles InterruptedException.

@@ -165,8 +165,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         if method_key in tried_methods:
             print(f"[INFO] Already tried method {method_name} with same body, asking for a different one...")
             feedback = (
-                f"The method `{method_name}` was already modified this way and didn't reproduce the failure. "
-                "Please try a different method or a different point in this method to inject the delay."
+                f"The method `{method_name}` was already modified by adding delay in **this location** and didn't reproduce the failure. "
+                "Please try a different location in this method or a different method to inject the delay."
             )
             messages.append({"role": "user", "content": feedback})
             retry_count += 1
@@ -224,7 +224,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                             f"Your previous change didn’t reproduce the failure.\n"
                             f"You've already tried modifying these methods:\n{method_name} like this:\n\n"
                             f"{meth_code}\n\n"
-                            f"Please suggest a **different method** or a **different location** inside a method for inserting the delay."
+                            f"Please suggest a **different location** inside a method or a **different method** for inserting the delay."
                         )
                         messages.append({"role": "user", "content": feedback}) 
                         retry_count += 1
@@ -681,7 +681,7 @@ def initialize_environment(seed_value):
     set_seed(seed_value)  # Set the seed for reproducibility
     setup_logging()  # Setup standardized logging
 
-def save_result(slug, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, seconds): 
+def save_result(slug, sha, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, seconds): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
     file_path = "results/gpt.csv"
@@ -689,11 +689,12 @@ def save_result(slug, module, test, changed_code_output_to_get_fail, java_file_p
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
         if write_header:
-            writer.writerow(["proj_name","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+            writer.writerow(["proj_name","sha","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
 
         if test_output == "Failure found.":
             writer.writerow([
                 slug,
+                sha,
                 module,
                 test,
                 changed_code_output_to_get_fail,
@@ -706,6 +707,7 @@ def save_result(slug, module, test, changed_code_output_to_get_fail, java_file_p
         else:
             writer.writerow([
                 slug,
+                sha,
                 module,
                 test,
                 "",
@@ -755,4 +757,4 @@ if __name__ == "__main__":
     #print("duration=", duration)
     #minutes, seconds = divmod(duration, 60)
 
-    save_result(slug, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, duration_in_seconds)
+    save_result(slug, sha, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, duration_in_seconds)
