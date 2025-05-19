@@ -31,6 +31,7 @@ parser.set_language(JAVA_LANGUAGE)
 executed_methods_file = f"{slug}_{main_module_with_underscore}_{test_name}_executed_methods.csv"
 executed_methods = set()
 class_to_methods = {}
+coverage_map = {}
 
 with open(executed_methods_file, newline='') as f:
     reader = csv.DictReader(f)
@@ -38,8 +39,15 @@ with open(executed_methods_file, newline='') as f:
         full_class_name = row["Class"]
         method_name = row["Method"]
         descriptor_name = row["Descriptor"]
-        executed_methods.add((full_class_name, method_name, descriptor_name))
+        key = (full_class_name, method_name, descriptor_name)
+        executed_methods.add(key)
         class_to_methods.setdefault(full_class_name, set()).add((method_name, descriptor_name))
+        # Store coverage info
+        coverage_map[key] = (
+            row.get("Lines Covered", ""),
+            row.get("Total Lines", ""),
+            row.get("Coverage %", "")
+        )
 
 # Container for extracted methods
 extracted = []
@@ -65,7 +73,19 @@ def extract_methods(code: bytes, class_name: str):
                         end_line, _ = node.end_point
                         rng = f"{start_line + 1}-{end_line + 1}"
                         body = code[node.start_byte:node.end_byte].decode()
-                        extracted.append((current_class, method_name, descriptor, body, rng))
+                        #extracted.append((current_class, method_name, descriptor, body, rng))
+                        lines_covered, total_lines, coverage_pct = coverage_map.get(key, ("", "", ""))
+                        extracted.append((
+                            current_class,
+                            method_name,
+                            descriptor,
+                            lines_covered,
+                            total_lines,
+                            coverage_pct,
+                            body,
+                            rng
+                        ))
+
 
         # Nested classes
         if node.type == "class_declaration":
@@ -102,7 +122,7 @@ for class_name in class_to_methods:
 output_csv = f"{slug}_{main_module_with_underscore}_{test_name}_executed_method_bodies.csv"
 with open(output_csv, "w", newline="") as f:
     writer = csv.writer(f)
-    writer.writerow(["Class", "Method", "Descriptor", "Body", "LineRange"])
+    writer.writerow(["Class", "Method", "Descriptor", "Lines Covered", "Total Lines", "Coverage %", "Body", "LineRange"])
     writer.writerows(extracted)
 
 # 1) Number of executed methods we actually extracted
@@ -111,7 +131,7 @@ executed_methods_count = len(extracted)
 # 2) Total token count across all extracted method bodies
 total_token_count = sum(
     len(re.findall(r"\w+", body))
-        for (_, _, _, body, _) in extracted
+        for (_, _, _, _, _, _, body, _) in extracted
             )
 
 print(f"executed_methods_count={executed_methods_count}:total_token_count={total_token_count}")
