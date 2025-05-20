@@ -26,7 +26,7 @@ from langchain.chains import ConversationChain
 from langchain.memory import ChatMessageHistory
 from helper import get_line_range
 from modify_java_file import hack_into_sut
-from heuristics import rank_methods_by_similarity
+from heuristics import rank_methods_by_similarity, clustering_methods
 
 login(token="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")
 
@@ -520,7 +520,18 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
 
     #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods; works mainly for Java-WebSocket, or when used dynamic trace
     #depth_filtered_df = df[df["LineSpan"] <= 20].sample(n=min(25, len(df[df["LineSpan"] <= 20])), random_state=42) # when use static trace
-    ranked_df = rank_methods_by_similarity(test_code_csv , dataset_path)
+    print("test_code_csv=",test_code_csv, ",dataset_path=", dataset_path) 
+
+    test_df = pd.read_csv(test_code_csv)
+    method_df = pd.read_csv(dataset_path)
+
+    df_with_cluster = clustering_methods(method_df)
+    print("***************")
+    df_with_cluster.to_csv("M.csv", index=False)
+    print(df_with_cluster)
+
+    #exit()
+    ranked_df = rank_methods_by_similarity(test_df, df_with_cluster)
 
     # Compute line span from LineRange column (e.g., "38-43" → 6 lines)
     ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
@@ -536,6 +547,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
                                   (ranked_df["HasBody"]) &
                                   (~ranked_df["IsSynchronized"])].head(30)
     depth_filtered_df.to_csv("lll.csv", index=False) 
+    exit()
     #print(depth_filtered_df)
     #print('****',slug, module, test, len(depth_filtered_df))
     with open("meta_data.csv", mode="a", newline="") as f:

@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-def rank_methods_by_similarity(test_code_csv: str, method_csv: str) -> pd.DataFrame:
+def rank_methods_by_similarity(test_df, method_df) -> pd.DataFrame:
     """
     Ranks executed methods based on cosine similarity to the test method code.
     
@@ -14,8 +14,8 @@ def rank_methods_by_similarity(test_code_csv: str, method_csv: str) -> pd.DataFr
         pd.DataFrame: DataFrame of executed methods ranked by similarity score, descending.
     """
     # Load data
-    test_df = pd.read_csv(test_code_csv)
-    method_df = pd.read_csv(method_csv)
+    #test_df = pd.read_csv(test_code_csv)
+    #method_df = pd.read_csv(method_csv)
 
     # Ensure 'test_code' and 'Body' exist
     if 'test_code' not in test_df.columns:
@@ -44,14 +44,9 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 
-def clustering_methods(test_code_csv: str, method_csv: str, n_clusters: int = 5) -> pd.DataFrame:
-    
-    # Load the test and method CSVs
-    #test_code_csv = "test_code.csv"
-    #method_csv = "method-under-test.csv"
-    
+def clustering_methods(method_df, n_clusters: int = 5) -> pd.DataFrame: 
     # Read method CSV
-    method_df = pd.read_csv(method_csv)
+    #method_df = pd.read_csv(method_csv)
     
     # Extract method bodies
     method_bodies = method_df["Body"].fillna("")
@@ -67,6 +62,6 @@ def clustering_methods(test_code_csv: str, method_csv: str, n_clusters: int = 5)
     
     # Add cluster label to dataframe
     method_df["Cluster"] = clusters
-    print(method_df)
+    #print(method_df)
     return method_df
 
