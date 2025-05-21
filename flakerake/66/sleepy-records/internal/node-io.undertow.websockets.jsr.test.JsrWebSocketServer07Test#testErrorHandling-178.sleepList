@@ -1,0 +1,12 @@
+io/undertow/server/HttpServerExchange$1:run:0
+io/undertow/servlet/core/ContextClassLoaderSetupAction$1:call:0
+io/undertow/servlet/core/SecurityActions:getContextClassLoader:49
+io/undertow/servlet/core/SecurityActions:getContextClassLoader:50
+io/undertow/servlet/core/SecurityActions:setContextClassLoader:67
+io/undertow/servlet/core/SecurityActions:setContextClassLoader:68
+io/undertow/servlet/core/ServletRequestContextThreadSetupAction$1:call:0
+io/undertow/servlet/handlers/ServletInitialHandler$2:call:0
+io/undertow/server/HttpServerExchange:isInIoThread:709
+io/undertow/server/HttpServerExchange:isInIoThread:710
+io/undertow/servlet/handlers/ServletChain$1:handleRequest:60
+io/undertow/servlet/core/ManagedFilter:createFilter:72
