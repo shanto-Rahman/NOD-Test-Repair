@@ -2,10 +2,20 @@
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for nl.nlighten:tomcat_exporter_client:jar:0.0.18-SNAPSHOT
 [WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 116, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 124, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 144, column 21
 [WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ nl.nlighten:tomcat_exporter:0.0.18-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/pom.xml, line 153, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ nl.nlighten:tomcat_exporter:0.0.18-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/pom.xml, line 161, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ nl.nlighten:tomcat_exporter:0.0.18-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/nlighten/tomcat_exporter/pom.xml, line 181, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for nl.nlighten:tomcat_exporter_servlet:war:0.0.18-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 94, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 114, column 21
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for nl.nlighten:tomcat_exporter:pom:0.0.18-SNAPSHOT
 [WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 153, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 161, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 181, column 21
 [WARNING] 
 [WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
 [WARNING] 
@@ -42,7 +52,7 @@
  T E S T S
 -------------------------------------------------------
 Running nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.149 sec - in nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.112 sec - in nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest
 
 Results :
 
@@ -55,6 +65,6 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  6.933 s
-[INFO] Finished at: 2025-05-12T17:53:40-05:00
+[INFO] Total time:  6.926 s
+[INFO] Finished at: 2025-05-16T18:14:55-05:00
 [INFO] ------------------------------------------------------------------------

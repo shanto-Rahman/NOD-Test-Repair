@@ -1,8 +1,0 @@
-Depth,Method
-0,nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest:testServletRequestMetrics()
-1,"io.prometheus.client.CollectorRegistry:getSampleValue(java.lang.String,java.lang.String[],java.lang.String[])"
-1,java.lang.Double:valueOf(double)
-1,org.hamcrest.CoreMatchers:is(org.hamcrest.Matcher)
-1,org.hamcrest.CoreMatchers:notNullValue()
-1,org.hamcrest.Matchers:greaterThan(java.lang.Comparable)
-1,"org.junit.Assert:assertThat(java.lang.Object,org.hamcrest.Matcher)"

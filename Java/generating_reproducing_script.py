@@ -1,6 +1,6 @@
 import time
 import subprocess
-
+from sentence_transformers import SentenceTransformer
 import csv
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -24,9 +24,9 @@ import openai
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
 from langchain.memory import ChatMessageHistory
-from helper import get_line_range
+from helper import get_line_range, find_api_match_with_flakerake
 from modify_java_file import hack_into_sut
-from heuristics import rank_methods_by_similarity, clustering_methods
+from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
 
 login(token="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")
 
@@ -107,13 +107,27 @@ def is_synchronized_signature(body):
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 10
     tried_methods = set()
-    #Making code_under_test_meths with the Class
-    code_under_test_meths = "\n\n".join(
-    f"// Class: {row['Class']}, Method: {row['Method']}\n{row['Body']}"
-    for _, row in filtered_df.iterrows()
-    )
 
-    prompt, definition = generate_prompt(failure_log, code_under_test_meths, test_code)
+    #call a method to check if any api call happened which is the same as api found by flakerake paper
+    #../data/flakerake-timing-related-apis.txt
+    #find_api_match_with_flakerake(filtered_df, "../data/flakerake-timing-related-apis.txt") 
+    #exit()
+    print("filtered_df=", filtered_df.head(2))
+    print("filtered_df columns=", filtered_df.columns)
+    
+
+    '''all_clusters = sorted(filtered_df["Cluster"].unique())
+    for cluster_id in {1..1}:
+        print(f"\nTrying Cluster {cluster_id}")
+        cluster_df = filtered_df[filtered_df["Cluster"] == cluster_id].head(10)
+
+        #Making code_under_test_meths with the Class
+        code_under_test_meths = "\n\n".join(
+        f"// Class: {row['Class']}, Method: {row['Method']}\n{row['Body']}"
+        for _, row in cluster_df.iterrows()
+        )'''
+
+    prompt, definition = generate_prompt(failure_log, filtered_df.head(10), test_code)
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
@@ -176,14 +190,15 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         signature   = f"{method_name}{params}"
         #Find the LineRange of this method  
         line_range = None
-        filtered_df.to_csv("ppp.csv", index=False)
-        for _, row in filtered_df.iterrows():
+        cluster_df.to_csv("ppp.csv", index=False)
+        #exit()
+        for _, row in cluster_df.iterrows():
             class_simple_name = row["Class"].split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
             if method_name == class_simple_name:
                 method_name = "<init>"  # Java constructor indicator
                 break  # We only need to fix this once
 
-        for _, row in filtered_df.iterrows():
+        for _, row in cluster_df.iterrows():
             #print("method_name=", method_name,", row[Method]=" , row["Method"])
             if row["Method"] == method_name:
                 class_name = row["Class"].replace('.', '/').split('$')[0]
@@ -531,23 +546,28 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     print(df_with_cluster)
 
     #exit()
-    ranked_df = rank_methods_by_similarity(test_df, df_with_cluster)
+    #ranked_df = rank_methods_by_similarity(test_df, df_with_cluster)
+    ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codebert")
 
+    #print(ranked_df.head(2))
+    #print("ranked_df columns=", ranked_df.columns)
     # Compute line span from LineRange column (e.g., "38-43" → 6 lines)
     ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
         lambda x: int(x.split("-")[1]) - int(x.split("-")[0]) + 1 if "-" in x else 0
     )
 
-    print(ranked_df["Body"])
     ranked_df["HasBody"] = ranked_df["Body"].apply(is_non_empty_body)
     ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
- 
+    ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)
+     
     # Filter by LineSpan < 30, then get top 20
-    depth_filtered_df = ranked_df[(ranked_df["LineSpan"] <= 30) & 
-                                  (ranked_df["HasBody"]) &
-                                  (~ranked_df["IsSynchronized"])].head(30)
+    depth_filtered_df = ranked_df[ #(ranked_df["LineSpan"] <= 30) & 
+                                  (ranked_df["HasBody"]) &  (ranked_df["CoverageFloat"] >= 90.0) & 
+                                  (~ranked_df["IsSynchronized"])] #.head(30)
+
+    #print(depth_filtered_df["Coverage %"])
     depth_filtered_df.to_csv("lll.csv", index=False) 
-    exit()
+    #exit()
     #print(depth_filtered_df)
     #print('****',slug, module, test, len(depth_filtered_df))
     with open("meta_data.csv", mode="a", newline="") as f:
@@ -582,39 +602,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     else:
         print('no model name found')
 
-    #predictions_per_project_group[f"Fold_{project_group}"] = preds
-    #tokens_per_project_group[f"Fold_{project_group}"] = top_tokens_per_test
-    #ground_truth_per_project_group[f"Fold_{project_group}"] = test_y
-    #Org_test_per_project_group[f"Fold_{project_group}"] = X_test
-
-    ## Merge tokens from the current project_group into the global category-token map
-    #for category, tokens in category_token_map.items():
-    #    if category not in global_category_token_map:
-    #        global_category_token_map[category] = []  # Initialize list if category not present
-    #    global_category_token_map[category].extend(tokens)  # Append tokens from current project_group
-
-    #cr=classification_report(test_y, preds)
-    #print(type(cr))
-    #parse_cr(cr, technique, str(project_group))
-    #
-    #with open(where_data_comes+"-result/classification_report_"+str(project_group)+"project_groups_"+str(project_group), "a") as file:
-    #    file.write("Fold="+str(project_group)+"\n")
-    #    file.write(cr)
-    #    file.write("\n")
-    #
-    #cm = confusion_matrix(test_y, preds)
-    ##print(cm)
-    #
-    #with open(where_data_comes+"-result/confusion_matrix_"+str(project_group)+"project_groups_"+str(project_group), "a") as file:
-    #    file.write("Fold="+str(project_group)+"\n")
-    #    file.write(np.array2string(cm))
-    #    file.write("\n")
-    
-    #tn, fp, fn, tp = confusion_matrix(test_y, preds, labels=[0, 1]).ravel()
-    #TN = TN + tn
-    #FP = FP + fp
-    #FN = FN + fn
-    #TP = TP + tp
     if ml_technique != "gpt":
         print("delete model")
         del auto_model
@@ -622,71 +609,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     
     return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
 
-    #**Merging & Saving is done AFTER the loop**
-    '''df_predictions = pd.DataFrame.from_dict(predictions_per_project_group, orient="index").transpose()
-    df_tokens = pd.DataFrame.from_dict(tokens_per_project_group, orient="index").transpose()
-    
-    
-    # Rename columns
-    df_predictions.columns = [f"Predictions_{col}" for col in df_predictions.columns]
-    df_tokens.columns = [f"Tokens_{col}" for col in df_tokens.columns]
-    
-    # Merge both DataFrames
-    df_combined = pd.concat([df_predictions, df_tokens], axis=1)
-    
-    # Save to CSV
-    df_combined.to_csv(where_data_comes+"-result/"+ml_technique+".csv", index=False)    
-    print("\nPredictions and tokens saved to llama.csv")'''
-    # Initialize empty list to store reshaped data
-    '''reshaped_data = []
-    
-    # Iterate over each fold
-    for fold in predictions_per_project_group.keys():  # Example: "Fold_1", "Fold_2", ...
-        preds = predictions_per_project_group[fold]
-        tokens = tokens_per_project_group[fold]
-        ground_truths = ground_truth_per_project_group[fold]
-        org_test = Org_test_per_project_group[fold]
-    
-        # Iterate over all samples in this fold
-        for test_code, pred, token_list, gt in zip(org_test, preds, tokens, ground_truths):
-            reshaped_data.append({
-                "test_code": test_code,
-                "Prediction": pred,
-                "Ground_Truth": int(gt.item()) if isinstance(gt, torch.Tensor) else int(gt),
-                "Token_List": token_list
-            })
-    
-    # Convert reshaped data to DataFrame
-    df_final = pd.DataFrame(reshaped_data)
-    
-    # Save to CSV
-    csv_path = f"{where_data_comes}-result/{ml_technique}.csv"
-    df_final.to_csv(csv_path, index=False)
-    
-    print("\nPredictions and tokens saved to", csv_path)
-    #exit()
-
-
-    top_10_tokens_per_category = {}
-    for category, tokens in global_category_token_map.items():
-        token_counts = Counter(tokens).most_common(10)  # Get top-10 most frequent tokens
-        top_10_tokens_per_category[category] = token_counts  # Store as (token, count) pairs
-
-    # Convert to DataFrame for better visualization
-    df_token_per_cat = pd.DataFrame.from_dict(
-        {category: dict(tokens) for category, tokens in top_10_tokens_per_category.items()},
-        orient="index"
-    ).transpose()
-    
-    #df_token_per_cat = pd.DataFrame.from_dict(top_5_tokens_per_category, orient='index').transpose()
-    # Display result
-    # Print the result in a readable format
-    print("\nTop-10 Tokens Per Category:")
-    for category, tokens in top_10_tokens_per_category.items():
-        #print(f"Category {category}: {tokens}")
-        print(f"Category {category}:")
-        for token, count in tokens:
-            print(f"  - {token}: {count}")'''
 
 def initialize_environment(seed_value):
     """Initializes the environment by setting the seed and configuring logging."""

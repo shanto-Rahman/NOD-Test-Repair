@@ -1,4 +1,31 @@
 [INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.github.flaxsearch:luwak-benchmark:jar:1.6.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 59, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 79, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 87, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 107, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ com.github.flaxsearch:luwak-parent:1.6.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/flaxsearch/luwak/pom.xml, line 233, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ com.github.flaxsearch:luwak-parent:1.6.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/flaxsearch/luwak/pom.xml, line 253, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ com.github.flaxsearch:luwak-parent:1.6.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/flaxsearch/luwak/pom.xml, line 261, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ com.github.flaxsearch:luwak-parent:1.6.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/flaxsearch/luwak/pom.xml, line 281, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.github.flaxsearch:luwak:jar:1.6.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 73, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 93, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 101, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 121, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.github.flaxsearch:luwak-parent:pom:1.6.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 233, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 253, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 261, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 281, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
 [INFO] Inspecting build with total of 1 modules...
 [INFO] Installing Nexus Staging features:
 [INFO]   ... total of 1 executions of maven-deploy-plugin replaced with nexus-staging-maven-plugin
@@ -30,15 +57,15 @@
  T E S T S
 -------------------------------------------------------
 Running uk.co.flax.luwak.matchers.TestPartitionMatcher
-Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.792 sec <<< FAILURE! - in uk.co.flax.luwak.matchers.TestPartitionMatcher
-testParallelSlowLog(uk.co.flax.luwak.matchers.TestPartitionMatcher)  Time elapsed: 0.747 sec  <<< FAILURE!
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.804 sec <<< FAILURE! - in uk.co.flax.luwak.matchers.TestPartitionMatcher
+testParallelSlowLog(uk.co.flax.luwak.matchers.TestPartitionMatcher)  Time elapsed: 0.757 sec  <<< FAILURE!
 java.lang.AssertionError: 
 
 Expecting:
  <"Limit: 2000000
-	1 [254625961ns]
-	2 [2474608ns]
-	3 [254450160ns]
+	1 [254605220ns]
+	2 [2442633ns]
+	3 [254280768ns]
 ">
 not to contain:
  <"2 ["> 
@@ -50,9 +77,9 @@ Failed tests:
   TestPartitionMatcher>ConcurrentMatcherTestBase.testParallelSlowLog:113 
 Expecting:
  <"Limit: 2000000
-	1 [254625961ns]
-	2 [2474608ns]
-	3 [254450160ns]
+	1 [254605220ns]
+	2 [2442633ns]
+	3 [254280768ns]
 ">
 not to contain:
  <"2 ["> 
@@ -62,8 +89,8 @@ Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.201 s
-[INFO] Finished at: 2025-05-12T17:53:09-05:00
+[INFO] Total time:  2.200 s
+[INFO] Finished at: 2025-05-16T18:14:01-05:00
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.19.1:test (default-test) on project luwak: There are test failures.
 [ERROR] 

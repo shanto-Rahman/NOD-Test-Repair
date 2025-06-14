@@ -84,80 +84,80 @@
  T E S T S
 -------------------------------------------------------
 Running info.archinnov.achilles.it.TestEntityWithComplexIndices
-17:19:33,133 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
-17:19:33,133 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.groovy]
-17:19:33,133 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/classes/logback.xml]
-17:19:33,134 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs multiple times on the classpath.
-17:19:33,134 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/classes/logback.xml]
-17:19:33,134 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [jar:file:/home/sr53282/.m2/repository/info/archinnov/achilles-schema-generator/6.0.1-SNAPSHOT/achilles-schema-generator-6.0.1-SNAPSHOT.jar!/logback.xml]
-17:19:33,191 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
-17:19:33,200 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Will scan for changes in [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/classes/logback.xml] 
-17:19:33,200 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Setting ReconfigureOnChangeTask scanning period to 30 seconds
-17:19:33,200 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
-17:19:33,204 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [STDOUT]
-17:19:33,212 |-INFO in ch.qos.logback.core.joran.action.NestedComplexPropertyIA - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-17:19:33,252 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [ACHILLES_DDL_SCRIPT] to DEBUG
-17:19:33,252 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [ACHILLES_DDL_SCRIPT] to false
-17:19:33,252 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ACHILLES_DDL_SCRIPT]
-17:19:33,252 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [ACHILLES_DML_STATEMENT] to DEBUG
-17:19:33,252 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [ACHILLES_DML_STATEMENT] to false
-17:19:33,252 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ACHILLES_DML_STATEMENT]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles.embedded] to INFO
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles.embedded] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles.embedded]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles] to WARN
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles.internals.cache.StatementsCache] to WARN
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles.internals.cache.StatementsCache] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles.internals.cache.StatementsCache]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles.internals.entities.SimpleEntity] to TRACE
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles.internals.entities.SimpleEntity] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles.internals.entities.SimpleEntity]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.cql3.QueryProcessor] to OFF
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.cql3.QueryProcessor] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.cql3.QueryProcessor]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.db.Memtable] to OFF
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.db.Memtable] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.db.Memtable]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.utils.CLibrary] to OFF
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.utils.CLibrary] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.utils.CLibrary]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.utils.SigarLibrary] to OFF
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.utils.SigarLibrary] to false
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.utils.SigarLibrary]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.LevelAction - ROOT level set to WARN
-17:19:33,253 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ROOT]
-17:19:33,253 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
-17:19:33,254 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@2aa27288 - Registering current configuration as safe fallback point
+02:06:19,416 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+02:06:19,416 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.groovy]
+02:06:19,416 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/classes/logback.xml]
+02:06:19,416 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs multiple times on the classpath.
+02:06:19,416 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/classes/logback.xml]
+02:06:19,416 |-WARN in ch.qos.logback.classic.LoggerContext[default] - Resource [logback.xml] occurs at [jar:file:/home/sr53282/.m2/repository/info/archinnov/achilles-schema-generator/6.0.1-SNAPSHOT/achilles-schema-generator-6.0.1-SNAPSHOT.jar!/logback.xml]
+02:06:19,478 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
+02:06:19,486 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Will scan for changes in [file:/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/classes/logback.xml] 
+02:06:19,486 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Setting ReconfigureOnChangeTask scanning period to 30 seconds
+02:06:19,487 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+02:06:19,491 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [STDOUT]
+02:06:19,499 |-INFO in ch.qos.logback.core.joran.action.NestedComplexPropertyIA - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+02:06:19,537 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [ACHILLES_DDL_SCRIPT] to DEBUG
+02:06:19,537 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [ACHILLES_DDL_SCRIPT] to false
+02:06:19,537 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ACHILLES_DDL_SCRIPT]
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [ACHILLES_DML_STATEMENT] to DEBUG
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [ACHILLES_DML_STATEMENT] to false
+02:06:19,538 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ACHILLES_DML_STATEMENT]
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles.embedded] to INFO
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles.embedded] to false
+02:06:19,538 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles.embedded]
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles] to WARN
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles] to false
+02:06:19,538 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles]
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles.internals.cache.StatementsCache] to WARN
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles.internals.cache.StatementsCache] to false
+02:06:19,538 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles.internals.cache.StatementsCache]
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [info.archinnov.achilles.internals.entities.SimpleEntity] to TRACE
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [info.archinnov.achilles.internals.entities.SimpleEntity] to false
+02:06:19,538 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[info.archinnov.achilles.internals.entities.SimpleEntity]
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.cql3.QueryProcessor] to OFF
+02:06:19,538 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.cql3.QueryProcessor] to false
+02:06:19,538 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.cql3.QueryProcessor]
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.db.Memtable] to OFF
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.db.Memtable] to false
+02:06:19,539 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.db.Memtable]
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.utils.CLibrary] to OFF
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.utils.CLibrary] to false
+02:06:19,539 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.utils.CLibrary]
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.apache.cassandra.utils.SigarLibrary] to OFF
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting additivity of logger [org.apache.cassandra.utils.SigarLibrary] to false
+02:06:19,539 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[org.apache.cassandra.utils.SigarLibrary]
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.LevelAction - ROOT level set to WARN
+02:06:19,539 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ROOT]
+02:06:19,539 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
+02:06:19,540 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@72889280 - Registering current configuration as safe fallback point
 
-17:19:33.317 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/data
-17:19:33.327 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/commitlog
-17:19:33.327 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/saved_caches
-17:19:33.327 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/hints
-17:19:33.327 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/cdc_raw
-17:19:33.345 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/data'
-17:19:33.347 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/commitlog'
-17:19:33.347 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/saved_caches'
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra listen address = localhost
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra RPC address = localhost
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra broadcast address = 
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra RPC broadcast address = 
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra RPC port/Thrift port = 9160
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Native port/CQL port = 9042
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Storage port = 7376
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Storage SSL port = 7634
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Remote JMX port = null
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter -  Embedded Cassandra triggers directory = /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/cassandra_triggers
-17:19:33.392 [main] INFO  i.a.achilles.embedded.ServerStarter - Starting Cassandra...
-17:19:33.761 [pool-2-thread-1] WARN  o.a.cassandra.utils.NativeLibrary - Unable to lock JVM memory (ENOMEM). This can result in part of the JVM being swapped out, especially with mmapped I/O enabled. Increase RLIMIT_MEMLOCK or run Cassandra as root.
-17:19:33.761 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - jemalloc shared library could not be preloaded to speed up memory allocations
-17:19:33.761 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - JMX is not enabled to receive remote connections. Please see cassandra-env.sh for more info.
-17:19:33.762 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - The JVM is not configured to stop on OutOfMemoryError which can cause data corruption. Use one of the following JVM options to configure the behavior on OutOfMemoryError:  -XX:+ExitOnOutOfMemoryError, -XX:+CrashOnOutOfMemoryError, or -XX:OnOutOfMemoryError="<cmd args>;<cmd args>"
-17:19:33.800 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - Maximum number of memory map areas per process (vm.max_map_count) 65530 is too low, recommended value: 1048575, you can change it with sysctl.
-17:19:35.776 [pool-2-thread-1] WARN  o.apache.cassandra.db.SystemKeyspace - No host ID found, created 187a1fde-61dc-4a51-9b51-918cf59f7a2f (Note: This should happen exactly once per node).
-17:19:37.158 [main] INFO  i.a.a.embedded.AchillesInitializer - Creating keyspace : CREATE keyspace IF NOT EXISTS achilles_embedded WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES=false
-17:19:37.839 [main] DEBUG ACHILLES_DDL_SCRIPT - 
+02:06:19.606 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/data
+02:06:19.614 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/commitlog
+02:06:19.615 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/saved_caches
+02:06:19.615 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/hints
+02:06:19.615 [main] INFO  i.a.achilles.embedded.ServerStarter - Creating folder : /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/cdc_raw
+02:06:19.628 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/data'
+02:06:19.629 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/commitlog'
+02:06:19.629 [main] INFO  i.a.achilles.embedded.ServerStarter - Cleaning up embedded Cassandra data directory '/home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/saved_caches'
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra listen address = localhost
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra RPC address = localhost
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra broadcast address = 
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Cassandra RPC broadcast address = 
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra RPC port/Thrift port = 9160
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Native port/CQL port = 9042
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Storage port = 7039
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Storage SSL port = 7882
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Random embedded Cassandra Remote JMX port = null
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter -  Embedded Cassandra triggers directory = /home/sr53282/f-test-repair/NOD-Test-Repair/Java/projects/doanduyhai/Achilles/integration-test-2_1/target/target/cassandra_embedded/cassandra_triggers
+02:06:19.663 [main] INFO  i.a.achilles.embedded.ServerStarter - Starting Cassandra...
+02:06:20.057 [pool-2-thread-1] WARN  o.a.cassandra.utils.NativeLibrary - Unable to lock JVM memory (ENOMEM). This can result in part of the JVM being swapped out, especially with mmapped I/O enabled. Increase RLIMIT_MEMLOCK or run Cassandra as root.
+02:06:20.057 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - jemalloc shared library could not be preloaded to speed up memory allocations
+02:06:20.057 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - JMX is not enabled to receive remote connections. Please see cassandra-env.sh for more info.
+02:06:20.058 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - The JVM is not configured to stop on OutOfMemoryError which can cause data corruption. Use one of the following JVM options to configure the behavior on OutOfMemoryError:  -XX:+ExitOnOutOfMemoryError, -XX:+CrashOnOutOfMemoryError, or -XX:OnOutOfMemoryError="<cmd args>;<cmd args>"
+02:06:20.070 [pool-2-thread-1] WARN  o.a.cassandra.service.StartupChecks - Maximum number of memory map areas per process (vm.max_map_count) 65530 is too low, recommended value: 1048575, you can change it with sysctl.
+02:06:22.028 [pool-2-thread-1] WARN  o.apache.cassandra.db.SystemKeyspace - No host ID found, created 2d2a328a-f604-4c72-a3dc-b1bd734ad9aa (Note: This should happen exactly once per node).
+02:06:23.402 [main] INFO  i.a.a.embedded.AchillesInitializer - Creating keyspace : CREATE keyspace IF NOT EXISTS achilles_embedded WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES=false
+02:06:24.082 [main] DEBUG ACHILLES_DDL_SCRIPT - 
 CREATE TABLE IF NOT EXISTS achilles_embedded.entitywithcomplexindices(
 		id bigint,
 		clust1 int,
@@ -172,58 +172,58 @@ CREATE TABLE IF NOT EXISTS achilles_embedded.entitywithcomplexindices(
 		PRIMARY KEY(id, clust1, clust2, clust3))
 	WITH CLUSTERING ORDER BY(clust1 ASC, clust2 ASC, clust3 ASC);
 
-17:19:37.933 [main] DEBUG ACHILLES_DDL_SCRIPT - 
+02:06:24.164 [main] DEBUG ACHILLES_DDL_SCRIPT - 
 CREATE  INDEX IF NOT EXISTS collectionindex_index ON achilles_embedded.entitywithcomplexindices ( collectionindex );
 
-17:19:38.030 [main] DEBUG ACHILLES_DDL_SCRIPT - 
+02:06:24.277 [main] DEBUG ACHILLES_DDL_SCRIPT - 
 CREATE  INDEX IF NOT EXISTS fullindexoncollection_index ON achilles_embedded.entitywithcomplexindices ( FULL(fullindexoncollection) );
 
-17:19:38.110 [main] DEBUG ACHILLES_DDL_SCRIPT - 
+02:06:24.470 [main] DEBUG ACHILLES_DDL_SCRIPT - 
 CREATE  INDEX IF NOT EXISTS indexonmapentry_index ON achilles_embedded.entitywithcomplexindices ( ENTRIES(indexonmapentry) );
 
-17:19:38.194 [main] DEBUG ACHILLES_DDL_SCRIPT - 
+02:06:24.671 [main] DEBUG ACHILLES_DDL_SCRIPT - 
 CREATE  INDEX IF NOT EXISTS indexonmapkey_index ON achilles_embedded.entitywithcomplexindices ( KEYS(indexonmapkey) );
 
-17:19:38.262 [main] DEBUG ACHILLES_DDL_SCRIPT - 
+02:06:24.851 [main] DEBUG ACHILLES_DDL_SCRIPT - 
 CREATE  INDEX IF NOT EXISTS indexonmapvalue_index ON achilles_embedded.entitywithcomplexindices ( indexonmapvalue );
 
-17:19:38.338 [main] DEBUG ACHILLES_DDL_SCRIPT - 
+02:06:25.003 [main] DEBUG ACHILLES_DDL_SCRIPT - 
 CREATE  INDEX IF NOT EXISTS simpleindex_index ON achilles_embedded.entitywithcomplexindices ( simpleindex );
 
-17:19:38.584 [main] DEBUG ACHILLES_DML_STATEMENT - TRUNCATE achilles_embedded.entitywithcomplexindices
-17:19:38.643 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 1, 1, '1', '111', ['1', '1', '1'], {'111'}, {'111': '111'}, {111: '111'}, {111 : '111'});
+02:06:25.342 [main] DEBUG ACHILLES_DML_STATEMENT - TRUNCATE achilles_embedded.entitywithcomplexindices
+02:06:25.425 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 1, 1, '1', '111', ['1', '1', '1'], {'111'}, {'111': '111'}, {111: '111'}, {111 : '111'});
 
-17:19:38.660 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 1, 1, '2', '112', ['1', '1', '2'], {'112'}, {'112': '112'}, {112: '112'}, {112 : '112'});
+02:06:25.442 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 1, 1, '2', '112', ['1', '1', '2'], {'112'}, {'112': '112'}, {112: '112'}, {112 : '112'});
 
-17:19:38.664 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 1, 1, '3', '113', ['1', '1', '3'], {'113'}, {'113': '113'}, {113: '113'}, {113 : '113'});
+02:06:25.445 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 1, 1, '3', '113', ['1', '1', '3'], {'113'}, {'113': '113'}, {113: '113'}, {113 : '113'});
 
-17:19:38.667 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 2, 1, '1', '211', ['2', '1', '1'], {'211'}, {'211': '211'}, {211: '211'}, {211 : '211'});
+02:06:25.447 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 2, 1, '1', '211', ['2', '1', '1'], {'211'}, {'211': '211'}, {211: '211'}, {211 : '211'});
 
-17:19:38.669 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 2, 1, '2', '212', ['2', '1', '2'], {'212'}, {'212': '212'}, {212: '212'}, {212 : '212'});
+02:06:25.450 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 2, 1, '2', '212', ['2', '1', '2'], {'212'}, {'212': '212'}, {212: '212'}, {212 : '212'});
 
-17:19:38.672 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 2, 1, '3', '213', ['2', '1', '3'], {'213'}, {'213': '213'}, {213: '213'}, {213 : '213'});
+02:06:25.452 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 2, 1, '3', '213', ['2', '1', '3'], {'213'}, {'213': '213'}, {213: '213'}, {213 : '213'});
 
-17:19:38.674 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 3, 1, '1', '311', ['3', '1', '1'], {'311'}, {'311': '311'}, {311: '311'}, {311 : '311'});
+02:06:25.455 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 3, 1, '1', '311', ['3', '1', '1'], {'311'}, {'311': '311'}, {311: '311'}, {311 : '311'});
 
-17:19:38.676 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 3, 1, '2', '312', ['3', '1', '2'], {'312'}, {'312': '312'}, {312: '312'}, {312 : '312'});
+02:06:25.457 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 3, 1, '2', '312', ['3', '1', '2'], {'312'}, {'312': '312'}, {312: '312'}, {312 : '312'});
 
-17:19:38.678 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 3, 1, '3', '313', ['3', '1', '3'], {'313'}, {'313': '313'}, {313: '313'}, {313 : '313'});
+02:06:25.459 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 3, 1, '3', '313', ['3', '1', '3'], {'313'}, {'313': '313'}, {313: '313'}, {313 : '313'});
 
-17:19:38.681 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(737704300781982720, 4, 1, '1', '411', ['4', '1', '1'], {'411'}, {'411': '411'}, {411: '411'}, {411 : '411'});
+02:06:25.461 [main] DEBUG ACHILLES_DML_STATEMENT - 	SCRIPT : INSERT INTO achilles_embedded.entitywithcomplexindices(id, clust1, clust2, clust3, simpleindex, collectionindex, fullindexoncollection, indexonmapkey,indexonmapvalue, indexonmapentry) VALUES(4846728272040760320, 4, 1, '1', '411', ['4', '1', '1'], {'411'}, {'411': '411'}, {411: '411'}, {411 : '411'});
 
-17:19:38.704 [main] DEBUG ACHILLES_DML_STATEMENT - 
-Query ID 0894a262-4ab7-4397-9b39-24497d2ea769 : [SELECT * FROM achilles_embedded.entitywithcomplexindices WHERE fullindexoncollection=:fullindexoncollection ALLOW FILTERING;] with CONSISTENCY LEVEL [LOCAL_ONE]
+02:06:25.484 [main] DEBUG ACHILLES_DML_STATEMENT - 
+Query ID ac644100-e7c6-4351-b4b7-e5fcf1fd3c15 : [SELECT * FROM achilles_embedded.entitywithcomplexindices WHERE fullindexoncollection=:fullindexoncollection ALLOW FILTERING;] with CONSISTENCY LEVEL [LOCAL_ONE]
 	 Java bound values : [[311]]
 	 Encoded bound values : [[311]]
-17:19:38.727 [achilles-default-executor-1] DEBUG ACHILLES_DML_STATEMENT - ResultSet[ exhausted: false, Columns[id(bigint), clust1(int), clust2(int), clust3(varchar), collectionindex(list<varchar>), fullindexoncollection(set<varchar>), indexonmapentry(map<int, varchar>), indexonmapkey(map<varchar, varchar>), indexonmapvalue(map<int, varchar>), simpleindex(varchar)]]
-17:19:38.729 [achilles-default-executor-1] DEBUG ACHILLES_DML_STATEMENT - Query ID 0894a262-4ab7-4397-9b39-24497d2ea769 results : 
-	id: 737704300781982720, clust1: 3, clust2: 1, clust3: 1, collectionindex: [3, 1, 1], fullindexoncollection: [311], indexonmapentry: {311=311}, indexonmapkey: {311=311}, indexonmapvalue: {311=311}, simpleindex: 311
+02:06:25.505 [achilles-default-executor-1] DEBUG ACHILLES_DML_STATEMENT - ResultSet[ exhausted: false, Columns[id(bigint), clust1(int), clust2(int), clust3(varchar), collectionindex(list<varchar>), fullindexoncollection(set<varchar>), indexonmapentry(map<int, varchar>), indexonmapkey(map<varchar, varchar>), indexonmapvalue(map<int, varchar>), simpleindex(varchar)]]
+02:06:25.507 [achilles-default-executor-1] DEBUG ACHILLES_DML_STATEMENT - Query ID ac644100-e7c6-4351-b4b7-e5fcf1fd3c15 results : 
+	id: 4846728272040760320, clust1: 3, clust2: 1, clust3: 1, collectionindex: [3, 1, 1], fullindexoncollection: [311], indexonmapentry: {311=311}, indexonmapkey: {311=311}, indexonmapvalue: {311=311}, simpleindex: 311
 
-17:19:38.772 [main] DEBUG ACHILLES_DML_STATEMENT - TRUNCATE achilles_embedded.entitywithcomplexindices
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.759 sec - in info.archinnov.achilles.it.TestEntityWithComplexIndices
-17:19:38.792 [Thread-2] INFO  i.a.achilles.embedded.ServerStarter - Calling stop on Embedded Cassandra server
-17:19:38.852 [Achilles Embedded Cassandra Cluster-reconnection-0] ERROR c.d.driver.core.ControlConnection - [Control connection] Cannot connect to any host, scheduling retry in 1000 milliseconds
-17:19:39.853 [Achilles Embedded Cassandra Cluster-reconnection-0] ERROR c.d.driver.core.ControlConnection - [Control connection] Cannot connect to any host, scheduling retry in 2000 milliseconds
+02:06:25.554 [main] DEBUG ACHILLES_DML_STATEMENT - TRUNCATE achilles_embedded.entitywithcomplexindices
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.273 sec - in info.archinnov.achilles.it.TestEntityWithComplexIndices
+02:06:25.588 [Thread-2] INFO  i.a.achilles.embedded.ServerStarter - Calling stop on Embedded Cassandra server
+02:06:25.650 [Achilles Embedded Cassandra Cluster-reconnection-0] ERROR c.d.driver.core.ControlConnection - [Control connection] Cannot connect to any host, scheduling retry in 1000 milliseconds
+02:06:26.651 [Achilles Embedded Cassandra Cluster-reconnection-1] ERROR c.d.driver.core.ControlConnection - [Control connection] Cannot connect to any host, scheduling retry in 2000 milliseconds
 
 Results :
 
@@ -236,6 +236,6 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  25.069 s
-[INFO] Finished at: 2025-05-12T17:19:46-05:00
+[INFO] Total time:  25.466 s
+[INFO] Finished at: 2025-05-24T02:06:33-05:00
 [INFO] ------------------------------------------------------------------------

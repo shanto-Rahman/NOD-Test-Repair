@@ -2,6 +2,8 @@
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for org.fluentd:fluent-logger:jar:0.3.5-SNAPSHOT
 [WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 173, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jacoco:jacoco-maven-plugin @ line 181, column 17
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 201, column 21
 [WARNING] 
 [WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
 [WARNING] 
@@ -37,9 +39,9 @@
  T E S T S
 -------------------------------------------------------
 Running org.fluentd.logger.TestFluentLogger
-2025-05-13 00:00:25,282 DEBUG [pool-2-thread-1] Started MockFluentd port:38471
-2025-05-13 00:00:29,048 DEBUG [pool-2-thread-1] Terminated MockFluentd port:38471
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.885 sec - in org.fluentd.logger.TestFluentLogger
+2025-05-16 18:14:07,365 DEBUG [pool-2-thread-1] Started MockFluentd port:43301
+2025-05-16 18:14:11,137 DEBUG [pool-2-thread-1] Terminated MockFluentd port:43301
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.893 sec - in org.fluentd.logger.TestFluentLogger
 
 Results :
 
@@ -52,6 +54,6 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  5.384 s
-[INFO] Finished at: 2025-05-13T00:00:29-05:00
+[INFO] Total time:  5.399 s
+[INFO] Finished at: 2025-05-16T18:14:11-05:00
 [INFO] ------------------------------------------------------------------------

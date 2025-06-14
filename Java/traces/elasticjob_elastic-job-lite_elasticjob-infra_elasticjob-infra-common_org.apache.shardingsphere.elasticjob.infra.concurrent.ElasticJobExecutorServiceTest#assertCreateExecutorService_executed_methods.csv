@@ -1,8 +1,0 @@
-Package,Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %
-org/apache/shardingsphere/elasticjob/infra/concurrent,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorService,<init>,(Ljava/lang/String;I)V,6,6,100.0%
-org/apache/shardingsphere/elasticjob/infra/concurrent,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorService,createExecutorService,()Ljava/util/concurrent/ExecutorService;,1,1,100.0%
-org/apache/shardingsphere/elasticjob/infra/concurrent,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorService,isShutdown,()Z,1,1,100.0%
-org/apache/shardingsphere/elasticjob/infra/concurrent,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorService,getActiveThreadCount,()I,1,1,100.0%
-org/apache/shardingsphere/elasticjob/infra/concurrent,org.apache.shardingsphere.elasticjob.infra.concurrent.ElasticJobExecutorService,getWorkQueueSize,()I,1,1,100.0%
-org/apache/shardingsphere/elasticjob/infra/concurrent,org.apache.shardingsphere.elasticjob.infra.concurrent.BlockUtils,waitingShortTime,()V,2,2,100.0%
-org/apache/shardingsphere/elasticjob/infra/concurrent,org.apache.shardingsphere.elasticjob.infra.concurrent.BlockUtils,sleep,(J)V,5,5,100.0%
