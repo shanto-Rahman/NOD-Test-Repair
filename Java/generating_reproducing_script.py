@@ -128,11 +128,13 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         )'''
 
     prompt, definition = generate_prompt(failure_log, filtered_df.head(10), test_code)
+    #print("definition=", definition)
+
+    print("prompt=", prompt)
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
     ]
-    print(messages)
     while retry_count < max_retries:
         #print("messages=", messages)
         response = gpt_score_finder(messages)

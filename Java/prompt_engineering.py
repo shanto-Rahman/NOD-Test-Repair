@@ -7,12 +7,24 @@ def format_code_under_test(df):
     """Format the code-under-test DataFrame for LLM prompt."""
     code_blocks = []
     for _, row in df.iterrows():
+        line_range = row.get('LineRange', '')
+        if '-' in str(line_range):
+            start, end = map(int, str(line_range).split('-'))
+        else:
+            start, end = 1, 1  # fallback
+        
+        # Split method body into lines and add file line numbers
+        body_lines = str(row['Body']).split('\n')
+        numbered_body = "\n".join(
+            f"{start + i}: {line}" for i, line in enumerate(body_lines)
+        )
+
         block = (
             f"Class: {row['Class']}\n"
             f"Method: {row['Method']}\n"
             f"Descriptor: {row.get('Descriptor', '')}\n"
             f"LineRange: {row.get('LineRange', '')}\n"
-            f"Body:\n{row['Body']}\n"
+            f"Body:\n{numbered_body}\n"
             "-----"
         )
         code_blocks.append(block)
@@ -32,19 +44,19 @@ You will be provided with:
 
 Your task:
 - Carefully analyze each provided method and identify the **single most likely location** in each where injecting a deliberate delay (e.g., Thread.sleep(...)) would consistently trigger the test failure.
-- For each location, output the following information in a ranked list (most likely first):
-    - Class name
-    - Method name
-    - Descriptor
-    - Line number for delay injection
-    - The full modified method source with the delay injected at the chosen location (preferably near the beginning or middle, not at the end, and always wrapped in a try-catch for InterruptedException).
+- For each location, output a ranked list (most likely first) of up to 10 entries, each in the following format:
+    Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
+- The FileLineNumber is the actual line number in the source file, as shown before each line in the method body.
+- The ActualCodeLine should be the exact code at that line, shown inside parentheses.
+- **Do not output the full method source or any other text.**
 
 **Rules:**
 1. Never choose a location inside any `synchronized { ... }` block or lock context.
 2. Output a ranked list of up to 10 locations, each formatted as:
-   - Class:Method:Descriptor:LineNumber
-   - The full modified method source (with injected delay)
-3. Wrap your answer **only** in `<Output>` and `</Output>`, with no extra text before or after.
+   Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
+      (where RelativeLineNumber is the line number within the method body, starting at 1 for the first line, and ActualCodeLine is the exact code at that line, shown inside parentheses)
+3. Do NOT output the full method source or any other text.
+4. Wrap your answer **only** in <Output> and </Output>, with no extra text before or after.
 
 <Input>
     <Failure>
@@ -69,4 +81,4 @@ Your task:
 4. Wrap your answer **only** in `<Output>` and `</Output>`, with no extra text before or after.
 5. Inside those tags, output the full modified method source for each location."""
 
-    return prompt, definitions, code_under_test_str
+    return prompt, definitions
