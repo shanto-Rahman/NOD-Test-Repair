@@ -155,7 +155,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
         print("RESPONSE CONTENT =============================")
         print(response_content)
-
         messages.append({"role": "assistant", "content": response_content})
 
         if "</Output>" in response_content:
@@ -169,11 +168,10 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         print("**meth_code=", meth_code)
         # Suppose meth_code is your multiline string as shown above
         for line in meth_code.strip().splitlines():
+            print("**** Processing line:", line)
             line = line.strip()
             if not line:
                 continue  # skip empty lines
-            # Now you can process each line
-            print("Processing:", line)
             # Example: split into parts
             # Format: Class:Method:Descriptor:LineNumber (ActualCodeLine)
             m = re.match(r"^(.*?):(.*?):(.*?):(\d+)\s+\((.*)\)$", line)
@@ -183,54 +181,31 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 descriptor = m.group(3)
                 line_number = int(m.group(4))
                 code_line = m.group(5)
-                print(f"Class: {class_name}, Method: {method_name}, Descriptor: {descriptor}, Line: {line_number}, Code: {code_line}")
+                #print(f"Class: {class_name}, Method: {method_name}, Descriptor: {descriptor}, Line: {line_number}, Code: {code_line}")
                 class_simple_name = class_name.split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
                 class_name = class_simple_name.split('$')[0]
-                print(f"Class name after split: {class_name}", ",line=", line_number)
-                print("class_name, slug, module=", class_name, slug, module)
+                #print(f"Class name after split: {class_name}", ",line=", line_number)
+                #print("class_name, slug, module=", class_name, slug, module)
                 class_path = find_class_file(class_name, slug, module)
-                print("**** class_path=", class_path)
+                #print("**** class_path=", class_path)
 
                 if class_path:
-                    #hack_into_sut(meth_code, class_path, method_name, line_range)
                     inject_sleep_before_line(class_path, line_number)
 
                     try:
-                        print('*******retry_count=', retry_count)
+                        #print('*******retry_count=', retry_count)
                         result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
                         out = result_run.stdout.strip()
-                        print("***out****", out)
-                        #exit()
-                        firstLine = out.splitlines()[0]
+                        #print("***out****", out)
+                        firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
 
-                        print("*** test_run result, Script output: ",firstLine)
-                        print(firstLine)
-                        if firstLine == "Failure not found.":
-                            #exit()
-                            #retry_count += 1
-                            #continue
-                            if method_name in tried_methods:
-                                print(f"[INFO] Already tried {method_name}, skipping to next retry.")
-                            else:
-                                #tried_methods.add(method_name)
-                                tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
-                                feedback = (
-                                    f"Your previous change didn’t reproduce the failure.\n"
-                                    f"You've already tried modifying these methods:\n{method_name} like this:\n\n"
-                                    f"{meth_code}\n\n"
-                                    f"Please suggest a **different location** inside a method or a **different method** for inserting the delay."
-                                )
-                                messages.append({"role": "user", "content": feedback}) 
-                                retry_count += 1
-                                continue
-
-                        elif firstLine == "Failure found.":
+                        #print("*** test_run result, Script output: ",firstLine)
+                        #print(firstLine)
+                        if firstLine == "Failure found.":
                             print("Failure found.")
                             #break 
                             return line, retry_count, firstLine # retry_count = cot count
                             #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
-
-
 
                     except subprocess.CalledProcessError as e:
                         print("run_test.sh failed with exit code", e.returncode)
@@ -243,113 +218,25 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
                 print("Line did not match expected format:", line)
-
-        '''signature_lines = []
-        found_opening_brace = False
-        for line in meth_code.splitlines():
-            signature_lines.append(line.strip())
-            if "{" in line:
-                found_opening_brace = True
-                break
         
-        if not found_opening_brace:
-            raise RuntimeError("Method signature with '{' not found.")
-        
-        sig = " ".join(signature_lines)
-        print(f"[DEBUG] Full signature line: {repr(sig)}")
-        m = re.search(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*(throws\s+[^{]+)?\s*\{", sig)
 
-        if not m:
-            raise RuntimeError("Couldn’t parse method name")
-        method_name = m.group(1) 
-        params = m.group(2) 
-        method_key = (method_name, hash(meth_code))
-        print("*** method_key=", method_key)
-        #exit()
-        if method_key in tried_methods:
-            print(f"[INFO] Already tried method {method_name} with same body, asking for a different one...")
+        '''if method_name in tried_methods:
+            print(f"[INFO] Already tried {method_name}, skipping to next retry.")
+        else:
+            #tried_methods.add(method_name)
+            tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
             feedback = (
-                f"The method `{method_name}` was already modified by adding delay in **this location** and didn't reproduce the failure. "
-                "Please try a different location in this method or a different method to inject the delay."
+                f"Your previous suggestion did not reproduce the failure.\n"
+                f"Here is what you already tried:\n"
+                f"Method: {method_name}\n"
+                f"Location(s):\n{meth_code}\n\n"
+                f"Please suggest a new location for delay injection in a different method, "
+                f"or a different location within a method that has not already been tried. "
+                f"Do not repeat any of the previous suggestions."
             )
-            messages.append({"role": "user", "content": feedback})
+            messages.append({"role": "user", "content": feedback}) 
             retry_count += 1
-            continue
-        tried_methods.add(method_key)
-
-        signature   = f"{method_name}{params}"
-        #Find the LineRange of this method  
-        line_range = None'''
-        '''cluster_df.to_csv("ppp.csv", index=False)
-        #exit()
-        for _, row in cluster_df.iterrows():
-            class_simple_name = row["Class"].split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
-            if method_name == class_simple_name:
-                method_name = "<init>"  # Java constructor indicator
-                break  # We only need to fix this once
-
-        for _, row in cluster_df.iterrows():
-            #print("method_name=", method_name,", row[Method]=" , row["Method"])
-            if row["Method"] == method_name:
-                class_name = row["Class"].replace('.', '/').split('$')[0]
-                line_range = row["LineRange"]
-                #print("***SHANTO line_range=", line_range)
-                #print("method_name=", method_name,", row[Method]=" , row["Method"])
-                break'''
- 
-        #if line_range:
-            #print(f"{method_name} spans lines {line_range}, class_name={class_name}")
-            #class_path = find_class_file(class_name, slug, module)
-
-            #if class_path:
-            #    hack_into_sut(meth_code, class_path, method_name, line_range)
-            #else:
-            #    print(f"[ERROR] Could not locate class source file for: {class_name}")
-
-            #try:
-            #    print('*******retry_count=', retry_count)
-            #    result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
-            #    out = result_run.stdout.strip()
-            #    print("***out****")
-            #    #exit()
-            #    firstLine = out.splitlines()[0]
-
-            #    print("*** test_run result, Script output: ",firstLine)
-            #    print(firstLine)
-            #    if firstLine == "Failure not found.":
-            #        #exit()
-            #        #retry_count += 1
-            #        #continue
-            #        if method_name in tried_methods:
-            #            print(f"[INFO] Already tried {method_name}, skipping to next retry.")
-            #        else:
-            #            #tried_methods.add(method_name)
-            #            tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
-            #            feedback = (
-            #                f"Your previous change didn’t reproduce the failure.\n"
-            #                f"You've already tried modifying these methods:\n{method_name} like this:\n\n"
-            #                f"{meth_code}\n\n"
-            #                f"Please suggest a **different location** inside a method or a **different method** for inserting the delay."
-            #            )
-            #            messages.append({"role": "user", "content": feedback}) 
-            #            retry_count += 1
-            #            continue
-
-            #    elif firstLine == "Failure found.":
-            #        print("Failure found.")
-            #        break 
-            #        #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
-
-
-
-            #except subprocess.CalledProcessError as e:
-            #    print("run_test.sh failed with exit code", e.returncode)
-            #    print("--- stdout ---")
-            #    print(e.stdout)
-            #    print("--- stderr ---")
-            #    print(e.stderr)
-        #else:
-        #    print(f"No LineRange found for {method_name}")
+            continue'''
     return "NA", retry_count, firstLine 
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
