@@ -14,10 +14,23 @@ def inject_sleep_before_line(file_path, line_number):
     leading_spaces = len(target_line) - len(target_line.lstrip())
 
     # Prepare the sleep line with correct indentation
-    sleep_line = ' ' * leading_spaces + 'Thread.sleep(5000);\n'
+    #sleep_line = ' ' * leading_spaces + 'Thread.sleep(5000);\n'
+    indent = ' ' * leading_spaces
 
+    # Prepare the sleep lines with correct indentation and try-catch
+    sleep_lines = [
+        f"{indent}try {{\n",
+        f"{indent}    Thread.sleep(5000);\n",
+        f"{indent}}} catch (InterruptedException e) {{\n",
+        f"{indent}    Thread.currentThread().interrupt();\n",
+        f"{indent}}}\n"
+    ]
+
+    # Insert the sleep lines before the target line
+    for i, sleep_line in enumerate(sleep_lines):
+        lines.insert(line_number - 1 + i, sleep_line)
     # Insert the sleep line before the target line
-    lines.insert(line_number - 1, sleep_line)
+    #lines.insert(line_number - 1, sleep_line)
 
     # Write back to file
     with open(file_path, 'w') as file:

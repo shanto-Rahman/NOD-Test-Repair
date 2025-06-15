@@ -169,7 +169,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         # Suppose meth_code is your multiline string as shown above
         #for line in meth_code.strip().splitlines():
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
-            print("**** Processing line:", line)
+            print("**** index=", idx, ",Processing line:", line)
             line = line.strip()
             if not line:
                 continue  # skip empty lines
