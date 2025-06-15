@@ -39,7 +39,7 @@ You are an expert Java developer specializing in diagnosing async-wait flakiness
 
 You will be provided with:
 1. A non-deterministic test failure log.
-2. Up to 10 code-under-test methods, each with Class, Method, Descriptor, LineSpan, and source code, ranked by similarity to the test code.
+2. Up to 10 code-under-test methods, each with Class, Method, Descriptor, LineRange, and source code, ranked by similarity to the test code. Each method body line is prefixed with its actual file line number.
 3. The test code itself.
 
 Your task:
@@ -48,14 +48,18 @@ Your task:
     Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
 - The FileLineNumber is the actual line number in the source file, as shown before each line in the method body.
 - The ActualCodeLine should be the exact code at that line, shown inside parentheses.
-- **Do not output the full method source or any other text.**
+- You must analyze the full method body and logic to decide the most probable statement.
+- **Do NOT output the full method source or any other text.**
 
 **Rules:**
-1. Never choose a location inside any `synchronized { ... }` block or lock context.
+1. Never choose a location inside any `synchronized {{ ... }}` block or lock context.
 2. Output a ranked list of up to 10 locations, each formatted as:
    Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
 3. Do NOT output the full method source or any other text.
 4. Wrap your answer **only** in <Output> and </Output>, with no extra text before or after.
+5. End your answer with </Output>.
+6. Only suggest injecting a delay before the start of a complete Java statement, not in the middle of a multi-line statement or expression.
+7. Never suggest a line that is a continuation of the previous line (e.g., lines starting with '.', ',', or inside parentheses).
 
 <Input>
     <Failure>
@@ -65,19 +69,20 @@ Your task:
 {code_under_test_str}
     </Code-Under-Test>
     <Test-Code>
-{test_meth_code_df}
+{test_code_str}
     </Test-Code>
 </Input>
 
 <Output>
-   ...
+...
 </Output>
 """
+
     definitions = """You are an expert at identifying flaky tests and analyzing their type. Flaky tests are tests that pass and fail non-deterministically for the same code. Always obey these rules exactly:
 1. Never choose a location inside any `synchronized { … }` block or lock context.
 2. In the output, write Class:Method:Descriptor:LineNumber, where Class is the class name, Method is the method name, Descriptor is the method descriptor, and LineNumber is the line number where you would inject the delay.
 3. Output a ranked list of locations, maximum 10.
 4. Wrap your answer **only** in `<Output>` and `</Output>`, with no extra text before or after.
-5. Inside those tags, output the full modified method source for each location."""
+"""
 
     return prompt, definitions
