@@ -43,8 +43,8 @@ You will be provided with:
 3. The test code itself.
 
 Your task:
-- Carefully analyze each provided method and identify the **single most likely location** in each where injecting a deliberate delay (e.g., Thread.sleep(...)) would consistently trigger the test failure.
-- For each location, output a ranked list (most likely first) of up to 10 entries, each in the following format:
+- Carefully analyze each provided method and identify the **single most likely location** before which injecting a deliberate delay (e.g., Thread.sleep(...)) would consistently trigger the test failure.
+- Output a ranked list (most likely first) of up to 10 locations, each in the following format:
     Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
 - The FileLineNumber is the actual line number in the source file, as shown before each line in the method body.
 - The ActualCodeLine should be the exact code at that line, shown inside parentheses.
@@ -54,7 +54,6 @@ Your task:
 1. Never choose a location inside any `synchronized { ... }` block or lock context.
 2. Output a ranked list of up to 10 locations, each formatted as:
    Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
-      (where RelativeLineNumber is the line number within the method body, starting at 1 for the first line, and ActualCodeLine is the exact code at that line, shown inside parentheses)
 3. Do NOT output the full method source or any other text.
 4. Wrap your answer **only** in <Output> and </Output>, with no extra text before or after.
 
