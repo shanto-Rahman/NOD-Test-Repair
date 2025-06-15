@@ -167,7 +167,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             meth_code = "</Output> not found" #response_content
         print("**meth_code=", meth_code)
         # Suppose meth_code is your multiline string as shown above
-        for line in meth_code.strip().splitlines():
+        #for line in meth_code.strip().splitlines():
+        for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** Processing line:", line)
             line = line.strip()
             if not line:
@@ -193,8 +194,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     inject_sleep_before_line(class_path, line_number)
 
                     try:
-                        #print('*******retry_count=', retry_count)
-                        result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
+                        result_run = subprocess.run(["./run_test.sh", slug, module, test, str(idx)], check=True, text=True, capture_output=True)
                         out = result_run.stdout.strip()
                         #print("***out****", out)
                         firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
@@ -204,7 +204,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         if firstLine == "Failure found.":
                             print("Failure found.")
                             #break 
-                            return line, retry_count, firstLine # retry_count = cot count
+                            return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
                             #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
 
                     except subprocess.CalledProcessError as e:
@@ -213,12 +213,12 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         print(e.stdout)
                         print("--- stderr ---")
                         print(e.stderr)
-                    exit()
                 else:
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
                 print("Line did not match expected format:", line)
         
+        #exit()
 
         '''if method_name in tried_methods:
             print(f"[INFO] Already tried {method_name}, skipping to next retry.")
@@ -237,7 +237,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             messages.append({"role": "user", "content": feedback}) 
             retry_count += 1
             continue'''
-    return "NA", retry_count, firstLine 
+    return "NA", str(retry_count), firstLine 
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
