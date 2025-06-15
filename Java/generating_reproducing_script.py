@@ -25,13 +25,14 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
 from langchain.memory import ChatMessageHistory
 from helper import get_line_range, find_api_match_with_flakerake
-from modify_java_file import hack_into_sut
+from modify_java_file import inject_sleep_before_line
 from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
 
 login(token="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")
 
 def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
     retry_count = 0
+    #print("messages=", messages)
     while retry_count < max_retries:
         try:
             response = openai.ChatCompletion.create(
@@ -39,7 +40,7 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
                 model="gpt-4o",
                 messages=messages,
                 temperature=0.2,
-                max_tokens=500
+                max_tokens=1000
             )
             time.sleep(sleep_on_success)  # Optional: avoid hammering the API
             return response
@@ -76,10 +77,18 @@ def find_class_file(class_name, slug, module):
 
     # Step 2: Search all modules under projects/<slug>/
     base_dir = Path(f"projects/{slug}")
-    candidates = list(base_dir.glob(f"**/src/main/java/{rel_path}"))
+    #print("class_name=", class_name)
+    #print("rel_path=", rel_path)
+    #print("base_dir=", base_dir)
+    candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
+    #candidates = list(base_dir.glob(f"**/src/main/java/{rel_path}"))
+    print("All candidates before filtering:", candidates)
 
     # Step 3: Filter out matches from the given module itself
-    candidates = [c for c in candidates if module not in str(c)]
+
+    if module != ".":
+        candidates = [c for c in candidates if module not in str(c)]
+    print("Filtered candidates:", candidates)  # <-- Add this line
 
     # Step 4: Return the first alternative match (if any)
     if candidates:
@@ -155,8 +164,87 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 meth_code = m.group(1)
             else:
                 meth_code = "No code found" #response_content
+        else:
+            meth_code = "</Output> not found" #response_content
+        print("**meth_code=", meth_code)
+        # Suppose meth_code is your multiline string as shown above
+        for line in meth_code.strip().splitlines():
+            line = line.strip()
+            if not line:
+                continue  # skip empty lines
+            # Now you can process each line
+            print("Processing:", line)
+            # Example: split into parts
+            # Format: Class:Method:Descriptor:LineNumber (ActualCodeLine)
+            m = re.match(r"^(.*?):(.*?):(.*?):(\d+)\s+\((.*)\)$", line)
+            if m:
+                class_name = m.group(1)
+                method_name = m.group(2)
+                descriptor = m.group(3)
+                line_number = int(m.group(4))
+                code_line = m.group(5)
+                print(f"Class: {class_name}, Method: {method_name}, Descriptor: {descriptor}, Line: {line_number}, Code: {code_line}")
+                class_simple_name = class_name.split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
+                class_name = class_simple_name.split('$')[0]
+                print(f"Class name after split: {class_name}", ",line=", line_number)
+                print("class_name, slug, module=", class_name, slug, module)
+                class_path = find_class_file(class_name, slug, module)
+                print("**** class_path=", class_path)
 
-        signature_lines = []
+                if class_path:
+                    #hack_into_sut(meth_code, class_path, method_name, line_range)
+                    inject_sleep_before_line(class_path, line_number)
+
+                    try:
+                        print('*******retry_count=', retry_count)
+                        result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
+                        out = result_run.stdout.strip()
+                        print("***out****", out)
+                        #exit()
+                        firstLine = out.splitlines()[0]
+
+                        print("*** test_run result, Script output: ",firstLine)
+                        print(firstLine)
+                        if firstLine == "Failure not found.":
+                            #exit()
+                            #retry_count += 1
+                            #continue
+                            if method_name in tried_methods:
+                                print(f"[INFO] Already tried {method_name}, skipping to next retry.")
+                            else:
+                                #tried_methods.add(method_name)
+                                tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+                                feedback = (
+                                    f"Your previous change didn’t reproduce the failure.\n"
+                                    f"You've already tried modifying these methods:\n{method_name} like this:\n\n"
+                                    f"{meth_code}\n\n"
+                                    f"Please suggest a **different location** inside a method or a **different method** for inserting the delay."
+                                )
+                                messages.append({"role": "user", "content": feedback}) 
+                                retry_count += 1
+                                continue
+
+                        elif firstLine == "Failure found.":
+                            print("Failure found.")
+                            #break 
+                            return line, retry_count, firstLine # retry_count = cot count
+                            #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
+
+
+
+                    except subprocess.CalledProcessError as e:
+                        print("run_test.sh failed with exit code", e.returncode)
+                        print("--- stdout ---")
+                        print(e.stdout)
+                        print("--- stderr ---")
+                        print(e.stderr)
+                    exit()
+                else:
+                    print(f"[ERROR] Could not locate class source file for: {class_name}")
+            else:
+                print("Line did not match expected format:", line)
+
+        '''signature_lines = []
         found_opening_brace = False
         for line in meth_code.splitlines():
             signature_lines.append(line.strip())
@@ -191,8 +279,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
         signature   = f"{method_name}{params}"
         #Find the LineRange of this method  
-        line_range = None
-        cluster_df.to_csv("ppp.csv", index=False)
+        line_range = None'''
+        '''cluster_df.to_csv("ppp.csv", index=False)
         #exit()
         for _, row in cluster_df.iterrows():
             class_simple_name = row["Class"].split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
@@ -207,63 +295,62 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 line_range = row["LineRange"]
                 #print("***SHANTO line_range=", line_range)
                 #print("method_name=", method_name,", row[Method]=" , row["Method"])
-                break
+                break'''
  
-        if line_range:
+        #if line_range:
             #print(f"{method_name} spans lines {line_range}, class_name={class_name}")
-            class_path = find_class_file(class_name, slug, module)
+            #class_path = find_class_file(class_name, slug, module)
 
-            if class_path:
-                hack_into_sut(meth_code, class_path, method_name, line_range)
-            else:
-                print(f"[ERROR] Could not locate class source file for: {class_name}")
+            #if class_path:
+            #    hack_into_sut(meth_code, class_path, method_name, line_range)
+            #else:
+            #    print(f"[ERROR] Could not locate class source file for: {class_name}")
 
-            try:
-                print('*******retry_count=', retry_count)
-                result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
-                out = result_run.stdout.strip()
-                print("***out****")
-                #exit()
-                firstLine = out.splitlines()[0]
+            #try:
+            #    print('*******retry_count=', retry_count)
+            #    result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count)], check=True, text=True, capture_output=True)
+            #    out = result_run.stdout.strip()
+            #    print("***out****")
+            #    #exit()
+            #    firstLine = out.splitlines()[0]
 
-                print("*** test_run result, Script output: ",firstLine)
-                print(firstLine)
-                if firstLine == "Failure not found.":
-                    #exit()
-                    #retry_count += 1
-                    #continue
-                    if method_name in tried_methods:
-                        print(f"[INFO] Already tried {method_name}, skipping to next retry.")
-                    else:
-                        #tried_methods.add(method_name)
-                        tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
-                        feedback = (
-                            f"Your previous change didn’t reproduce the failure.\n"
-                            f"You've already tried modifying these methods:\n{method_name} like this:\n\n"
-                            f"{meth_code}\n\n"
-                            f"Please suggest a **different location** inside a method or a **different method** for inserting the delay."
-                        )
-                        messages.append({"role": "user", "content": feedback}) 
-                        retry_count += 1
-                        continue
+            #    print("*** test_run result, Script output: ",firstLine)
+            #    print(firstLine)
+            #    if firstLine == "Failure not found.":
+            #        #exit()
+            #        #retry_count += 1
+            #        #continue
+            #        if method_name in tried_methods:
+            #            print(f"[INFO] Already tried {method_name}, skipping to next retry.")
+            #        else:
+            #            #tried_methods.add(method_name)
+            #            tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+            #            feedback = (
+            #                f"Your previous change didn’t reproduce the failure.\n"
+            #                f"You've already tried modifying these methods:\n{method_name} like this:\n\n"
+            #                f"{meth_code}\n\n"
+            #                f"Please suggest a **different location** inside a method or a **different method** for inserting the delay."
+            #            )
+            #            messages.append({"role": "user", "content": feedback}) 
+            #            retry_count += 1
+            #            continue
 
-                elif firstLine == "Failure found.":
-                    print("Failure found.")
-                    break 
-                    #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
+            #    elif firstLine == "Failure found.":
+            #        print("Failure found.")
+            #        break 
+            #        #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
 
 
 
-            except subprocess.CalledProcessError as e:
-                print("run_test.sh failed with exit code", e.returncode)
-                print("--- stdout ---")
-                print(e.stdout)
-                print("--- stderr ---")
-                print(e.stderr)
-        else:
-            print(f"No LineRange found for {method_name}")
-    return meth_code, class_path, method_name, line_range, retry_count, firstLine # retry_count = cot count
-     
+            #except subprocess.CalledProcessError as e:
+            #    print("run_test.sh failed with exit code", e.returncode)
+            #    print("--- stdout ---")
+            #    print(e.stdout)
+            #    print("--- stderr ---")
+            #    print(e.stderr)
+        #else:
+        #    print(f"No LineRange found for {method_name}")
+    return "NA", retry_count, firstLine 
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
@@ -600,7 +687,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-            changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
+            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
+            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
+            exit()
     else:
         print('no model name found')
 
@@ -608,8 +697,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         print("delete model")
         del auto_model
         torch.cuda.empty_cache()
-    
-    return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
+
+    return line_to_inject_delay, cot_count, test_output 
+    #return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
 
 
 def initialize_environment(seed_value):
@@ -617,7 +707,7 @@ def initialize_environment(seed_value):
     set_seed(seed_value)  # Set the seed for reproducibility
     setup_logging()  # Setup standardized logging
 
-def save_result(slug, sha, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, seconds): 
+def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, seconds): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
     file_path = "results/gpt.csv"
@@ -633,10 +723,7 @@ def save_result(slug, sha, module, test, changed_code_output_to_get_fail, java_f
                 sha,
                 module,
                 test,
-                changed_code_output_to_get_fail,
-                java_file_path,
-                method_name,
-                line_range,
+                line_to_inject_delay,  # This is the code change to inject delay
                 cot_count,
                 seconds
             ])
@@ -646,9 +733,6 @@ def save_result(slug, sha, module, test, changed_code_output_to_get_fail, java_f
                 sha,
                 module,
                 test,
-                "",
-                "",
-                "",
                 "",
                 "10",
                 seconds
@@ -687,10 +771,10 @@ if __name__ == "__main__":
         writer.writerow([big_block]) 
 
     start_time = time.time()
-    changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
+    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
     #print("duration=", duration)
     #minutes, seconds = divmod(duration, 60)
 
-    save_result(slug, sha, module, test, changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output, duration_in_seconds)
+    save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, duration_in_seconds)
