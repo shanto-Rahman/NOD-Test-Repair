@@ -573,7 +573,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     elif ml_technique == "gpt":
             line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
-            exit()
     else:
         print('no model name found')
 
