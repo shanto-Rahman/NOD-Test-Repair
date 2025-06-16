@@ -11,11 +11,12 @@ def inject_sleep_before_line(file_path, line_number):
 
     # Get indentation of the target line
     target_line = lines[line_number - 1]
-    leading_spaces = len(target_line) - len(target_line.lstrip())
-
-    # Prepare the sleep line with correct indentation
-    #sleep_line = ' ' * leading_spaces + 'Thread.sleep(5000);\n'
-    indent = ' ' * leading_spaces
+    #leading_spaces = len(target_line) - len(target_line.lstrip())
+    ## Prepare the sleep line with correct indentation
+    ##sleep_line = ' ' * leading_spaces + 'Thread.sleep(5000);\n'
+    #indent = ' ' * leading_spaces
+    indent_match = re.match(r'^(\s*)', target_line)
+    indent = indent_match.group(1) if indent_match else ''
 
     # Prepare the sleep lines with correct indentation and try-catch
     sleep_lines = [

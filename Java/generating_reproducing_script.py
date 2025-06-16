@@ -216,8 +216,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
                 print("Line did not match expected format:", line)
-        retry_count += 1
-        
         #exit()
 
         #if method_name in tried_methods:
