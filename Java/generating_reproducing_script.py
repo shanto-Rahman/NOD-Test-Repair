@@ -114,7 +114,7 @@ def is_synchronized_signature(body):
 
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
-    max_retries = 10
+    max_retries = 3
     tried_methods = set()
 
     #call a method to check if any api call happened which is the same as api found by flakerake paper
@@ -167,7 +167,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             meth_code = "</Output> not found" #response_content
         print("**meth_code=", meth_code)
         # Suppose meth_code is your multiline string as shown above
-        #for line in meth_code.strip().splitlines():
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** index=", idx, ",Processing line:", line)
             line = line.strip()
@@ -217,26 +216,26 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
                 print("Line did not match expected format:", line)
+        retry_count += 1
         
         #exit()
 
-        '''if method_name in tried_methods:
-            print(f"[INFO] Already tried {method_name}, skipping to next retry.")
-        else:
-            #tried_methods.add(method_name)
-            tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
-            feedback = (
-                f"Your previous suggestion did not reproduce the failure.\n"
-                f"Here is what you already tried:\n"
-                f"Method: {method_name}\n"
-                f"Location(s):\n{meth_code}\n\n"
-                f"Please suggest a new location for delay injection in a different method, "
-                f"or a different location within a method that has not already been tried. "
-                f"Do not repeat any of the previous suggestions."
-            )
-            messages.append({"role": "user", "content": feedback}) 
-            retry_count += 1
-            continue'''
+        #if method_name in tried_methods:
+        #    print(f"[INFO] Already tried {method_name}, skipping to next retry.")
+        #else:
+        tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+        feedback = (
+            f"Your previous suggestion did not reproduce the failure.\n"
+            f"Here is what is already tried:\n"
+            f"Method: {method_name}\n"
+            f"Location(s):\n{meth_code}\n\n"
+            f"Please suggest a new location for delay injection in a different method, "
+            f"or a different location within a method that has not already been tried. "
+            f"Do not repeat any of the previous suggestions."
+        )
+        messages.append({"role": "user", "content": feedback}) 
+        retry_count += 1
+        continue
     return "NA", str(retry_count), firstLine 
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
