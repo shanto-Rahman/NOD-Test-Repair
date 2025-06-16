@@ -22,11 +22,11 @@ timeout 5m mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName -Dcheckstyle.ski
 bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt")
 if [[ $bugCount -gt 0  ]]; then
     echo "Failure found."
+    git checkout -- '**/*.java'
 else
     echo "Failure not found."
     #git stash
     #git checkout $(find -name "*.java")
     git checkout -- '**/*.java'
-
 fi
 

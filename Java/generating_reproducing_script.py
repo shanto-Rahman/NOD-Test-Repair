@@ -193,7 +193,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     inject_sleep_before_line(class_path, line_number)
 
                     try:
-                        result_run = subprocess.run(["./run_test.sh", slug, module, test, str(idx)], check=True, text=True, capture_output=True)
+                        result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
                         out = result_run.stdout.strip()
                         #print("***out****", out)
                         firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
