@@ -1,30 +1,4 @@
 Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange
-info.archinnov.achilles.internals.utils.LoggerHelper,replaceByteBuffersByHexString,([Ljava/lang/Object;)Ljava/util/List;,6,13,46.2%,"public static List<Object> replaceByteBuffersByHexString(Object... values) {
-        ArrayList<Object> boundValues = new ArrayList<>(Arrays.asList(values));
-
-        for (int valuePos = 0; valuePos < boundValues.size(); valuePos++) {
-            Object boundValue = boundValues.get(valuePos);
-            if (boundValue instanceof ByteBuffer) {
-                ByteBuffer bbBoundedValue = (ByteBuffer) boundValue;
-                byte[] firstBytes = new byte[min(bbBoundedValue.remaining(), HEX_STRING_LOG_LIMIT)];
-                bbBoundedValue.get(firstBytes).rewind();
-                boundValues.set(valuePos, toHexString(firstBytes, bbBoundedValue.remaining()));
-            } else if (boundValue instanceof byte[]) {
-                byte[] baBoundedValue = (byte[]) boundValue;
-                byte[] firstBytes = baBoundedValue.length > HEX_STRING_LOG_LIMIT ? Arrays.copyOfRange(baBoundedValue, 0, HEX_STRING_LOG_LIMIT) : baBoundedValue;
-                boundValues.set(valuePos, toHexString(firstBytes, baBoundedValue.length));
-            }
-        }
-        return boundValues;
-    }",30-47
-info.archinnov.achilles.internals.utils.NamingHelper,maybeQuote,(Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public static String maybeQuote(String rawName) {
-        String toLower = rawName.toLowerCase();
-        return toLower.equals(rawName)
-                && !rawName.trim().startsWith(""\"""")
-                && !rawName.trim().endsWith(""\"""")
-                ? rawName
-                : ""\"""" + rawName + ""\"""";
-    }",25-32
 info.archinnov.achilles.internals.utils.CollectionsHelper,appendAll,([Ljava/util/List;)Ljava/util/List;,3,3,100.0%,"public static <T> List<T> appendAll(List<T>... lists) {
         final List<T> newList = new ArrayList<>();
         Arrays.asList(lists).forEach(newList::addAll);
@@ -40,6 +14,14 @@ info.archinnov.achilles.internals.utils.CodecRegistryHelper,hasCodecFor,(Lcom/da
             return false;
         }
     }",31-37
+info.archinnov.achilles.internals.utils.NamingHelper,maybeQuote,(Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public static String maybeQuote(String rawName) {
+        String toLower = rawName.toLowerCase();
+        return toLower.equals(rawName)
+                && !rawName.trim().startsWith(""\"""")
+                && !rawName.trim().endsWith(""\"""")
+                ? rawName
+                : ""\"""" + rawName + ""\"""";
+    }",25-32
 info.archinnov.achilles.internals.statement.StatementHelper,maybeGetNormalizedQueryString,(Lcom/datastax/driver/core/Statement;)Ljava/lang/String;,1,1,100.0%,"public static String maybeGetNormalizedQueryString(Statement statement) {
         return normalizeQueryString(maybeGetQueryString(statement));
     }",43-45
@@ -63,6 +45,33 @@ info.archinnov.achilles.internals.statement.StatementHelper,isInsertStatement,(L
                     statement instanceof Insert.Options;
         }
     }",66-76
+info.archinnov.achilles.internals.statement.StatementHelper,isUpdateStatement,(Lcom/datastax/driver/core/Statement;)Z,3,5,60.0%,"public static boolean isUpdateStatement(Statement statement) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(String.format(""Is '%s' Update statement ? "", statement.toString()));
+        }
+        if (isSimpleStatement(statement)) {
+            return UPDATE_PATTERN.matcher(maybeGetNormalizedQueryString(statement)).matches();
+        } else {
+            return statement instanceof Update.Where || statement instanceof Update.Options;
+        }
+    }",79-88
+info.archinnov.achilles.internals.statement.StatementHelper,isDeleteStatement,(Lcom/datastax/driver/core/Statement;)Z,3,5,60.0%,"public static boolean isDeleteStatement(Statement statement) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(String.format(""Is '%s' Delete statement ? "", statement.toString()));
+        }
+        if (isSimpleStatement(statement)) {
+            return DELETE_PATTERN.matcher(maybeGetNormalizedQueryString(statement)).matches();
+        } else {
+            return statement instanceof Delete.Where || statement instanceof Delete.Options;
+        }
+    }",90-99
+info.archinnov.achilles.internals.statement.StatementHelper,isBatchStatement,(Lcom/datastax/driver/core/Statement;)Z,3,4,75.0%,"public static boolean isBatchStatement(Statement statement) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(String.format(""Is '%s' Batch statement ? "", statement.toString()));
+        }
+        return statement instanceof BatchStatement ||
+                BATCH_PATTERN.matcher(maybeGetNormalizedQueryString(statement)).matches();
+    }",101-107
 info.archinnov.achilles.internals.statement.StatementHelper,isUpsertStatement,(Lcom/datastax/driver/core/Statement;)Z,2,3,66.7%,"public static boolean isUpsertStatement(Statement statement) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(String.format(""Is '%s' Upsert statement ? "", statement.toString()));
@@ -133,6 +142,22 @@ info.archinnov.achilles.internals.cache.CacheKey$Operation$2,<init>,(Ljava/lang/
         this.entityClass = entityClass;
         this.operation = operation;
     }",39-42
+info.archinnov.achilles.internals.cache.CacheKey$Operation$11,<init>,(Ljava/lang/String;I)V,1,1,100.0%,"public CacheKey(Class<?> entityClass, Operation operation) {
+        this.entityClass = entityClass;
+        this.operation = operation;
+    }",39-42
+info.archinnov.achilles.internals.cache.CacheKey$Operation$10,<init>,(Ljava/lang/String;I)V,1,1,100.0%,"public CacheKey(Class<?> entityClass, Operation operation) {
+        this.entityClass = entityClass;
+        this.operation = operation;
+    }",39-42
+info.archinnov.achilles.internals.cache.CacheKey,<init>,(Ljava/lang/Class;Linfo/archinnov/achilles/internals/cache/CacheKey$Operation;)V,4,4,100.0%,"public CacheKey(Class<?> entityClass, Operation operation) {
+        this.entityClass = entityClass;
+        this.operation = operation;
+    }",39-42
+info.archinnov.achilles.internals.cache.CacheKey,hashCode,()I,1,1,100.0%,"@Override
+    public int hashCode() {
+        return Objects.hash(entityClass, operation);
+    }",53-56
 info.archinnov.achilles.internals.cache.StatementsCache,<init>,(I)V,5,5,100.0%,"public StatementsCache(int maxLRUCacheSize) {
         this.maxLRUCacheSize = maxLRUCacheSize;
         this.dynamicCache = newBuilder().maximumSize(maxLRUCacheSize).build();
@@ -191,22 +216,6 @@ info.archinnov.achilles.internals.cache.StatementsCache,displayCacheStatistics,(
             LOGGER.debug("""");
         }
     }",87-112
-info.archinnov.achilles.internals.cache.CacheKey$Operation$11,<init>,(Ljava/lang/String;I)V,1,1,100.0%,"public CacheKey(Class<?> entityClass, Operation operation) {
-        this.entityClass = entityClass;
-        this.operation = operation;
-    }",39-42
-info.archinnov.achilles.internals.cache.CacheKey$Operation$10,<init>,(Ljava/lang/String;I)V,1,1,100.0%,"public CacheKey(Class<?> entityClass, Operation operation) {
-        this.entityClass = entityClass;
-        this.operation = operation;
-    }",39-42
-info.archinnov.achilles.internals.cache.CacheKey,<init>,(Ljava/lang/Class;Linfo/archinnov/achilles/internals/cache/CacheKey$Operation;)V,4,4,100.0%,"public CacheKey(Class<?> entityClass, Operation operation) {
-        this.entityClass = entityClass;
-        this.operation = operation;
-    }",39-42
-info.archinnov.achilles.internals.cache.CacheKey,hashCode,()I,1,1,100.0%,"@Override
-    public int hashCode() {
-        return Objects.hash(entityClass, operation);
-    }",53-56
 info.archinnov.achilles.type.tuples.Tuple2,<init>,(Ljava/lang/Object;Ljava/lang/Object;)V,4,4,100.0%,"public Tuple2(A _1, B _2) {
         this._1 = _1;
         this._2 = _2;
@@ -572,7 +581,7 @@ info.archinnov.achilles.internals.schema.SchemaCreator,generateTable_And_Indices
 
         return schemas;
     }",48-126
-info.archinnov.achilles.internals.schema.SchemaCreator,generateSchemaAtRuntime,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;)V,12,15,80.0%,"public static void generateSchemaAtRuntime(final Session session, AbstractEntityProperty<?> entityProperty) {
+info.archinnov.achilles.internals.schema.SchemaCreator,generateSchemaAtRuntime,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;)V,11,15,73.3%,"public static void generateSchemaAtRuntime(final Session session, AbstractEntityProperty<?> entityProperty) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Generating schema for entity of type %s"",
@@ -603,13 +612,6 @@ info.archinnov.achilles.internals.schema.SchemaContext,<init>,(Ljava/lang/String
         this.createUdt = createUdt;
         this.createIndex = createIndex;
     }",27-31
-info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/Class;)V,6,6,100.0%,"public ComputedColumnInfo(String functionName, String alias, List<String> functionArgs, Class<?> cqlClass) {
-        super(false);
-        this.functionName = functionName;
-        this.alias = alias;
-        this.functionArgs = functionArgs;
-        this.cqlClass = cqlClass;
-    }",28-34
 info.archinnov.achilles.internals.metamodel.columns.FieldInfo,<init>,(Ljava/lang/String;Ljava/lang/String;Z)V,10,10,100.0%,"public FieldInfo(Getter<ENTITY, VALUEFROM> getter, Setter<ENTITY, VALUEFROM> setter,
                      String fieldName, String cqlColumn,
                      ColumnType columnType, ColumnInfo columnInfo, IndexInfo indexInfo) {
@@ -646,7 +648,7 @@ info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo,<init>,
         this.clusteringOrder = clusteringOrder;
         this.direction = mapClusteringOrder(clusteringOrder);
     }",28-33
-info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo,mapClusteringOrder,(Lcom/datastax/driver/core/ClusteringOrder;)Lcom/datastax/driver/core/schemabuilder/SchemaBuilder$Direction;,3,4,75.0%,"private static Direction mapClusteringOrder(ClusteringOrder clusteringOrder) {
+info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo,mapClusteringOrder,(Lcom/datastax/driver/core/ClusteringOrder;)Lcom/datastax/driver/core/schemabuilder/SchemaBuilder$Direction;,2,4,50.0%,"private static Direction mapClusteringOrder(ClusteringOrder clusteringOrder) {
         switch (clusteringOrder) {
             case ASC:
                 return Direction.ASC;
@@ -663,39 +665,100 @@ info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo,<init>,(IZ)
 info.archinnov.achilles.internals.metamodel.columns.ColumnInfo,<init>,(Z)V,3,3,100.0%,"public ColumnInfo(boolean frozen) {
         this.frozen = frozen;
     }",23-25
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setId,(Ljava/lang/Long;)V,2,2,100.0%,"public void setId(Long id) {
+info.archinnov.achilles.internals.metamodel.functions.FunctionProperty,<init>,(Ljava/util/Optional;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V,6,6,100.0%,"public FunctionProperty(Optional<String> keyspace, String name, String returnDataType, List<String> parameterDataTypes) {
+        this.keyspace = keyspace;
+        this.name = name;
+        this.returnDataType = returnDataType;
+        this.parameterDataTypes = parameterDataTypes;
+    }",38-43
+info.archinnov.achilles.internals.metamodel.functions.FunctionProperty,validate,(Linfo/archinnov/achilles/internals/context/ConfigurationContext;)V,27,27,100.0%,"public void validate(ConfigurationContext configContext) {
+        final Metadata metadata = configContext.getSession().getCluster().getMetadata();
+
+        final Optional<String> definedKeyspace = OverridingOptional
+                .from(keyspace)
+                .andThen(configContext.getCurrentKeyspace())
+                .getOptional();
+
+        Validator.validateTrue(definedKeyspace.isPresent(), ""No keyspace value defined on function '%s' annotation "" +
+                ""nor at Achilles runtime"", this.toString());
+
+        final KeyspaceMetadata keyspaceMetadata = metadata.getKeyspace(definedKeyspace.get());
+
+        final long matchingUDF = keyspaceMetadata
+                .getFunctions()
+                .stream()
+                .filter(x -> x.getSimpleName().equalsIgnoreCase(this.name))
+                .filter(x -> x.getReturnType().asFunctionParameterString().equalsIgnoreCase(this.returnDataType))
+                .filter(x -> x.getArguments()
+                        .entrySet()
+                        .stream()
+                        .map(entry -> entry.getValue().toString())
+                        .collect(Collectors.toList())
+                        .equals(this.parameterDataTypes))
+                .count();
+
+        final long matchingUDA = keyspaceMetadata
+                .getAggregates()
+                .stream()
+                .filter(x -> x.getSimpleName().equalsIgnoreCase(this.name))
+                .filter(x -> x.getReturnType().asFunctionParameterString().equalsIgnoreCase(this.returnDataType))
+                .filter(x -> x.getArgumentTypes()
+                        .stream()
+                        .map(DataType::toString)
+                        .collect(Collectors.toList())
+                        .equals(this.parameterDataTypes))
+                .count();
+
+        Validator.validateBeanMappingFalse(matchingUDF > 1 && matchingUDA > 1, ""Error: found an UDF and UDA with the same name and signature in keyspace '%s'"",
+                definedKeyspace.get());
+
+        Validator.validateBeanMappingTrue(matchingUDA + matchingUDF == 1,
+                ""The declared function '%s' cannot be found in the runtime Cassandra keyspace '%s'"",
+                this.toString(), definedKeyspace.get());
+    }",45-89
+info.archinnov.achilles.internals.metamodel.functions.FunctionProperty,toString,()Ljava/lang/String;,7,7,100.0%,"@Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder(""FunctionProperty{"");
+        sb.append(""keyspace="").append(keyspace);
+        sb.append("", name='"").append(name).append('\'');
+        sb.append("", returnDataType='"").append(returnDataType).append('\'');
+        sb.append("", parameterDataTypes="").append(parameterDataTypes);
+        sb.append('}');
+        return sb.toString();
+    }",91-100
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setId,(Ljava/lang/Long;)V,2,2,100.0%,"public void setId(Long id) {
         this.id = id;
-    }",68-70
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setClust1,(I)V,2,2,100.0%,"public void setClust1(int clust1) {
+    }",65-67
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setClust1,(I)V,2,2,100.0%,"public void setClust1(int clust1) {
         this.clust1 = clust1;
-    }",76-78
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setClust2,(I)V,2,2,100.0%,"public void setClust2(int clust2) {
+    }",73-75
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setClust2,(I)V,2,2,100.0%,"public void setClust2(int clust2) {
         this.clust2 = clust2;
-    }",84-86
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setClust3,(Ljava/lang/String;)V,2,2,100.0%,"public void setClust3(String clust3) {
+    }",81-83
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setClust3,(Ljava/lang/String;)V,2,2,100.0%,"public void setClust3(String clust3) {
         this.clust3 = clust3;
-    }",92-94
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,getSimpleIndex,()Ljava/lang/String;,1,1,100.0%,"public String getSimpleIndex() {
-        return simpleIndex;
-    }",96-98
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setSimpleIndex,(Ljava/lang/String;)V,2,2,100.0%,"public void setSimpleIndex(String simpleIndex) {
+    }",89-91
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setSimpleIndex,(Ljava/lang/String;)V,2,2,100.0%,"public void setSimpleIndex(String simpleIndex) {
         this.simpleIndex = simpleIndex;
-    }",100-102
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setCollectionIndex,(Ljava/util/List;)V,2,2,100.0%,"public void setCollectionIndex(List<String> collectionIndex) {
+    }",97-99
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setCollectionIndex,(Ljava/util/List;)V,2,2,100.0%,"public void setCollectionIndex(List<String> collectionIndex) {
         this.collectionIndex = collectionIndex;
-    }",108-110
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setFullIndexOnCollection,(Ljava/util/Set;)V,2,2,100.0%,"public void setFullIndexOnCollection(Set<String> fullIndexOnCollection) {
+    }",105-107
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,getFullIndexOnCollection,()Ljava/util/Set;,1,1,100.0%,"public Set<String> getFullIndexOnCollection() {
+        return fullIndexOnCollection;
+    }",109-111
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setFullIndexOnCollection,(Ljava/util/Set;)V,2,2,100.0%,"public void setFullIndexOnCollection(Set<String> fullIndexOnCollection) {
         this.fullIndexOnCollection = fullIndexOnCollection;
-    }",116-118
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setIndexOnMapKey,(Ljava/util/Map;)V,2,2,100.0%,"public void setIndexOnMapKey(Map<String, String> indexOnMapKey) {
+    }",113-115
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setIndexOnMapKey,(Ljava/util/Map;)V,2,2,100.0%,"public void setIndexOnMapKey(Map<String, String> indexOnMapKey) {
         this.indexOnMapKey = indexOnMapKey;
-    }",124-126
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setIndexOnMapEntry,(Ljava/util/Map;)V,2,2,100.0%,"public void setIndexOnMapEntry(Map<Integer, String> indexOnMapEntry) {
-        this.indexOnMapEntry = indexOnMapEntry;
-    }",132-134
-info.archinnov.achilles.internals.entities.EntityWithComplexIndices,setIndexOnMapValue,(Ljava/util/Map;)V,2,2,100.0%,"public void setIndexOnMapValue(Map<Integer, String> indexOnMapValue) {
+    }",121-123
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setIndexOnMapValue,(Ljava/util/Map;)V,2,2,100.0%,"public void setIndexOnMapValue(Map<Integer, String> indexOnMapValue) {
         this.indexOnMapValue = indexOnMapValue;
-    }",140-142
+    }",129-131
+info.archinnov.achilles.internals.entities.EntityWithIndicesForJSON,setIndexOnMapEntry,(Ljava/util/Map;)V,2,2,100.0%,"public void setIndexOnMapEntry(Map<Integer, String> indexOnMapEntry) {
+        this.indexOnMapEntry = indexOnMapEntry;
+    }",137-139
 info.archinnov.achilles.json.DefaultJacksonMapper,<init>,(Ljava/lang/String;ILcom/fasterxml/jackson/databind/ObjectMapper;)V,3,3,100.0%,"DefaultJacksonMapper(ObjectMapper jacksonMapper) {
         this.jacksonMapper = jacksonMapper;
     }",34-36
@@ -716,6 +779,143 @@ info.archinnov.achilles.json.DefaultJacksonMapperFactory,getMapper,(Ljava/lang/C
     public <T> ObjectMapper getMapper(Class<T> type) {
         return DefaultJacksonMapper.DEFAULT.get();
     }",41-44
+info.archinnov.achilles.internals.metamodel.MapProperty$5,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
+                       boolean frozen, boolean emptyCollectionIfNull,
+                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
+                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
+                }
+                        .where(new TypeParameter<KEYFROM>() {
+                        }, keyProperty.valueFromTypeToken)
+                        .where(new TypeParameter<VALUEFROM>() {
+                        }, valueProperty.valueFromTypeToken),
+                new TypeToken<Map<KEYTO, VALUETO>>() {
+                }
+                        .where(new TypeParameter<KEYTO>() {
+                        }, keyProperty.valueToTypeToken)
+                        .where(new TypeParameter<VALUETO>() {
+                        }, valueProperty.valueToTypeToken), fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.keyProperty = keyProperty;
+        this.valueProperty = valueProperty;
+    }",60-81
+info.archinnov.achilles.internals.metamodel.MapProperty$6,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
+                       boolean frozen, boolean emptyCollectionIfNull,
+                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
+                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
+                }
+                        .where(new TypeParameter<KEYFROM>() {
+                        }, keyProperty.valueFromTypeToken)
+                        .where(new TypeParameter<VALUEFROM>() {
+                        }, valueProperty.valueFromTypeToken),
+                new TypeToken<Map<KEYTO, VALUETO>>() {
+                }
+                        .where(new TypeParameter<KEYTO>() {
+                        }, keyProperty.valueToTypeToken)
+                        .where(new TypeParameter<VALUETO>() {
+                        }, valueProperty.valueToTypeToken), fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.keyProperty = keyProperty;
+        this.valueProperty = valueProperty;
+    }",60-81
+info.archinnov.achilles.internals.metamodel.MapProperty$3,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
+                       boolean frozen, boolean emptyCollectionIfNull,
+                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
+                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
+                }
+                        .where(new TypeParameter<KEYFROM>() {
+                        }, keyProperty.valueFromTypeToken)
+                        .where(new TypeParameter<VALUEFROM>() {
+                        }, valueProperty.valueFromTypeToken),
+                new TypeToken<Map<KEYTO, VALUETO>>() {
+                }
+                        .where(new TypeParameter<KEYTO>() {
+                        }, keyProperty.valueToTypeToken)
+                        .where(new TypeParameter<VALUETO>() {
+                        }, valueProperty.valueToTypeToken), fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.keyProperty = keyProperty;
+        this.valueProperty = valueProperty;
+    }",60-81
+info.archinnov.achilles.internals.metamodel.MapProperty$4,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
+                       boolean frozen, boolean emptyCollectionIfNull,
+                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
+                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
+                }
+                        .where(new TypeParameter<KEYFROM>() {
+                        }, keyProperty.valueFromTypeToken)
+                        .where(new TypeParameter<VALUEFROM>() {
+                        }, valueProperty.valueFromTypeToken),
+                new TypeToken<Map<KEYTO, VALUETO>>() {
+                }
+                        .where(new TypeParameter<KEYTO>() {
+                        }, keyProperty.valueToTypeToken)
+                        .where(new TypeParameter<VALUETO>() {
+                        }, valueProperty.valueToTypeToken), fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.keyProperty = keyProperty;
+        this.valueProperty = valueProperty;
+    }",60-81
+info.archinnov.achilles.internals.metamodel.MapProperty$1,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
+                       boolean frozen, boolean emptyCollectionIfNull,
+                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
+                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
+                }
+                        .where(new TypeParameter<KEYFROM>() {
+                        }, keyProperty.valueFromTypeToken)
+                        .where(new TypeParameter<VALUEFROM>() {
+                        }, valueProperty.valueFromTypeToken),
+                new TypeToken<Map<KEYTO, VALUETO>>() {
+                }
+                        .where(new TypeParameter<KEYTO>() {
+                        }, keyProperty.valueToTypeToken)
+                        .where(new TypeParameter<VALUETO>() {
+                        }, valueProperty.valueToTypeToken), fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.keyProperty = keyProperty;
+        this.valueProperty = valueProperty;
+    }",60-81
+info.archinnov.achilles.internals.metamodel.MapProperty$2,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
+                       boolean frozen, boolean emptyCollectionIfNull,
+                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
+                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
+                }
+                        .where(new TypeParameter<KEYFROM>() {
+                        }, keyProperty.valueFromTypeToken)
+                        .where(new TypeParameter<VALUEFROM>() {
+                        }, valueProperty.valueFromTypeToken),
+                new TypeToken<Map<KEYTO, VALUETO>>() {
+                }
+                        .where(new TypeParameter<KEYTO>() {
+                        }, keyProperty.valueToTypeToken)
+                        .where(new TypeParameter<VALUETO>() {
+                        }, valueProperty.valueToTypeToken), fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.keyProperty = keyProperty;
+        this.valueProperty = valueProperty;
+    }",60-81
+info.archinnov.achilles.internals.metamodel.UDTProperty$1,<init>,()V,1,1,100.0%,"public UDTProperty(FieldInfo<ENTITY, A> fieldInfo, Class<A> valueClass, UDT_META udtClassProperty) {
+        super(TypeToken.of(valueClass), UDT_VALUE_TYPE_TOKEN, fieldInfo);
+        this.valueClass = valueClass;
+        this.udtClassProperty = udtClassProperty;
+    }",60-64
 info.archinnov.achilles.internals.metamodel.ListProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;ZZLjava/lang/Class;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,8,8,100.0%,"public ListProperty(FieldInfo<ENTITY, List<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
         super(
                 new TypeToken<List<VALUEFROM>>() {
@@ -787,11 +987,11 @@ info.archinnov.achilles.internals.metamodel.ListProperty,containsUDTProperty,()Z
     public boolean containsUDTProperty() {
         return valueProperty.containsUDTProperty();
     }",210-213
-info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",220-223
-info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",220-223
@@ -807,14 +1007,91 @@ info.archinnov.achilles.internals.metamodel.ListProperty,injectKeyspace,(Ljava/l
     public void injectKeyspace(String keyspace) {
         valueProperty.injectKeyspace(keyspace);
     }",240-243
-info.archinnov.achilles.internals.metamodel.Tuple1Property,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,3,3,100.0%,"public Tuple1Property(FieldInfo<ENTITY, Tuple1<A>> fieldInfo, AbstractProperty<ENTITY, A, ?> aProperty) {
-        super(new TypeToken<Tuple1<A>>() {
-        }, fieldInfo);
-        this.aProperty = aProperty;
-    }",46-50
-info.archinnov.achilles.internals.metamodel.AbstractTupleProperty$1,<init>,()V,1,1,100.0%,"AbstractTupleProperty(TypeToken<T> valueFromTypeToken, FieldInfo<ENTITY, T> fieldInfo) {
-        super(valueFromTypeToken, TUPLE_VALUE_TYPE_TOKEN, fieldInfo);
-    }",56-58
+info.archinnov.achilles.internals.metamodel.SetProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;ZZLjava/lang/Class;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,8,8,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(
+                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
+                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
+                fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.valueToClass = valueToClass;
+        this.valueProperty = valueProperty;
+    }",56-66
+info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromGettable,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Set;,2,2,100.0%,"@Override
+    public Set<VALUEFROM> decodeFromGettable(GettableData gettableData) {
+        if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !emptyCollectionIfNull) return null;
+        return decodeFromGettableInternal(gettableData);
+    }",130-134
+info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromGettableInternal,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Set;,2,3,66.7%,"@Override
+    public Set<VALUEFROM> decodeFromGettableInternal(GettableData gettableData) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format(""Decode '%s' set from gettable object %s"", fieldName, gettableData));
+        }
+
+        return decodeFromRaw(gettableData.getSet(fieldInfo.quotedCqlColumn, valueProperty.valueToTypeToken));
+    }",136-143
+info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromRaw,(Ljava/lang/Object;)Ljava/util/Set;,1,1,100.0%,"@Override
+    public Set<VALUEFROM> decodeFromRaw(Object o) {
+        return decodeFromRawInternal(o);
+    }",146-149
+info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromRawInternal,(Ljava/lang/Object;)Ljava/util/Set;,7,11,63.6%,"@Override
+    public Set<VALUEFROM> decodeFromRawInternal(Object o) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format(""Decode '%s' set raw object %s"", fieldName, o));
+        }
+
+        if (o == null) {
+            if (emptyCollectionIfNull)
+                return new HashSet<>();
+            else
+                return null;
+        }
+
+        Validator.validateTrue(Set.class.isAssignableFrom(o.getClass()), ""The class of object %s to decode should be Set<%s>"", o, valueToClass.getCanonicalName());
+
+        return new HashSet<>(((Set<VALUETO>) o)
+                .stream()
+                .map(valueTo -> valueProperty.decodeFromRaw(valueTo))
+                .collect(toSet()));
+    }",151-170
+info.archinnov.achilles.internals.metamodel.SetProperty,buildType,(Ljava/util/Optional;)Lcom/datastax/driver/core/DataType;,4,6,66.7%,"@Override
+    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format(""Build current '%s' set data type"", fieldName));
+        }
+
+        final DataType valueType = valueProperty.buildType(cassandraOptions);
+        if (frozen) {
+            return DataType.frozenSet(valueType);
+        } else {
+            return DataType.set(valueType);
+        }
+    }",176-188
+info.archinnov.achilles.internals.metamodel.SetProperty,containsUDTProperty,()Z,1,1,100.0%,"@Override
+    public boolean containsUDTProperty() {
+        return valueProperty.containsUDTProperty();
+    }",199-202
+info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",209-212
+info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",209-212
+info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,2,2,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",209-212
+info.archinnov.achilles.internals.metamodel.SetProperty,injectRuntimeCodecs,(Ljava/util/Map;)V,2,2,100.0%,"@Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        valueProperty.injectRuntimeCodecs(runtimeCodecs);
+    }",224-227
+info.archinnov.achilles.internals.metamodel.SetProperty,injectKeyspace,(Ljava/lang/String;)V,2,2,100.0%,"@Override
+    public void injectKeyspace(String keyspace) {
+        valueProperty.injectKeyspace(keyspace);
+    }",229-232
 info.archinnov.achilles.internals.metamodel.SimpleProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;Lcom/datastax/driver/core/DataType;Ljava/util/function/Function;Ljava/util/function/BiConsumer;Lcom/google/common/reflect/TypeToken;Lcom/google/common/reflect/TypeToken;Linfo/archinnov/achilles/type/codec/Codec;)V,6,6,100.0%,"public SimpleProperty(FieldInfo<ENTITY, VALUEFROM> fieldInfo, DataType dataType,
                           Function<GettableData, VALUETO> gettable,
                           BiConsumer<SettableData, VALUETO> settable,
@@ -827,23 +1104,6 @@ info.archinnov.achilles.internals.metamodel.SimpleProperty,<init>,(Linfo/archinn
         this.settable = settable;
         this.valueCodec = valueCodec;
     }",58-69
-info.archinnov.achilles.internals.metamodel.SimpleProperty,encodeFromJavaInternal,(Ljava/lang/Object;Ljava/util/Optional;)Ljava/lang/Object;,2,3,66.7%,"@Override
-    public VALUETO encodeFromJavaInternal(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format(""Encode from Java '%s'  %s to CQL type"", fieldName, javaValue));
-        }
-
-        return valueCodec.encode(javaValue);
-    }",85-92
-info.archinnov.achilles.internals.metamodel.SimpleProperty,encodeFromRawInternal,(Ljava/lang/Object;Ljava/util/Optional;)Ljava/lang/Object;,3,4,75.0%,"@Override
-    public VALUETO encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format(""Encode raw '%s' object %s"", fieldName, o));
-        }
-
-        Validator.validateTrue(valueFromTypeToken.getRawType().isAssignableFrom(o.getClass()), ""The class of object %s to encode should be %s"", o, valueFromTypeToken);
-        return encodeFromJava((VALUEFROM) o, cassandraOptions);
-    }",94-102
 info.archinnov.achilles.internals.metamodel.SimpleProperty,decodeFromGettableInternal,(Lcom/datastax/driver/core/GettableData;)Ljava/lang/Object;,2,3,66.7%,"@Override
     public VALUEFROM decodeFromGettableInternal(GettableData gettableData) {
         if (LOGGER.isTraceEnabled()) {
@@ -874,15 +1134,15 @@ info.archinnov.achilles.internals.metamodel.SimpleProperty,containsUDTProperty,(
     public boolean containsUDTProperty() {
         return false;
     }",144-147
+info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,1,1,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        // No op
+    }",154-157
 info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,3,66.7%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
 info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,1,1,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        // No op
-    }",154-157
-info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,1,1,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
@@ -896,9 +1156,152 @@ info.archinnov.achilles.internals.metamodel.SimpleProperty,injectKeyspace,(Ljava
     public void injectKeyspace(String keyspace) {
         // No op
     }",178-181
-info.archinnov.achilles.internals.metamodel.AbstractTupleProperty,<init>,(Lcom/google/common/reflect/TypeToken;Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;)V,2,2,100.0%,"AbstractTupleProperty(TypeToken<T> valueFromTypeToken, FieldInfo<ENTITY, T> fieldInfo) {
-        super(valueFromTypeToken, TUPLE_VALUE_TYPE_TOKEN, fieldInfo);
-    }",56-58
+info.archinnov.achilles.internals.metamodel.MapProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;ZZLinfo/archinnov/achilles/internals/metamodel/AbstractProperty;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,10,10,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
+                       boolean frozen, boolean emptyCollectionIfNull,
+                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
+                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
+                }
+                        .where(new TypeParameter<KEYFROM>() {
+                        }, keyProperty.valueFromTypeToken)
+                        .where(new TypeParameter<VALUEFROM>() {
+                        }, valueProperty.valueFromTypeToken),
+                new TypeToken<Map<KEYTO, VALUETO>>() {
+                }
+                        .where(new TypeParameter<KEYTO>() {
+                        }, keyProperty.valueToTypeToken)
+                        .where(new TypeParameter<VALUETO>() {
+                        }, valueProperty.valueToTypeToken), fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.keyProperty = keyProperty;
+        this.valueProperty = valueProperty;
+    }",60-81
+info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromGettable,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Map;,2,2,100.0%,"@Override
+    public Map<KEYFROM, VALUEFROM> decodeFromGettable(GettableData gettableData) {
+        if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !emptyCollectionIfNull) return null;
+        return decodeFromGettableInternal(gettableData);
+    }",173-177
+info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromGettableInternal,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Map;,2,3,66.7%,"@Override
+    public Map<KEYFROM, VALUEFROM> decodeFromGettableInternal(GettableData gettableData) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format(""Decode '%s' map from gettable object %s"", fieldName, gettableData));
+        }
+
+        return decodeFromRaw(gettableData.getMap(fieldInfo.quotedCqlColumn, keyProperty.valueToTypeToken, valueProperty.valueToTypeToken));
+    }",179-186
+info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromRaw,(Ljava/lang/Object;)Ljava/util/Map;,1,1,100.0%,"@Override
+    public Map<KEYFROM, VALUEFROM> decodeFromRaw(Object o) {
+        return decodeFromRawInternal(o);
+    }",188-191
+info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromRawInternal,(Ljava/lang/Object;)Ljava/util/Map;,7,11,63.6%,"@Override
+    public Map<KEYFROM, VALUEFROM> decodeFromRawInternal(Object o) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format(""Decode '%s' map raw object %s"", fieldName, o));
+        }
+
+        if (o == null) {
+            if (emptyCollectionIfNull)
+                return new HashMap<>();
+            else
+                return null;
+        }
+
+        Validator.validateTrue(Map.class.isAssignableFrom(o.getClass()), ""The class of object %s to decode should be Map<%s,%s>"", o,
+                keyProperty.valueToTypeToken, valueProperty.valueToTypeToken);
+
+        return new HashMap<>(((Map<KEYTO, VALUETO>) o)
+                .entrySet()
+                .stream()
+                .collect(toMap((Map.Entry entry) -> keyProperty.decodeFromRaw(entry.getKey()), (Map.Entry entry) -> valueProperty.decodeFromRaw(entry.getValue()))));
+    }",193-213
+info.archinnov.achilles.internals.metamodel.MapProperty,buildType,(Ljava/util/Optional;)Lcom/datastax/driver/core/DataType;,5,7,71.4%,"@Override
+    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format(""Build current '%s' map data type"", fieldName));
+        }
+        final DataType keyType = keyProperty.buildType(cassandraOptions);
+        final DataType valueType = valueProperty.buildType(cassandraOptions);
+        if (frozen) {
+            return DataType.frozenMap(keyType, valueType);
+        } else {
+            return DataType.map(keyType, valueType);
+        }
+    }",223-235
+info.archinnov.achilles.internals.metamodel.MapProperty,containsUDTProperty,()Z,1,1,100.0%,"@Override
+    public boolean containsUDTProperty() {
+        return keyProperty.containsUDTProperty() || valueProperty.containsUDTProperty();
+    }",246-249
+info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,3,3,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        keyProperty.inject(userTypeFactory, tupleTypeFactory);
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",256-260
+info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,3,3,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        keyProperty.inject(userTypeFactory, tupleTypeFactory);
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",256-260
+info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,3,3,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        keyProperty.inject(userTypeFactory, tupleTypeFactory);
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",256-260
+info.archinnov.achilles.internals.metamodel.MapProperty,injectRuntimeCodecs,(Ljava/util/Map;)V,3,3,100.0%,"@Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        keyProperty.injectRuntimeCodecs(runtimeCodecs);
+        valueProperty.injectRuntimeCodecs(runtimeCodecs);
+    }",274-278
+info.archinnov.achilles.internals.metamodel.MapProperty,injectKeyspace,(Ljava/lang/String;)V,3,3,100.0%,"@Override
+    public void injectKeyspace(String keyspace) {
+        keyProperty.injectKeyspace(keyspace);
+        valueProperty.injectKeyspace(keyspace);
+    }",280-284
+info.archinnov.achilles.internals.metamodel.SetProperty$3,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(
+                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
+                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
+                fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.valueToClass = valueToClass;
+        this.valueProperty = valueProperty;
+    }",56-66
+info.archinnov.achilles.internals.metamodel.SetProperty$4,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(
+                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
+                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
+                fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.valueToClass = valueToClass;
+        this.valueProperty = valueProperty;
+    }",56-66
+info.archinnov.achilles.internals.metamodel.SetProperty$1,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(
+                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
+                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
+                fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.valueToClass = valueToClass;
+        this.valueProperty = valueProperty;
+    }",56-66
+info.archinnov.achilles.internals.metamodel.SetProperty$2,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
+        super(
+                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
+                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
+                fieldInfo);
+
+        this.frozen = frozen;
+        this.emptyCollectionIfNull = emptyCollectionIfNull;
+        this.valueToClass = valueToClass;
+        this.valueProperty = valueProperty;
+    }",56-66
 info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,<init>,()V,27,27,100.0%,"public AbstractEntityProperty() {
         entityClass = getEntityClass();
         entityLogger = LoggerFactory.getLogger(entityClass);
@@ -1133,7 +1536,7 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,injectConsist
                     entityClass.getCanonicalName()));
         }
     }",380-427
-info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,5,7,71.4%,"@Override
+info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,6,8,75.0%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
@@ -1160,7 +1563,7 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo
         if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
         else this.insertStrategy = staticInsertStrategy.get();
     }",429-437
-info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,6,8,75.0%,"@Override
+info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,5,7,71.4%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
@@ -1186,466 +1589,12 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,isTable,()Z,1
 info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,isView,()Z,1,1,100.0%,"public boolean isView() {
         return false;
     }",505-507
-info.archinnov.achilles.internals.metamodel.Tuple2Property,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,4,4,100.0%,"public Tuple2Property(FieldInfo<ENTITY, Tuple2<A, B>> fieldInfo, AbstractProperty<ENTITY, A, ?> aProperty, AbstractProperty<ENTITY, B, ?> bProperty) {
-        super(new TypeToken<Tuple2<A, B>>() {
-        }, fieldInfo);
-        this.aProperty = aProperty;
-        this.bProperty = bProperty;
-    }",47-52
-info.archinnov.achilles.internals.metamodel.ComputedProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;Ljava/util/function/Function;Linfo/archinnov/achilles/type/codec/Codec;)V,7,7,100.0%,"public ComputedProperty(FieldInfo<ENTITY, VALUEFROM> fieldInfo, Function<GettableData, VALUETO> extractor, Codec<VALUEFROM, VALUETO> valueCodec) {
-        super(fieldInfo);
-        this.valueFromTypeToken = new TypeToken<VALUEFROM>(getClass()) {
-        };
-        this.valueToTypeToken = new TypeToken<VALUETO>(getClass()) {
-        };
-        this.extractor = extractor;
-        this.valueCodec = valueCodec;
-        this.computedColumnInfo = (ComputedColumnInfo) fieldInfo.columnInfo;
-    }",56-65
-info.archinnov.achilles.internals.metamodel.Tuple3Property,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,5,5,100.0%,"public Tuple3Property(FieldInfo<ENTITY, Tuple3<A, B, C>> fieldInfo, AbstractProperty<ENTITY, A, ?> aProperty, AbstractProperty<ENTITY, B, ?> bProperty, AbstractProperty<ENTITY, C, ?> cProperty) {
-        super(new TypeToken<Tuple3<A, B, C>>() {
-        }, fieldInfo);
-        this.aProperty = aProperty;
-        this.bProperty = bProperty;
-        this.cProperty = cProperty;
-    }",48-54
-info.archinnov.achilles.internals.metamodel.JdkOptionalProperty$1,<init>,()V,1,1,100.0%,"public JdkOptionalProperty(FieldInfo<ENTITY, Optional<FROM>> fieldInfo, AbstractProperty<ENTITY, FROM, TO> aProperty) {
-        super(new TypeToken<Optional<FROM>>() {}.where(new TypeParameter<FROM>() {}, aProperty.valueFromTypeToken),
-                aProperty.valueToTypeToken, fieldInfo);
-        this.aProperty = aProperty;
-    }",52-56
-info.archinnov.achilles.internals.metamodel.JdkOptionalProperty$2,<init>,()V,1,1,100.0%,"public JdkOptionalProperty(FieldInfo<ENTITY, Optional<FROM>> fieldInfo, AbstractProperty<ENTITY, FROM, TO> aProperty) {
-        super(new TypeToken<Optional<FROM>>() {}.where(new TypeParameter<FROM>() {}, aProperty.valueFromTypeToken),
-                aProperty.valueToTypeToken, fieldInfo);
-        this.aProperty = aProperty;
-    }",52-56
-info.archinnov.achilles.internals.metamodel.Tuple2Property$1,<init>,()V,1,1,100.0%,"public Tuple2Property(FieldInfo<ENTITY, Tuple2<A, B>> fieldInfo, AbstractProperty<ENTITY, A, ?> aProperty, AbstractProperty<ENTITY, B, ?> bProperty) {
-        super(new TypeToken<Tuple2<A, B>>() {
-        }, fieldInfo);
-        this.aProperty = aProperty;
-        this.bProperty = bProperty;
-    }",47-52
-info.archinnov.achilles.internals.metamodel.JdkOptionalProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,3,3,100.0%,"public JdkOptionalProperty(FieldInfo<ENTITY, Optional<FROM>> fieldInfo, AbstractProperty<ENTITY, FROM, TO> aProperty) {
-        super(new TypeToken<Optional<FROM>>() {}.where(new TypeParameter<FROM>() {}, aProperty.valueFromTypeToken),
-                aProperty.valueToTypeToken, fieldInfo);
-        this.aProperty = aProperty;
-    }",52-56
-info.archinnov.achilles.internals.metamodel.MapProperty$5,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
-                       boolean frozen, boolean emptyCollectionIfNull,
-                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
-                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<KEYFROM>() {
-                        }, keyProperty.valueFromTypeToken)
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Map<KEYTO, VALUETO>>() {
-                }
-                        .where(new TypeParameter<KEYTO>() {
-                        }, keyProperty.valueToTypeToken)
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken), fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.keyProperty = keyProperty;
-        this.valueProperty = valueProperty;
-    }",60-81
-info.archinnov.achilles.internals.metamodel.MapProperty$6,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
-                       boolean frozen, boolean emptyCollectionIfNull,
-                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
-                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<KEYFROM>() {
-                        }, keyProperty.valueFromTypeToken)
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Map<KEYTO, VALUETO>>() {
-                }
-                        .where(new TypeParameter<KEYTO>() {
-                        }, keyProperty.valueToTypeToken)
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken), fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.keyProperty = keyProperty;
-        this.valueProperty = valueProperty;
-    }",60-81
-info.archinnov.achilles.internals.metamodel.MapProperty$3,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
-                       boolean frozen, boolean emptyCollectionIfNull,
-                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
-                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<KEYFROM>() {
-                        }, keyProperty.valueFromTypeToken)
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Map<KEYTO, VALUETO>>() {
-                }
-                        .where(new TypeParameter<KEYTO>() {
-                        }, keyProperty.valueToTypeToken)
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken), fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.keyProperty = keyProperty;
-        this.valueProperty = valueProperty;
-    }",60-81
-info.archinnov.achilles.internals.metamodel.MapProperty$4,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
-                       boolean frozen, boolean emptyCollectionIfNull,
-                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
-                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<KEYFROM>() {
-                        }, keyProperty.valueFromTypeToken)
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Map<KEYTO, VALUETO>>() {
-                }
-                        .where(new TypeParameter<KEYTO>() {
-                        }, keyProperty.valueToTypeToken)
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken), fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.keyProperty = keyProperty;
-        this.valueProperty = valueProperty;
-    }",60-81
-info.archinnov.achilles.internals.metamodel.MapProperty$1,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
-                       boolean frozen, boolean emptyCollectionIfNull,
-                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
-                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<KEYFROM>() {
-                        }, keyProperty.valueFromTypeToken)
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Map<KEYTO, VALUETO>>() {
-                }
-                        .where(new TypeParameter<KEYTO>() {
-                        }, keyProperty.valueToTypeToken)
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken), fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.keyProperty = keyProperty;
-        this.valueProperty = valueProperty;
-    }",60-81
-info.archinnov.achilles.internals.metamodel.MapProperty$2,<init>,()V,1,1,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
-                       boolean frozen, boolean emptyCollectionIfNull,
-                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
-                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<KEYFROM>() {
-                        }, keyProperty.valueFromTypeToken)
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Map<KEYTO, VALUETO>>() {
-                }
-                        .where(new TypeParameter<KEYTO>() {
-                        }, keyProperty.valueToTypeToken)
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken), fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.keyProperty = keyProperty;
-        this.valueProperty = valueProperty;
-    }",60-81
-info.archinnov.achilles.internals.metamodel.UDTProperty$1,<init>,()V,1,1,100.0%,"public UDTProperty(FieldInfo<ENTITY, A> fieldInfo, Class<A> valueClass, UDT_META udtClassProperty) {
-        super(TypeToken.of(valueClass), UDT_VALUE_TYPE_TOKEN, fieldInfo);
-        this.valueClass = valueClass;
-        this.udtClassProperty = udtClassProperty;
-    }",60-64
-info.archinnov.achilles.internals.metamodel.SetProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;ZZLjava/lang/Class;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,8,8,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(
-                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
-                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
-                fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.valueToClass = valueToClass;
-        this.valueProperty = valueProperty;
-    }",56-66
-info.archinnov.achilles.internals.metamodel.SetProperty,encodeFromJavaInternal,(Ljava/util/Set;Ljava/util/Optional;)Ljava/util/Set;,5,6,83.3%,"@Override
-    public Set<VALUETO> encodeFromJavaInternal(Set<VALUEFROM> set, Optional<CassandraOptions> cassandraOptions) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format(""Encode from Java '%s' set %s to CQL type"", fieldName, set));
-        }
-        return new HashSet<>(set
-                .stream()
-                .map(value -> valueProperty.encodeFromRaw(value, cassandraOptions))
-                .collect(toSet()));
-    }",109-118
-info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromGettable,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Set;,2,2,100.0%,"@Override
-    public Set<VALUEFROM> decodeFromGettable(GettableData gettableData) {
-        if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !emptyCollectionIfNull) return null;
-        return decodeFromGettableInternal(gettableData);
-    }",130-134
-info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromGettableInternal,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Set;,2,3,66.7%,"@Override
-    public Set<VALUEFROM> decodeFromGettableInternal(GettableData gettableData) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format(""Decode '%s' set from gettable object %s"", fieldName, gettableData));
-        }
-
-        return decodeFromRaw(gettableData.getSet(fieldInfo.quotedCqlColumn, valueProperty.valueToTypeToken));
-    }",136-143
-info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromRaw,(Ljava/lang/Object;)Ljava/util/Set;,1,1,100.0%,"@Override
-    public Set<VALUEFROM> decodeFromRaw(Object o) {
-        return decodeFromRawInternal(o);
-    }",146-149
-info.archinnov.achilles.internals.metamodel.SetProperty,decodeFromRawInternal,(Ljava/lang/Object;)Ljava/util/Set;,7,11,63.6%,"@Override
-    public Set<VALUEFROM> decodeFromRawInternal(Object o) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format(""Decode '%s' set raw object %s"", fieldName, o));
-        }
-
-        if (o == null) {
-            if (emptyCollectionIfNull)
-                return new HashSet<>();
-            else
-                return null;
-        }
-
-        Validator.validateTrue(Set.class.isAssignableFrom(o.getClass()), ""The class of object %s to decode should be Set<%s>"", o, valueToClass.getCanonicalName());
-
-        return new HashSet<>(((Set<VALUETO>) o)
-                .stream()
-                .map(valueTo -> valueProperty.decodeFromRaw(valueTo))
-                .collect(toSet()));
-    }",151-170
-info.archinnov.achilles.internals.metamodel.SetProperty,buildType,(Ljava/util/Optional;)Lcom/datastax/driver/core/DataType;,4,6,66.7%,"@Override
-    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format(""Build current '%s' set data type"", fieldName));
-        }
-
-        final DataType valueType = valueProperty.buildType(cassandraOptions);
-        if (frozen) {
-            return DataType.frozenSet(valueType);
-        } else {
-            return DataType.set(valueType);
-        }
-    }",176-188
-info.archinnov.achilles.internals.metamodel.SetProperty,containsUDTProperty,()Z,1,1,100.0%,"@Override
-    public boolean containsUDTProperty() {
-        return valueProperty.containsUDTProperty();
-    }",199-202
-info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",209-212
-info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",209-212
-info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,2,2,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",209-212
-info.archinnov.achilles.internals.metamodel.SetProperty,injectRuntimeCodecs,(Ljava/util/Map;)V,2,2,100.0%,"@Override
-    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
-        valueProperty.injectRuntimeCodecs(runtimeCodecs);
-    }",224-227
-info.archinnov.achilles.internals.metamodel.SetProperty,injectKeyspace,(Ljava/lang/String;)V,2,2,100.0%,"@Override
-    public void injectKeyspace(String keyspace) {
-        valueProperty.injectKeyspace(keyspace);
-    }",229-232
-info.archinnov.achilles.internals.metamodel.MapProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;ZZLinfo/archinnov/achilles/internals/metamodel/AbstractProperty;Linfo/archinnov/achilles/internals/metamodel/AbstractProperty;)V,10,10,100.0%,"public MapProperty(FieldInfo<ENTITY, Map<KEYFROM, VALUEFROM>> fieldInfo,
-                       boolean frozen, boolean emptyCollectionIfNull,
-                       AbstractProperty<ENTITY, KEYFROM, KEYTO> keyProperty,
-                       AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(new TypeToken<Map<KEYFROM, VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<KEYFROM>() {
-                        }, keyProperty.valueFromTypeToken)
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Map<KEYTO, VALUETO>>() {
-                }
-                        .where(new TypeParameter<KEYTO>() {
-                        }, keyProperty.valueToTypeToken)
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken), fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.keyProperty = keyProperty;
-        this.valueProperty = valueProperty;
-    }",60-81
-info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromGettable,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Map;,2,2,100.0%,"@Override
-    public Map<KEYFROM, VALUEFROM> decodeFromGettable(GettableData gettableData) {
-        if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !emptyCollectionIfNull) return null;
-        return decodeFromGettableInternal(gettableData);
-    }",173-177
-info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromGettableInternal,(Lcom/datastax/driver/core/GettableData;)Ljava/util/Map;,2,3,66.7%,"@Override
-    public Map<KEYFROM, VALUEFROM> decodeFromGettableInternal(GettableData gettableData) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format(""Decode '%s' map from gettable object %s"", fieldName, gettableData));
-        }
-
-        return decodeFromRaw(gettableData.getMap(fieldInfo.quotedCqlColumn, keyProperty.valueToTypeToken, valueProperty.valueToTypeToken));
-    }",179-186
-info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromRaw,(Ljava/lang/Object;)Ljava/util/Map;,1,1,100.0%,"@Override
-    public Map<KEYFROM, VALUEFROM> decodeFromRaw(Object o) {
-        return decodeFromRawInternal(o);
-    }",188-191
-info.archinnov.achilles.internals.metamodel.MapProperty,decodeFromRawInternal,(Ljava/lang/Object;)Ljava/util/Map;,7,11,63.6%,"@Override
-    public Map<KEYFROM, VALUEFROM> decodeFromRawInternal(Object o) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format(""Decode '%s' map raw object %s"", fieldName, o));
-        }
-
-        if (o == null) {
-            if (emptyCollectionIfNull)
-                return new HashMap<>();
-            else
-                return null;
-        }
-
-        Validator.validateTrue(Map.class.isAssignableFrom(o.getClass()), ""The class of object %s to decode should be Map<%s,%s>"", o,
-                keyProperty.valueToTypeToken, valueProperty.valueToTypeToken);
-
-        return new HashMap<>(((Map<KEYTO, VALUETO>) o)
-                .entrySet()
-                .stream()
-                .collect(toMap((Map.Entry entry) -> keyProperty.decodeFromRaw(entry.getKey()), (Map.Entry entry) -> valueProperty.decodeFromRaw(entry.getValue()))));
-    }",193-213
-info.archinnov.achilles.internals.metamodel.MapProperty,buildType,(Ljava/util/Optional;)Lcom/datastax/driver/core/DataType;,5,7,71.4%,"@Override
-    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format(""Build current '%s' map data type"", fieldName));
-        }
-        final DataType keyType = keyProperty.buildType(cassandraOptions);
-        final DataType valueType = valueProperty.buildType(cassandraOptions);
-        if (frozen) {
-            return DataType.frozenMap(keyType, valueType);
-        } else {
-            return DataType.map(keyType, valueType);
-        }
-    }",223-235
-info.archinnov.achilles.internals.metamodel.MapProperty,containsUDTProperty,()Z,1,1,100.0%,"@Override
-    public boolean containsUDTProperty() {
-        return keyProperty.containsUDTProperty() || valueProperty.containsUDTProperty();
-    }",246-249
-info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,3,3,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        keyProperty.inject(userTypeFactory, tupleTypeFactory);
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",256-260
-info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,3,3,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        keyProperty.inject(userTypeFactory, tupleTypeFactory);
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",256-260
-info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,3,3,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        keyProperty.inject(userTypeFactory, tupleTypeFactory);
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",256-260
-info.archinnov.achilles.internals.metamodel.MapProperty,injectRuntimeCodecs,(Ljava/util/Map;)V,3,3,100.0%,"@Override
-    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
-        keyProperty.injectRuntimeCodecs(runtimeCodecs);
-        valueProperty.injectRuntimeCodecs(runtimeCodecs);
-    }",274-278
-info.archinnov.achilles.internals.metamodel.MapProperty,injectKeyspace,(Ljava/lang/String;)V,3,3,100.0%,"@Override
-    public void injectKeyspace(String keyspace) {
-        keyProperty.injectKeyspace(keyspace);
-        valueProperty.injectKeyspace(keyspace);
-    }",280-284
-info.archinnov.achilles.internals.metamodel.SetProperty$3,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(
-                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
-                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
-                fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.valueToClass = valueToClass;
-        this.valueProperty = valueProperty;
-    }",56-66
-info.archinnov.achilles.internals.metamodel.SetProperty$4,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(
-                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
-                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
-                fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.valueToClass = valueToClass;
-        this.valueProperty = valueProperty;
-    }",56-66
-info.archinnov.achilles.internals.metamodel.SetProperty$1,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(
-                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
-                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
-                fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.valueToClass = valueToClass;
-        this.valueProperty = valueProperty;
-    }",56-66
-info.archinnov.achilles.internals.metamodel.SetProperty$2,<init>,()V,1,1,100.0%,"public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
-        super(
-                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
-                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
-                fieldInfo);
-
-        this.frozen = frozen;
-        this.emptyCollectionIfNull = emptyCollectionIfNull;
-        this.valueToClass = valueToClass;
-        this.valueProperty = valueProperty;
-    }",56-66
-info.archinnov.achilles.internals.metamodel.ComputedProperty$2,<init>,(Linfo/archinnov/achilles/internals/metamodel/ComputedProperty;Ljava/lang/Class;)V,1,1,100.0%,"public ComputedProperty(FieldInfo<ENTITY, VALUEFROM> fieldInfo, Function<GettableData, VALUETO> extractor, Codec<VALUEFROM, VALUETO> valueCodec) {
-        super(fieldInfo);
-        this.valueFromTypeToken = new TypeToken<VALUEFROM>(getClass()) {
-        };
-        this.valueToTypeToken = new TypeToken<VALUETO>(getClass()) {
-        };
-        this.extractor = extractor;
-        this.valueCodec = valueCodec;
-        this.computedColumnInfo = (ComputedColumnInfo) fieldInfo.columnInfo;
-    }",56-65
-info.archinnov.achilles.internals.metamodel.ComputedProperty$1,<init>,(Linfo/archinnov/achilles/internals/metamodel/ComputedProperty;Ljava/lang/Class;)V,1,1,100.0%,"public ComputedProperty(FieldInfo<ENTITY, VALUEFROM> fieldInfo, Function<GettableData, VALUETO> extractor, Codec<VALUEFROM, VALUETO> valueCodec) {
-        super(fieldInfo);
-        this.valueFromTypeToken = new TypeToken<VALUEFROM>(getClass()) {
-        };
-        this.valueToTypeToken = new TypeToken<VALUETO>(getClass()) {
-        };
-        this.extractor = extractor;
-        this.valueCodec = valueCodec;
-        this.computedColumnInfo = (ComputedColumnInfo) fieldInfo.columnInfo;
-    }",56-65
-info.archinnov.achilles.internals.metamodel.AbstractProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;)V,5,5,100.0%,"AbstractProperty(TypeToken<VALUEFROM> valueFromTypeToken, TypeToken<VALUETO> valueToTypeToken, FieldInfo<ENTITY, VALUEFROM> fieldInfo) {
-        this.valueFromTypeToken = valueFromTypeToken;
-        this.valueToTypeToken = valueToTypeToken;
-        this.fieldInfo = fieldInfo;
-        this.fieldName = fieldInfo.fieldName;
-    }",45-50
 info.archinnov.achilles.internals.metamodel.AbstractProperty,<init>,(Lcom/google/common/reflect/TypeToken;Lcom/google/common/reflect/TypeToken;Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;)V,7,7,100.0%,"AbstractProperty(TypeToken<VALUEFROM> valueFromTypeToken, TypeToken<VALUETO> valueToTypeToken, FieldInfo<ENTITY, VALUEFROM> fieldInfo) {
         this.valueFromTypeToken = valueFromTypeToken;
         this.valueToTypeToken = valueToTypeToken;
         this.fieldInfo = fieldInfo;
         this.fieldName = fieldInfo.fieldName;
     }",45-50
-info.archinnov.achilles.internals.metamodel.AbstractProperty,encodeFromJava,(Ljava/lang/Object;Ljava/util/Optional;)Ljava/lang/Object;,2,2,100.0%,"public VALUETO encodeFromJava(VALUEFROM javaValue) {
-        return encodeFromJava(javaValue, Optional.empty());
-    }",63-65
-info.archinnov.achilles.internals.metamodel.AbstractProperty,encodeFromRaw,(Ljava/lang/Object;Ljava/util/Optional;)Ljava/lang/Object;,2,2,100.0%,"public VALUETO encodeFromRaw(Object o) {
-        return encodeFromRaw(o, Optional.empty());
-    }",100-102
 info.archinnov.achilles.internals.metamodel.AbstractProperty,decodeFromGettable,(Lcom/datastax/driver/core/GettableData;)Ljava/lang/Object;,2,2,100.0%,"public VALUEFROM decodeFromGettable(GettableData gettableData) {
         if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !isOptional()) return null;
         return decodeFromGettableInternal(gettableData);
@@ -1661,11 +1610,6 @@ info.archinnov.achilles.internals.metamodel.AbstractProperty,decodeField,(Lcom/d
 info.archinnov.achilles.internals.metamodel.AbstractProperty,getColumnForSelect,()Ljava/lang/String;,1,1,100.0%,"public String getColumnForSelect() {
         return fieldInfo.cqlColumn;
     }",261-263
-info.archinnov.achilles.internals.metamodel.Tuple1Property$1,<init>,()V,1,1,100.0%,"public Tuple1Property(FieldInfo<ENTITY, Tuple1<A>> fieldInfo, AbstractProperty<ENTITY, A, ?> aProperty) {
-        super(new TypeToken<Tuple1<A>>() {
-        }, fieldInfo);
-        this.aProperty = aProperty;
-    }",46-50
 info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty,<init>,()V,11,11,100.0%,"public AbstractUDTClassProperty() {
         this.staticKeyspace = getStaticKeyspace();
         this.staticNamingStrategy = getStaticNamingStrategy();
@@ -1676,13 +1620,6 @@ info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty,<init>,()V,
         this.constructorInjectedProperty = getConstructorInjectedProperty();
         this.parentEntityClass = getParentEntityClass();
     }",71-80
-info.archinnov.achilles.internals.metamodel.Tuple3Property$1,<init>,()V,1,1,100.0%,"public Tuple3Property(FieldInfo<ENTITY, Tuple3<A, B, C>> fieldInfo, AbstractProperty<ENTITY, A, ?> aProperty, AbstractProperty<ENTITY, B, ?> bProperty, AbstractProperty<ENTITY, C, ?> cProperty) {
-        super(new TypeToken<Tuple3<A, B, C>>() {
-        }, fieldInfo);
-        this.aProperty = aProperty;
-        this.bProperty = bProperty;
-        this.cProperty = cProperty;
-    }",48-54
 info.archinnov.achilles.internals.metamodel.UDTProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;Ljava/lang/Class;Linfo/archinnov/achilles/internals/metamodel/AbstractUDTClassProperty;)V,4,4,100.0%,"public UDTProperty(FieldInfo<ENTITY, A> fieldInfo, Class<A> valueClass, UDT_META udtClassProperty) {
         super(TypeToken.of(valueClass), UDT_VALUE_TYPE_TOKEN, fieldInfo);
         this.valueClass = valueClass;
@@ -1761,22 +1698,20 @@ info.archinnov.achilles.generated.function.AbstractCQLCompatibleType,<init>,()V,
 info.archinnov.achilles.internals.interceptor.DefaultPreMutateBeanValidationInterceptor,<init>,(Ljavax/validation/Validator;)V,4,4,100.0%,"public DefaultPreMutateBeanValidationInterceptor(Validator validator) {
         this.validator = validator;
     }",49-51
-info.archinnov.achilles.internals.types.RuntimeCodecWrapper,<init>,(Ljava/lang/Class;Ljava/lang/Class;Ljava/util/Optional;)V,5,5,100.0%,"public RuntimeCodecWrapper(Class<FROM> sourceType, Class<TO> targetType, Optional<String> codecName) {
-        this.sourceType = sourceType;
-        this.targetType = targetType;
-        this.codecName = codecName;
-    }",35-39
+info.archinnov.achilles.internals.types.LimitedResultSetWrapper,<init>,(Lcom/datastax/driver/core/ResultSet;)V,3,3,100.0%,"public LimitedResultSetWrapper(ResultSet delegate) {
+        this.delegate = delegate;
+    }",32-34
 info.archinnov.achilles.internals.types.OverridingOptional,<init>,(Ljava/util/Optional;)V,4,4,100.0%,"private OverridingOptional(Optional<T> source) {
         options.add(source);
     }",28-30
 info.archinnov.achilles.internals.types.OverridingOptional,from,(Ljava/util/Optional;)Linfo/archinnov/achilles/internals/types/OverridingOptional;,1,1,100.0%,"public static <T> OverridingOptional<T> from(Optional<T> source) {
         return new OverridingOptional<>(source);
     }",32-34
-info.archinnov.achilles.internals.types.OverridingOptional,andThen,(Ljava/util/Optional;)Linfo/archinnov/achilles/internals/types/OverridingOptional;,2,2,100.0%,"public OverridingOptional<T> andThen(Optional<T> next) {
+info.archinnov.achilles.internals.types.OverridingOptional,andThen,(Ljava/lang/Object;)Linfo/archinnov/achilles/internals/types/OverridingOptional;,2,2,100.0%,"public OverridingOptional<T> andThen(Optional<T> next) {
         options.add(next);
         return this;
     }",40-43
-info.archinnov.achilles.internals.types.OverridingOptional,andThen,(Ljava/lang/Object;)Linfo/archinnov/achilles/internals/types/OverridingOptional;,2,2,100.0%,"public OverridingOptional<T> andThen(Optional<T> next) {
+info.archinnov.achilles.internals.types.OverridingOptional,andThen,(Ljava/util/Optional;)Linfo/archinnov/achilles/internals/types/OverridingOptional;,2,2,100.0%,"public OverridingOptional<T> andThen(Optional<T> next) {
         options.add(next);
         return this;
     }",40-43
@@ -1791,34 +1726,6 @@ info.archinnov.achilles.internals.types.OverridingOptional,defaultValue,(Ljava/l
         this.defaultValue = defaultValue;
         return new OverridingOptionalFinal();
     }",58-61
-info.archinnov.achilles.internals.types.ResultSetWrapper,<init>,(Lcom/datastax/driver/core/ResultSet;)V,4,4,100.0%,"public ResultSetWrapper(ResultSet delegate) {
-        this.delegate = delegate;
-    }",34-36
-info.archinnov.achilles.internals.types.ResultSetWrapper,peek,()Lcom/datastax/driver/core/Row;,3,3,100.0%,"public Row peek() {
-        final Row row = delegate.one();
-        values.add(row);
-        return row;
-    }",48-52
-info.archinnov.achilles.internals.types.ResultSetWrapper,one,()Lcom/datastax/driver/core/Row;,2,3,66.7%,"@Override
-    public Row one() {
-        if (values.size() > 0) {
-            return values.poll();
-        } else {
-            return delegate.one();
-        }
-    }",54-61
-info.archinnov.achilles.internals.types.ResultSetWrapper,getAvailableWithoutFetching,()I,1,1,100.0%,"@Override
-    public int getAvailableWithoutFetching() {
-        return values.size() + delegate.getAvailableWithoutFetching();
-    }",74-77
-info.archinnov.achilles.internals.types.ResultSetWrapper,getExecutionInfo,()Lcom/datastax/driver/core/ExecutionInfo;,1,1,100.0%,"@Override
-    public ExecutionInfo getExecutionInfo() {
-        return delegate.getExecutionInfo();
-    }",89-92
-info.archinnov.achilles.internals.types.ResultSetWrapper,toString,()Ljava/lang/String;,1,1,100.0%,"@Override
-    public String toString() {
-        return delegate.toString();
-    }",104-107
 info.archinnov.achilles.internals.types.OverridingOptional$OverridingOptionalFinal,<init>,(Linfo/archinnov/achilles/internals/types/OverridingOptional;)V,2,2,100.0%,"private OverridingOptional(Optional<T> source) {
         options.add(source);
     }",28-30
@@ -1854,9 +1761,6 @@ info.archinnov.achilles.internals.types.ConfigMap,getTypedOr,(Linfo/archinnov/ac
             return defaultValue;
         }
     }",45-51
-info.archinnov.achilles.internals.types.LimitedResultSetWrapper,<init>,(Lcom/datastax/driver/core/ResultSet;)V,3,3,100.0%,"public LimitedResultSetWrapper(ResultSet delegate) {
-        this.delegate = delegate;
-    }",32-34
 info.archinnov.achilles.internals.dsl.action.SelectAction,getList,()Ljava/util/List;,1,3,33.3%,"default List<ENTITY> getList() {
         try {
             return Uninterruptibles.getUninterruptibly(getListAsync());
@@ -1870,7 +1774,10 @@ info.archinnov.achilles.internals.dsl.action.SelectAction,getListAsync,()Ljava/u
 info.archinnov.achilles.script.ScriptExecutor,<init>,(Lcom/datastax/driver/core/Session;)V,4,4,100.0%,"public ScriptExecutor(Session session) {
         this.session = session;
     }",66-68
-info.archinnov.achilles.script.ScriptExecutor,executeScriptTemplate,(Ljava/lang/String;Ljava/util/Map;)V,7,8,87.5%,"public void executeScriptTemplate(String scriptTemplateLocation, Map<String, Object> values) {
+info.archinnov.achilles.script.ScriptExecutor,executeScript,(Ljava/lang/String;)V,2,2,100.0%,"public void executeScript(String scriptLocation) {
+        executeScriptTemplate(scriptLocation, EMPTY_MAP);
+    }",75-77
+info.archinnov.achilles.script.ScriptExecutor,executeScriptTemplate,(Ljava/lang/String;Ljava/util/Map;)V,8,8,100.0%,"public void executeScriptTemplate(String scriptTemplateLocation, Map<String, Object> values) {
         final List<SimpleStatement> statements = buildStatements(loadScriptAsLines(scriptTemplateLocation, values));
         for (SimpleStatement statement : statements) {
             if (isDMLStatement(statement)) {
@@ -1899,7 +1806,7 @@ info.archinnov.achilles.script.ScriptExecutor,maybeReplaceVariables,(Ljava/util/
         }
         return nextLine;
     }",163-177
-info.archinnov.achilles.script.ScriptExecutor,buildStatements,(Ljava/util/List;)Ljava/util/List;,17,31,54.8%,"protected List<SimpleStatement> buildStatements(List<String> lines) {
+info.archinnov.achilles.script.ScriptExecutor,buildStatements,(Ljava/util/List;)Ljava/util/List;,24,31,77.4%,"protected List<SimpleStatement> buildStatements(List<String> lines) {
         List<SimpleStatement> statements = new ArrayList<>();
         StringBuilder statement = new StringBuilder();
         boolean batch = false;
@@ -1955,6 +1862,10 @@ info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen,<init>,()V
             this.selectFromTypedMapReturnType = selectFromTypedMapReturnType;
             this.selectColumnsClassName = selectColumnsClassName;
         }",446-456
+info.archinnov.achilles.internals.factory.TupleTypeFactory,<init>,(Lcom/datastax/driver/core/ProtocolVersion;Lcom/datastax/driver/core/CodecRegistry;)V,4,4,100.0%,"public TupleTypeFactory(ProtocolVersion protocolVersion, CodecRegistry registry) {
+        this.protocolVersion = protocolVersion;
+        this.registry = registry;
+    }",26-29
 info.archinnov.achilles.internals.factory.UserTypeFactory,<init>,(Lcom/datastax/driver/core/ProtocolVersion;Lcom/datastax/driver/core/CodecRegistry;)V,4,4,100.0%,"public UserTypeFactory(ProtocolVersion protocolVersion, CodecRegistry registry) {
         this.protocolVersion = protocolVersion;
         this.registry = registry;
@@ -1970,10 +1881,14 @@ info.archinnov.achilles.internals.factory.DefaultBeanFactory,newInstance,(Ljava/
             throw new AchillesException(format(""Cannot instantiate instance of class '%s'. Did you forget to declare a default constructor ?"", clazz.getCanonicalName()));
         }
     }",31-41
-info.archinnov.achilles.internals.factory.TupleTypeFactory,<init>,(Lcom/datastax/driver/core/ProtocolVersion;Lcom/datastax/driver/core/CodecRegistry;)V,4,4,100.0%,"public TupleTypeFactory(ProtocolVersion protocolVersion, CodecRegistry registry) {
-        this.protocolVersion = protocolVersion;
-        this.registry = registry;
-    }",26-29
+info.archinnov.achilles.internals.dsl.query.select.AbstractSelectFrom,<init>,(Lcom/datastax/driver/core/querybuilder/Select$Where;Linfo/archinnov/achilles/internals/options/CassandraOptions;)V,4,4,100.0%,"protected AbstractSelectFrom(Select.Where where, CassandraOptions cassandraOptions) {
+        this.where = where;
+        this.cassandraOptions = cassandraOptions;
+    }",30-33
+info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWherePartition,<init>,(Lcom/datastax/driver/core/querybuilder/Select$Where;Linfo/archinnov/achilles/internals/options/CassandraOptions;)V,4,4,100.0%,"protected AbstractSelectWherePartition(Select.Where where, CassandraOptions cassandraOptions) {
+        this.where = where;
+        this.cassandraOptions = cassandraOptions;
+    }",30-33
 info.archinnov.achilles.internals.dsl.query.select.AbstractIndexSelectWhere,<init>,(Lcom/datastax/driver/core/querybuilder/Select$Where;Linfo/archinnov/achilles/internals/options/CassandraOptions;)V,2,2,100.0%,"protected AbstractIndexSelectWhere(Select.Where where, CassandraOptions cassandraOptions) {
         super(where, cassandraOptions);
     }",39-41
@@ -2015,14 +1930,6 @@ info.archinnov.achilles.internals.dsl.query.select.AbstractSelect,<init>,(Linfo/
         this.select = QueryBuilder.select();
         this.rte = rte;
     }",35-38
-info.archinnov.achilles.internals.dsl.query.select.AbstractSelectFrom,<init>,(Lcom/datastax/driver/core/querybuilder/Select$Where;Linfo/archinnov/achilles/internals/options/CassandraOptions;)V,4,4,100.0%,"protected AbstractSelectFrom(Select.Where where, CassandraOptions cassandraOptions) {
-        this.where = where;
-        this.cassandraOptions = cassandraOptions;
-    }",30-33
-info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWherePartition,<init>,(Lcom/datastax/driver/core/querybuilder/Select$Where;Linfo/archinnov/achilles/internals/options/CassandraOptions;)V,4,4,100.0%,"protected AbstractSelectWherePartition(Select.Where where, CassandraOptions cassandraOptions) {
-        this.where = where;
-        this.cassandraOptions = cassandraOptions;
-    }",30-33
 info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWhere,<init>,(Lcom/datastax/driver/core/querybuilder/Select$Where;Linfo/archinnov/achilles/internals/options/CassandraOptions;)V,4,4,100.0%,"protected AbstractSelectWhere(Select.Where where, CassandraOptions cassandraOptions) {
         this.where = where;
         this.cassandraOptions = cassandraOptions;
@@ -2064,87 +1971,14 @@ info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWhere,getListAs
 info.archinnov.achilles.internals.codec.FallThroughCodec,<init>,(Ljava/lang/Class;)V,3,3,100.0%,"public FallThroughCodec(Class<TYPE> type) {
         this.type = type;
     }",26-28
-info.archinnov.achilles.internals.codec.FallThroughCodec,encode,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"@Override
-    public TYPE encode(TYPE fromJava) throws AchillesTranscodingException {
-        return fromJava;
-    }",44-47
 info.archinnov.achilles.internals.codec.FallThroughCodec,decode,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"@Override
     public TYPE decode(TYPE fromCassandra) throws AchillesTranscodingException {
         return fromCassandra;
     }",49-52
-info.archinnov.achilles.internals.codec.EnumOrdinalCodec,<init>,(Ljava/util/List;Ljava/lang/Class;)V,4,4,100.0%,"public EnumOrdinalCodec(List<ENUM> enumValues, Class<ENUM> sourceType) {
-        this.enumValues = enumValues;
-        this.sourceType = sourceType;
-    }",36-39
-info.archinnov.achilles.internals.codec.EnumNameCodec,<init>,(Ljava/util/List;Ljava/lang/Class;)V,4,4,100.0%,"public EnumNameCodec(List<ENUM> enumValues, Class<ENUM> sourceType) {
-        this.enumValues = enumValues;
-        this.sourceType = sourceType;
-    }",36-39
-info.archinnov.achilles.internals.codec.JSONCodec,<init>,(Ljava/lang/Class;Lcom/fasterxml/jackson/databind/JavaType;)V,4,4,100.0%,"public JSONCodec(Class<?> sourceType, JavaType exactType) {
-        this.sourceType = sourceType;
-        this.exactType = exactType;
-    }",41-44
-info.archinnov.achilles.validation.Validator,validateNotBlank,(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateNotBlank(String arg, String message, Object... args) {
-        if (StringUtils.isBlank(arg)) {
-            throw new AchillesException(format(message, args));
-        }
-    }",34-38
-info.archinnov.achilles.validation.Validator,validateNotNull,(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateNotNull(Object arg, String message, Object... args) {
-        if (arg == null) {
-            throw new AchillesException(format(message, args));
-        }
-    }",40-44
-info.archinnov.achilles.validation.Validator,validateTrue,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateTrue(boolean condition, String message, Object... args) {
-        if (!condition) {
-            throw new AchillesException(format(message, args));
-        }
-    }",117-121
-info.archinnov.achilles.validation.Validator,validateBeanMappingTrue,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateBeanMappingTrue(boolean condition, String message, Object... args) {
-        if (!condition) {
-            throw new AchillesBeanMappingException(format(message, args));
-        }
-    }",123-127
-info.archinnov.achilles.validation.Validator,validateBeanMappingFalse,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateBeanMappingFalse(boolean condition, String message, Object... args) {
-        if (condition) {
-            throw new AchillesBeanMappingException(format(message, args));
-        }
-    }",141-145
-info.archinnov.achilles.junit.AchillesTestResource$Steps,isBefore,()Z,1,1,100.0%,"public boolean isBefore() {
-            return (this == BOTH || this == BEFORE_TEST);
-        }",212-214
-info.archinnov.achilles.junit.AchillesTestResource$Steps,isAfter,()Z,1,1,100.0%,"public boolean isAfter() {
-            return (this == BOTH || this == AFTER_TEST);
-        }",216-218
-info.archinnov.achilles.junit.AchillesTestResourceBuilder,<init>,()V,9,9,100.0%,"private AchillesTestResourceBuilder() {
-    }",68-69
-info.archinnov.achilles.junit.AchillesTestResourceBuilder,forJunit,()Linfo/archinnov/achilles/junit/AchillesTestResourceBuilder;,1,1,100.0%,"public static AchillesTestResourceBuilder forJunit() {
-        return new AchillesTestResourceBuilder();
-    }",71-73
-info.archinnov.achilles.junit.AchillesTestResourceBuilder,entityClassesToTruncate,([Ljava/lang/Class;)Linfo/archinnov/achilles/junit/AchillesTestResourceBuilder;,2,2,100.0%,"public AchillesTestResourceBuilder entityClassesToTruncate(Class<?>... entityClassesToTruncate) {
-        this.entityClassesToCleanUp.addAll(asList(ofNullable(entityClassesToTruncate).orElse(new Class<?>[]{})));
-        return this;
-    }",163-166
-info.archinnov.achilles.junit.AchillesTestResourceBuilder,truncateBeforeAndAfterTest,()Linfo/archinnov/achilles/junit/AchillesTestResourceBuilder;,2,2,100.0%,"public AchillesTestResourceBuilder truncateBeforeAndAfterTest() {
-        this.cleanupSteps = Steps.BOTH;
-        return this;
-    }",204-207
-info.archinnov.achilles.junit.AchillesTestResourceBuilder,build,(Ljava/util/function/BiFunction;)Linfo/archinnov/achilles/junit/AchillesTestResource;,2,2,100.0%,"public <T extends AbstractManagerFactory> AchillesTestResource<T> build(BiFunction<Cluster, StatementsCache, T> managerFactoryBuilder) {
-        final TypedMap cassandraParams = buildCassandraParams();
-        return new AchillesTestResource<>(managerFactoryBuilder, cassandraParams, keyspace, cleanupSteps, tablesToTruncate, entityClassesToCleanUp);
-    }",215-218
-info.archinnov.achilles.junit.AchillesTestResourceBuilder,buildCassandraParams,()Linfo/archinnov/achilles/type/TypedMap;,4,4,100.0%,"private TypedMap buildCassandraParams() {
-        cassandraParams.put(SCRIPT_LOCATIONS, scriptLocations);
-        cassandraParams.put(SCRIPT_TEMPLATES, scriptTemplates);
-        cassandraParams.put(USE_UNSAFE_CASSANDRA_DAEMON, false);
-        return cassandraParams;
-    }",238-243
 info.archinnov.achilles.junit.AchillesTestResource,<init>,(Ljava/util/function/BiFunction;Linfo/archinnov/achilles/type/TypedMap;Ljava/util/Optional;Linfo/archinnov/achilles/junit/AchillesTestResource$Steps;Ljava/util/List;Ljava/util/List;)V,10,10,100.0%,"public AchillesTestResource(BiFunction<Cluster, StatementsCache, T> managerFactoryBuilder, TypedMap cassandraParams,
                                 Optional<String> keyspaceName, List<String> tablesToTruncate, List<Class<?>> entityClassesToTruncate) {
         this(managerFactoryBuilder, cassandraParams, keyspaceName, BOTH, tablesToTruncate, entityClassesToTruncate);
     }",108-111
-info.archinnov.achilles.junit.AchillesTestResource,getNativeSession,()Lcom/datastax/driver/core/Session;,1,1,100.0%,"public Session getNativeSession() {
-        return this.session;
-    }",125-127
 info.archinnov.achilles.junit.AchillesTestResource,getScriptExecutor,()Linfo/archinnov/achilles/script/ScriptExecutor;,1,1,100.0%,"public ScriptExecutor getScriptExecutor() {
         return this.scriptExecutor;
     }",129-131
@@ -2214,6 +2048,64 @@ info.archinnov.achilles.junit.AchillesTestResource,truncateTables,()V,3,3,100.0%
                     session.execute(statement.bind());
                 });
     }",199-207
+info.archinnov.achilles.junit.AchillesTestResource$Steps,isBefore,()Z,1,1,100.0%,"public boolean isBefore() {
+            return (this == BOTH || this == BEFORE_TEST);
+        }",212-214
+info.archinnov.achilles.junit.AchillesTestResource$Steps,isAfter,()Z,1,1,100.0%,"public boolean isAfter() {
+            return (this == BOTH || this == AFTER_TEST);
+        }",216-218
+info.archinnov.achilles.junit.AchillesTestResourceBuilder,<init>,()V,9,9,100.0%,"private AchillesTestResourceBuilder() {
+    }",68-69
+info.archinnov.achilles.junit.AchillesTestResourceBuilder,forJunit,()Linfo/archinnov/achilles/junit/AchillesTestResourceBuilder;,1,1,100.0%,"public static AchillesTestResourceBuilder forJunit() {
+        return new AchillesTestResourceBuilder();
+    }",71-73
+info.archinnov.achilles.junit.AchillesTestResourceBuilder,withScript,(Ljava/lang/String;)Linfo/archinnov/achilles/junit/AchillesTestResourceBuilder;,2,2,100.0%,"public AchillesTestResourceBuilder withScript(String scriptLocation) {
+        scriptLocations.add(scriptLocation);
+        return this;
+    }",102-105
+info.archinnov.achilles.junit.AchillesTestResourceBuilder,entityClassesToTruncate,([Ljava/lang/Class;)Linfo/archinnov/achilles/junit/AchillesTestResourceBuilder;,2,2,100.0%,"public AchillesTestResourceBuilder entityClassesToTruncate(Class<?>... entityClassesToTruncate) {
+        this.entityClassesToCleanUp.addAll(asList(ofNullable(entityClassesToTruncate).orElse(new Class<?>[]{})));
+        return this;
+    }",163-166
+info.archinnov.achilles.junit.AchillesTestResourceBuilder,truncateBeforeAndAfterTest,()Linfo/archinnov/achilles/junit/AchillesTestResourceBuilder;,2,2,100.0%,"public AchillesTestResourceBuilder truncateBeforeAndAfterTest() {
+        this.cleanupSteps = Steps.BOTH;
+        return this;
+    }",204-207
+info.archinnov.achilles.junit.AchillesTestResourceBuilder,build,(Ljava/util/function/BiFunction;)Linfo/archinnov/achilles/junit/AchillesTestResource;,2,2,100.0%,"public <T extends AbstractManagerFactory> AchillesTestResource<T> build(BiFunction<Cluster, StatementsCache, T> managerFactoryBuilder) {
+        final TypedMap cassandraParams = buildCassandraParams();
+        return new AchillesTestResource<>(managerFactoryBuilder, cassandraParams, keyspace, cleanupSteps, tablesToTruncate, entityClassesToCleanUp);
+    }",215-218
+info.archinnov.achilles.junit.AchillesTestResourceBuilder,buildCassandraParams,()Linfo/archinnov/achilles/type/TypedMap;,4,4,100.0%,"private TypedMap buildCassandraParams() {
+        cassandraParams.put(SCRIPT_LOCATIONS, scriptLocations);
+        cassandraParams.put(SCRIPT_TEMPLATES, scriptTemplates);
+        cassandraParams.put(USE_UNSAFE_CASSANDRA_DAEMON, false);
+        return cassandraParams;
+    }",238-243
+info.archinnov.achilles.validation.Validator,validateNotBlank,(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateNotBlank(String arg, String message, Object... args) {
+        if (StringUtils.isBlank(arg)) {
+            throw new AchillesException(format(message, args));
+        }
+    }",34-38
+info.archinnov.achilles.validation.Validator,validateNotNull,(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateNotNull(Object arg, String message, Object... args) {
+        if (arg == null) {
+            throw new AchillesException(format(message, args));
+        }
+    }",40-44
+info.archinnov.achilles.validation.Validator,validateTrue,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateTrue(boolean condition, String message, Object... args) {
+        if (!condition) {
+            throw new AchillesException(format(message, args));
+        }
+    }",117-121
+info.archinnov.achilles.validation.Validator,validateBeanMappingTrue,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateBeanMappingTrue(boolean condition, String message, Object... args) {
+        if (!condition) {
+            throw new AchillesBeanMappingException(format(message, args));
+        }
+    }",123-127
+info.archinnov.achilles.validation.Validator,validateBeanMappingFalse,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateBeanMappingFalse(boolean condition, String message, Object... args) {
+        if (condition) {
+            throw new AchillesBeanMappingException(format(message, args));
+        }
+    }",141-145
 info.archinnov.achilles.internals.futures.FutureUtils,toCompletableFuture,(Lcom/google/common/util/concurrent/ListenableFuture;Ljava/util/concurrent/ExecutorService;)Ljava/util/concurrent/CompletableFuture;,3,3,100.0%,"public static <T> CompletableFuture<T> toCompletableFuture(ListenableFuture<T> listenableFuture, ExecutorService executor) {
         CompletableFuture<T> completable = new CompletableListenableFuture<>(listenableFuture);
 
@@ -2335,9 +2227,6 @@ info.archinnov.achilles.bootstrap.AbstractManagerFactoryBuilder,withStatementsCa
         configMap.put(STATEMENTS_CACHE, statementsCache);
         return getThis();
     }",458-461
-info.archinnov.achilles.internals.cql.TypeMapper,toJavaType,(Lcom/datastax/driver/core/DataType$Name;)Ljava/lang/Class;,1,1,100.0%,"public static Class<?> toJavaType(Name cqlType) {
-        return cql2Java.get(cqlType);
-    }",68-70
 info.archinnov.achilles.internals.runtime.AbstractManagerFactory,<init>,(Lcom/datastax/driver/core/Cluster;Linfo/archinnov/achilles/internals/context/ConfigurationContext;)V,5,5,100.0%,"public AbstractManagerFactory(Cluster cluster, ConfigurationContext configContext) {
         this.cluster = cluster;
         this.configContext = configContext;
@@ -2507,12 +2396,14 @@ info.archinnov.achilles.internals.runtime.RuntimeEngine,execute,(Linfo/archinnov
 info.archinnov.achilles.internals.runtime.RuntimeEngine,prepareDynamicQuery,(Ljava/lang/String;)Lcom/datastax/driver/core/PreparedStatement;,2,3,66.7%,"public PreparedStatement prepareDynamicQuery(RegularStatement statement) {
         return prepareDynamicQuery(statement.getQueryString());
     }",93-95
-info.archinnov.achilles.internals.cassandra_version.V2_1,<init>,()V,3,3,100.0%,"protected V2_1() {
-    }",29-30
-info.archinnov.achilles.internals.cassandra_version.V2_1,getFeatures,()Ljava/util/Set;,1,1,100.0%,"@Override
+info.archinnov.achilles.internals.cassandra_version.V2_2,<init>,()V,3,3,100.0%,"protected V2_2() {
+    }",41-42
+info.archinnov.achilles.internals.cassandra_version.V2_2,getFeatures,()Ljava/util/Set;,1,1,100.0%,"@Override
     public Set<CassandraFeature> getFeatures() {
         return SUPPORTED_FEATURES;
-    }",39-42
+    }",49-52
+info.archinnov.achilles.internals.cassandra_version.V2_1,<init>,()V,3,3,100.0%,"protected V2_1() {
+    }",29-30
 info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion,supportsFeature,(Linfo/archinnov/achilles/internals/cassandra_version/CassandraFeature;)Z,1,1,100.0%,"default boolean supportsFeature(CassandraFeature feature) {
         return getFeatures().contains(feature);
     }",133-135
@@ -2532,86 +2423,6 @@ info.archinnov.achilles.type.TypedMap,getTypedOr,(Ljava/lang/String;Ljava/lang/O
             return defaultValue;
         }
     }",80-86
-info.archinnov.achilles.internals.statements.StatementWrapper,writeDMLStatementLog,(Lorg/slf4j/Logger;Ljava/util/UUID;Ljava/lang/String;Lcom/datastax/driver/core/ConsistencyLevel;[Ljava/lang/Object;[Ljava/lang/Object;)V,10,11,90.9%,"default void writeDMLStatementLog(Logger actualLogger, UUID queryId, String queryString, ConsistencyLevel consistencyLevel, Object[] boundValues, Object[] encodedValues) {
-        if (actualLogger.isDebugEnabled()) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(format(""Writing DML log for query %s with id %s"", queryString, queryId));
-            }
-            StringBuilder logBuilder = new StringBuilder(""\n"");
-            logBuilder.append(String.format(""Query ID %s : [%s] with CONSISTENCY LEVEL [%s]"",
-                    queryId.toString(), queryString, consistencyLevel));
-            if (ArrayUtils.isNotEmpty(boundValues)) {
-                logBuilder.append(String.format(""\n\t Java bound values : %s"", replaceByteBuffersByHexString(boundValues)));
-                logBuilder.append(String.format(""\n\t Encoded bound values : %s"", replaceByteBuffersByHexString(encodedValues)));
-            }
-            actualLogger.debug(logBuilder.toString());
-        }
-    }",57-71
-info.archinnov.achilles.internals.statements.StatementWrapper,logReturnedResultsInternal,(Lorg/slf4j/Logger;Ljava/util/UUID;Linfo/archinnov/achilles/internals/types/ResultSetWrapper;I)V,9,9,100.0%,"default void logReturnedResultsInternal(Logger actualLogger, UUID queryId, ResultSetWrapper resultSet, int maxDisplayedRows) {
-        if (maxDisplayedRows > 0) {
-            final int availableWithoutFetching = resultSet.getAvailableWithoutFetching();
-            StringBuilder results = new StringBuilder(format(""Query ID %s results : \n"", queryId));
-            actualLogger.debug(resultSet.toString());
-            for (int i = 0; i < Integer.min(availableWithoutFetching, maxDisplayedRows); i++) {
-                final Row row = resultSet.peek();
-                appendRowDataToBuilder(row, row.getColumnDefinitions().asList(), results);
-            }
-            actualLogger.debug(results.toString());
-        }
-    }",73-84
-info.archinnov.achilles.internals.statements.StatementWrapper,appendRowDataToBuilder,(Lcom/datastax/driver/core/Row;Ljava/util/List;Ljava/lang/StringBuilder;)V,5,5,100.0%,"default void appendRowDataToBuilder(Row row, List<ColumnDefinitions.Definition> columnsDef, StringBuilder builder) {
-        StringJoiner joiner = new StringJoiner("", "", ""\t"", ""\n"");
-        IntStream.range(0, columnsDef.size())
-                .forEach(index -> {
-                    final ColumnDefinitions.Definition def = columnsDef.get(index);
-                    final Object value = extractValueFromRow(row, index, def.getType());
-                    joiner.add(format(""%s: %s"", def.getName(), value));
-                });
-        builder.append(joiner.toString());
-    }",92-101
-info.archinnov.achilles.internals.statements.StatementWrapper,extractValueFromRow,(Lcom/datastax/driver/core/Row;ILcom/datastax/driver/core/DataType;)Ljava/lang/Object;,4,4,100.0%,"default Object extractValueFromRow(Row row, int index, DataType dataType) {
-        final DataType.Name typeName = dataType.getName();
-        switch (typeName) {
-            case LIST:
-            case SET:
-            case MAP:
-            case TUPLE:
-            case CUSTOM:
-                return row.getObject(index);
-            default:
-                return row.get(index, toJavaType(typeName));
-        }
-    }",103-115
-info.archinnov.achilles.internals.statements.StatementWrapper,tracingInternal,(Lorg/slf4j/Logger;Ljava/util/UUID;Lcom/datastax/driver/core/ResultSet;)V,3,21,14.3%,"default void tracingInternal(Logger actualLogger, UUID queryId, ResultSet resultSet) {
-        StringBuilder trace = new StringBuilder();
-        if (actualLogger.isTraceEnabled()) {
-            for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
-
-                trace.append(format(""\n\nTracing for Query ID %s at host %s with achieved consistency level %s \n"", queryId.toString(), executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel()));
-                trace.append(""****************************\n"");
-                trace.append(format(""%1$-80s | %2$-16s | %3$-24s | %4$-20s\n"", ""Description"", ""Source"", ""Source elapsed in micros"", ""Thread name""));
-                try {
-                    final QueryTrace queryTrace = executionInfo.getQueryTrace();
-                    if (queryTrace != null) {
-                        final List<QueryTrace.Event> events = new ArrayList<>(queryTrace.getEvents());
-                        Collections.sort(events, EVENT_TRACE_COMPARATOR);
-                        for (QueryTrace.Event event : events) {
-                            trace.append(format(""%1$-80s | %2$-16s | %3$-24s | %4$-20s\n"", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName()));
-                        }
-                    }
-                } catch (TraceRetrievalException e) {
-                    final String queryString = getBoundStatement().preparedStatement().getQueryString();
-                    trace.append(format("" ERROR: cannot retrieve trace for query %s because it may not be yet available"", queryString));
-                }
-                trace.append(""****************************\n\n"");
-            }
-
-            actualLogger.trace(trace.toString());
-        }
-    }",117-143
-info.archinnov.achilles.internals.statements.OperationType,<init>,(Ljava/lang/String;IZ)V,3,3,100.0%,"OperationType(boolean isUpsert) {
-        this.isUpsert = isUpsert;
-    }",29-31
 info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generateStaticSelectQuery,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internals/cache/StatementsCache;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;)V,3,3,100.0%,"public static void generateStaticSelectQuery(Session session, StatementsCache cache,  AbstractEntityProperty<?> entityProperty) {
         final RegularStatement where = generateSelectQuery(entityProperty, Optional.empty());
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, FIND), () -> session.prepare(where));
@@ -2751,7 +2562,7 @@ info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generate
 
         return deleteByPartition;
     }",176-194
-info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generateStaticInsertQueries,(Linfo/archinnov/achilles/internals/cassandra_version/InternalCassandraVersion;Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internals/cache/StatementsCache;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;)V,6,11,54.5%,"public static void generateStaticInsertQueries(InternalCassandraVersion cassandraVersion, Session session, StatementsCache cache, AbstractEntityProperty<?> entityProperty) {
+info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generateStaticInsertQueries,(Linfo/archinnov/achilles/internals/cassandra_version/InternalCassandraVersion;Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internals/cache/StatementsCache;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;)V,8,11,72.7%,"public static void generateStaticInsertQueries(InternalCassandraVersion cassandraVersion, Session session, StatementsCache cache, AbstractEntityProperty<?> entityProperty) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Generate INSERT queries for entity of type %s"", entityProperty.entityClass.getCanonicalName()));
@@ -2792,6 +2603,17 @@ info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generate
 
         return insert.using(ttl(bindMarker(""ttl"")));
     }",226-238
+info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generateInsertJSON,(Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Ljava/util/Optional;)Lcom/datastax/driver/core/RegularStatement;,4,5,80.0%,"public static RegularStatement generateInsertJSON(AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format(""Generate INSERT JSON query for entity of type %s"", entityProperty.entityClass.getCanonicalName()));
+        }
+
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
+
+        insert.json(QueryBuilder.bindMarker(""json""));
+
+        return insert.using(ttl(bindMarker(""ttl"")));
+    }",282-292
 info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generateInsertIfNotExists,(Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Ljava/util/Optional;)Lcom/datastax/driver/core/RegularStatement;,6,7,85.7%,"public static RegularStatement generateInsertIfNotExists( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Generate INSERT IF NOT EXISTS query for entity of type %s"", entityProperty.entityClass.getCanonicalName()));
@@ -2805,6 +2627,17 @@ info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generate
 
         return insert.ifNotExists().using(ttl(bindMarker(""ttl"")));
     }",315-327
+info.archinnov.achilles.internals.statements.PreparedStatementGenerator,generateInsertIfNotExistsJson,(Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Ljava/util/Optional;)Lcom/datastax/driver/core/RegularStatement;,4,5,80.0%,"public static RegularStatement generateInsertIfNotExistsJson( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format(""Generate INSERT JSON ... IF NOT EXISTS query for entity of type %s"", entityProperty.entityClass.getCanonicalName()));
+        }
+
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
+
+        insert.json(QueryBuilder.bindMarker(""json""));
+
+        return insert.ifNotExists().using(ttl(bindMarker(""ttl"")));
+    }",329-339
 info.archinnov.achilles.internals.statements.PreparedStatementGenerator,getInsertWithTableName,(Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Ljava/util/Optional;)Lcom/datastax/driver/core/querybuilder/Insert;,5,12,41.7%,"private static Insert getInsertWithTableName( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Insert insert;
@@ -2838,11 +2671,41 @@ info.archinnov.achilles.internals.statements.PreparedStatementGenerator,lookupSc
         }
         return from;
     }",402-415
-info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/PreparedStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,2,2,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
+info.archinnov.achilles.internals.statements.StatementWrapper,tracingInternal,(Lorg/slf4j/Logger;Ljava/util/UUID;Lcom/datastax/driver/core/ResultSet;)V,3,21,14.3%,"default void tracingInternal(Logger actualLogger, UUID queryId, ResultSet resultSet) {
+        StringBuilder trace = new StringBuilder();
+        if (actualLogger.isTraceEnabled()) {
+            for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
+
+                trace.append(format(""\n\nTracing for Query ID %s at host %s with achieved consistency level %s \n"", queryId.toString(), executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel()));
+                trace.append(""****************************\n"");
+                trace.append(format(""%1$-80s | %2$-16s | %3$-24s | %4$-20s\n"", ""Description"", ""Source"", ""Source elapsed in micros"", ""Thread name""));
+                try {
+                    final QueryTrace queryTrace = executionInfo.getQueryTrace();
+                    if (queryTrace != null) {
+                        final List<QueryTrace.Event> events = new ArrayList<>(queryTrace.getEvents());
+                        Collections.sort(events, EVENT_TRACE_COMPARATOR);
+                        for (QueryTrace.Event event : events) {
+                            trace.append(format(""%1$-80s | %2$-16s | %3$-24s | %4$-20s\n"", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName()));
+                        }
+                    }
+                } catch (TraceRetrievalException e) {
+                    final String queryString = getBoundStatement().preparedStatement().getQueryString();
+                    trace.append(format("" ERROR: cannot retrieve trace for query %s because it may not be yet available"", queryString));
+                }
+                trace.append(""****************************\n\n"");
+            }
+
+            actualLogger.trace(trace.toString());
+        }
+    }",117-143
+info.archinnov.achilles.internals.statements.OperationType,<init>,(Ljava/lang/String;IZ)V,3,3,100.0%,"OperationType(boolean isUpsert) {
+        this.isUpsert = isUpsert;
+    }",29-31
+info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/BoundStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,8,8,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
                                  Object[] boundValues, Object[] encodedBoundValues) {
         this(operationType, meta, ps.bind(encodedBoundValues), boundValues, encodedBoundValues);
     }",48-51
-info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/BoundStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,8,8,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
+info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/PreparedStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,2,2,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
                                  Object[] boundValues, Object[] encodedBoundValues) {
         this(operationType, meta, ps.bind(encodedBoundValues), boundValues, encodedBoundValues);
     }",48-51
@@ -2854,7 +2717,7 @@ info.archinnov.achilles.internals.statements.BoundStatementWrapper,applyOptions,
     public void applyOptions(CassandraOptions cassandraOptions) {
         cassandraOptions.applyOptions(operationType, meta, bs);
     }",78-81
-info.archinnov.achilles.internals.statements.BoundStatementWrapper,logDML,()V,5,6,83.3%,"@Override
+info.archinnov.achilles.internals.statements.BoundStatementWrapper,logDML,()V,4,6,66.7%,"@Override
     public void logDML() {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format(""Maybe log DML query %s"", bs.preparedStatement().getQueryString()));
@@ -2865,7 +2728,7 @@ info.archinnov.achilles.internals.statements.BoundStatementWrapper,logDML,()V,5,
             writeDMLStatementLog(actualLogger, queryId, bs.preparedStatement().getQueryString(), bs.getConsistencyLevel(), boundValues, encodedBoundValues);
         }
     }",83-93
-info.archinnov.achilles.internals.statements.BoundStatementWrapper,logReturnResults,(Lcom/datastax/driver/core/ResultSet;I)Lcom/datastax/driver/core/ResultSet;,5,7,71.4%,"@Override
+info.archinnov.achilles.internals.statements.BoundStatementWrapper,logReturnResults,(Lcom/datastax/driver/core/ResultSet;I)Lcom/datastax/driver/core/ResultSet;,3,7,42.9%,"@Override
     public ResultSet logReturnResults(ResultSet originalResultSet, int maxDisplayedRows) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format(""Log returned results for query %s"", bs.preparedStatement().getQueryString()));
@@ -3270,6 +3133,54 @@ info.archinnov.achilles.configuration.ArgumentExtractor,initDMLResultsDisplayLim
             return DEFAULT_DML_RESULTS_DISPLAY_SIZE;
         }
     }",297-304
+info.archinnov.achilles.embedded.PortFinder,findFirstAvailableBetween,(II)I,4,4,100.0%,"public static int findFirstAvailableBetween(int startInclusive, int endExclusive) {
+        return IntStream.range(startInclusive, endExclusive)
+            .filter(PortFinder::isAvailable)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                ""no available port found between "" + startInclusive + "" and "" + endExclusive + "".""));
+    }",32-38
+info.archinnov.achilles.embedded.PortFinder,findAvailableBetween,(II)Ljava/lang/Integer;,4,6,66.7%,"public static Integer findAvailableBetween(int start, int end) {
+        int tested = randomBetween(start, end);
+
+        for (int i = 0; i < MAX_TRIES; i++) {
+            if (isAvailable(tested)) {
+                return tested;
+            }
+            tested = randomBetween(start, end);
+        }
+        throw new IllegalStateException(""no available port found between "" + start + "" and "" + end + "" after ""
+                + MAX_TRIES + ""tries"");
+    }",40-51
+info.archinnov.achilles.embedded.PortFinder,isAvailable,(I)Z,12,15,80.0%,"public static boolean isAvailable(int port) {
+        ServerSocket ss = null;
+        DatagramSocket ds = null;
+        try {
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ds = new DatagramSocket(port);
+            ds.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+        } finally {
+            if (ds != null) {
+                ds.close();
+            }
+
+            if (ss != null) {
+                try {
+                    ss.close();
+                } catch (IOException e) {
+                    /* should not be thrown */
+                }
+            }
+        }
+
+        return false;
+    }",57-82
+info.archinnov.achilles.embedded.PortFinder,randomBetween,(II)I,1,1,100.0%,"private static int randomBetween(int start, int end) {
+        return start + (int) (Math.random() * ((end - start) + 1));
+    }",84-86
 info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder,<init>,()V,11,11,100.0%,"private CassandraEmbeddedServerBuilder() {
     }",111-112
 info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder,builder,()Linfo/archinnov/achilles/embedded/CassandraEmbeddedServerBuilder;,1,1,100.0%,"public static CassandraEmbeddedServerBuilder builder() {
@@ -3391,75 +3302,6 @@ info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters,mergeWithDefa
 
         return defaultParams;
     }",113-140
-info.archinnov.achilles.embedded.ServerStarter$1,run,()V,1,7,14.3%,"public void run() {
-                    LOGGER.info(""Calling stop on Embedded Cassandra server"");
-                    daemonRef.get().stop();
-
-                    LOGGER.info(""Calling shutdown on all Cluster instances"");
-                    // First call shutdown on all registered Java driver Cluster instances
-                    orderedShutdownHook.callShutDown();
-
-                    LOGGER.info(""Shutting down embedded Cassandra server"");
-                    // Then shutdown the server
-                    executor.shutdownNow();
-                }",184-195
-info.archinnov.achilles.embedded.OrderedShutdownHook,addCluster,(Lcom/datastax/driver/core/Cluster;)V,2,2,100.0%,"void addCluster(Cluster cluster) {
-        clusters.add(cluster);
-    }",37-39
-info.archinnov.achilles.embedded.OrderedShutdownHook,addSession,(Lcom/datastax/driver/core/Session;)V,3,3,100.0%,"void addSession(Session session) {
-        if (!sessions.contains(session)) {
-            sessions.add(session);
-        }
-
-    }",41-46
-info.archinnov.achilles.embedded.PortFinder,findFirstAvailableBetween,(II)I,4,4,100.0%,"public static int findFirstAvailableBetween(int startInclusive, int endExclusive) {
-        return IntStream.range(startInclusive, endExclusive)
-            .filter(PortFinder::isAvailable)
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException(
-                ""no available port found between "" + startInclusive + "" and "" + endExclusive + "".""));
-    }",32-38
-info.archinnov.achilles.embedded.PortFinder,findAvailableBetween,(II)Ljava/lang/Integer;,4,6,66.7%,"public static Integer findAvailableBetween(int start, int end) {
-        int tested = randomBetween(start, end);
-
-        for (int i = 0; i < MAX_TRIES; i++) {
-            if (isAvailable(tested)) {
-                return tested;
-            }
-            tested = randomBetween(start, end);
-        }
-        throw new IllegalStateException(""no available port found between "" + start + "" and "" + end + "" after ""
-                + MAX_TRIES + ""tries"");
-    }",40-51
-info.archinnov.achilles.embedded.PortFinder,isAvailable,(I)Z,12,15,80.0%,"public static boolean isAvailable(int port) {
-        ServerSocket ss = null;
-        DatagramSocket ds = null;
-        try {
-            ss = new ServerSocket(port);
-            ss.setReuseAddress(true);
-            ds = new DatagramSocket(port);
-            ds.setReuseAddress(true);
-            return true;
-        } catch (IOException e) {
-        } finally {
-            if (ds != null) {
-                ds.close();
-            }
-
-            if (ss != null) {
-                try {
-                    ss.close();
-                } catch (IOException e) {
-                    /* should not be thrown */
-                }
-            }
-        }
-
-        return false;
-    }",57-82
-info.archinnov.achilles.embedded.PortFinder,randomBetween,(II)I,1,1,100.0%,"private static int randomBetween(int start, int end) {
-        return start + (int) (Math.random() * ((end - start) + 1));
-    }",84-86
 info.archinnov.achilles.embedded.AchillesCassandraConfig,loadConfig,()Lorg/apache/cassandra/config/Config;,76,78,97.4%,"@Override
     public Config loadConfig() throws ConfigurationException {
         final Config config = new Config();
@@ -3890,7 +3732,7 @@ info.archinnov.achilles.embedded.AchillesInitializer,createKeyspaceIfNeeded,(Lco
 
         session.execute(query);
     }",137-149
-info.archinnov.achilles.embedded.AchillesInitializer,executeStartupScripts,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/type/TypedMap;)V,6,13,46.2%,"private void executeStartupScripts(Session session, TypedMap parameters) {
+info.archinnov.achilles.embedded.AchillesInitializer,executeStartupScripts,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/type/TypedMap;)V,8,13,61.5%,"private void executeStartupScripts(Session session, TypedMap parameters) {
         ScriptExecutor scriptExecutor = null;
         List<String> scriptLocations = parameters.getTypedOr(SCRIPT_LOCATIONS, new ArrayList<>());
         if (scriptLocations.size() > 0) {
@@ -3917,6 +3759,18 @@ info.archinnov.achilles.embedded.AchillesInitializer,getSingletonCluster,()Lcom/
 info.archinnov.achilles.embedded.AchillesInitializer,getSingletonSession,()Lcom/datastax/driver/core/Session;,1,1,100.0%,"public Session getSingletonSession() {
         return singletonSession;
     }",177-179
+info.archinnov.achilles.embedded.ServerStarter$1,run,()V,1,7,14.3%,"public void run() {
+                    LOGGER.info(""Calling stop on Embedded Cassandra server"");
+                    daemonRef.get().stop();
+
+                    LOGGER.info(""Calling shutdown on all Cluster instances"");
+                    // First call shutdown on all registered Java driver Cluster instances
+                    orderedShutdownHook.callShutDown();
+
+                    LOGGER.info(""Shutting down embedded Cassandra server"");
+                    // Then shutdown the server
+                    executor.shutdownNow();
+                }",184-195
 info.archinnov.achilles.embedded.CassandraEmbeddedServer,<init>,(Linfo/archinnov/achilles/type/TypedMap;)V,12,13,92.3%,"public CassandraEmbeddedServer(TypedMap originalParameters) {
         LOGGER.trace(""Start Cassandra Embedded server with server and Achilles config"");
         TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(originalParameters);
@@ -3944,6 +3798,15 @@ info.archinnov.achilles.embedded.CassandraEmbeddedServer,getNativeSession,()Lcom
 info.archinnov.achilles.embedded.CassandraEmbeddedServer,registerSessionForShutdown,(Lcom/datastax/driver/core/Session;)V,2,2,100.0%,"public void registerSessionForShutdown(Session session) {
         ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addSession(session);
     }",76-78
+info.archinnov.achilles.embedded.OrderedShutdownHook,addCluster,(Lcom/datastax/driver/core/Cluster;)V,2,2,100.0%,"void addCluster(Cluster cluster) {
+        clusters.add(cluster);
+    }",37-39
+info.archinnov.achilles.embedded.OrderedShutdownHook,addSession,(Lcom/datastax/driver/core/Session;)V,3,3,100.0%,"void addSession(Session session) {
+        if (!sessions.contains(session)) {
+            sessions.add(session);
+        }
+
+    }",41-46
 info.archinnov.achilles.embedded.SetUtils,of,([Ljava/lang/Object;)Ljava/util/Set;,1,1,100.0%,"public static <T> Set<T> of(T... args) {
         return Arrays.stream(args).collect(Collectors.toSet());
     }",25-27

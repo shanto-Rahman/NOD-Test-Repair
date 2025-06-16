@@ -1,0 +1,615 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange
+delight.nashornsandbox.NashornSandboxes,create,()Ldelight/nashornsandbox/NashornSandbox;,1,1,100.0%,"public static NashornSandbox create() {
+		return new NashornSandboxImpl();
+	}",23-25
+delight.nashornsandbox.internal.JsSanitizer$1,<init>,(Ldelight/nashornsandbox/internal/JsSanitizer;IFZI)V,1,1,100.0%,"PoisonPil(final Pattern pattern, final String replacement) {
+			this.pattern = pattern;
+			this.replacement = replacement;
+		}",41-44
+delight.nashornsandbox.internal.JsSanitizer$1,removeEldestEntry,(Ljava/util/Map$Entry;)Z,1,1,100.0%,"@Override
+			public boolean removeEldestEntry(final Map.Entry<String, String> eldest) {
+				return size() > maxPreparedStatements;
+			}",169-172
+delight.nashornsandbox.internal.JsEvaluator,<init>,(Ljavax/script/ScriptEngine;JJLdelight/nashornsandbox/internal/ScriptEngineOperation;)V,7,7,100.0%,"JsEvaluator(final ScriptEngine scriptEngine, final long maxCPUTime, final long maxMemory, ScriptEngineOperation operation) {
+    this.scriptEngine = scriptEngine;
+    this.threadMonitor = new ThreadMonitor(maxCPUTime, maxMemory);
+    this.operation = operation;
+  }",25-29
+delight.nashornsandbox.internal.JsEvaluator,isCPULimitExceeded,()Z,1,1,100.0%,"boolean isCPULimitExceeded() {
+    return threadMonitor.isCPULimitExceeded();
+  }",35-37
+delight.nashornsandbox.internal.JsEvaluator,isMemoryLimitExceeded,()Z,1,1,100.0%,"boolean isMemoryLimitExceeded() {
+    return threadMonitor.isMemoryLimitExceeded();
+  }",39-41
+delight.nashornsandbox.internal.JsEvaluator,runMonitor,()V,2,2,100.0%,"void runMonitor() {
+    threadMonitor.run();
+  }",46-48
+delight.nashornsandbox.internal.JsEvaluator,run,()V,5,10,50.0%,"@Override
+  public void run() {
+    try {
+      threadMonitor.setThreadToMonitor(Thread.currentThread());
+      result = operation.executeScriptEngineOperation(scriptEngine);
+    } 
+    catch (final RuntimeException e) {
+      // InterruptedException means script was successfully interrupted,
+      // so no exception should be propagated
+      if(!(e.getCause() instanceof InterruptedException)) {
+        exception = e;
+      }
+    }
+    catch (final Exception e) {
+      exception = e;
+    } 
+    finally {
+      threadMonitor.scriptFinished();
+      threadMonitor.stopMonitor();
+    }
+  }",50-70
+delight.nashornsandbox.internal.JsEvaluator,getException,()Ljava/lang/Exception;,1,1,100.0%,"Exception getException() {
+    return exception;
+  }",72-74
+delight.nashornsandbox.internal.JsEvaluator,getResult,()Ljava/lang/Object;,1,1,100.0%,"Object getResult() {
+    return result;
+  }",76-78
+delight.nashornsandbox.internal.JsSanitizer,<init>,(Ljavax/script/ScriptEngine;IZ)V,7,7,100.0%,"PoisonPil(final Pattern pattern, final String replacement) {
+			this.pattern = pattern;
+			this.replacement = replacement;
+		}",41-44
+delight.nashornsandbox.internal.JsSanitizer,assertScriptEngine,()V,4,6,66.7%,"private void assertScriptEngine() {
+		try {
+			scriptEngine.eval(""var window = {};"");
+			scriptEngine.eval(getBeautifyJs());
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
+		}
+	}",131-138
+delight.nashornsandbox.internal.JsSanitizer,getBeautifHandler,(Ljavax/script/ScriptEngine;)Ljdk/nashorn/api/scripting/ScriptObjectMirror;,4,8,50.0%,"private static ScriptObjectMirror getBeautifHandler(final ScriptEngine scriptEngine) {
+		try {
+			for (final String name : BEAUTIFY_FUNCTIONS) {
+				final Object somWindow = scriptEngine.eval(name);
+				if (somWindow != null) {
+					return (ScriptObjectMirror) somWindow;
+				}
+			}
+			throw new RuntimeException(""Cannot find function 'js_beautify' in: window, exports, global"");
+		} catch (final ScriptException e) {
+			// should never happen
+			throw new RuntimeException(e);
+		}
+	}",140-153
+delight.nashornsandbox.internal.JsSanitizer,createSecuredJsCache,(I)Ldelight/nashornsandbox/SecuredJsCache;,2,3,66.7%,"private SecuredJsCache createSecuredJsCache(final int maxPreparedStatements) {
+		// Create cache
+		if (maxPreparedStatements == 0) {
+			return null;
+		} else {
+			return newSecuredJsCache(maxPreparedStatements);
+		}
+	}",155-162
+delight.nashornsandbox.internal.JsSanitizer,newSecuredJsCache,(I)Ldelight/nashornsandbox/SecuredJsCache;,2,2,100.0%,"private SecuredJsCache newSecuredJsCache(final int maxPreparedStatements) {
+		final LinkedHashMap<String, String> linkedHashMap = new LinkedHashMap<String, String>(maxPreparedStatements + 1, .75F, true) {
+			private static final long serialVersionUID = 1L;
+
+			// This method is called just after a new entry has been added
+			@Override
+			public boolean removeEldestEntry(final Map.Entry<String, String> eldest) {
+				return size() > maxPreparedStatements;
+			}
+		};
+		return new LinkedHashMapSecuredJsCache(linkedHashMap, allowNoBraces);
+	}",164-175
+delight.nashornsandbox.internal.JsSanitizer,checkBraces,(Ljava/lang/String;)V,6,16,37.5%,"void checkBraces(final String beautifiedJs) throws BracesException {
+		if (allowNoBraces) {
+			return;
+		}
+		
+		for (final Pattern pattern : LACK_EXPECTED_BRACES) {
+			final Matcher matcher = pattern.matcher(RemoveComments.perform(beautifiedJs));
+			if (matcher.find()) {
+				
+				String line = """";
+				int index = matcher.start();
+				while (index >= 0 && beautifiedJs.charAt(index) != '\n' ) {
+					line = beautifiedJs.charAt(index)+line;
+					index--;
+				}
+				
+				int singleParaCount = line.length() - line.replace(""'"", """").length();
+				int doubleParaCount = line.length() - line.replace(""\"""", """").length();
+				
+				if (singleParaCount % 2 != 0 || doubleParaCount % 2 != 0) {
+					// for in string
+					
+				} else {
+					throw new BracesException(""No block braces after function|for|while|do. Found [""+matcher.group()+""]"");
+				}
+			}
+		}
+	}",186-213
+delight.nashornsandbox.internal.JsSanitizer,injectInterruptionCalls,(Ljava/lang/String;)Ljava/lang/String;,10,10,100.0%,"String injectInterruptionCalls(final String str) {
+		String current = str;
+		for (final PoisonPil pp : POISON_PILLS) {
+			final StringBuffer sb = new StringBuffer();
+			final Matcher matcher = pp.pattern.matcher(current);
+			while (matcher.find()) {
+				matcher.appendReplacement(sb, (""$1"" + pp.replacement));
+			}
+			matcher.appendTail(sb);
+			current = sb.toString();
+		}
+		return current;
+	}",215-227
+delight.nashornsandbox.internal.JsSanitizer,getPreamble,()Ljava/lang/String;,6,6,100.0%,"private String getPreamble() {
+		final String clazzName = InterruptTest.class.getName();
+		final StringBuilder sb = new StringBuilder();
+		sb.append(""var "").append(JS_INTERRUPTED_TEST).append(""=Java.type('"").append(clazzName).append(""');"");
+		sb.append(""var "").append(JS_INTERRUPTED_FUNCTION).append(""=function(){"");
+		sb.append(JS_INTERRUPTED_TEST).append("".test();};\n"");
+		return sb.toString();
+	}",229-236
+delight.nashornsandbox.internal.JsSanitizer,checkJs,(Ljava/lang/String;)V,2,3,66.7%,"private void checkJs(final String js) {
+		if (js.contains(JS_INTERRUPTED_FUNCTION) || js.contains(JS_INTERRUPTED_TEST)) {
+			throw new IllegalArgumentException(
+					""Script contains the illegal string ["" + JS_INTERRUPTED_TEST + "","" + JS_INTERRUPTED_FUNCTION + ""]"");
+		}
+	}",238-243
+delight.nashornsandbox.internal.JsSanitizer,secureJs,(Ljava/lang/String;)Ljava/lang/String;,5,7,71.4%,"String secureJs(final String js) throws ScriptException {
+		if (securedJsCache == null) {
+			return secureJsImpl(js);
+		}
+		ScriptException[] ex = new ScriptException[1];
+		String securedJs = securedJsCache.getOrCreate(js, allowNoBraces, ()->{
+			try {
+				return secureJsImpl(js);
+			} catch (BracesException e) {
+				ex[0] = e;
+				return null;
+			}
+		});
+		if (ex[0] != null) {
+			throw ex[0];
+		}
+		return securedJs;
+	}",245-262
+delight.nashornsandbox.internal.JsSanitizer,secureJsImpl,(Ljava/lang/String;)Ljava/lang/String;,7,8,87.5%,"private String secureJsImpl(final String js) throws BracesException {
+		checkJs(js);
+		final String beautifiedJs = beautifyJs(js);
+		checkBraces(beautifiedJs);
+		final String injectedJs = injectInterruptionCalls(beautifiedJs);
+		// if no injection, no need to add preamble
+		if (beautifiedJs.equals(injectedJs)) {
+			return beautifiedJs;
+		} else {
+			final String preamble = getPreamble();
+			return preamble + injectedJs;
+		}
+	}",264-276
+delight.nashornsandbox.internal.JsSanitizer,beautifyJs,(Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"String beautifyJs(final String js) {
+		return (String) jsBeautify.call(""beautify"", js, BEAUTIFY_OPTIONS);
+	}",278-280
+delight.nashornsandbox.internal.JsSanitizer,getBeautifyJs,()Ljava/lang/String;,11,13,84.6%,"private static String getBeautifyJs() {
+		String script = beautifysScript.get();
+		if (script == null) {
+			try (final BufferedReader reader = new BufferedReader(new InputStreamReader(
+					new BufferedInputStream(JsSanitizer.class.getResourceAsStream(BEAUTIFY_JS)), ""UTF-8""))) {
+				final StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = reader.readLine()) != null) {
+					sb.append(line).append('\n');
+				}
+				script = sb.toString();
+			} catch (final IOException e) {
+				throw new RuntimeException(""Cannot find file: "" + BEAUTIFY_JS, e);
+			}
+			beautifysScript = new SoftReference<>(script);
+		}
+		return script;
+	}",282-299
+delight.nashornsandbox.internal.ThreadMonitor,<init>,(JJ)V,15,18,83.3%,"ThreadMonitor(final long maxCPUTime, final long maxMemory) {
+		this.maxMemory = maxMemory;
+		this.maxCPUTime = maxCPUTime * 1000000;
+		stop = new AtomicBoolean(false);
+		scriptFinished = new AtomicBoolean(false);
+		scriptKilled = new AtomicBoolean(false);
+		cpuLimitExceeded = new AtomicBoolean(false);
+		memoryLimitExceeded = new AtomicBoolean(false);
+		monitor = new Object();
+		threadBean = ManagementFactory.getThreadMXBean();
+		// ensure this feature is enabled
+		threadBean.setThreadCpuTimeEnabled(true);
+		if (threadBean instanceof com.sun.management.ThreadMXBean) {
+			memoryCouter = (com.sun.management.ThreadMXBean) threadBean;
+			// ensure this feature is enabled
+			memoryCouter.setThreadAllocatedMemoryEnabled(true);
+		} else {
+			if (maxMemory > 0) {
+				throw new UnsupportedOperationException(""JVM does not support thread memory counting"");
+			}
+			memoryCouter = null;
+		}
+	}",49-71
+delight.nashornsandbox.internal.ThreadMonitor,reset,()V,6,6,100.0%,"private void reset() {
+		stop.set(false);
+		scriptFinished.set(false);
+		scriptKilled.set(false);
+		cpuLimitExceeded.set(false);
+		threadToMonitor = null;
+	}",73-79
+delight.nashornsandbox.internal.ThreadMonitor,run,()V,19,36,52.8%,"@SuppressWarnings(""deprecation"")
+	void run() {
+		try {
+			// wait, for threadToMonitor to be set in JS evaluator thread
+			synchronized (monitor) {
+				if (threadToMonitor == null) {
+					monitor.wait(maxCPUTime / MILI_TO_NANO);
+				}
+			}
+			if (threadToMonitor == null) {
+				throw new IllegalStateException(""Executor thread not set after "" + maxCPUTime / MILI_TO_NANO + "" ms"");
+			}
+			final long startCPUTime = getCPUTime();
+			final long startMemory = getCurrentMemory();
+			while (!stop.get()) {
+				final long runtime = getCPUTime() - startCPUTime;
+				final long memory = getCurrentMemory() - startMemory;
+				
+				if (isCpuTimeExided(runtime) || isMemoryExided(memory)) {
+					
+					cpuLimitExceeded.set(isCpuTimeExided(runtime));
+					memoryLimitExceeded.set(isMemoryExided(memory));
+					threadToMonitor.interrupt();
+					synchronized (monitor) {
+						monitor.wait(50);
+					}
+					if (stop.get()) {
+						return;
+					}
+					if (!scriptFinished.get()) {
+						LOG.error(this.getClass().getSimpleName() + "": Thread hard shutdown!"");
+						threadToMonitor.stop();
+						scriptKilled.set(true);
+					}
+					return;
+				} else {
+					
+				}
+				synchronized (monitor) {
+					long waitTime = getCheckInterval(runtime);
+					
+					if (waitTime == 0) {
+						waitTime = 1;
+					}
+					monitor.wait(waitTime);
+				}
+				
+			}
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
+		}
+	}",81-132
+delight.nashornsandbox.internal.ThreadMonitor,getCheckInterval,(J)J,3,5,60.0%,"private long getCheckInterval(final long runtime) {
+		if (maxCPUTime == 0) {
+			return 10;
+		}
+		if (maxMemory == 0) {
+			return Math.max((maxCPUTime - runtime) / MILI_TO_NANO, 5);
+		}
+		return Math.min((maxCPUTime - runtime) / MILI_TO_NANO, 10);
+	}",134-142
+delight.nashornsandbox.internal.ThreadMonitor,isCpuTimeExided,(J)Z,2,3,66.7%,"private boolean isCpuTimeExided(final long runtime) {
+		if (maxCPUTime == 0) {
+			return false;
+		}
+		return runtime > maxCPUTime;
+	}",144-149
+delight.nashornsandbox.internal.ThreadMonitor,isMemoryExided,(J)Z,2,3,66.7%,"private boolean isMemoryExided(final long memory) {
+		if (maxMemory == 0) {
+			return false;
+		}
+		return memory > maxMemory;
+	}",151-156
+delight.nashornsandbox.internal.ThreadMonitor,getCurrentMemory,()J,2,3,66.7%,"private long getCurrentMemory() {
+		if (maxMemory == 0 || memoryCouter != null) {
+			return memoryCouter.getThreadAllocatedBytes(threadToMonitor.getId());
+		}
+		return 0L;
+	}",163-168
+delight.nashornsandbox.internal.ThreadMonitor,getCPUTime,()J,1,1,100.0%,"private long getCPUTime() {
+		return threadBean.getThreadCpuTime(threadToMonitor.getId());
+	}",170-172
+delight.nashornsandbox.internal.ThreadMonitor,stopMonitor,()V,3,3,100.0%,"public void stopMonitor() {
+		stop.set(true);
+		notifyMonitorThread();
+	}",174-177
+delight.nashornsandbox.internal.ThreadMonitor,setThreadToMonitor,(Ljava/lang/Thread;)V,4,4,100.0%,"public void setThreadToMonitor(final Thread t) {
+		reset();
+		threadToMonitor = t;
+		notifyMonitorThread();
+	}",179-183
+delight.nashornsandbox.internal.ThreadMonitor,scriptFinished,()V,2,2,100.0%,"public void scriptFinished() {
+		scriptFinished.set(false);
+	}",185-187
+delight.nashornsandbox.internal.ThreadMonitor,isCPULimitExceeded,()Z,1,1,100.0%,"public boolean isCPULimitExceeded() {
+		return cpuLimitExceeded.get();
+	}",189-191
+delight.nashornsandbox.internal.ThreadMonitor,isMemoryLimitExceeded,()Z,1,1,100.0%,"public boolean isMemoryLimitExceeded() {
+		return memoryLimitExceeded.get();
+	}",193-195
+delight.nashornsandbox.internal.ThreadMonitor,notifyMonitorThread,()V,4,4,100.0%,"private void notifyMonitorThread() {
+		synchronized (monitor) {
+			monitor.notifyAll();
+		}
+	}",201-205
+delight.nashornsandbox.internal.NashornSandboxImpl,<init>,()V,2,2,100.0%,"public NashornSandboxImpl() {
+		this(new String[0]);
+	}",83-85
+delight.nashornsandbox.internal.NashornSandboxImpl,<init>,([Ljava/lang/String;)V,16,18,88.9%,"public NashornSandboxImpl() {
+		this(new String[0]);
+	}",83-85
+delight.nashornsandbox.internal.NashornSandboxImpl,assertScriptEngine,()V,4,8,50.0%,"private void assertScriptEngine() {
+        try {
+            if (!engineAsserted) {
+                produceSecureBindings();
+            }
+            else if (!engineBindingUnchanged()) {
+                resetEngineBindings();
+            }
+        }
+        catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }",103-115
+delight.nashornsandbox.internal.NashornSandboxImpl,engineBindingUnchanged,()Z,5,6,83.3%,"private boolean engineBindingUnchanged() {
+        final Bindings current = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+        for (Map.Entry<String, Object> e : cached.entrySet()) {
+            if (!current.containsKey(e.getKey()) || !Objects.equals(current.get(e.getKey()), e.getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }",118-126
+delight.nashornsandbox.internal.NashornSandboxImpl,produceSecureBindings,()V,20,22,90.9%,"private void produceSecureBindings() {
+        try {
+            if (!engineAsserted) {
+                final StringBuilder sb = new StringBuilder();
+                cached = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+                sanitizeBindings(cached);
+                if (!allowExitFunctions) {
+                    sb.append(""var quit=function(){};var exit=function(){};"");
+                }
+                if (!allowPrintFunctions) {
+                    sb.append(""var print=function(){};var echo = function(){};"");
+                }
+                if (!allowReadFunctions) {
+                    sb.append(""var readFully=function(){};"").append(""var readLine=function(){};"");
+                }
+                if (!allowLoadFunctions) {
+                    sb.append(""var load=function(){};var loadWithNewGlobal=function(){};"");
+                }
+                if (!allowGlobalsObjects) {
+                    // Max 22nd of Feb 2018: I don't think these are strictly necessary since they are only available in scripting mode
+                    sb.append(""var $ARG=null;var $ENV=null;var $EXEC=null;"");
+                    sb.append(""var $OPTIONS=null;var $OUT=null;var $ERR=null;var $EXIT=null;"");
+                }
+                scriptEngine.eval(sb.toString());
+
+                resetEngineBindings();
+
+                engineAsserted = true;
+            }
+        }
+        catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }",128-161
+delight.nashornsandbox.internal.NashornSandboxImpl,resetEngineBindings,()V,5,5,100.0%,"private void resetEngineBindings() {
+        final Bindings bindings = createBindings();
+        sanitizeBindings(bindings);
+        bindings.putAll(cached);
+        scriptEngine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+    }",163-168
+delight.nashornsandbox.internal.NashornSandboxImpl,sanitizeBindings,(Ljavax/script/Bindings;)V,13,13,100.0%,"private void sanitizeBindings(Bindings bindings) {
+        if (!allowExitFunctions) {
+            bindings.remove(""quit"");
+            bindings.remove(""exit"");
+        }
+        if (!allowPrintFunctions) {
+            bindings.remove(""print"");
+            bindings.remove(""echo"");
+        }
+        if (!allowReadFunctions) {
+            bindings.remove(""readFully"");
+            bindings.remove(""readLine"");
+        }
+        if (!allowLoadFunctions) {
+            bindings.remove(""load"");
+            bindings.remove(""loadWithNewGlobal"");
+        }
+    }",170-187
+delight.nashornsandbox.internal.NashornSandboxImpl,eval,(Ljava/lang/String;Ljavax/script/ScriptContext;Ljavax/script/Bindings;)Ljava/lang/Object;,6,6,100.0%,"@Override
+	public Object eval(final String js) throws ScriptCPUAbuseException, ScriptException {
+		return eval(js, null,null);
+	}",189-192
+delight.nashornsandbox.internal.NashornSandboxImpl,eval,(Ljava/lang/String;)Ljava/lang/Object;,1,1,100.0%,"@Override
+	public Object eval(final String js) throws ScriptCPUAbuseException, ScriptException {
+		return eval(js, null,null);
+	}",189-192
+delight.nashornsandbox.internal.NashornSandboxImpl,secureBindings,(Ljavax/script/Bindings;)Ljavax/script/Bindings;,2,4,50.0%,"private Bindings secureBindings(Bindings bindings) {
+        if (bindings == null)
+            return null;
+
+        bindings.putAll(cached);
+
+        return bindings;
+    }",215-222
+delight.nashornsandbox.internal.NashornSandboxImpl,executeSandboxedOperation,(Ldelight/nashornsandbox/internal/ScriptEngineOperation;)Ljava/lang/Object;,10,20,50.0%,"private Object executeSandboxedOperation(ScriptEngineOperation op) throws ScriptCPUAbuseException, ScriptException {
+        assertScriptEngine();
+		try {
+			if (maxCPUTime == 0 && maxMemory == 0) {
+				return op.executeScriptEngineOperation(scriptEngine);
+			}
+			checkExecutorPresence();
+			final JsEvaluator evaluator = getEvaluator(op);
+			executor.execute(evaluator);
+			evaluator.runMonitor();
+			if (evaluator.isCPULimitExceeded()) {
+				throw new ScriptCPUAbuseException(
+						""Script used more than the allowed ["" + maxCPUTime + "" ms] of CPU time."",
+						evaluator.isScriptKilled(), evaluator.getException());
+			} else if (evaluator.isMemoryLimitExceeded()) {
+				throw new ScriptMemoryAbuseException(
+						""Script used more than the allowed ["" + maxMemory + "" B] of memory."",
+						evaluator.isScriptKilled(), evaluator.getException());
+			}
+			if (evaluator.getException() != null) {
+				throw evaluator.getException();
+			}
+			return evaluator.getResult();
+		} catch (RuntimeException | ScriptException e) {
+			throw e;
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
+		}
+	}",224-252
+delight.nashornsandbox.internal.NashornSandboxImpl,getEvaluator,(Ldelight/nashornsandbox/internal/ScriptEngineOperation;)Ldelight/nashornsandbox/internal/JsEvaluator;,1,1,100.0%,"private JsEvaluator getEvaluator(ScriptEngineOperation op) {
+		return new JsEvaluator(scriptEngine, maxCPUTime, maxMemory, op);
+	}",254-256
+delight.nashornsandbox.internal.NashornSandboxImpl,checkExecutorPresence,()V,2,3,66.7%,"private void checkExecutorPresence() {
+		if (executor == null) {
+			throw new IllegalStateException(""When a CPU time or memory limit is set, an executor ""
+					+ ""needs to be provided by calling .setExecutor(...)"");
+		}
+	}",258-263
+delight.nashornsandbox.internal.NashornSandboxImpl,setMaxCPUTime,(J)V,2,2,100.0%,"@Override
+	public void setMaxCPUTime(final long limit) {
+		maxCPUTime = limit;
+	}",265-268
+delight.nashornsandbox.internal.NashornSandboxImpl,setMaxMemory,(J)V,2,2,100.0%,"@Override
+	public void setMaxMemory(final long limit) {
+		maxMemory = limit;
+	}",270-273
+delight.nashornsandbox.internal.NashornSandboxImpl,getSanitizer,()Ldelight/nashornsandbox/internal/JsSanitizer;,4,5,80.0%,"JsSanitizer getSanitizer() {
+		if (sanitizer == null) {
+			if (suppliedCache == null) {
+				sanitizer = new JsSanitizer(scriptEngine, maxPreparedStatements, allowNoBraces);
+			} else {
+				sanitizer = new JsSanitizer(scriptEngine, allowNoBraces, suppliedCache);
+			}
+		}
+		return sanitizer;
+	}",275-284
+delight.nashornsandbox.internal.NashornSandboxImpl,allow,(Ljava/lang/Class;)V,2,2,100.0%,"@Override
+	public void allow(final Class<?> clazz) {
+		sandboxClassFilter.add(clazz);
+	}",286-289
+delight.nashornsandbox.internal.NashornSandboxImpl,setExecutor,(Ljava/util/concurrent/ExecutorService;)V,2,2,100.0%,"@Override
+	public void setExecutor(final ExecutorService executor) {
+		this.executor = executor;
+	}",316-319
+delight.nashornsandbox.internal.NashornSandboxImpl,get,(Ljava/lang/String;)Ljava/lang/Object;,1,1,100.0%,"@Override
+	public Object get(final String variableName) {
+		return scriptEngine.get(variableName);
+	}",326-329
+delight.nashornsandbox.internal.NashornSandboxImpl,allowNoBraces,(Z)V,3,4,75.0%,"@Override
+	public void allowNoBraces(final boolean v) {
+		if (allowNoBraces != v) {
+			sanitizer = null;
+		}
+		allowNoBraces = v;
+	}",371-377
+delight.nashornsandbox.internal.NashornSandboxImpl,setMaxPreparedStatements,(I)V,4,4,100.0%,"@Override
+	public void setMaxPreparedStatements(final int max) {
+		if (maxPreparedStatements != max) {
+			sanitizer = null;
+		}
+		maxPreparedStatements = max;
+	}",384-390
+delight.nashornsandbox.internal.NashornSandboxImpl,createBindings,()Ljavax/script/Bindings;,1,1,100.0%,"@Override
+	public Bindings createBindings() {
+		return scriptEngine.createBindings();
+	}",392-395
+delight.nashornsandbox.internal.LinkedHashMapSecuredJsCache,<init>,(Ljava/util/LinkedHashMap;Z)V,4,4,100.0%,"public LinkedHashMapSecuredJsCache(LinkedHashMap<String, String> linkedHashMap, boolean allowNoBraces) {
+		this.map = linkedHashMap;
+		this.allowNoBraces = allowNoBraces;
+	}",18-21
+delight.nashornsandbox.internal.LinkedHashMapSecuredJsCache,getOrCreate,(Ljava/lang/String;ZLjava/util/function/Supplier;)Ljava/lang/String;,6,6,100.0%,"@Override
+	public String getOrCreate(String js, boolean allowNoBraces, Supplier<String> producer) {
+		assertConfiguration(allowNoBraces);
+		String result = map.get(js);
+		if (result == null) {
+			result = producer.get();
+			map.put(js, result);
+		}
+		return result;
+	}",23-32
+delight.nashornsandbox.internal.LinkedHashMapSecuredJsCache,assertConfiguration,(Z)V,2,3,66.7%,"private void assertConfiguration(boolean allowNoBraces) {
+		if (allowNoBraces != this.allowNoBraces) {
+			throw new IllegalArgumentException(""Non-matching cache configuration"");
+		}
+	}",34-38
+delight.nashornsandbox.internal.RemoveComments,perform,(Ljava/lang/String;)Ljava/lang/String;,11,20,55.0%,"public static String perform(String s) {
+		String out = """";
+		int mod = DEFAULT;
+		for (int i = 0; i < s.length(); i++) {
+			String substring = s.substring(i, Math.min(i + 2, s.length()));
+			char c = s.charAt(i);
+			switch (mod) {
+			case DEFAULT: // default
+				mod = substring.equals(""/*"") ? MULTI_LINE
+						: substring.equals(""//"") ? ONE_LINE : c == '""' || c =='\'' ? STRING : DEFAULT;
+				break;
+			case STRING: // string
+				mod = c == '""' || c == '\'' ? DEFAULT : c == '\\' ? ESCAPE : STRING;
+				break;
+			case ESCAPE: // string
+				mod = STRING;
+				break;
+			case ONE_LINE: // one line comment
+				mod = c == '\n' ? DEFAULT : ONE_LINE;
+				continue;
+			case MULTI_LINE: // multi line comment
+				mod = substring.equals(""*/"") ? DEFAULT : MULTI_LINE;
+				i += mod == DEFAULT ? 1 : 0;
+				continue;
+			}
+			out += mod < 4 ? c : """";
+		}
+
+		return out;
+	}",18-47
+delight.nashornsandbox.internal.JsSanitizer$PoisonPil,<init>,(Ljava/util/regex/Pattern;Ljava/lang/String;)V,4,4,100.0%,"PoisonPil(final Pattern pattern, final String replacement) {
+			this.pattern = pattern;
+			this.replacement = replacement;
+		}",41-44
+delight.nashornsandbox.internal.SandboxClassFilter,exposeToScripts,(Ljava/lang/String;)Z,1,1,100.0%,"@Override
+  public boolean exposeToScripts(final String className) {
+    return stringCache.contains(className);
+  }",23-26
+delight.nashornsandbox.internal.SandboxClassFilter,add,(Ljava/lang/Class;)V,3,3,100.0%,"public void add(final Class<?> clazz) {
+    allowed.add(clazz);
+    stringCache.add(clazz.getName());
+  }",28-31
+delight.nashornsandbox.internal.SandboxClassFilter,<init>,()V,4,4,100.0%,"public SandboxClassFilter() {
+    allowed = new HashSet<>();
+    stringCache = new HashSet<>();
+  }",47-50
+delight.nashornsandbox.internal.EvaluateOperation,<init>,(Ljava/lang/String;Ljavax/script/ScriptContext;Ljavax/script/Bindings;)V,5,5,100.0%,"public EvaluateOperation(String js, ScriptContext scriptContext, Bindings bindings) {
+        this.js = js;
+        this.scriptContext = scriptContext;
+        this.bindings = bindings;
+    }",28-32
+delight.nashornsandbox.internal.EvaluateOperation,executeScriptEngineOperation,(Ljavax/script/ScriptEngine;)Ljava/lang/Object;,4,9,44.4%,"@Override
+    public Object executeScriptEngineOperation(ScriptEngine scriptEngine) throws ScriptException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(""--- Running JS ---"");
+            LOG.debug(js);
+            LOG.debug(""--- JS END ---"");
+        }
+       
+        if (bindings != null) {
+            return scriptEngine.eval(js, bindings);
+        } else if (scriptContext != null) {
+            return scriptEngine.eval(js, scriptContext);
+        } else {
+            return scriptEngine.eval(js);
+        }
+    }",34-49

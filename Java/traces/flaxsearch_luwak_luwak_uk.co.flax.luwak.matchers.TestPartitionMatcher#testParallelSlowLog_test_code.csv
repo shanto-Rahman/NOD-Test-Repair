@@ -1,0 +1,32 @@
+test_code
+"@Test
+    public void testParallelSlowLog() throws IOException, UpdateException {
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+
+        try (Monitor monitor = new Monitor(new TestSlowLog.SlowQueryParser(250), new MatchAllPresearcher())) {
+            monitor.update(new MonitorQuery(""1"", ""slow""), new MonitorQuery(""2"", ""fast""), new MonitorQuery(""3"", ""slow""));
+
+            DocumentBatch batch = DocumentBatch.of(InputDocument.builder(""doc1"").build());
+
+            MatcherFactory<QueryMatch> factory = matcherFactory(executor, SimpleMatcher.FACTORY, 10);
+
+            Matches<QueryMatch> matches = monitor.match(batch, factory);
+            assertThat(matches.getMatchCount(""doc1""))
+                    .isEqualTo(3);
+            assertThat(matches.getSlowLog().toString())
+                .contains(""1 ["")
+                .contains(""3 ["")
+                .doesNotContain(""2 ["");
+
+            monitor.setSlowLogLimit(1);
+            assertThat(monitor.match(batch, factory).getSlowLog().toString())
+                .contains(""1 ["")
+                .contains(""2 ["")
+                .contains(""3 ["");
+
+            monitor.setSlowLogLimit(2000000000000l);
+            assertThat(monitor.match(batch, factory).getSlowLog())
+                .isEmpty();
+        }
+    }"

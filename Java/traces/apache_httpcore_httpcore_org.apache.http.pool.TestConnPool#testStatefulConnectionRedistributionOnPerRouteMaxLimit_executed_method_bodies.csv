@@ -1,0 +1,440 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange
+org.apache.http.pool.AbstractConnPool,<init>,(II)V,12,14,85.7%,"public AbstractConnPool(
+            int defaultMaxPerRoute,
+            int maxTotal) {
+        super();
+        if (defaultMaxPerRoute <= 0) {
+            throw new IllegalArgumentException(""Max per route value may not be negative or zero"");
+        }
+        if (maxTotal <= 0) {
+            throw new IllegalArgumentException(""Max total value may not be negative or zero"");
+        }
+        this.lock = new ReentrantLock();
+        this.routeToPool = new HashMap<T, RouteSpecificPool<T, C, E>>();
+        this.leased = new HashSet<E>();
+        this.available = new LinkedList<E>();
+        this.pending = new LinkedList<PoolEntryFuture<E>>();
+        this.maxPerRoute = new HashMap<T, Integer>();
+        this.defaultMaxPerRoute = defaultMaxPerRoute;
+        this.maxTotal = maxTotal;
+    }",68-86
+org.apache.http.pool.AbstractConnPool,getPool,(Ljava/lang/Object;)Lorg/apache/http/pool/RouteSpecificPool;,5,5,100.0%,"private RouteSpecificPool<T, C, E> getPool(final T route) {
+        RouteSpecificPool<T, C, E> pool = this.routeToPool.get(route);
+        if (pool == null) {
+            pool = new RouteSpecificPool<T, C, E>(route) {
+
+                @Override
+                protected E createEntry(C conn) {
+                    return AbstractConnPool.this.createEntry(route, conn);
+                }
+
+                @Override
+                protected void closeEntry(final E entry) {
+                    AbstractConnPool.this.closeEntry(entry);
+                }
+
+            };
+            this.routeToPool.put(route, pool);
+        }
+        return pool;
+    }",122-141
+org.apache.http.pool.AbstractConnPool,lease,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/concurrent/Future;,3,5,60.0%,"public Future<E> lease(final T route, final Object state) {
+        if (route == null) {
+            throw new IllegalArgumentException(""Route may not be null"");
+        }
+        if (this.isShutDown) {
+            throw new IllegalStateException(""Connection pool shut down"");
+        }
+        return new PoolEntryFuture<E>(this.lock) {
+
+            @Override
+            public E getPoolEntry(
+                    long timeout,
+                    TimeUnit tunit)
+                        throws InterruptedException, TimeoutException, IOException {
+                return getPoolEntryBlocking(route, state, timeout, tunit, this);
+            }
+
+        };
+    }",143-161
+org.apache.http.pool.AbstractConnPool,getPoolEntryBlocking,(Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;Lorg/apache/http/pool/PoolEntryFuture;)Lorg/apache/http/pool/PoolEntry;,33,58,56.9%,"private E getPoolEntryBlocking(
+            final T route, final Object state,
+            final long timeout, final TimeUnit tunit,
+            final PoolEntryFuture<E> future)
+                throws IOException, InterruptedException, TimeoutException {
+
+        Date deadline = null;
+        if (timeout > 0) {
+            deadline = new Date
+                (System.currentTimeMillis() + tunit.toMillis(timeout));
+        }
+
+        this.lock.lock();
+        try {
+            RouteSpecificPool<T, C, E> pool = getPool(route);
+            E entry = null;
+            while (entry == null) {
+                if (this.isShutDown) {
+                    throw new IllegalStateException(""Connection pool shut down"");
+                }
+                for (;;) {
+                    entry = pool.getFree(state);
+                    if (entry == null) {
+                        break;
+                    }
+                    if (entry.isExpired(System.currentTimeMillis())) {
+                        closeEntry(entry);
+                        this.available.remove(entry);
+                        pool.free(entry, false);
+                    } else {
+                        break;
+                    }
+                }
+                if (entry != null) {
+                    this.available.remove(entry);
+                    this.leased.add(entry);
+                    return entry;
+                }
+
+                // New connection is needed
+                int maxPerRoute = getMaxPerRoute(route);
+                // Shrink the pool prior to allocating a new connection
+                int excess = Math.max(0, pool.getAllocatedCount() + 1 - maxPerRoute);
+                if (excess > 0) {
+                    for (int i = 0; i < excess; i++) {
+                        E lastUsed = pool.getLastUsed();
+                        if (lastUsed == null) {
+                            break;
+                        }
+                        closeEntry(lastUsed);
+                        this.available.remove(lastUsed);
+                        pool.remove(lastUsed);
+                    }
+                }
+
+                if (pool.getAllocatedCount() < maxPerRoute) {
+                    int totalUsed = this.leased.size();
+                    int freeCapacity = Math.max(this.maxTotal - totalUsed, 0);
+                    if (freeCapacity > 0) {
+                        int totalAvailable = this.available.size();
+                        if (totalAvailable > freeCapacity - 1) {
+                            if (!this.available.isEmpty()) {
+                                E lastUsed = this.available.removeFirst();
+                                closeEntry(lastUsed);
+                                RouteSpecificPool<T, C, E> otherpool = getPool(lastUsed.getRoute());
+                                otherpool.remove(lastUsed);
+                            }
+                        }
+                        C conn = createConnection(route);
+                        entry = pool.add(conn);
+                        this.leased.add(entry);
+                        return entry;
+                    }
+                }
+
+                boolean success = false;
+                try {
+                    pool.queue(future);
+                    this.pending.add(future);
+                    success = future.await(deadline);
+                } finally {
+                    // In case of 'success', we were woken up by the
+                    // connection pool and should now have a connection
+                    // waiting for us, or else we're shutting down.
+                    // Just continue in the loop, both cases are checked.
+                    pool.unqueue(future);
+                    this.pending.remove(future);
+                }
+                // check for spurious wakeup vs. timeout
+                if (!success && (deadline != null) &&
+                    (deadline.getTime() <= System.currentTimeMillis())) {
+                    break;
+                }
+            }
+            throw new TimeoutException(""Timeout waiting for connection"");
+        } finally {
+            this.lock.unlock();
+        }
+    }",163-261
+org.apache.http.pool.AbstractConnPool,notifyPending,(Lorg/apache/http/pool/RouteSpecificPool;)V,5,7,71.4%,"private void notifyPending(final RouteSpecificPool<T, C, E> pool) {
+        PoolEntryFuture<E> future = pool.nextPending();
+        if (future != null) {
+            this.pending.remove(future);
+        } else {
+            future = this.pending.poll();
+        }
+        if (future != null) {
+            future.wakeup();
+        }
+    }",263-273
+org.apache.http.pool.AbstractConnPool,release,(Lorg/apache/http/pool/PoolEntry;Z)V,9,10,90.0%,"public void release(E entry, boolean reusable) {
+        this.lock.lock();
+        try {
+            if (this.leased.remove(entry)) {
+                RouteSpecificPool<T, C, E> pool = getPool(entry.getRoute());
+                pool.free(entry, reusable);
+                if (reusable && !this.isShutDown) {
+                    this.available.add(entry);
+                } else {
+                    closeEntry(entry);
+                }
+                notifyPending(pool);
+            }
+        } finally {
+            this.lock.unlock();
+        }
+    }",275-291
+org.apache.http.pool.AbstractConnPool,getMaxPerRoute,(Ljava/lang/Object;)I,3,4,75.0%,"private int getMaxPerRoute(final T route) {
+        Integer v = this.maxPerRoute.get(route);
+        if (v != null) {
+            return v.intValue();
+        } else {
+            return this.defaultMaxPerRoute;
+        }
+    }",293-300
+org.apache.http.pool.AbstractConnPool,setMaxTotal,(I)V,5,6,83.3%,"public void setMaxTotal(int max) {
+        if (max <= 0) {
+            throw new IllegalArgumentException(""Max value may not be negative or zero"");
+        }
+        this.lock.lock();
+        try {
+            this.maxTotal = max;
+        } finally {
+            this.lock.unlock();
+        }
+    }",302-312
+org.apache.http.pool.AbstractConnPool,setMaxPerRoute,(Ljava/lang/Object;I)V,6,8,75.0%,"public void setMaxPerRoute(final T route, int max) {
+        if (route == null) {
+            throw new IllegalArgumentException(""Route may not be null"");
+        }
+        if (max <= 0) {
+            throw new IllegalArgumentException(""Max value may not be negative or zero"");
+        }
+        this.lock.lock();
+        try {
+            this.maxPerRoute.put(route, max);
+        } finally {
+            this.lock.unlock();
+        }
+    }",326-339
+org.apache.http.pool.AbstractConnPool,getTotalStats,()Lorg/apache/http/pool/PoolStats;,6,6,100.0%,"public PoolStats getTotalStats() {
+        this.lock.lock();
+        try {
+            return new PoolStats(
+                    this.leased.size(),
+                    this.pending.size(),
+                    this.available.size(),
+                    this.maxTotal);
+        } finally {
+            this.lock.unlock();
+        }
+    }",341-352
+org.apache.http.pool.PoolEntryFuture,<init>,(Ljava/util/concurrent/locks/Lock;)V,4,4,100.0%,"PoolEntryFuture(final Lock lock) {
+        super();
+        this.lock = lock;
+        this.condition = lock.newCondition();
+    }",49-53
+org.apache.http.pool.PoolEntryFuture,isDone,()Z,1,1,100.0%,"public boolean isDone() {
+        return this.completed;
+    }",74-76
+org.apache.http.pool.PoolEntryFuture,get,(JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;,6,11,54.5%,"public T get() throws InterruptedException, ExecutionException {
+        try {
+            return get(0, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException ex) {
+            throw new ExecutionException(ex);
+        }
+    }",78-84
+org.apache.http.pool.RouteSpecificPool,<init>,(Ljava/lang/Object;)V,6,6,100.0%,"RouteSpecificPool(final T route) {
+        super();
+        this.route = route;
+        this.leased = new HashSet<E>();
+        this.available = new LinkedList<E>();
+        this.pending = new LinkedList<PoolEntryFuture<E>>();
+    }",44-50
+org.apache.http.pool.RouteSpecificPool,getAllocatedCount,()I,1,1,100.0%,"public int getAllocatedCount() {
+        return this.available.size() + this.leased.size();
+    }",72-74
+org.apache.http.pool.RouteSpecificPool,getFree,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,13,19,68.4%,"public E getFree(final Object state) {
+        if (!this.available.isEmpty()) {
+            if (state != null) {
+                Iterator<E> it = this.available.iterator();
+                while (it.hasNext()) {
+                    E entry = it.next();
+                    if (state.equals(entry.getState())) {
+                        it.remove();
+                        this.leased.add(entry);
+                        return entry;
+                    }
+                }
+            }
+            Iterator<E> it = this.available.iterator();
+            while (it.hasNext()) {
+                E entry = it.next();
+                if (entry.getState() == null) {
+                    it.remove();
+                    this.leased.add(entry);
+                    return entry;
+                }
+            }
+        }
+        return null;
+    }",76-100
+org.apache.http.pool.RouteSpecificPool,getLastUsed,()Lorg/apache/http/pool/PoolEntry;,2,3,66.7%,"public E getLastUsed() {
+        if (!this.available.isEmpty()) {
+            return this.available.getFirst();
+        } else {
+            return null;
+        }
+    }",102-108
+org.apache.http.pool.RouteSpecificPool,remove,(Lorg/apache/http/pool/PoolEntry;)Z,3,6,50.0%,"public boolean remove(final E entry) {
+        if (entry == null) {
+            throw new IllegalArgumentException(""Pool entry may not be null"");
+        }
+        if (!this.available.remove(entry)) {
+            if (!this.leased.remove(entry)) {
+                return false;
+            }
+        }
+        return true;
+    }",110-120
+org.apache.http.pool.RouteSpecificPool,free,(Lorg/apache/http/pool/PoolEntry;Z)V,6,8,75.0%,"public void free(final E entry, boolean reusable) {
+        if (entry == null) {
+            throw new IllegalArgumentException(""Pool entry may not be null"");
+        }
+        boolean found = this.leased.remove(entry);
+        if (!found) {
+            throw new IllegalStateException(""Entry "" + entry +
+                    "" has not been leased from this pool"");
+        }
+        if (reusable) {
+            this.available.add(entry);
+        }
+    }",122-134
+org.apache.http.pool.RouteSpecificPool,add,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,3,3,100.0%,"public E add(final C conn) {
+        E entry = createEntry(conn);
+        this.leased.add(entry);
+        return entry;
+    }",136-140
+org.apache.http.pool.RouteSpecificPool,nextPending,()Lorg/apache/http/pool/PoolEntryFuture;,1,1,100.0%,"public PoolEntryFuture<E> nextPending() {
+        return this.pending.poll();
+    }",149-151
+org.apache.http.pool.PoolStats,<init>,(IIII)V,6,6,100.0%,"public PoolStats(int leased, int pending, int free, int max) {
+        super();
+        this.leased = leased;
+        this.pending = pending;
+        this.available = free;
+        this.max = max;
+    }",45-51
+org.apache.http.pool.PoolStats,getLeased,()I,1,1,100.0%,"public int getLeased() {
+        return this.leased;
+    }",53-55
+org.apache.http.pool.PoolStats,getPending,()I,1,1,100.0%,"public int getPending() {
+        return this.pending;
+    }",57-59
+org.apache.http.pool.PoolStats,getAvailable,()I,1,1,100.0%,"public int getAvailable() {
+        return this.available;
+    }",61-63
+org.apache.http.pool.AbstractConnPool$2,<init>,(Lorg/apache/http/pool/AbstractConnPool;Ljava/util/concurrent/locks/Lock;Ljava/lang/Object;Ljava/lang/Object;)V,1,1,100.0%,"public AbstractConnPool(
+            int defaultMaxPerRoute,
+            int maxTotal) {
+        super();
+        if (defaultMaxPerRoute <= 0) {
+            throw new IllegalArgumentException(""Max per route value may not be negative or zero"");
+        }
+        if (maxTotal <= 0) {
+            throw new IllegalArgumentException(""Max total value may not be negative or zero"");
+        }
+        this.lock = new ReentrantLock();
+        this.routeToPool = new HashMap<T, RouteSpecificPool<T, C, E>>();
+        this.leased = new HashSet<E>();
+        this.available = new LinkedList<E>();
+        this.pending = new LinkedList<PoolEntryFuture<E>>();
+        this.maxPerRoute = new HashMap<T, Integer>();
+        this.defaultMaxPerRoute = defaultMaxPerRoute;
+        this.maxTotal = maxTotal;
+    }",68-86
+org.apache.http.pool.AbstractConnPool$2,getPoolEntry,(JLjava/util/concurrent/TimeUnit;)Lorg/apache/http/pool/PoolEntry;,1,1,100.0%,"@Override
+            public E getPoolEntry(
+                    long timeout,
+                    TimeUnit tunit)
+                        throws InterruptedException, TimeoutException, IOException {
+                return getPoolEntryBlocking(route, state, timeout, tunit, this);
+            }",152-158
+org.apache.http.pool.AbstractConnPool$1,<init>,(Lorg/apache/http/pool/AbstractConnPool;Ljava/lang/Object;Ljava/lang/Object;)V,1,1,100.0%,"public AbstractConnPool(
+            int defaultMaxPerRoute,
+            int maxTotal) {
+        super();
+        if (defaultMaxPerRoute <= 0) {
+            throw new IllegalArgumentException(""Max per route value may not be negative or zero"");
+        }
+        if (maxTotal <= 0) {
+            throw new IllegalArgumentException(""Max total value may not be negative or zero"");
+        }
+        this.lock = new ReentrantLock();
+        this.routeToPool = new HashMap<T, RouteSpecificPool<T, C, E>>();
+        this.leased = new HashSet<E>();
+        this.available = new LinkedList<E>();
+        this.pending = new LinkedList<PoolEntryFuture<E>>();
+        this.maxPerRoute = new HashMap<T, Integer>();
+        this.defaultMaxPerRoute = defaultMaxPerRoute;
+        this.maxTotal = maxTotal;
+    }",68-86
+org.apache.http.pool.AbstractConnPool$1,createEntry,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,1,1,100.0%,"protected abstract E createEntry(T route, C conn);",90-90
+org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V,2,2,100.0%,"public PoolEntry(final String id, final T route, final C conn,
+            final long timeToLive, final TimeUnit tunit) {
+        super();
+        if (route == null) {
+            throw new IllegalArgumentException(""Route may not be null"");
+        }
+        if (conn == null) {
+            throw new IllegalArgumentException(""Connection may not be null"");
+        }
+        if (tunit == null) {
+            throw new IllegalArgumentException(""Time unit may not be null"");
+        }
+        this.id = id;
+        this.route = route;
+        this.conn = conn;
+        this.created = System.currentTimeMillis();
+        if (timeToLive > 0) {
+            this.validUnit = this.created + tunit.toMillis(timeToLive);
+        } else {
+            this.validUnit = Long.MAX_VALUE;
+        }
+        this.expiry = this.validUnit;
+    }",54-76
+org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;)V,12,16,75.0%,"public PoolEntry(final String id, final T route, final C conn,
+            final long timeToLive, final TimeUnit tunit) {
+        super();
+        if (route == null) {
+            throw new IllegalArgumentException(""Route may not be null"");
+        }
+        if (conn == null) {
+            throw new IllegalArgumentException(""Connection may not be null"");
+        }
+        if (tunit == null) {
+            throw new IllegalArgumentException(""Time unit may not be null"");
+        }
+        this.id = id;
+        this.route = route;
+        this.conn = conn;
+        this.created = System.currentTimeMillis();
+        if (timeToLive > 0) {
+            this.validUnit = this.created + tunit.toMillis(timeToLive);
+        } else {
+            this.validUnit = Long.MAX_VALUE;
+        }
+        this.expiry = this.validUnit;
+    }",54-76
+org.apache.http.pool.PoolEntry,getRoute,()Ljava/lang/Object;,1,1,100.0%,"public T getRoute() {
+        return this.route;
+    }",86-88
+org.apache.http.pool.PoolEntry,getConnection,()Ljava/lang/Object;,1,1,100.0%,"public C getConnection() {
+        return this.conn;
+    }",90-92
+org.apache.http.pool.PoolEntry,getState,()Ljava/lang/Object;,1,1,100.0%,"public Object getState() {
+        return this.state;
+    }",102-104
+org.apache.http.pool.PoolEntry,setState,(Ljava/lang/Object;)V,2,2,100.0%,"public void setState(final Object state) {
+        this.state = state;
+    }",106-108

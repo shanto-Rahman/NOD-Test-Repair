@@ -1,0 +1,2562 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange
+org.java_websocket.WebSocketImpl,<init>,(Lorg/java_websocket/WebSocketListener;Ljava/util/List;)V,6,7,85.7%,"public WebSocketImpl( WebSocketListener listener, List<Draft> drafts ) {
+		this( listener, ( Draft ) null );
+		this.role = Role.SERVER;
+		// draft.copyInstance will be called when the draft is first needed
+		if( drafts == null || drafts.isEmpty() ) {
+			knownDrafts = new ArrayList<Draft>();
+			knownDrafts.add( new Draft_6455() );
+		} else {
+			knownDrafts = drafts;
+		}
+	}",166-176
+org.java_websocket.WebSocketImpl,<init>,(Lorg/java_websocket/WebSocketListener;Lorg/java_websocket/drafts/Draft;)V,20,21,95.2%,"public WebSocketImpl( WebSocketListener listener, List<Draft> drafts ) {
+		this( listener, ( Draft ) null );
+		this.role = Role.SERVER;
+		// draft.copyInstance will be called when the draft is first needed
+		if( drafts == null || drafts.isEmpty() ) {
+			knownDrafts = new ArrayList<Draft>();
+			knownDrafts.add( new Draft_6455() );
+		} else {
+			knownDrafts = drafts;
+		}
+	}",166-176
+org.java_websocket.WebSocketImpl,decode,(Ljava/nio/ByteBuffer;)V,11,13,84.6%,"public void decode( ByteBuffer socketBuffer ) {
+		assert ( socketBuffer.hasRemaining() );
+		log.trace( ""process({}): ({})"", socketBuffer.remaining(),  ( socketBuffer.remaining() > 1000 ? ""too big to display"" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ));
+
+		if( getReadyState() != ReadyState.NOT_YET_CONNECTED ) {
+			if( getReadyState() == ReadyState.OPEN ) {
+				decodeFrames( socketBuffer );
+			}
+		} else {
+			if( decodeHandshake( socketBuffer ) && (!isClosing() && !isClosed())) {
+				assert ( tmpHandshakeBytes.hasRemaining() != socketBuffer.hasRemaining() || !socketBuffer.hasRemaining() ); // the buffers will never have remaining bytes at the same time
+				if( socketBuffer.hasRemaining() ) {
+					decodeFrames( socketBuffer );
+				} else if( tmpHandshakeBytes.hasRemaining() ) {
+					decodeFrames( tmpHandshakeBytes );
+				}
+			}
+		}
+		assert ( isClosing() || isFlushAndClose() || !socketBuffer.hasRemaining() );
+	}",200-219
+org.java_websocket.WebSocketImpl,decodeHandshake,(Ljava/nio/ByteBuffer;)Z,32,104,30.8%,"private boolean decodeHandshake( ByteBuffer socketBufferNew ) {
+		ByteBuffer socketBuffer;
+		if( tmpHandshakeBytes.capacity() == 0 ) {
+			socketBuffer = socketBufferNew;
+		} else {
+			if( tmpHandshakeBytes.remaining() < socketBufferNew.remaining() ) {
+				ByteBuffer buf = ByteBuffer.allocate( tmpHandshakeBytes.capacity() + socketBufferNew.remaining() );
+				tmpHandshakeBytes.flip();
+				buf.put( tmpHandshakeBytes );
+				tmpHandshakeBytes = buf;
+			}
+
+			tmpHandshakeBytes.put( socketBufferNew );
+			tmpHandshakeBytes.flip();
+			socketBuffer = tmpHandshakeBytes;
+		}
+		socketBuffer.mark();
+		try {
+			HandshakeState handshakestate;
+			try {
+				if( role == Role.SERVER ) {
+					if( draft == null ) {
+						for( Draft d : knownDrafts ) {
+							d = d.copyInstance();
+							try {
+								d.setParseMode( role );
+								socketBuffer.reset();
+								Handshakedata tmphandshake = d.translateHandshake( socketBuffer );
+								if( !( tmphandshake instanceof ClientHandshake ) ) {
+									log.trace(""Closing due to wrong handshake"");
+									closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""wrong http function"" ) );
+									return false;
+								}
+								ClientHandshake handshake = ( ClientHandshake ) tmphandshake;
+								handshakestate = d.acceptHandshakeAsServer( handshake );
+								if( handshakestate == HandshakeState.MATCHED ) {
+									resourceDescriptor = handshake.getResourceDescriptor();
+									ServerHandshakeBuilder response;
+									try {
+										response = wsl.onWebsocketHandshakeReceivedAsServer( this, d, handshake );
+									} catch ( InvalidDataException e ) {
+										log.trace(""Closing due to wrong handshake. Possible handshake rejection"", e);
+										closeConnectionDueToWrongHandshake( e );
+										return false;
+									} catch ( RuntimeException e ) {
+										log.error(""Closing due to internal server error"", e);
+										wsl.onWebsocketError( this, e );
+										closeConnectionDueToInternalServerError( e );
+										return false;
+									}
+									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
+									draft = d;
+									open( handshake );
+									return true;
+								}
+							} catch ( InvalidHandshakeException e ) {
+								// go on with an other draft
+							}
+						}
+						if( draft == null ) {
+							log.trace(""Closing due to protocol error: no draft matches"");
+							closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""no draft matches"" ) );
+						}
+						return false;
+					} else {
+						// special case for multiple step handshakes
+						Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
+						if( !( tmphandshake instanceof ClientHandshake ) ) {
+							log.trace(""Closing due to protocol error: wrong http function"");
+							flushAndClose( CloseFrame.PROTOCOL_ERROR, ""wrong http function"", false );
+							return false;
+						}
+						ClientHandshake handshake = ( ClientHandshake ) tmphandshake;
+						handshakestate = draft.acceptHandshakeAsServer( handshake );
+
+						if( handshakestate == HandshakeState.MATCHED ) {
+							open( handshake );
+							return true;
+						} else {
+							log.trace(""Closing due to protocol error: the handshake did finally not match"");
+							close( CloseFrame.PROTOCOL_ERROR, ""the handshake did finally not match"" );
+						}
+						return false;
+					}
+				} else if( role == Role.CLIENT ) {
+					draft.setParseMode( role );
+					Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
+					if( !( tmphandshake instanceof ServerHandshake ) ) {
+						log.trace(""Closing due to protocol error: wrong http function"");
+						flushAndClose( CloseFrame.PROTOCOL_ERROR, ""wrong http function"", false );
+						return false;
+					}
+					ServerHandshake handshake = ( ServerHandshake ) tmphandshake;
+					handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
+					if( handshakestate == HandshakeState.MATCHED ) {
+						try {
+							wsl.onWebsocketHandshakeReceivedAsClient( this, handshakerequest, handshake );
+						} catch ( InvalidDataException e ) {
+							log.trace(""Closing due to invalid data exception. Possible handshake rejection"", e);
+							flushAndClose( e.getCloseCode(), e.getMessage(), false );
+							return false;
+						} catch ( RuntimeException e ) {
+							log.error(""Closing since client was never connected"", e);
+							wsl.onWebsocketError( this, e );
+							flushAndClose( CloseFrame.NEVER_CONNECTED, e.getMessage(), false );
+							return false;
+						}
+						open( handshake );
+						return true;
+					} else {
+						log.trace(""Closing due to protocol error: draft {} refuses handshake"", draft );
+						close( CloseFrame.PROTOCOL_ERROR, ""draft "" + draft + "" refuses handshake"" );
+					}
+				}
+			} catch ( InvalidHandshakeException e ) {
+				log.trace(""Closing due to invalid handshake"", e);
+				close( e );
+			}
+		} catch ( IncompleteHandshakeException e ) {
+			if( tmpHandshakeBytes.capacity() == 0 ) {
+				socketBuffer.reset();
+				int newsize = e.getPreferedSize();
+				if( newsize == 0 ) {
+					newsize = socketBuffer.capacity() + 16;
+				} else {
+					assert ( e.getPreferedSize() >= socketBuffer.remaining() );
+				}
+				tmpHandshakeBytes = ByteBuffer.allocate( newsize );
+
+				tmpHandshakeBytes.put( socketBufferNew );
+				// tmpHandshakeBytes.flip();
+			} else {
+				tmpHandshakeBytes.position( tmpHandshakeBytes.limit() );
+				tmpHandshakeBytes.limit( tmpHandshakeBytes.capacity() );
+			}
+		}
+		return false;
+	}",225-362
+org.java_websocket.WebSocketImpl,decodeFrames,(Ljava/nio/ByteBuffer;)V,7,11,63.6%,"private void decodeFrames( ByteBuffer socketBuffer ) {
+		List<Framedata> frames;
+		try {
+			frames = draft.translateFrame( socketBuffer );
+			for( Framedata f : frames ) {
+				log.trace( ""matched frame: {}"" , f );
+				draft.processFrame( this, f );
+			}
+		} catch ( InvalidDataException e ) {
+			log.error(""Closing due to invalid data in frame"", e);
+			wsl.onWebsocketError( this, e );
+			close(e);
+		}
+	}",364-377
+org.java_websocket.WebSocketImpl,close,(ILjava/lang/String;Z)V,19,35,54.3%,"public synchronized void close( int code, String message, boolean remote ) {
+		if( getReadyState() != ReadyState.CLOSING && readyState != ReadyState.CLOSED ) {
+			if( getReadyState() == ReadyState.OPEN ) {
+				if( code == CloseFrame.ABNORMAL_CLOSE ) {
+					assert ( !remote );
+					setReadyState( ReadyState.CLOSING );
+					flushAndClose( code, message, false );
+					return;
+				}
+				if( draft.getCloseHandshakeType() != CloseHandshakeType.NONE ) {
+					try {
+						if( !remote ) {
+							try {
+								wsl.onWebsocketCloseInitiated( this, code, message );
+							} catch ( RuntimeException e ) {
+								wsl.onWebsocketError( this, e );
+							}
+						}
+						if( isOpen() ) {
+							CloseFrame closeFrame = new CloseFrame();
+							closeFrame.setReason( message );
+							closeFrame.setCode( code );
+							closeFrame.isValid();
+							sendFrame( closeFrame );
+						}
+					} catch ( InvalidDataException e ) {
+						log.error(""generated frame is invalid"", e);
+						wsl.onWebsocketError( this, e );
+						flushAndClose( CloseFrame.ABNORMAL_CLOSE, ""generated frame is invalid"", false );
+					}
+				}
+				flushAndClose( code, message, remote );
+			} else if( code == CloseFrame.FLASHPOLICY ) {
+				assert ( remote );
+				flushAndClose( CloseFrame.FLASHPOLICY, message, true );
+			} else if( code == CloseFrame.PROTOCOL_ERROR ) { // this endpoint found a PROTOCOL_ERROR
+				flushAndClose( code, message, remote );
+			} else {
+				flushAndClose( CloseFrame.NEVER_CONNECTED, message, false );
+			}
+			setReadyState( ReadyState.CLOSING );
+			tmpHandshakeBytes = null;
+			return;
+		}
+	}",418-462
+org.java_websocket.WebSocketImpl,close,(I)V,2,2,100.0%,"public synchronized void close( int code, String message, boolean remote ) {
+		if( getReadyState() != ReadyState.CLOSING && readyState != ReadyState.CLOSED ) {
+			if( getReadyState() == ReadyState.OPEN ) {
+				if( code == CloseFrame.ABNORMAL_CLOSE ) {
+					assert ( !remote );
+					setReadyState( ReadyState.CLOSING );
+					flushAndClose( code, message, false );
+					return;
+				}
+				if( draft.getCloseHandshakeType() != CloseHandshakeType.NONE ) {
+					try {
+						if( !remote ) {
+							try {
+								wsl.onWebsocketCloseInitiated( this, code, message );
+							} catch ( RuntimeException e ) {
+								wsl.onWebsocketError( this, e );
+							}
+						}
+						if( isOpen() ) {
+							CloseFrame closeFrame = new CloseFrame();
+							closeFrame.setReason( message );
+							closeFrame.setCode( code );
+							closeFrame.isValid();
+							sendFrame( closeFrame );
+						}
+					} catch ( InvalidDataException e ) {
+						log.error(""generated frame is invalid"", e);
+						wsl.onWebsocketError( this, e );
+						flushAndClose( CloseFrame.ABNORMAL_CLOSE, ""generated frame is invalid"", false );
+					}
+				}
+				flushAndClose( code, message, remote );
+			} else if( code == CloseFrame.FLASHPOLICY ) {
+				assert ( remote );
+				flushAndClose( CloseFrame.FLASHPOLICY, message, true );
+			} else if( code == CloseFrame.PROTOCOL_ERROR ) { // this endpoint found a PROTOCOL_ERROR
+				flushAndClose( code, message, remote );
+			} else {
+				flushAndClose( CloseFrame.NEVER_CONNECTED, message, false );
+			}
+			setReadyState( ReadyState.CLOSING );
+			tmpHandshakeBytes = null;
+			return;
+		}
+	}",418-462
+org.java_websocket.WebSocketImpl,closeConnection,()V,3,4,75.0%,"public synchronized void closeConnection( int code, String message, boolean remote ) {
+		if( getReadyState() == ReadyState.CLOSED ) {
+			return;
+		}
+		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the ReadyState manually
+		if( getReadyState() == ReadyState.OPEN ) {
+			if( code == CloseFrame.ABNORMAL_CLOSE ) {
+				setReadyState( ReadyState.CLOSING );
+			}
+		}
+		if( key != null ) {
+			// key.attach( null ); //see issue #114
+			key.cancel();
+		}
+		if( channel != null ) {
+			try {
+				channel.close();
+			} catch ( IOException e ) {
+				if( e.getMessage().equals( ""Broken pipe"" ) ) {
+					log.trace( ""Caught IOException: Broken pipe during closeConnection()"", e );
+				} else {
+					log.error(""Exception during channel.close()"", e);
+					wsl.onWebsocketError( this, e );
+				}
+			}
+		}
+		try {
+			this.wsl.onWebsocketClose( this, code, message, remote );
+		} catch ( RuntimeException e ) {
+
+			wsl.onWebsocketError( this, e );
+		}
+		if( draft != null )
+			draft.reset();
+		handshakerequest = null;
+		setReadyState( ReadyState.CLOSED );
+	}",480-516
+org.java_websocket.WebSocketImpl,closeConnection,(ILjava/lang/String;Z)V,14,24,58.3%,"public synchronized void closeConnection( int code, String message, boolean remote ) {
+		if( getReadyState() == ReadyState.CLOSED ) {
+			return;
+		}
+		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the ReadyState manually
+		if( getReadyState() == ReadyState.OPEN ) {
+			if( code == CloseFrame.ABNORMAL_CLOSE ) {
+				setReadyState( ReadyState.CLOSING );
+			}
+		}
+		if( key != null ) {
+			// key.attach( null ); //see issue #114
+			key.cancel();
+		}
+		if( channel != null ) {
+			try {
+				channel.close();
+			} catch ( IOException e ) {
+				if( e.getMessage().equals( ""Broken pipe"" ) ) {
+					log.trace( ""Caught IOException: Broken pipe during closeConnection()"", e );
+				} else {
+					log.error(""Exception during channel.close()"", e);
+					wsl.onWebsocketError( this, e );
+				}
+			}
+		}
+		try {
+			this.wsl.onWebsocketClose( this, code, message, remote );
+		} catch ( RuntimeException e ) {
+
+			wsl.onWebsocketError( this, e );
+		}
+		if( draft != null )
+			draft.reset();
+		handshakerequest = null;
+		setReadyState( ReadyState.CLOSED );
+	}",480-516
+org.java_websocket.WebSocketImpl,flushAndClose,(ILjava/lang/String;Z)V,12,16,75.0%,"public synchronized void flushAndClose( int code, String message, boolean remote ) {
+		if( flushandclosestate ) {
+			return;
+		}
+		closecode = code;
+		closemessage = message;
+		closedremotely = remote;
+
+		flushandclosestate = true;
+
+		wsl.onWriteDemand( this ); // ensures that all outgoing frames are flushed before closing the connection
+		try {
+			wsl.onWebsocketClosing( this, code, message, remote );
+		} catch ( RuntimeException e ) {
+			log.error(""Exception in onWebsocketClosing"", e);
+			wsl.onWebsocketError( this, e );
+		}
+		if( draft != null )
+			draft.reset();
+		handshakerequest = null;
+	}",533-553
+org.java_websocket.WebSocketImpl,eot,()V,4,12,33.3%,"public void eot() {
+		if( getReadyState() == ReadyState.NOT_YET_CONNECTED ) {
+			closeConnection( CloseFrame.NEVER_CONNECTED, true );
+		} else if( flushandclosestate ) {
+			closeConnection( closecode, closemessage, closedremotely );
+		} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
+			closeConnection( CloseFrame.NORMAL, true );
+		} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
+			if( role == Role.SERVER )
+				closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
+			else
+				closeConnection( CloseFrame.NORMAL, true );
+		} else {
+			closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
+		}
+	}",555-570
+org.java_websocket.WebSocketImpl,send,(Ljava/util/Collection;)V,9,11,81.8%,"@Override
+	public void send( String text ) throws WebsocketNotConnectedException {
+		if( text == null )
+			throw new IllegalArgumentException( ""Cannot send 'null' data to a WebSocketImpl."" );
+		send( draft.createFrames( text, role == Role.CLIENT ) );
+	}",586-591
+org.java_websocket.WebSocketImpl,sendFrame,(Lorg/java_websocket/framing/Framedata;)V,2,2,100.0%,"@Override
+	public void sendFrame( Collection<Framedata> frames ) {
+		send( frames );
+	}",631-634
+org.java_websocket.WebSocketImpl,startHandshake,(Lorg/java_websocket/handshake/ClientHandshakeBuilder;)V,7,13,53.8%,"public void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException {
+		// Store the Handshake Request we are about to send
+		this.handshakerequest = draft.postProcessHandshakeRequestAsClient( handshakedata );
+
+		resourceDescriptor = handshakedata.getResourceDescriptor();
+		assert ( resourceDescriptor != null );
+
+		// Notify Listener
+		try {
+			wsl.onWebsocketHandshakeSentAsClient( this, this.handshakerequest );
+		} catch ( InvalidDataException e ) {
+			// Stop if the client code throws an exception
+			throw new InvalidHandshakeException( ""Handshake data rejected by client."" );
+		} catch ( RuntimeException e ) {
+			log.error(""Exception in startHandshake"", e);
+			wsl.onWebsocketError( this, e );
+			throw new InvalidHandshakeException( ""rejected because of "" + e );
+		}
+
+		// Send
+		write( draft.createHandshake( this.handshakerequest, role ) );
+	}",653-674
+org.java_websocket.WebSocketImpl,write,(Ljava/nio/ByteBuffer;)V,4,4,100.0%,"private void write( ByteBuffer buf ) {
+		log.trace( ""write({}): {}"", buf.remaining(), buf.remaining() > 1000 ? ""too big to display"" : new String( buf.array() ));
+
+		outQueue.add( buf );
+		wsl.onWriteDemand( this );
+	}",676-681
+org.java_websocket.WebSocketImpl,write,(Ljava/util/List;)V,6,6,100.0%,"private void write( ByteBuffer buf ) {
+		log.trace( ""write({}): {}"", buf.remaining(), buf.remaining() > 1000 ? ""too big to display"" : new String( buf.array() ));
+
+		outQueue.add( buf );
+		wsl.onWriteDemand( this );
+	}",676-681
+org.java_websocket.WebSocketImpl,open,(Lorg/java_websocket/handshake/Handshakedata;)V,5,7,71.4%,"private void open( Handshakedata d ) {
+		log.trace( ""open using draft: {}"",draft );
+		setReadyState( ReadyState.OPEN );
+		try {
+			wsl.onWebsocketOpen( this, d );
+		} catch ( RuntimeException e ) {
+			wsl.onWebsocketError( this, e );
+		}
+	}",696-704
+org.java_websocket.WebSocketImpl,isOpen,()Z,1,1,100.0%,"@Override
+	public boolean isOpen() {
+		return getReadyState() == ReadyState.OPEN;
+	}",706-709
+org.java_websocket.WebSocketImpl,isClosing,()Z,1,1,100.0%,"@Override
+	public boolean isClosing() {
+		return getReadyState() == ReadyState.CLOSING;
+	}",711-714
+org.java_websocket.WebSocketImpl,isFlushAndClose,()Z,1,1,100.0%,"@Override
+	public boolean isFlushAndClose() {
+		return flushandclosestate;
+	}",716-719
+org.java_websocket.WebSocketImpl,isClosed,()Z,1,1,100.0%,"@Override
+	public boolean isClosed() {
+		return getReadyState() == ReadyState.CLOSED;
+	}",721-724
+org.java_websocket.WebSocketImpl,getReadyState,()Lorg/java_websocket/enums/ReadyState;,1,1,100.0%,"@Override
+	public ReadyState getReadyState() {
+		return readyState;
+	}",726-729
+org.java_websocket.WebSocketImpl,setReadyState,(Lorg/java_websocket/enums/ReadyState;)V,2,2,100.0%,"private void setReadyState( ReadyState ReadyState ) {
+		this.readyState = ReadyState;
+	}",731-733
+org.java_websocket.WebSocketImpl,getDraft,()Lorg/java_websocket/drafts/Draft;,1,1,100.0%,"@Override
+	public Draft getDraft() {
+		return draft;
+	}",750-753
+org.java_websocket.AbstractWebSocket,setConnectionLostTimeout,(I)V,5,18,27.8%,"public void setConnectionLostTimeout( int connectionLostTimeout ) {
+        this.connectionLostTimeout = connectionLostTimeout;
+        if (this.connectionLostTimeout <= 0) {
+			log.trace( ""Connection lost timer stopped"" );
+			cancelConnectionLostTimer();
+            return;
+        }
+        if (this.websocketRunning) {
+        	log.trace( ""Connection lost timer restarted"" );
+			//Reset all the pings
+			try {
+				ArrayList<WebSocket> connections = new ArrayList<WebSocket>( getConnections() );
+				WebSocketImpl webSocketImpl;
+				for( WebSocket conn : connections ) {
+					if( conn instanceof WebSocketImpl ) {
+						webSocketImpl = ( WebSocketImpl ) conn;
+						webSocketImpl.updateLastPong();
+					}
+				}
+			} catch (Exception e) {
+				log.error(""Exception during connection lost restart"", e);
+			}
+			restartConnectionLostTimer();
+		}
+    }",102-126
+org.java_websocket.AbstractWebSocket,stopConnectionLostTimer,()V,5,5,100.0%,"protected void stopConnectionLostTimer() {
+        if (connectionLostTimer != null ||connectionLostTimerTask != null) {
+			this.websocketRunning = false;
+			log.trace( ""Connection lost timer stopped"" );
+            cancelConnectionLostTimer();
+        }
+    }",132-138
+org.java_websocket.AbstractWebSocket,startConnectionLostTimer,()V,7,7,100.0%,"protected void startConnectionLostTimer() {
+        if (this.connectionLostTimeout <= 0) {
+          	log.trace(""Connection lost timer deactivated"");
+            return;
+        }
+		log.trace(""Connection lost timer started"");
+        this.websocketRunning = true;
+       	restartConnectionLostTimer();
+    }",143-151
+org.java_websocket.AbstractWebSocket,restartConnectionLostTimer,()V,5,5,100.0%,"private void restartConnectionLostTimer() {
+		cancelConnectionLostTimer();
+		connectionLostTimer = new Timer(""WebSocketTimer"");
+		connectionLostTimerTask = new TimerTask() {
+
+			/**
+			 * Keep the connections in a separate list to not cause deadlocks
+			 */
+			private ArrayList<WebSocket> connections = new ArrayList<WebSocket>(  );
+			@Override
+			public void run() {
+				connections.clear();
+				try {
+					connections.addAll( getConnections() );
+					long current = ( System.currentTimeMillis() - ( connectionLostTimeout * 1500 ) );
+					WebSocketImpl webSocketImpl;
+					for( WebSocket conn : connections ) {
+						if( conn instanceof WebSocketImpl ) {
+							webSocketImpl = ( WebSocketImpl ) conn;
+							if( webSocketImpl.getLastPong() < current ) {
+								log.trace(""Closing connection due to no pong received: {}"", conn);
+								webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE, ""The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection"" );
+							} else {
+								if( webSocketImpl.isOpen() ) {
+									webSocketImpl.sendPing();
+								} else {
+									log.trace(""Trying to ping a non open connection: {}"", conn);
+								}
+							}
+						}
+					}
+				} catch ( Exception e ) {
+					//Ignore this exception
+				}
+				connections.clear();
+			}
+		};
+		connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,1000L*connectionLostTimeout , 1000L*connectionLostTimeout );
+
+	}",157-196
+org.java_websocket.AbstractWebSocket,cancelConnectionLostTimer,()V,7,7,100.0%,"private void cancelConnectionLostTimer() {
+        if( connectionLostTimer != null ) {
+            connectionLostTimer.cancel();
+            connectionLostTimer = null;
+        }
+        if( connectionLostTimerTask != null ) {
+            connectionLostTimerTask.cancel();
+            connectionLostTimerTask = null;
+        }
+    }",209-218
+org.java_websocket.AbstractWebSocket,isTcpNoDelay,()Z,1,1,100.0%,"public boolean isTcpNoDelay() {
+        return tcpNoDelay;
+    }",226-228
+org.java_websocket.AbstractWebSocket,setTcpNoDelay,(Z)V,2,2,100.0%,"public void setTcpNoDelay( boolean tcpNoDelay ) {
+        this.tcpNoDelay = tcpNoDelay;
+    }",238-240
+org.java_websocket.AbstractWebSocket,isReuseAddr,()Z,1,1,100.0%,"public boolean isReuseAddr() {
+		return reuseAddr;
+	}",248-250
+org.java_websocket.AbstractWebSocket,setReuseAddr,(Z)V,2,2,100.0%,"public void setReuseAddr( boolean reuseAddr ) {
+		this.reuseAddr = reuseAddr;
+	}",260-262
+org.java_websocket.WebSocketAdapter,onWebsocketHandshakeReceivedAsServer,(Lorg/java_websocket/WebSocket;Lorg/java_websocket/drafts/Draft;Lorg/java_websocket/handshake/ClientHandshake;)Lorg/java_websocket/handshake/ServerHandshakeBuilder;,1,1,100.0%,"@Override
+	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
+		return new HandshakeImpl1Server();
+	}",48-51
+org.java_websocket.WebSocketAdapter,onWebsocketHandshakeReceivedAsClient,(Lorg/java_websocket/WebSocket;Lorg/java_websocket/handshake/ClientHandshake;Lorg/java_websocket/handshake/ServerHandshake;)V,1,1,100.0%,"@Override
+	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException {
+		//To overwrite
+	}",53-56
+org.java_websocket.WebSocketAdapter,onWebsocketHandshakeSentAsClient,(Lorg/java_websocket/WebSocket;Lorg/java_websocket/handshake/ClientHandshake;)V,1,1,100.0%,"@Override
+	public void onWebsocketHandshakeSentAsClient( WebSocket conn, ClientHandshake request ) throws InvalidDataException {
+		//To overwrite
+	}",63-66
+org.java_websocket.SocketChannelIOHelper,read,(Ljava/nio/ByteBuffer;Lorg/java_websocket/WebSocketImpl;Ljava/nio/channels/ByteChannel;)Z,5,7,71.4%,"public static boolean read( final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel ) throws IOException {
+		buf.clear();
+		int read = channel.read( buf );
+		buf.flip();
+
+		if( read == -1 ) {
+			ws.eot();
+			return false;
+		}
+		return read != 0;
+	}",36-46
+org.java_websocket.SocketChannelIOHelper,batch,(Lorg/java_websocket/WebSocketImpl;Ljava/nio/channels/ByteChannel;)Z,12,18,66.7%,"public static boolean batch( WebSocketImpl ws, ByteChannel sockchannel ) throws IOException {
+		if (ws == null) {
+			return false;
+		}
+		ByteBuffer buffer = ws.outQueue.peek();
+		WrappedByteChannel c = null;
+
+		if( buffer == null ) {
+			if( sockchannel instanceof WrappedByteChannel ) {
+				c = (WrappedByteChannel) sockchannel;
+				if( c.isNeedWrite() ) {
+					c.writeMore();
+				}
+			}
+		} else {
+			do {// FIXME writing as much as possible is unfair!!
+				/*int written = */sockchannel.write( buffer );
+				if( buffer.remaining() > 0 ) {
+					return false;
+				} else {
+					ws.outQueue.poll(); // Buffer finished. Remove it.
+					buffer = ws.outQueue.peek();
+				}
+			} while ( buffer != null );
+		}
+
+		if( ws.outQueue.isEmpty() && ws.isFlushAndClose() && ws.getDraft() != null && ws.getDraft().getRole() != null && ws.getDraft().getRole() == Role.SERVER ) {//
+			ws.closeConnection();
+		}
+		return c == null || !((WrappedByteChannel) sockchannel).isNeedWrite();
+	}",74-104
+org.java_websocket.extensions.DefaultExtension,decodeFrame,(Lorg/java_websocket/framing/Framedata;)V,1,1,100.0%,"@Override
+	public void decodeFrame( Framedata inputFrame ) throws InvalidDataException {
+		//Nothing to do here
+	}",41-44
+org.java_websocket.extensions.DefaultExtension,encodeFrame,(Lorg/java_websocket/framing/Framedata;)V,1,1,100.0%,"@Override
+	public void encodeFrame( Framedata inputFrame ) {
+		//Nothing to do here
+	}",46-49
+org.java_websocket.extensions.DefaultExtension,acceptProvidedExtensionAsServer,(Ljava/lang/String;)Z,1,1,100.0%,"@Override
+	public boolean acceptProvidedExtensionAsServer( String inputExtension ) {
+		return true;
+	}",51-54
+org.java_websocket.extensions.DefaultExtension,acceptProvidedExtensionAsClient,(Ljava/lang/String;)Z,1,1,100.0%,"@Override
+	public boolean acceptProvidedExtensionAsClient( String inputExtension ) {
+		return true;
+	}",56-59
+org.java_websocket.extensions.DefaultExtension,isFrameValid,(Lorg/java_websocket/framing/Framedata;)V,2,3,66.7%,"@Override
+	public void isFrameValid( Framedata inputFrame ) throws InvalidDataException {
+		if( inputFrame.isRSV1() || inputFrame.isRSV2() || inputFrame.isRSV3() ) {
+			throw new InvalidFrameException( ""bad rsv RSV1: "" + inputFrame.isRSV1() + "" RSV2: "" + inputFrame.isRSV2() + "" RSV3: "" + inputFrame.isRSV3() );
+		}
+	}",61-66
+org.java_websocket.extensions.DefaultExtension,getProvidedExtensionAsClient,()Ljava/lang/String;,1,1,100.0%,"@Override
+	public String getProvidedExtensionAsClient() {
+		return """";
+	}",68-71
+org.java_websocket.extensions.DefaultExtension,getProvidedExtensionAsServer,()Ljava/lang/String;,1,1,100.0%,"@Override
+	public String getProvidedExtensionAsServer() {
+		return """";
+	}",73-76
+org.java_websocket.extensions.DefaultExtension,copyInstance,()Lorg/java_websocket/extensions/IExtension;,1,1,100.0%,"@Override
+	public IExtension copyInstance() {
+		return new DefaultExtension();
+	}",78-81
+org.java_websocket.extensions.DefaultExtension,reset,()V,1,1,100.0%,"public void reset() {
+		//Nothing to do here. No internal stats.
+	}",83-85
+org.java_websocket.framing.ControlFrame,<init>,(Lorg/java_websocket/enums/Opcode;)V,2,2,100.0%,"public ControlFrame( Opcode opcode ) {
+		super( opcode );
+	}",41-43
+org.java_websocket.framing.ControlFrame,isValid,()V,5,9,55.6%,"@Override
+	public void isValid() throws InvalidDataException {
+		if( !isFin() ) {
+			throw new InvalidFrameException( ""Control frame cant have fin==false set"" );
+		}
+		if( isRSV1() ) {
+			throw new InvalidFrameException( ""Control frame cant have rsv1==true set"" );
+		}
+		if( isRSV2() ) {
+			throw new InvalidFrameException( ""Control frame cant have rsv2==true set"" );
+		}
+		if( isRSV3() ) {
+			throw new InvalidFrameException( ""Control frame cant have rsv3==true set"" );
+		}
+	}",45-59
+org.java_websocket.framing.CloseFrame,<init>,()V,4,4,100.0%,"public CloseFrame() {
+        super(Opcode.CLOSING);
+        setReason("""");
+        setCode(CloseFrame.NORMAL);
+    }",181-185
+org.java_websocket.framing.CloseFrame,setCode,(I)V,4,6,66.7%,"public void setCode(int code) {
+        this.code = code;
+        // CloseFrame.TLS_ERROR is not allowed to be transfered over the wire
+        if (code == CloseFrame.TLS_ERROR) {
+            this.code = CloseFrame.NOCODE;
+            this.reason = """";
+        }
+        updatePayload();
+    }",191-199
+org.java_websocket.framing.CloseFrame,setReason,(Ljava/lang/String;)V,4,5,80.0%,"public void setReason(String reason) {
+        if (reason == null) {
+            reason = """";
+        }
+        this.reason = reason;
+        updatePayload();
+    }",205-211
+org.java_websocket.framing.CloseFrame,getCloseCode,()I,1,1,100.0%,"public int getCloseCode() {
+        return code;
+    }",217-219
+org.java_websocket.framing.CloseFrame,getMessage,()Ljava/lang/String;,1,1,100.0%,"public String getMessage() {
+        return reason;
+    }",226-228
+org.java_websocket.framing.CloseFrame,isValid,()V,6,10,60.0%,"@Override
+    public void isValid() throws InvalidDataException {
+        super.isValid();
+        if (code == CloseFrame.NO_UTF8 && reason.isEmpty()) {
+        	throw new InvalidDataException( CloseFrame.NO_UTF8, ""Received text is no valid utf8 string!"");
+		}
+        if (code == CloseFrame.NOCODE && 0 < reason.length()) {
+            throw new InvalidDataException(PROTOCOL_ERROR, ""A close frame must have a closecode if it has a reason"");
+        }
+        //Intentional check for code != CloseFrame.TLS_ERROR just to make sure even if the code earlier changes
+        if ((code > CloseFrame.TLS_ERROR && code < 3000)) {
+            throw new InvalidDataException(PROTOCOL_ERROR, ""Trying to send an illegal close code!"");
+        }
+        if (code == CloseFrame.ABNORMAL_CLOSE || code == CloseFrame.TLS_ERROR || code == CloseFrame.NOCODE || code > 4999 || code < 1000 || code == 1004) {
+            throw new InvalidFrameException(""closecode must not be sent over the wire: "" + code);
+        }
+    }",235-251
+org.java_websocket.framing.CloseFrame,setPayload,(Ljava/nio/ByteBuffer;)V,18,25,72.0%,"@Override
+    public void setPayload(ByteBuffer payload) {
+		code = CloseFrame.NOCODE;
+		reason = """";
+		payload.mark();
+		if( payload.remaining() == 0 ) {
+			code = CloseFrame.NORMAL;
+		} else if( payload.remaining() == 1 ) {
+			code = CloseFrame.PROTOCOL_ERROR;
+		} else {
+			if( payload.remaining() >= 2 ) {
+				ByteBuffer bb = ByteBuffer.allocate( 4 );
+				bb.position( 2 );
+				bb.putShort( payload.getShort() );
+				bb.position( 0 );
+				code = bb.getInt();
+			}
+			payload.reset();
+			try {
+				int mark = payload.position();// because stringUtf8 also creates a mark
+				try {
+					payload.position( payload.position() + 2 );
+					reason = Charsetfunctions.stringUtf8( payload );
+				} catch ( IllegalArgumentException e ) {
+					throw new InvalidDataException( CloseFrame.NO_UTF8 );
+				} finally {
+					payload.position( mark );
+				}
+			} catch ( InvalidDataException e ) {
+				code = CloseFrame.NO_UTF8;
+				reason = null;
+			}
+		}
+	}",253-286
+org.java_websocket.framing.CloseFrame,updatePayload,()V,10,10,100.0%,"private void updatePayload() {
+        byte[] by = Charsetfunctions.utf8Bytes(reason);
+        ByteBuffer buf = ByteBuffer.allocate(4);
+        buf.putInt(code);
+        buf.position(2);
+        ByteBuffer pay = ByteBuffer.allocate(2 + by.length);
+        pay.put(buf);
+        pay.put(by);
+        pay.rewind();
+        super.setPayload(pay);
+    }",291-301
+org.java_websocket.framing.CloseFrame,getPayloadData,()Ljava/nio/ByteBuffer;,2,3,66.7%,"@Override
+    public ByteBuffer getPayloadData() {
+        if (code == NOCODE)
+            return ByteBufferUtils.getEmptyByteBuffer();
+        return super.getPayloadData();
+    }",303-308
+org.java_websocket.framing.FramedataImpl1,<init>,(Lorg/java_websocket/enums/Opcode;)V,9,9,100.0%,"public FramedataImpl1(Opcode op) {
+        optcode = op;
+        unmaskedpayload = ByteBufferUtils.getEmptyByteBuffer();
+        fin = true;
+        transferemasked = false;
+        rsv1 = false;
+        rsv2 = false;
+        rsv3 = false;
+    }",85-93
+org.java_websocket.framing.FramedataImpl1,isRSV1,()Z,1,1,100.0%,"@Override
+    public boolean isRSV1() {
+        return rsv1;
+    }",95-98
+org.java_websocket.framing.FramedataImpl1,isRSV2,()Z,1,1,100.0%,"@Override
+    public boolean isRSV2() {
+        return rsv2;
+    }",100-103
+org.java_websocket.framing.FramedataImpl1,isRSV3,()Z,1,1,100.0%,"@Override
+    public boolean isRSV3() {
+        return rsv3;
+    }",105-108
+org.java_websocket.framing.FramedataImpl1,isFin,()Z,1,1,100.0%,"@Override
+    public boolean isFin() {
+        return fin;
+    }",110-113
+org.java_websocket.framing.FramedataImpl1,getOpcode,()Lorg/java_websocket/enums/Opcode;,1,1,100.0%,"@Override
+    public Opcode getOpcode() {
+        return optcode;
+    }",115-118
+org.java_websocket.framing.FramedataImpl1,getPayloadData,()Ljava/nio/ByteBuffer;,1,1,100.0%,"@Override
+    public ByteBuffer getPayloadData() {
+        return unmaskedpayload;
+    }",125-128
+org.java_websocket.framing.FramedataImpl1,setPayload,(Ljava/nio/ByteBuffer;)V,2,2,100.0%,"public void setPayload(ByteBuffer payload) {
+        this.unmaskedpayload = payload;
+    }",170-172
+org.java_websocket.framing.FramedataImpl1,setFin,(Z)V,2,2,100.0%,"public void setFin(boolean fin) {
+        this.fin = fin;
+    }",179-181
+org.java_websocket.framing.FramedataImpl1,setRSV1,(Z)V,2,2,100.0%,"public void setRSV1(boolean rsv1) {
+        this.rsv1 = rsv1;
+    }",188-190
+org.java_websocket.framing.FramedataImpl1,setRSV2,(Z)V,2,2,100.0%,"public void setRSV2(boolean rsv2) {
+        this.rsv2 = rsv2;
+    }",197-199
+org.java_websocket.framing.FramedataImpl1,setRSV3,(Z)V,2,2,100.0%,"public void setRSV3(boolean rsv3) {
+        this.rsv3 = rsv3;
+    }",206-208
+org.java_websocket.framing.FramedataImpl1,get,(Lorg/java_websocket/enums/Opcode;)Lorg/java_websocket/framing/FramedataImpl1;,3,10,30.0%,"public static FramedataImpl1 get(Opcode opcode) {
+        if (opcode== null) {
+            throw new IllegalArgumentException(""Supplied opcode cannot be null"");
+        }
+        switch (opcode) {
+            case PING:
+                return new PingFrame();
+            case PONG:
+                return new PongFrame();
+            case TEXT:
+                return new TextFrame();
+            case BINARY:
+                return new BinaryFrame();
+            case CLOSING:
+                return new CloseFrame();
+            case CONTINUOUS:
+                return new ContinuousFrame();
+            default:
+                throw new IllegalArgumentException(""Supplied opcode is invalid"");
+        }
+    }",225-245
+org.java_websocket.util.ByteBufferUtils,getEmptyByteBuffer,()Ljava/nio/ByteBuffer;,1,1,100.0%,"public static ByteBuffer getEmptyByteBuffer() {
+		return ByteBuffer.allocate( 0 );
+	}",70-72
+org.java_websocket.util.Charsetfunctions,utf8Bytes,(Ljava/lang/String;)[B,1,3,33.3%,"public static byte[] utf8Bytes( String s ) {
+		try {
+			return s.getBytes( ""UTF8"" );
+		} catch ( UnsupportedEncodingException e ) {
+			throw new RuntimeException( e );
+		}
+	}",50-56
+org.java_websocket.util.Charsetfunctions,asciiBytes,(Ljava/lang/String;)[B,1,3,33.3%,"public static byte[] asciiBytes( String s ) {
+		try {
+			return s.getBytes( ""ASCII"" );
+		} catch ( UnsupportedEncodingException e ) {
+			throw new RuntimeException( e );
+		}
+	}",61-67
+org.java_websocket.util.Charsetfunctions,stringAscii,([BII)Ljava/lang/String;,1,3,33.3%,"public static String stringAscii( byte[] bytes ) {
+		return stringAscii( bytes, 0, bytes.length );
+	}",69-71
+org.java_websocket.util.Charsetfunctions,stringUtf8,(Ljava/nio/ByteBuffer;)Ljava/lang/String;,8,10,80.0%,"public static String stringUtf8( byte[] bytes ) throws InvalidDataException {
+		return stringUtf8( ByteBuffer.wrap( bytes ) );
+	}",81-83
+org.java_websocket.util.Base64,getAlphabet,(I)[B,3,5,60.0%,"private final static byte[] getAlphabet( int options ) {
+        if ((options & URL_SAFE) == URL_SAFE) {
+            return _URL_SAFE_ALPHABET;
+        } else if ((options & ORDERED) == ORDERED) {
+            return _ORDERED_ALPHABET;
+        } else {
+            return _STANDARD_ALPHABET;
+        }
+    }",423-431
+org.java_websocket.util.Base64,encode3to4,([BII[BII)[B,18,19,94.7%,"private static byte[] encode3to4( byte[] b4, byte[] threeBytes, int numSigBytes, int options ) {
+        encode3to4( threeBytes, 0, numSigBytes, b4, 0, options );
+        return b4;
+    }",477-480
+org.java_websocket.util.Base64,encodeBytes,([BIII)Ljava/lang/String;,2,4,50.0%,"public static String encodeBytes( byte[] source ) {
+        // Since we're not going to have the GZIP encoding turned on,
+        // we're not going to have an java.io.IOException thrown, so
+        // we should not force the user to have to catch it.
+        String encoded = null;
+        try {
+            encoded = encodeBytes(source, 0, source.length, NO_OPTIONS);
+        } catch (java.io.IOException ex) {
+            assert false : ex.getMessage();
+        }   // end catch
+        assert encoded != null;
+        return encoded;
+    }",565-577
+org.java_websocket.util.Base64,encodeBytes,([B)Ljava/lang/String;,5,7,71.4%,"public static String encodeBytes( byte[] source ) {
+        // Since we're not going to have the GZIP encoding turned on,
+        // we're not going to have an java.io.IOException thrown, so
+        // we should not force the user to have to catch it.
+        String encoded = null;
+        try {
+            encoded = encodeBytes(source, 0, source.length, NO_OPTIONS);
+        } catch (java.io.IOException ex) {
+            assert false : ex.getMessage();
+        }   // end catch
+        assert encoded != null;
+        return encoded;
+    }",565-577
+org.java_websocket.util.Base64,encodeBytesToBytes,([BIII)[B,22,48,45.8%,"public static byte[] encodeBytesToBytes( byte[] source, int off, int len, int options ) throws java.io.IOException {
+
+        if( source == null ){
+            throw new IllegalArgumentException( ""Cannot serialize a null array."" );
+        }   // end if: null
+
+        if( off < 0 ){
+            throw new IllegalArgumentException( ""Cannot have negative offset: "" + off );
+        }   // end if: off < 0
+
+        if( len < 0 ){
+            throw new IllegalArgumentException( ""Cannot have length offset: "" + len );
+        }   // end if: len < 0
+
+        if( off + len > source.length  ){
+            throw new IllegalArgumentException(
+            String.format( ""Cannot have offset of %d and length of %d with array of length %d"", off,len,source.length));
+        }   // end if: off < 0
+
+
+
+        // Compress?
+        if( (options & GZIP) != 0 ) {
+            java.io.ByteArrayOutputStream  baos  = null;
+            java.util.zip.GZIPOutputStream gzos  = null;
+            Base64.OutputStream            b64os = null;
+
+            try {
+                // GZip -> Base64 -> ByteArray
+                baos = new java.io.ByteArrayOutputStream();
+                b64os = new Base64.OutputStream( baos, ENCODE | options );
+                gzos  = new java.util.zip.GZIPOutputStream( b64os );
+
+                gzos.write( source, off, len );
+                gzos.close();
+            }   // end try
+            catch( java.io.IOException e ) {
+                // Catch it and then throw it immediately so that
+                // the finally{} block is called for cleanup.
+                throw e;
+            }   // end catch
+            finally {
+                try{ if (gzos != null) gzos.close();  } catch( Exception e ){}
+                try{ if (b64os != null) b64os.close(); } catch( Exception e ){}
+                try{ if (baos != null) baos.close();  } catch( Exception e ){}
+            }   // end finally
+
+            return baos.toByteArray();
+        }   // end if: compress
+
+        // Else, don't compress. Better not to use streams at all then.
+        else {
+            boolean breakLines = (options & DO_BREAK_LINES) != 0;
+
+            //int    len43   = len * 4 / 3;
+            //byte[] outBuff = new byte[   ( len43 )                      // Main 4:3
+            //                           + ( (len % 3) > 0 ? 4 : 0 )      // Account for padding
+            //                           + (breakLines ? ( len43 / MAX_LINE_LENGTH ) : 0) ]; // New lines
+            // Try to determine more precisely how big the array needs to be.
+            // If we get it right, we don't have to do an array copy, and
+            // we save a bunch of memory.
+            int encLen = ( len / 3 ) * 4 + ( len % 3 > 0 ? 4 : 0 ); // Bytes needed for actual encoding
+            if( breakLines ){
+                encLen += encLen / MAX_LINE_LENGTH; // Plus extra newline characters
+            }
+            byte[] outBuff = new byte[ encLen ];
+
+
+            int d = 0;
+            int e = 0;
+            int len2 = len - 2;
+            int lineLength = 0;
+            for( ; d < len2; d+=3, e+=4 ) {
+                encode3to4( source, d+off, 3, outBuff, e, options );
+
+                lineLength += 4;
+                if( breakLines && lineLength >= MAX_LINE_LENGTH )
+                {
+                    outBuff[e+4] = NEW_LINE;
+                    e++;
+                    lineLength = 0;
+                }   // end if: end of line
+            }   // en dfor: each piece of array
+
+            if( d < len ) {
+                encode3to4( source, d+off, len - d, outBuff, e, options );
+                e += 4;
+            }   // end if: some padding needed
+
+
+            // Only resize array if we didn't guess it right.
+            if( e <= outBuff.length - 1 ){
+                // If breaking lines and the last byte falls right at
+                // the line length (76 bytes per line), there will be
+                // one extra byte, and the array will need to be resized.
+                // Not too bad of an estimate on array size, I'd say.
+                byte[] finalOut = new byte[e];
+                System.arraycopy(outBuff,0, finalOut,0,e);
+                //System.err.println(""Having to resize array from "" + outBuff.length + "" to "" + e );
+                return finalOut;
+            } else {
+                //System.err.println(""No need to resize array."");
+                return outBuff;
+            }
+        
+        }   // end else: don't compress
+
+    }",641-748
+org.java_websocket.protocols.Protocol,<init>,(Ljava/lang/String;)V,4,5,80.0%,"public Protocol( String providedProtocol ) {
+		if( providedProtocol == null ) {
+			throw new IllegalArgumentException();
+		}
+		this.providedProtocol = providedProtocol;
+	}",50-55
+org.java_websocket.protocols.Protocol,acceptProvidedProtocol,(Ljava/lang/String;)Z,5,6,83.3%,"@Override
+	public boolean acceptProvidedProtocol( String inputProtocolHeader ) {
+		String protocolHeader = patternSpace.matcher(inputProtocolHeader).replaceAll("""");
+		String[] headers = patternComma.split(protocolHeader);
+		for( String header : headers ) {
+			if( providedProtocol.equals( header ) ) {
+				return true;
+			}
+		}
+		return false;
+	}",57-67
+org.java_websocket.protocols.Protocol,getProvidedProtocol,()Ljava/lang/String;,1,1,100.0%,"@Override
+	public String getProvidedProtocol() {
+		return this.providedProtocol;
+	}",69-72
+org.java_websocket.protocols.Protocol,copyInstance,()Lorg/java_websocket/protocols/IProtocol;,1,1,100.0%,"@Override
+	public IProtocol copyInstance() {
+		return new Protocol( getProvidedProtocol() );
+	}",74-77
+org.java_websocket.client.WebSocketClient,<init>,(Ljava/net/URI;)V,2,2,100.0%,"public WebSocketClient( URI serverUri ) {
+		this( serverUri, new Draft_6455());
+	}",134-136
+org.java_websocket.client.WebSocketClient,<init>,(Ljava/net/URI;Lorg/java_websocket/drafts/Draft;)V,2,2,100.0%,"public WebSocketClient( URI serverUri ) {
+		this( serverUri, new Draft_6455());
+	}",134-136
+org.java_websocket.client.WebSocketClient,<init>,(Ljava/net/URI;Lorg/java_websocket/drafts/Draft;Ljava/util/Map;I)V,18,20,90.0%,"public WebSocketClient( URI serverUri ) {
+		this( serverUri, new Draft_6455());
+	}",134-136
+org.java_websocket.client.WebSocketClient,reconnectBlocking,()Z,2,2,100.0%,"public boolean reconnectBlocking() throws InterruptedException {
+		reset();
+		return connectBlocking();
+	}",238-241
+org.java_websocket.client.WebSocketClient,reset,()V,16,23,69.6%,"private void reset() {
+		Thread current = Thread.currentThread();
+		if (current == writeThread || current == connectReadThread) {
+			throw new IllegalStateException(""You cannot initialize a reconnect out of the websocket thread. Use reconnect in another thread to insure a successful cleanup."");
+		}
+		try {
+			closeBlocking();
+			if( writeThread != null ) {
+				this.writeThread.interrupt();
+				this.writeThread = null;
+			}
+			if( connectReadThread != null ) {
+				this.connectReadThread.interrupt();
+				this.connectReadThread = null;
+			}
+			this.draft.reset();
+			if( this.socket != null ) {
+				this.socket.close();
+				this.socket = null;
+			}
+		} catch ( Exception e ) {
+			onError( e );
+			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
+			return;
+		}
+		connectLatch = new CountDownLatch( 1 );
+		closeLatch = new CountDownLatch( 1 );
+		this.engine = new WebSocketImpl( this, this.draft );
+	}",247-275
+org.java_websocket.client.WebSocketClient,connect,()V,5,6,83.3%,"public void connect() {
+		if( connectReadThread != null )
+			throw new IllegalStateException( ""WebSocketClient objects are not reuseable"" );
+		connectReadThread = new Thread( this );
+		connectReadThread.setName( ""WebSocketConnectReadThread-"" + connectReadThread.getId() );
+		connectReadThread.start();
+	}",280-286
+org.java_websocket.client.WebSocketClient,connectBlocking,()Z,3,3,100.0%,"public boolean connectBlocking() throws InterruptedException {
+		connect();
+		connectLatch.await();
+		return engine.isOpen();
+	}",293-297
+org.java_websocket.client.WebSocketClient,close,()V,3,3,100.0%,"public void close() {
+		if( writeThread != null ) {
+			engine.close( CloseFrame.NORMAL );
+		}
+	}",317-321
+org.java_websocket.client.WebSocketClient,closeBlocking,()V,3,3,100.0%,"public void closeBlocking() throws InterruptedException {
+		close();
+		closeLatch.await();
+	}",326-329
+org.java_websocket.client.WebSocketClient,run,()V,22,37,59.5%,"public void run() {
+		InputStream istream;
+		try {
+			boolean isNewSocket = false;
+
+			if( socket == null ) {
+				socket = new Socket( proxy );
+				isNewSocket = true;
+
+			} else if( socket.isClosed() ) {
+				throw new IOException();
+			}
+
+			socket.setTcpNoDelay( isTcpNoDelay() );
+			socket.setReuseAddress( isReuseAddr() );
+
+			if( !socket.isBound() ) {
+				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			}
+
+			// if the socket is set by others we don't apply any TLS wrapper
+			if (isNewSocket && ""wss"".equals( uri.getScheme())) {
+
+				SSLContext sslContext = SSLContext.getInstance(""TLS"");
+				sslContext.init(null, null, null);
+				SSLSocketFactory factory = sslContext.getSocketFactory();
+				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+			}
+
+			istream = socket.getInputStream();
+			ostream = socket.getOutputStream();
+
+			sendHandshake();
+		} catch ( /*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e ) {
+			onWebsocketError( engine, e );
+			engine.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			return;
+		}
+
+		writeThread = new Thread( new WebsocketWriteThread() );
+		writeThread.start();
+
+		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
+		int readBytes;
+
+		try {
+			while ( !isClosing() && !isClosed() && ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
+				engine.decode( ByteBuffer.wrap( rawbuffer, 0, readBytes ) );
+			}
+			engine.eot();
+		} catch ( IOException e ) {
+			handleIOException(e);
+		} catch ( RuntimeException e ) {
+			// this catch case covers internal errors only and indicates a bug in this websocket implementation
+			onError( e );
+			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
+		}
+		connectReadThread = null;
+	}",371-429
+org.java_websocket.client.WebSocketClient,getPort,()I,3,9,33.3%,"private int getPort() {
+		int port = uri.getPort();
+		if( port == -1 ) {
+			String scheme = uri.getScheme();
+			if( ""wss"".equals( scheme ) ) {
+				return WebSocket.DEFAULT_WSS_PORT;
+			} else if(  ""ws"".equals( scheme ) ) {
+				return WebSocket.DEFAULT_PORT;
+			} else {
+				throw new IllegalArgumentException( ""unknown scheme: "" + scheme );
+			}
+		}
+		return port;
+	}",435-448
+org.java_websocket.client.WebSocketClient,sendHandshake,()V,13,18,72.2%,"private void sendHandshake() throws InvalidHandshakeException {
+		String path;
+		String part1 = uri.getRawPath();
+		String part2 = uri.getRawQuery();
+		if( part1 == null || part1.length() == 0 )
+			path = ""/"";
+		else
+			path = part1;
+		if( part2 != null )
+			path += '?' + part2;
+		int port = getPort();
+		String host = uri.getHost() + ( 
+			(port != WebSocket.DEFAULT_PORT && port != WebSocket.DEFAULT_WSS_PORT)
+			? "":"" + port 
+			: """" );
+
+		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
+		handshake.setResourceDescriptor( path );
+		handshake.put( ""Host"", host );
+		if( headers != null ) {
+			for( Map.Entry<String,String> kv : headers.entrySet() ) {
+				handshake.put( kv.getKey(), kv.getValue() );
+			}
+		}
+		engine.startHandshake( handshake );
+	}",454-479
+org.java_websocket.client.WebSocketClient,onWebsocketOpen,(Lorg/java_websocket/WebSocket;Lorg/java_websocket/handshake/Handshakedata;)V,4,4,100.0%,"@Override
+	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
+		startConnectionLostTimer();
+		onOpen( (ServerHandshake) handshake );
+		connectLatch.countDown();
+	}",504-509
+org.java_websocket.client.WebSocketClient,onWebsocketClose,(Lorg/java_websocket/WebSocket;ILjava/lang/String;Z)V,7,7,100.0%,"@Override
+	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
+		stopConnectionLostTimer();
+		if( writeThread != null )
+			writeThread.interrupt();
+		onClose( code, reason, remote );
+		connectLatch.countDown();
+		closeLatch.countDown();
+	}",514-522
+org.java_websocket.client.WebSocketClient,onWriteDemand,(Lorg/java_websocket/WebSocket;)V,1,1,100.0%,"@Override
+	public final void onWriteDemand( WebSocket conn ) {
+		// nothing to do
+	}",532-535
+org.java_websocket.client.WebSocketClient,onWebsocketCloseInitiated,(Lorg/java_websocket/WebSocket;ILjava/lang/String;)V,2,2,100.0%,"@Override
+	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
+		onCloseInitiated( code, reason );
+	}",537-540
+org.java_websocket.client.WebSocketClient,onWebsocketClosing,(Lorg/java_websocket/WebSocket;ILjava/lang/String;Z)V,2,2,100.0%,"@Override
+	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
+		onClosing( code, reason, remote );
+	}",542-545
+org.java_websocket.client.WebSocketClient,onCloseInitiated,(ILjava/lang/String;)V,1,1,100.0%,"public void onCloseInitiated( int code, String reason ) {
+		//To overwrite
+	}",553-555
+org.java_websocket.client.WebSocketClient,onClosing,(ILjava/lang/String;Z)V,1,1,100.0%,"public void onClosing( int code, String reason, boolean remote ) {
+		//To overwrite
+	}",563-565
+org.java_websocket.client.WebSocketClient,closeSocket,()V,4,6,66.7%,"private void closeSocket() {
+		try {
+			if( socket != null ) {
+				socket.close();
+			}
+		} catch ( IOException ex ) {
+			onWebsocketError( this, ex );
+		}
+	}",669-677
+org.java_websocket.client.WebSocketClient,isClosed,()Z,1,1,100.0%,"@Override
+	public boolean isClosed() {
+		return engine.isClosed();
+	}",717-720
+org.java_websocket.client.WebSocketClient,isClosing,()Z,1,1,100.0%,"@Override
+	public boolean isClosing() {
+		return engine.isClosing();
+	}",722-725
+org.java_websocket.client.WebSocketClient$WebsocketWriteThread,<init>,(Lorg/java_websocket/client/WebSocketClient;)V,1,1,100.0%,"public WebSocketClient( URI serverUri ) {
+		this( serverUri, new Draft_6455());
+	}",134-136
+org.java_websocket.client.WebSocketClient$WebsocketWriteThread,run,()V,12,18,66.7%,"public void run() {
+		InputStream istream;
+		try {
+			boolean isNewSocket = false;
+
+			if( socket == null ) {
+				socket = new Socket( proxy );
+				isNewSocket = true;
+
+			} else if( socket.isClosed() ) {
+				throw new IOException();
+			}
+
+			socket.setTcpNoDelay( isTcpNoDelay() );
+			socket.setReuseAddress( isReuseAddr() );
+
+			if( !socket.isBound() ) {
+				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			}
+
+			// if the socket is set by others we don't apply any TLS wrapper
+			if (isNewSocket && ""wss"".equals( uri.getScheme())) {
+
+				SSLContext sslContext = SSLContext.getInstance(""TLS"");
+				sslContext.init(null, null, null);
+				SSLSocketFactory factory = sslContext.getSocketFactory();
+				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+			}
+
+			istream = socket.getInputStream();
+			ostream = socket.getOutputStream();
+
+			sendHandshake();
+		} catch ( /*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e ) {
+			onWebsocketError( engine, e );
+			engine.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			return;
+		}
+
+		writeThread = new Thread( new WebsocketWriteThread() );
+		writeThread.start();
+
+		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
+		int readBytes;
+
+		try {
+			while ( !isClosing() && !isClosed() && ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
+				engine.decode( ByteBuffer.wrap( rawbuffer, 0, readBytes ) );
+			}
+			engine.eot();
+		} catch ( IOException e ) {
+			handleIOException(e);
+		} catch ( RuntimeException e ) {
+			// this catch case covers internal errors only and indicates a bug in this websocket implementation
+			onError( e );
+			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
+		}
+		connectReadThread = null;
+	}",371-429
+org.java_websocket.drafts.Draft,readLine,(Ljava/nio/ByteBuffer;)Ljava/nio/ByteBuffer;,10,12,83.3%,"public static ByteBuffer readLine( ByteBuffer buf ) {
+		ByteBuffer sbuf = ByteBuffer.allocate( buf.remaining() );
+		byte prev;
+		byte cur = '0';
+		while ( buf.hasRemaining() ) {
+			prev = cur;
+			cur = buf.get();
+			sbuf.put( cur );
+			if( prev == (byte) '\r' && cur == (byte) '\n' ) {
+				sbuf.limit( sbuf.position() - 2 );
+				sbuf.position( 0 );
+				return sbuf;
+
+			}
+		}
+		// ensure that there wont be any bytes skipped
+		buf.position( buf.position() - sbuf.position() );
+		return null;
+	}",64-82
+org.java_websocket.drafts.Draft,readStringLine,(Ljava/nio/ByteBuffer;)Ljava/lang/String;,2,2,100.0%,"public static String readStringLine( ByteBuffer buf ) {
+		ByteBuffer b = readLine( buf );
+		return b == null ? null : Charsetfunctions.stringAscii( b.array(), 0, b.limit() );
+	}",84-87
+org.java_websocket.drafts.Draft,translateHandshakeHttp,(Ljava/nio/ByteBuffer;Lorg/java_websocket/enums/Role;)Lorg/java_websocket/handshake/HandshakeBuilder;,27,36,75.0%,"public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf, Role role ) throws InvalidHandshakeException , IncompleteHandshakeException {
+		HandshakeBuilder handshake;
+
+		String line = readStringLine( buf );
+		if( line == null )
+			throw new IncompleteHandshakeException( buf.capacity() + 128 );
+
+		String[] firstLineTokens = line.split( "" "", 3 );// eg. HTTP/1.1 101 Switching the Protocols
+		if( firstLineTokens.length != 3 ) {
+			throw new InvalidHandshakeException();
+		}
+
+		if( role == Role.CLIENT ) {
+			// translating/parsing the response from the SERVER
+			if (!""101"".equals(firstLineTokens[1])) {
+				throw new InvalidHandshakeException( ""Invalid status code received: "" + firstLineTokens[1] + "" Status line: "" + line);
+			}
+			if (!""HTTP/1.1"".equalsIgnoreCase(firstLineTokens[0])) {
+				throw new InvalidHandshakeException( ""Invalid status line received: "" + firstLineTokens[0] + "" Status line: "" + line);
+			}
+
+			handshake = new HandshakeImpl1Server();
+			ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
+			serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
+			serverhandshake.setHttpStatusMessage( firstLineTokens[ 2 ] );
+		} else {
+			// translating/parsing the request from the CLIENT
+			if (!""GET"".equalsIgnoreCase(firstLineTokens[0])) {
+				throw new InvalidHandshakeException( ""Invalid request method received: "" + firstLineTokens[0] + "" Status line: "" + line);
+			}
+			if (!""HTTP/1.1"".equalsIgnoreCase(firstLineTokens[2])) {
+				throw new InvalidHandshakeException( ""Invalid status line received: "" + firstLineTokens[2] + "" Status line: "" + line);
+			}
+			ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
+			clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );
+			handshake = clienthandshake;
+		}
+
+		line = readStringLine( buf );
+		while ( line != null && line.length() > 0 ) {
+			String[] pair = line.split( "":"", 2 );
+			if( pair.length != 2 )
+				throw new InvalidHandshakeException( ""not an http header"" );
+			// If the handshake contains already a specific key, append the new value
+			if ( handshake.hasFieldValue( pair[ 0 ] ) ) {
+				handshake.put( pair[0], handshake.getFieldValue( pair[ 0 ] ) + ""; "" + pair[1].replaceFirst( ""^ +"", """" ) );
+			} else {
+				handshake.put( pair[0], pair[1].replaceFirst( ""^ +"", """" ) );
+			}
+			line = readStringLine( buf );
+		}
+		if( line == null )
+			throw new IncompleteHandshakeException();
+		return handshake;
+	}",89-143
+org.java_websocket.drafts.Draft,basicAccept,(Lorg/java_websocket/handshake/Handshakedata;)Z,1,1,100.0%,"protected boolean basicAccept( Handshakedata handshakedata ) {
+		return handshakedata.getFieldValue( ""Upgrade"" ).equalsIgnoreCase( ""websocket"" ) && handshakedata.getFieldValue( ""Connection"" ).toLowerCase( Locale.ENGLISH ).contains( ""upgrade"" );
+	}",149-151
+org.java_websocket.drafts.Draft,createHandshake,(Lorg/java_websocket/handshake/Handshakedata;Lorg/java_websocket/enums/Role;)Ljava/util/List;,1,1,100.0%,"public List<ByteBuffer> createHandshake( Handshakedata handshakedata, Role ownrole ) {
+		return createHandshake( handshakedata, ownrole, true );
+	}",200-202
+org.java_websocket.drafts.Draft,createHandshake,(Lorg/java_websocket/handshake/Handshakedata;Lorg/java_websocket/enums/Role;Z)Ljava/util/List;,25,27,92.6%,"public List<ByteBuffer> createHandshake( Handshakedata handshakedata, Role ownrole ) {
+		return createHandshake( handshakedata, ownrole, true );
+	}",200-202
+org.java_websocket.drafts.Draft,translateHandshake,(Ljava/nio/ByteBuffer;)Lorg/java_websocket/handshake/Handshakedata;,1,1,100.0%,"public Handshakedata translateHandshake( ByteBuffer buf ) throws InvalidHandshakeException {
+		return translateHandshakeHttp( buf, role );
+	}",252-254
+org.java_websocket.drafts.Draft,checkAlloc,(I)I,2,3,66.7%,"public int checkAlloc( int bytecount ) throws LimitExedeedException , InvalidDataException {
+		if( bytecount < 0 )
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""Negative count"" );
+		return bytecount;
+	}",256-260
+org.java_websocket.drafts.Draft,readVersion,(Lorg/java_websocket/handshake/Handshakedata;)I,4,7,57.1%,"int readVersion( Handshakedata handshakedata ) {
+		String vers = handshakedata.getFieldValue( ""Sec-WebSocket-Version"" );
+		if( vers.length() > 0 ) {
+			int v;
+			try {
+				v = new Integer( vers.trim() );
+				return v;
+			} catch ( NumberFormatException e ) {
+				return -1;
+			}
+		}
+		return -1;
+	}",262-274
+org.java_websocket.drafts.Draft,setParseMode,(Lorg/java_websocket/enums/Role;)V,2,2,100.0%,"public void setParseMode( Role role ) {
+		this.role = role;
+	}",276-278
+org.java_websocket.drafts.Draft,getRole,()Lorg/java_websocket/enums/Role;,1,1,100.0%,"public Role getRole() {
+		return role;
+	}",280-282
+org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;Ljava/util/List;)V,17,18,94.4%,"public Draft_6455() {
+		this( Collections.<IExtension>emptyList() );
+	}",105-107
+org.java_websocket.drafts.Draft_6455,<init>,()V,2,2,100.0%,"public Draft_6455() {
+		this( Collections.<IExtension>emptyList() );
+	}",105-107
+org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;)V,2,2,100.0%,"public Draft_6455() {
+		this( Collections.<IExtension>emptyList() );
+	}",105-107
+org.java_websocket.drafts.Draft_6455,acceptHandshakeAsServer,(Lorg/java_websocket/handshake/ClientHandshake;)Lorg/java_websocket/enums/HandshakeState;,20,26,76.9%,"@Override
+	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException {
+		int v = readVersion( handshakedata );
+		if( v != 13 ) {
+			log.trace(""acceptHandshakeAsServer - Wrong websocket version."");
+			return HandshakeState.NOT_MATCHED;
+		}
+		HandshakeState extensionState = HandshakeState.NOT_MATCHED;
+		String requestedExtension = handshakedata.getFieldValue( ""Sec-WebSocket-Extensions"" );
+		for( IExtension knownExtension : knownExtensions ) {
+			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
+				extension = knownExtension;
+				extensionState = HandshakeState.MATCHED;
+				log.trace(""acceptHandshakeAsServer - Matching extension found: {}"", extension);
+				break;
+			}
+		}
+		HandshakeState protocolState = HandshakeState.NOT_MATCHED;
+		String requestedProtocol = handshakedata.getFieldValue( ""Sec-WebSocket-Protocol"" );
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
+				protocol = knownProtocol;
+				protocolState = HandshakeState.MATCHED;
+				log.trace(""acceptHandshakeAsServer - Matching protocol found: {}"", protocol);
+				break;
+			}
+		}
+		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
+			return HandshakeState.MATCHED;
+		}
+		log.trace(""acceptHandshakeAsServer - No matching extension or protocol found."");
+		return HandshakeState.NOT_MATCHED;
+	}",158-190
+org.java_websocket.drafts.Draft_6455,acceptHandshakeAsClient,(Lorg/java_websocket/handshake/ClientHandshake;Lorg/java_websocket/handshake/ServerHandshake;)Lorg/java_websocket/enums/HandshakeState;,24,34,70.6%,"@Override
+	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
+		if (! basicAccept( response )) {
+			log.trace(""acceptHandshakeAsClient - Missing/wrong upgrade or connection in handshake."");
+			return HandshakeState.NOT_MATCHED;
+		}
+		if( !request.hasFieldValue( ""Sec-WebSocket-Key"" ) || !response.hasFieldValue( ""Sec-WebSocket-Accept"" ) ) {
+			log.trace(""acceptHandshakeAsClient - Missing Sec-WebSocket-Key or Sec-WebSocket-Accept"");
+			return HandshakeState.NOT_MATCHED;
+		}
+
+		String seckey_answere = response.getFieldValue( ""Sec-WebSocket-Accept"" );
+		String seckey_challenge = request.getFieldValue( ""Sec-WebSocket-Key"" );
+		seckey_challenge = generateFinalKey( seckey_challenge );
+
+		if( !seckey_challenge.equals( seckey_answere ) ) {
+			log.trace(""acceptHandshakeAsClient - Wrong key for Sec-WebSocket-Key."");
+			return HandshakeState.NOT_MATCHED;
+		}
+
+		HandshakeState extensionState= HandshakeState.NOT_MATCHED;
+		String requestedExtension = response.getFieldValue( ""Sec-WebSocket-Extensions"" );
+		for( IExtension knownExtension : knownExtensions ) {
+			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
+				extension = knownExtension;
+				extensionState = HandshakeState.MATCHED;
+				log.trace(""acceptHandshakeAsClient - Matching extension found: {}"",extension);
+				break;
+			}
+		}
+		HandshakeState protocolState = HandshakeState.NOT_MATCHED;
+		String requestedProtocol = response.getFieldValue( ""Sec-WebSocket-Protocol"" );
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
+				protocol = knownProtocol;
+				protocolState = HandshakeState.MATCHED;
+				log.trace(""acceptHandshakeAsClient - Matching protocol found: {}"",protocol);
+				break;
+			}
+		}
+		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
+			return HandshakeState.MATCHED;
+		}
+		log.trace(""acceptHandshakeAsClient - No matching extension or protocol found."");
+		return HandshakeState.NOT_MATCHED;
+	}",192-237
+org.java_websocket.drafts.Draft_6455,getExtension,()Lorg/java_websocket/extensions/IExtension;,1,1,100.0%,"public IExtension getExtension() {
+		return extension;
+	}",244-246
+org.java_websocket.drafts.Draft_6455,getKnownExtensions,()Ljava/util/List;,1,1,100.0%,"public List<IExtension> getKnownExtensions() {
+		return knownExtensions;
+	}",252-254
+org.java_websocket.drafts.Draft_6455,getProtocol,()Lorg/java_websocket/protocols/IProtocol;,1,1,100.0%,"public IProtocol getProtocol() {
+		return protocol;
+	}",262-264
+org.java_websocket.drafts.Draft_6455,getKnownProtocols,()Ljava/util/List;,1,1,100.0%,"public List<IProtocol> getKnownProtocols() {
+		return knownProtocols;
+	}",271-273
+org.java_websocket.drafts.Draft_6455,postProcessHandshakeRequestAsClient,(Lorg/java_websocket/handshake/ClientHandshakeBuilder;)Lorg/java_websocket/handshake/ClientHandshakeBuilder;,17,25,68.0%,"@Override
+	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
+		request.put( ""Upgrade"", ""websocket"" );
+		request.put( ""Connection"", ""Upgrade"" ); // to respond to a Connection keep alives
+		byte[] random = new byte[16];
+		reuseableRandom.nextBytes( random );
+		request.put( ""Sec-WebSocket-Key"", Base64.encodeBytes( random ) );
+		request.put( ""Sec-WebSocket-Version"", ""13"" );// overwriting the previous
+		StringBuilder requestedExtensions = new StringBuilder();
+		for( IExtension knownExtension : knownExtensions ) {
+			if( knownExtension.getProvidedExtensionAsClient() != null && knownExtension.getProvidedExtensionAsClient().length() != 0 ) {
+				if (requestedExtensions.length() > 0) {
+					requestedExtensions.append( "", "" );
+				}
+				requestedExtensions.append( knownExtension.getProvidedExtensionAsClient() );
+			}
+		}
+		if( requestedExtensions.length() != 0 ) {
+			request.put( ""Sec-WebSocket-Extensions"", requestedExtensions.toString() );
+		}
+		StringBuilder requestedProtocols = new StringBuilder();
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.getProvidedProtocol().length() != 0 ) {
+				if (requestedProtocols.length() > 0) {
+					requestedProtocols.append( "", "" );
+				}
+				requestedProtocols.append( knownProtocol.getProvidedProtocol() );
+			}
+		}
+		if( requestedProtocols.length() != 0 ) {
+			request.put( ""Sec-WebSocket-Protocol"", requestedProtocols.toString() );
+		}
+		return request;
+	}",275-308
+org.java_websocket.drafts.Draft_6455,postProcessHandshakeResponseAsServer,(Lorg/java_websocket/handshake/ClientHandshake;Lorg/java_websocket/handshake/ServerHandshakeBuilder;)Lorg/java_websocket/handshake/HandshakeBuilder;,11,14,78.6%,"@Override
+	public HandshakeBuilder postProcessHandshakeResponseAsServer( ClientHandshake request, ServerHandshakeBuilder response ) throws InvalidHandshakeException {
+		response.put( ""Upgrade"", ""websocket"" );
+		response.put( ""Connection"", request.getFieldValue( ""Connection"" ) ); // to respond to a Connection keep alives
+		String seckey = request.getFieldValue( ""Sec-WebSocket-Key"" );
+		if( seckey == null )
+			throw new InvalidHandshakeException( ""missing Sec-WebSocket-Key"" );
+		response.put( ""Sec-WebSocket-Accept"", generateFinalKey( seckey ) );
+		if( getExtension().getProvidedExtensionAsServer().length() != 0 ) {
+			response.put( ""Sec-WebSocket-Extensions"", getExtension().getProvidedExtensionAsServer() );
+		}
+		if( getProtocol() != null && getProtocol().getProvidedProtocol().length() != 0 ) {
+			response.put( ""Sec-WebSocket-Protocol"", getProtocol().getProvidedProtocol() );
+		}
+		response.setHttpStatusMessage( ""Web Socket Protocol Handshake"" );
+		response.put( ""Server"", ""TooTallNate Java-WebSocket"" );
+		response.put( ""Date"", getServerTime() );
+		return response;
+	}",310-328
+org.java_websocket.drafts.Draft_6455,copyInstance,()Lorg/java_websocket/drafts/Draft;,9,9,100.0%,"@Override
+	public Draft copyInstance() {
+		ArrayList<IExtension> newExtensions = new ArrayList<IExtension>();
+		for( IExtension extension : getKnownExtensions() ) {
+			newExtensions.add( extension.copyInstance() );
+		}
+		ArrayList<IProtocol> newProtocols = new ArrayList<IProtocol>();
+		for( IProtocol protocol : getKnownProtocols() ) {
+			newProtocols.add( protocol.copyInstance() );
+		}
+		return new Draft_6455( newExtensions, newProtocols );
+	}",330-341
+org.java_websocket.drafts.Draft_6455,createBinaryFrame,(Lorg/java_websocket/framing/Framedata;)Ljava/nio/ByteBuffer;,3,3,100.0%,"@Override
+	public ByteBuffer createBinaryFrame( Framedata framedata ) {
+		getExtension().encodeFrame( framedata );
+		log.trace( ""afterEnconding({}): {}"" , framedata.getPayloadData().remaining(), ( framedata.getPayloadData().remaining() > 1000 ? ""too big to display"" : new String( framedata.getPayloadData().array() ) ) );
+		return createByteBufferFromFramedata( framedata );
+	}",343-348
+org.java_websocket.drafts.Draft_6455,createByteBufferFromFramedata,(Lorg/java_websocket/framing/Framedata;)Ljava/nio/ByteBuffer;,24,31,77.4%,"private ByteBuffer createByteBufferFromFramedata( Framedata framedata ) {
+		ByteBuffer mes = framedata.getPayloadData();
+		boolean mask = role == Role.CLIENT; // framedata.getTransfereMasked();
+		int sizebytes = mes.remaining() <= 125 ? 1 : mes.remaining() <= 65535 ? 2 : 8;
+		ByteBuffer buf = ByteBuffer.allocate( 1 + ( sizebytes > 1 ? sizebytes + 1 : sizebytes ) + ( mask ? 4 : 0 ) + mes.remaining() );
+		byte optcode = fromOpcode( framedata.getOpcode() );
+		byte one = ( byte ) ( framedata.isFin() ? -128 : 0 );
+		one |= optcode;
+		buf.put( one );
+		byte[] payloadlengthbytes = toByteArray( mes.remaining(), sizebytes );
+		assert ( payloadlengthbytes.length == sizebytes );
+
+		if( sizebytes == 1 ) {
+			buf.put( ( byte ) ( payloadlengthbytes[0] | ( mask ? ( byte ) -128 : 0 ) ) );
+		} else if( sizebytes == 2 ) {
+			buf.put( ( byte ) ( ( byte ) 126 | ( mask ? ( byte ) -128 : 0 ) ) );
+			buf.put( payloadlengthbytes );
+		} else if( sizebytes == 8 ) {
+			buf.put( ( byte ) ( ( byte ) 127 | ( mask ? ( byte ) -128 : 0 ) ) );
+			buf.put( payloadlengthbytes );
+		} else
+			throw new RuntimeException( ""Size representation not supported/specified"" );
+
+		if( mask ) {
+			ByteBuffer maskkey = ByteBuffer.allocate( 4 );
+			maskkey.putInt( reuseableRandom.nextInt() );
+			buf.put( maskkey.array() );
+			for( int i = 0; mes.hasRemaining(); i++ ) {
+				buf.put( ( byte ) ( mes.get() ^ maskkey.get( i % 4 ) ) );
+			}
+		} else {
+			buf.put( mes );
+			//Reset the position of the bytebuffer e.g. for additional use
+			mes.flip();
+		}
+		assert ( buf.remaining() == 0 ) : buf.remaining();
+		buf.flip();
+		return buf;
+	}",350-388
+org.java_websocket.drafts.Draft_6455,translateSingleFrame,(Ljava/nio/ByteBuffer;)Lorg/java_websocket/framing/Framedata;,38,71,53.5%,"public Framedata translateSingleFrame( ByteBuffer buffer ) throws IncompleteException, InvalidDataException {
+		int maxpacketsize = buffer.remaining();
+		int realpacketsize = 2;
+		if( maxpacketsize < realpacketsize ) {
+			log.trace( ""Incomplete frame"" );
+			throw new IncompleteException( realpacketsize );
+		}
+		byte b1 = buffer.get( /*0*/ );
+		boolean FIN = b1 >> 8 != 0;
+		boolean rsv1 = false;
+		boolean rsv2 = false;
+		boolean rsv3 = false;
+		if( ( b1 & 0x40 ) != 0 ) {
+			rsv1 = true;
+		}
+		if( ( b1 & 0x20 ) != 0 ) {
+			rsv2 = true;
+		}
+		if( ( b1 & 0x10 ) != 0 ) {
+			rsv3 = true;
+		}
+		byte b2 = buffer.get( /*1*/ );
+		boolean MASK = ( b2 & -128 ) != 0;
+		int payloadlength = ( byte ) ( b2 & ~( byte ) 128 );
+		Opcode optcode = toOpcode( ( byte ) ( b1 & 15 ) );
+
+		if( !( payloadlength >= 0 && payloadlength <= 125 ) ) {
+
+			if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
+				log.trace( ""Invalid frame: more than 125 octets"" );
+				throw new InvalidFrameException( ""more than 125 octets"" );
+			}
+			if( payloadlength == 126 ) {
+				realpacketsize += 2; // additional length bytes
+				if( maxpacketsize < realpacketsize ) {
+					log.trace( ""Incomplete frame"" );
+					throw new IncompleteException( realpacketsize );
+				}
+				byte[] sizebytes = new byte[3];
+				sizebytes[1] = buffer.get( /*1 + 1*/ );
+				sizebytes[2] = buffer.get( /*1 + 2*/ );
+				payloadlength = new BigInteger( sizebytes ).intValue();
+			} else {
+				realpacketsize += 8; // additional length bytes
+				if( maxpacketsize < realpacketsize ) {
+					log.trace( ""Incomplete frame"" );
+					throw new IncompleteException( realpacketsize );
+				}
+				byte[] bytes = new byte[8];
+				for( int i = 0; i < 8; i++ ) {
+					bytes[i] = buffer.get( /*1 + i*/ );
+				}
+				long length = new BigInteger( bytes ).longValue();
+				if( length > Integer.MAX_VALUE ) {
+					log.trace( ""Limit exedeed: Payloadsize is to big..."" );
+					throw new LimitExedeedException( ""Payloadsize is to big..."" );
+				} else {
+					payloadlength = ( int ) length;
+				}
+			}
+		}
+
+		// int maskskeystart = foff + realpacketsize;
+		realpacketsize += ( MASK ? 4 : 0 );
+		// int payloadstart = foff + realpacketsize;
+		realpacketsize += payloadlength;
+
+		if( maxpacketsize < realpacketsize )
+			throw new IncompleteException( realpacketsize );
+
+		ByteBuffer payload = ByteBuffer.allocate( checkAlloc( payloadlength ) );
+		if( MASK ) {
+			byte[] maskskey = new byte[4];
+			buffer.get( maskskey );
+			for( int i = 0; i < payloadlength; i++ ) {
+				payload.put( ( byte ) ( buffer.get( /*payloadstart + i*/ ) ^ maskskey[i % 4] ) );
+			}
+		} else {
+			payload.put( buffer.array(), buffer.position(), payload.limit() );
+			buffer.position( buffer.position() + payload.limit() );
+		}
+
+		FramedataImpl1 frame = FramedataImpl1.get( optcode );
+		frame.setFin( FIN );
+		frame.setRSV1( rsv1 );
+		frame.setRSV2( rsv2 );
+		frame.setRSV3( rsv3 );
+		payload.flip();
+		frame.setPayload( payload );
+		getExtension().isFrameValid(frame);
+		getExtension().decodeFrame(frame);
+		log.trace( ""afterDecoding({}): {}"", frame.getPayloadData().remaining(), ( frame.getPayloadData().remaining() > 1000 ? ""too big to display"" : new String( frame.getPayloadData().array() ) ) );
+		frame.isValid();
+		return frame;
+	}",390-484
+org.java_websocket.drafts.Draft_6455,translateFrame,(Ljava/nio/ByteBuffer;)Ljava/util/List;,8,34,23.5%,"@Override
+	public List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException {
+		while( true ) {
+			List<Framedata> frames = new LinkedList<Framedata>();
+			Framedata cur;
+			if( incompleteframe != null ) {
+				// complete an incomplete frame
+				try {
+					buffer.mark();
+					int available_next_byte_count = buffer.remaining();// The number of bytes received
+					int expected_next_byte_count = incompleteframe.remaining();// The number of bytes to complete the incomplete frame
+
+					if( expected_next_byte_count > available_next_byte_count ) {
+						// did not receive enough bytes to complete the frame
+						incompleteframe.put( buffer.array(), buffer.position(), available_next_byte_count );
+						buffer.position( buffer.position() + available_next_byte_count );
+						return Collections.emptyList();
+					}
+					incompleteframe.put( buffer.array(), buffer.position(), expected_next_byte_count );
+					buffer.position( buffer.position() + expected_next_byte_count );
+					cur = translateSingleFrame( ( ByteBuffer ) incompleteframe.duplicate().position( 0 ) );
+					frames.add( cur );
+					incompleteframe = null;
+				} catch ( IncompleteException e ) {
+					// extending as much as suggested
+					ByteBuffer extendedframe = ByteBuffer.allocate( checkAlloc( e.getPreferredSize() ) );
+					assert ( extendedframe.limit() > incompleteframe.limit() );
+					incompleteframe.rewind();
+					extendedframe.put( incompleteframe );
+					incompleteframe = extendedframe;
+					continue;
+				}
+			}
+
+			while( buffer.hasRemaining() ) {// Read as much as possible full frames
+				buffer.mark();
+				try {
+					cur = translateSingleFrame( buffer );
+					frames.add( cur );
+				} catch ( IncompleteException e ) {
+					// remember the incomplete data
+					buffer.reset();
+					int pref = e.getPreferredSize();
+					incompleteframe = ByteBuffer.allocate( checkAlloc( pref ) );
+					incompleteframe.put( buffer );
+					break;
+				}
+			}
+			return frames;
+		}
+	}",487-537
+org.java_websocket.drafts.Draft_6455,reset,()V,6,6,100.0%,"@Override
+	public void reset() {
+		incompleteframe = null;
+		if( extension != null ) {
+			extension.reset();
+		}
+		extension = new DefaultExtension();
+		protocol = null;
+	}",565-573
+org.java_websocket.drafts.Draft_6455,getServerTime,()Ljava/lang/String;,4,4,100.0%,"private String getServerTime() {
+		Calendar calendar = Calendar.getInstance();
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				""EEE, dd MMM yyyy HH:mm:ss z"", Locale.US );
+		dateFormat.setTimeZone( TimeZone.getTimeZone( ""GMT"" ) );
+		return dateFormat.format( calendar.getTime() );
+	}",580-586
+org.java_websocket.drafts.Draft_6455,generateFinalKey,(Ljava/lang/String;)Ljava/lang/String;,5,7,71.4%,"private String generateFinalKey( String in ) {
+		String seckey = in.trim();
+		String acc = seckey + ""258EAFA5-E914-47DA-95CA-C5AB0DC85B11"";
+		MessageDigest sh1;
+		try {
+			sh1 = MessageDigest.getInstance( ""SHA1"" );
+		} catch ( NoSuchAlgorithmException e ) {
+			throw new IllegalStateException( e );
+		}
+		return Base64.encodeBytes( sh1.digest( acc.getBytes() ) );
+	}",593-603
+org.java_websocket.drafts.Draft_6455,toByteArray,(JI)[B,5,5,100.0%,"private byte[] toByteArray( long val, int bytecount ) {
+		byte[] buffer = new byte[bytecount];
+		int highest = 8 * bytecount - 8;
+		for( int i = 0; i < bytecount; i++ ) {
+			buffer[i] = ( byte ) ( val >>> ( highest - 8 * i ) );
+		}
+		return buffer;
+	}",605-612
+org.java_websocket.drafts.Draft_6455,fromOpcode,(Lorg/java_websocket/enums/Opcode;)B,5,13,38.5%,"private byte fromOpcode( Opcode opcode ) {
+		if( opcode == Opcode.CONTINUOUS )
+			return 0;
+		else if( opcode == Opcode.TEXT )
+			return 1;
+		else if( opcode == Opcode.BINARY )
+			return 2;
+		else if( opcode == Opcode.CLOSING )
+			return 8;
+		else if( opcode == Opcode.PING )
+			return 9;
+		else if( opcode == Opcode.PONG )
+			return 10;
+		throw new IllegalArgumentException( ""Don't know how to handle "" + opcode.toString() );
+	}",615-629
+org.java_websocket.drafts.Draft_6455,toOpcode,(B)Lorg/java_websocket/enums/Opcode;,2,8,25.0%,"private Opcode toOpcode( byte opcode ) throws InvalidFrameException {
+		switch(opcode) {
+			case 0:
+				return Opcode.CONTINUOUS;
+			case 1:
+				return Opcode.TEXT;
+			case 2:
+				return Opcode.BINARY;
+			// 3-7 are not yet defined
+			case 8:
+				return Opcode.CLOSING;
+			case 9:
+				return Opcode.PING;
+			case 10:
+				return Opcode.PONG;
+			// 11-15 are not yet defined
+			default:
+				throw new InvalidFrameException( ""Unknown opcode "" + ( short ) opcode );
+		}
+	}",631-650
+org.java_websocket.drafts.Draft_6455,processFrame,(Lorg/java_websocket/WebSocketImpl;Lorg/java_websocket/framing/Framedata;)V,13,75,17.3%,"@Override
+	public void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException {
+		Opcode curop = frame.getOpcode();
+		if( curop == Opcode.CLOSING ) {
+			int code = CloseFrame.NOCODE;
+			String reason = """";
+			if( frame instanceof CloseFrame ) {
+				CloseFrame cf = ( CloseFrame ) frame;
+				code = cf.getCloseCode();
+				reason = cf.getMessage();
+			}
+			if( webSocketImpl.getReadyState() == ReadyState.CLOSING ) {
+				// complete the close handshake by disconnecting
+				webSocketImpl.closeConnection( code, reason, true );
+			} else {
+				// echo close handshake
+				if( getCloseHandshakeType() == CloseHandshakeType.TWOWAY )
+					webSocketImpl.close( code, reason, true );
+				else
+					webSocketImpl.flushAndClose( code, reason, false );
+			}
+		} else if( curop == Opcode.PING ) {
+			webSocketImpl.getWebSocketListener().onWebsocketPing( webSocketImpl, frame );
+		} else if( curop == Opcode.PONG ) {
+			webSocketImpl.updateLastPong();
+			webSocketImpl.getWebSocketListener().onWebsocketPong( webSocketImpl, frame );
+		} else if( !frame.isFin() || curop == Opcode.CONTINUOUS ) {
+			if( curop != Opcode.CONTINUOUS ) {
+				if( current_continuous_frame != null ) {
+					log.trace( ""Protocol error: Previous continuous frame sequence not completed."" );
+					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""Previous continuous frame sequence not completed."" );
+				}
+				current_continuous_frame = frame;
+				byteBufferList.add( frame.getPayloadData() );
+			} else if( frame.isFin() ) {
+				if( current_continuous_frame == null ) {
+					log.trace( ""Protocol error: Previous continuous frame sequence not completed."" );
+					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""Continuous frame sequence was not started."" );
+				}
+				byteBufferList.add( frame.getPayloadData() );
+				if( current_continuous_frame.getOpcode() == Opcode.TEXT ) {
+					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
+					((FramedataImpl1) current_continuous_frame ).isValid();
+					try {
+						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( current_continuous_frame.getPayloadData() ) );
+					} catch ( RuntimeException e ) {
+						log.error( ""Runtime exception during onWebsocketMessage"", e );
+						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+					}
+				} else if( current_continuous_frame.getOpcode() == Opcode.BINARY ) {
+					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
+					((FramedataImpl1) current_continuous_frame ).isValid();
+					try {
+						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, current_continuous_frame.getPayloadData() );
+					} catch ( RuntimeException e ) {
+						log.error( ""Runtime exception during onWebsocketMessage"", e );
+						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+					}
+				}
+				current_continuous_frame = null;
+				byteBufferList.clear();
+			} else if( current_continuous_frame == null ) {
+				log.error( ""Protocol error: Continuous frame sequence was not started."" );
+				throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""Continuous frame sequence was not started."" );
+			}
+			//Check if the whole payload is valid utf8, when the opcode indicates a text
+			if( curop == Opcode.TEXT ) {
+				if( !Charsetfunctions.isValidUTF8( frame.getPayloadData() ) ) {
+					log.error( ""Protocol error: Payload is not UTF8"" );
+					throw new InvalidDataException( CloseFrame.NO_UTF8 );
+				}
+			}
+			//Checking if the current continuous frame contains a correct payload with the other frames combined
+			if( curop == Opcode.CONTINUOUS && current_continuous_frame != null ) {
+				byteBufferList.add( frame.getPayloadData() );
+			}
+		} else if( current_continuous_frame != null ) {
+			log.error( ""Protocol error: Continuous frame sequence not completed."" );
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""Continuous frame sequence not completed."" );
+		} else if( curop == Opcode.TEXT ) {
+			try {
+				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( frame.getPayloadData() ) );
+			} catch ( RuntimeException e ) {
+				log.error( ""Runtime exception during onWebsocketMessage"", e );
+				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+			}
+		} else if( curop == Opcode.BINARY ) {
+			try {
+				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, frame.getPayloadData() );
+			} catch ( RuntimeException e ) {
+				log.error( ""Runtime exception during onWebsocketMessage"", e );
+				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+			}
+		} else {
+			log.error( ""non control or continious frame expected"");
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, ""non control or continious frame expected"" );
+		}
+	}",652-749
+org.java_websocket.drafts.Draft_6455,getCloseHandshakeType,()Lorg/java_websocket/enums/CloseHandshakeType;,1,1,100.0%,"@Override
+	public CloseHandshakeType getCloseHandshakeType() {
+		return CloseHandshakeType.TWOWAY;
+	}",751-754
+org.java_websocket.handshake.HandshakedataImpl1,<init>,()V,3,3,100.0%,"public HandshakedataImpl1() {
+		map = new TreeMap<String,String>( String.CASE_INSENSITIVE_ORDER );
+	}",50-52
+org.java_websocket.handshake.HandshakedataImpl1,iterateHttpFields,()Ljava/util/Iterator;,1,1,100.0%,"@Override
+	public Iterator<String> iterateHttpFields() {
+		return Collections.unmodifiableSet( map.keySet() ).iterator();// Safety first
+	}",54-57
+org.java_websocket.handshake.HandshakedataImpl1,getFieldValue,(Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"@Override
+	public String getFieldValue( String name ) {
+		String s = map.get( name );
+		if ( s == null ) {
+			return """";
+		}
+		return s;
+	}",59-66
+org.java_websocket.handshake.HandshakedataImpl1,getContent,()[B,1,1,100.0%,"@Override
+	public byte[] getContent() {
+		return content;
+	}",68-71
+org.java_websocket.handshake.HandshakedataImpl1,put,(Ljava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"@Override
+	public void put( String name, String value ) {
+		map.put( name, value );
+	}",78-81
+org.java_websocket.handshake.HandshakedataImpl1,hasFieldValue,(Ljava/lang/String;)Z,1,1,100.0%,"@Override
+	public boolean hasFieldValue( String name ) {
+		return map.containsKey( name );
+	}",83-86
+org.java_websocket.handshake.HandshakeImpl1Server,getHttpStatusMessage,()Ljava/lang/String;,1,1,100.0%,"@Override
+	public String getHttpStatusMessage() {
+		return httpstatusmessage;
+	}",43-46
+org.java_websocket.handshake.HandshakeImpl1Server,setHttpStatusMessage,(Ljava/lang/String;)V,2,2,100.0%,"@Override
+	public void setHttpStatusMessage( String message ) {
+		this.httpstatusmessage = message;
+	}",53-56
+org.java_websocket.handshake.HandshakeImpl1Server,setHttpStatus,(S)V,2,2,100.0%,"@Override
+	public void setHttpStatus( short status ) {
+		httpstatus = status;
+	}",58-61
+org.java_websocket.handshake.HandshakeImpl1Client,setResourceDescriptor,(Ljava/lang/String;)V,3,4,75.0%,"@Override
+	public void setResourceDescriptor( String resourceDescriptor ) throws IllegalArgumentException {
+		if(resourceDescriptor==null)
+			throw new IllegalArgumentException( ""http resource descriptor must not be null"" );
+		this.resourceDescriptor = resourceDescriptor;
+	}",38-43
+org.java_websocket.handshake.HandshakeImpl1Client,getResourceDescriptor,()Ljava/lang/String;,1,1,100.0%,"@Override
+	public String getResourceDescriptor() {
+		return resourceDescriptor;
+	}",45-48
+org.java_websocket.server.WebSocketServer$WebSocketWorker,<init>,(Lorg/java_websocket/server/WebSocketServer;)V,5,5,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer$WebSocketWorker,run,()V,11,15,73.3%,"public void run() {
+		synchronized ( this ) {
+			if( selectorthread != null )
+				throw new IllegalStateException( getClass().getName() + "" can only be started once."" );
+			selectorthread = Thread.currentThread();
+			if( isclosed.get() ) {
+				return;
+			}
+		}
+		selectorthread.setName( ""WebSocketSelector-"" + selectorthread.getId() );
+		try {
+			server = ServerSocketChannel.open();
+			server.configureBlocking( false );
+			ServerSocket socket = server.socket();
+			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
+			socket.setReuseAddress( isReuseAddr() );
+			socket.bind( address );
+			selector = Selector.open();
+			server.register( selector, server.validOps() );
+			startConnectionLostTimer();
+			onStart();
+		} catch ( IOException ex ) {
+			handleFatal( null, ex );
+			return;
+		}
+		try {
+			int iShutdownCount = 5;
+			int selectTimeout = 0;
+			while ( !selectorthread.isInterrupted() && iShutdownCount != 0) {
+				SelectionKey key = null;
+				WebSocketImpl conn = null;
+				try {
+					if (isclosed.get()) {
+						selectTimeout = 5;
+					}
+					int keyCount = selector.select( selectTimeout );
+					if (keyCount == 0 && isclosed.get()) {
+						iShutdownCount--;
+					}
+					Set<SelectionKey> keys = selector.selectedKeys();
+					Iterator<SelectionKey> i = keys.iterator();
+
+					while ( i.hasNext() ) {
+						key = i.next();
+						conn = null;
+						
+						if( !key.isValid() ) {
+							// Object o = key.attachment();
+							continue;
+						}
+
+						if( key.isAcceptable() ) {
+							if( !onConnect( key ) ) {
+								key.cancel();
+								continue;
+							}
+
+							SocketChannel channel = server.accept();
+							if(channel==null){
+								continue;
+							}
+							channel.configureBlocking( false );
+							Socket socket = channel.socket();
+							socket.setTcpNoDelay( isTcpNoDelay() );
+							socket.setKeepAlive( true );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts );
+							w.key = channel.register( selector, SelectionKey.OP_READ, w );
+							try {
+								w.channel = wsf.wrapChannel( channel, w.key );
+								i.remove();
+								allocateBuffers( w );
+								continue;
+							} catch (IOException ex) {
+								if( w.key != null )
+									w.key.cancel();
+
+								handleIOException( w.key, null, ex );
+							}
+							continue;
+						}
+
+						if( key.isReadable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							ByteBuffer buf = takeBuffer();
+							if(conn.channel == null){
+								if( key != null )
+									key.cancel();
+								
+								handleIOException( key, conn, new IOException() );
+								continue;
+							}
+							try {
+								if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
+									if( buf.hasRemaining() ) {
+										conn.inQueue.put( buf );
+										queue( conn );
+										i.remove();
+										if( conn.channel instanceof WrappedByteChannel ) {
+											if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+												iqueue.add( conn );
+											}
+										}
+									} else
+										pushBuffer( buf );
+								} else {
+									pushBuffer( buf );
+								}
+							} catch ( IOException e ) {
+								pushBuffer( buf );
+								throw e;
+							}
+						}
+						if( key.isWritable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							if( SocketChannelIOHelper.batch( conn, conn.channel ) ) {
+								if( key.isValid() )
+									key.interestOps( SelectionKey.OP_READ );
+							}
+						}
+					}
+					while ( !iqueue.isEmpty() ) {
+						conn = iqueue.remove( 0 );
+						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
+						ByteBuffer buf = takeBuffer();
+						try {
+							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
+								iqueue.add( conn );
+							if( buf.hasRemaining() ) {
+								conn.inQueue.put( buf );
+								queue( conn );
+							} else {
+								pushBuffer( buf );
+							}
+						} catch ( IOException e ) {
+							pushBuffer( buf );
+							throw e;
+						}
+
+					}
+				} catch ( CancelledKeyException e ) {
+					// an other thread may cancel the key
+				} catch ( ClosedByInterruptException e ) {
+					return; // do the same stuff as when InterruptedException is thrown
+				} catch ( IOException ex ) {
+					if( key != null )
+						key.cancel();
+					handleIOException( key, conn, ex );
+				} catch ( InterruptedException e ) {
+					return;// FIXME controlled shutdown (e.g. take care of buffermanagement)
+				}
+			}
+
+		} catch ( RuntimeException e ) {
+			// should hopefully never occur
+			handleFatal( null, e );
+		} finally {
+			stopConnectionLostTimer();
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
+			if( selector != null ) {
+				try {
+					selector.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during selector.close"", e );
+					onError( null, e );
+				}
+			}
+			if( server != null ) {
+				try {
+					server.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during server.close"", e );
+					onError( null, e );
+				}
+			}
+		}
+	}",308-487
+org.java_websocket.server.WebSocketServer$WebSocketWorker,put,(Lorg/java_websocket/WebSocketImpl;)V,2,2,100.0%,"public void put( WebSocketImpl ws ) throws InterruptedException {
+			iqueue.put( ws );
+		}",898-900
+org.java_websocket.server.WebSocketServer$WebSocketWorker$1,<init>,(Lorg/java_websocket/server/WebSocketServer$WebSocketWorker;Lorg/java_websocket/server/WebSocketServer;)V,1,1,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.DefaultWebSocketServerFactory,createWebSocket,(Lorg/java_websocket/WebSocketAdapter;Ljava/util/List;)Lorg/java_websocket/WebSocketImpl;,1,1,100.0%,"@Override
+	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d) {
+		return new WebSocketImpl( a, d );
+	}",38-41
+org.java_websocket.server.DefaultWebSocketServerFactory,wrapChannel,(Ljava/nio/channels/SocketChannel;Ljava/nio/channels/SelectionKey;)Ljava/nio/channels/SocketChannel;,1,1,100.0%,"@Override
+	public SocketChannel wrapChannel( SocketChannel channel, SelectionKey key ) {
+		return channel;
+	}",46-49
+org.java_websocket.server.DefaultWebSocketServerFactory,close,()V,1,1,100.0%,"@Override
+	public void close() {
+	}",50-52
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;Ljava/util/Collection;)V,20,22,90.9%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;)V,2,2,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;I)V,2,2,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer,start,()V,3,4,75.0%,"public void start() {
+		if( selectorthread != null )
+			throw new IllegalStateException( getClass().getName() + "" can only be started once."" );
+		new Thread( this ).start();
+	}",228-232
+org.java_websocket.server.WebSocketServer,stop,()V,2,2,100.0%,"public void stop( int timeout ) throws InterruptedException {
+		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
+			return;
+		}
+
+		List<WebSocket> socketsToClose;
+
+		// copy the connections in a list (prevent callback deadlocks)
+		synchronized ( connections ) {
+			socketsToClose = new ArrayList<WebSocket>( connections );
+		}
+
+		for( WebSocket ws : socketsToClose ) {
+			ws.close( CloseFrame.GOING_AWAY );
+		}
+
+		wsf.close();
+
+		synchronized ( this ) {
+			if( selectorthread != null  && selector != null) {
+				selector.wakeup();
+				selectorthread.join( timeout );
+			}
+		}
+	}",246-270
+org.java_websocket.server.WebSocketServer,stop,(I)V,12,15,80.0%,"public void stop( int timeout ) throws InterruptedException {
+		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
+			return;
+		}
+
+		List<WebSocket> socketsToClose;
+
+		// copy the connections in a list (prevent callback deadlocks)
+		synchronized ( connections ) {
+			socketsToClose = new ArrayList<WebSocket>( connections );
+		}
+
+		for( WebSocket ws : socketsToClose ) {
+			ws.close( CloseFrame.GOING_AWAY );
+		}
+
+		wsf.close();
+
+		synchronized ( this ) {
+			if( selectorthread != null  && selector != null) {
+				selector.wakeup();
+				selectorthread.join( timeout );
+			}
+		}
+	}",246-270
+org.java_websocket.server.WebSocketServer,run,()V,78,134,58.2%,"public void run() {
+		synchronized ( this ) {
+			if( selectorthread != null )
+				throw new IllegalStateException( getClass().getName() + "" can only be started once."" );
+			selectorthread = Thread.currentThread();
+			if( isclosed.get() ) {
+				return;
+			}
+		}
+		selectorthread.setName( ""WebSocketSelector-"" + selectorthread.getId() );
+		try {
+			server = ServerSocketChannel.open();
+			server.configureBlocking( false );
+			ServerSocket socket = server.socket();
+			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
+			socket.setReuseAddress( isReuseAddr() );
+			socket.bind( address );
+			selector = Selector.open();
+			server.register( selector, server.validOps() );
+			startConnectionLostTimer();
+			onStart();
+		} catch ( IOException ex ) {
+			handleFatal( null, ex );
+			return;
+		}
+		try {
+			int iShutdownCount = 5;
+			int selectTimeout = 0;
+			while ( !selectorthread.isInterrupted() && iShutdownCount != 0) {
+				SelectionKey key = null;
+				WebSocketImpl conn = null;
+				try {
+					if (isclosed.get()) {
+						selectTimeout = 5;
+					}
+					int keyCount = selector.select( selectTimeout );
+					if (keyCount == 0 && isclosed.get()) {
+						iShutdownCount--;
+					}
+					Set<SelectionKey> keys = selector.selectedKeys();
+					Iterator<SelectionKey> i = keys.iterator();
+
+					while ( i.hasNext() ) {
+						key = i.next();
+						conn = null;
+						
+						if( !key.isValid() ) {
+							// Object o = key.attachment();
+							continue;
+						}
+
+						if( key.isAcceptable() ) {
+							if( !onConnect( key ) ) {
+								key.cancel();
+								continue;
+							}
+
+							SocketChannel channel = server.accept();
+							if(channel==null){
+								continue;
+							}
+							channel.configureBlocking( false );
+							Socket socket = channel.socket();
+							socket.setTcpNoDelay( isTcpNoDelay() );
+							socket.setKeepAlive( true );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts );
+							w.key = channel.register( selector, SelectionKey.OP_READ, w );
+							try {
+								w.channel = wsf.wrapChannel( channel, w.key );
+								i.remove();
+								allocateBuffers( w );
+								continue;
+							} catch (IOException ex) {
+								if( w.key != null )
+									w.key.cancel();
+
+								handleIOException( w.key, null, ex );
+							}
+							continue;
+						}
+
+						if( key.isReadable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							ByteBuffer buf = takeBuffer();
+							if(conn.channel == null){
+								if( key != null )
+									key.cancel();
+								
+								handleIOException( key, conn, new IOException() );
+								continue;
+							}
+							try {
+								if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
+									if( buf.hasRemaining() ) {
+										conn.inQueue.put( buf );
+										queue( conn );
+										i.remove();
+										if( conn.channel instanceof WrappedByteChannel ) {
+											if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+												iqueue.add( conn );
+											}
+										}
+									} else
+										pushBuffer( buf );
+								} else {
+									pushBuffer( buf );
+								}
+							} catch ( IOException e ) {
+								pushBuffer( buf );
+								throw e;
+							}
+						}
+						if( key.isWritable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							if( SocketChannelIOHelper.batch( conn, conn.channel ) ) {
+								if( key.isValid() )
+									key.interestOps( SelectionKey.OP_READ );
+							}
+						}
+					}
+					while ( !iqueue.isEmpty() ) {
+						conn = iqueue.remove( 0 );
+						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
+						ByteBuffer buf = takeBuffer();
+						try {
+							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
+								iqueue.add( conn );
+							if( buf.hasRemaining() ) {
+								conn.inQueue.put( buf );
+								queue( conn );
+							} else {
+								pushBuffer( buf );
+							}
+						} catch ( IOException e ) {
+							pushBuffer( buf );
+							throw e;
+						}
+
+					}
+				} catch ( CancelledKeyException e ) {
+					// an other thread may cancel the key
+				} catch ( ClosedByInterruptException e ) {
+					return; // do the same stuff as when InterruptedException is thrown
+				} catch ( IOException ex ) {
+					if( key != null )
+						key.cancel();
+					handleIOException( key, conn, ex );
+				} catch ( InterruptedException e ) {
+					return;// FIXME controlled shutdown (e.g. take care of buffermanagement)
+				}
+			}
+
+		} catch ( RuntimeException e ) {
+			// should hopefully never occur
+			handleFatal( null, e );
+		} finally {
+			stopConnectionLostTimer();
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
+			if( selector != null ) {
+				try {
+					selector.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during selector.close"", e );
+					onError( null, e );
+				}
+			}
+			if( server != null ) {
+				try {
+					server.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during server.close"", e );
+					onError( null, e );
+				}
+			}
+		}
+	}",308-487
+org.java_websocket.server.WebSocketServer,allocateBuffers,(Lorg/java_websocket/WebSocket;)V,4,5,80.0%,"protected void allocateBuffers( WebSocket c ) throws InterruptedException {
+		if( queuesize.get() >= 2 * decoders.size() + 1 ) {
+			return;
+		}
+		queuesize.incrementAndGet();
+		buffers.put( createBuffer() );
+	}",488-494
+org.java_websocket.server.WebSocketServer,releaseBuffers,(Lorg/java_websocket/WebSocket;)V,1,1,100.0%,"protected void releaseBuffers( WebSocket c ) throws InterruptedException {
+		// queuesize.decrementAndGet();
+		// takeBuffer();
+	}",496-499
+org.java_websocket.server.WebSocketServer,createBuffer,()Ljava/nio/ByteBuffer;,1,1,100.0%,"public ByteBuffer createBuffer() {
+		return ByteBuffer.allocate( WebSocketImpl.RCVBUF );
+	}",501-503
+org.java_websocket.server.WebSocketServer,queue,(Lorg/java_websocket/WebSocketImpl;)V,5,5,100.0%,"protected void queue( WebSocketImpl ws ) throws InterruptedException {
+		if( ws.workerThread == null ) {
+			ws.workerThread = decoders.get( queueinvokes % decoders.size() );
+			queueinvokes++;
+		}
+		ws.workerThread.put( ws );
+	}",505-511
+org.java_websocket.server.WebSocketServer,takeBuffer,()Ljava/nio/ByteBuffer;,1,1,100.0%,"private ByteBuffer takeBuffer() throws InterruptedException {
+		return buffers.take();
+	}",513-515
+org.java_websocket.server.WebSocketServer,pushBuffer,(Ljava/nio/ByteBuffer;)V,3,4,75.0%,"private void pushBuffer( ByteBuffer buf ) throws InterruptedException {
+		if( buffers.size() > queuesize.intValue() )
+			return;
+		buffers.put( buf );
+	}",517-521
+org.java_websocket.server.WebSocketServer,onWebsocketOpen,(Lorg/java_websocket/WebSocket;Lorg/java_websocket/handshake/Handshakedata;)V,3,3,100.0%,"@Override
+	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
+		if( addConnection( conn ) ) {
+			onOpen( conn, (ClientHandshake) handshake );
+		}
+	}",575-580
+org.java_websocket.server.WebSocketServer,onWebsocketClose,(Lorg/java_websocket/WebSocket;ILjava/lang/String;Z)V,6,8,75.0%,"@Override
+	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
+		selector.wakeup();
+		try {
+			if( removeConnection( conn ) ) {
+				onClose( conn, code, reason, remote );
+			}
+		} finally {
+			try {
+				releaseBuffers( conn );
+			} catch ( InterruptedException e ) {
+				Thread.currentThread().interrupt();
+			}
+		}
+
+	}",582-597
+org.java_websocket.server.WebSocketServer,removeConnection,(Lorg/java_websocket/WebSocket;)Z,7,9,77.8%,"protected boolean removeConnection( WebSocket ws ) {
+		boolean removed = false;
+		synchronized ( connections ) {
+			if (this.connections.contains( ws )) {
+				removed = this.connections.remove( ws );
+			} else {
+				//Don't throw an assert error if the ws is not in the list. e.g. when the other endpoint did not send any handshake. see #512
+				log.trace(""Removing connection which is not in the connections collection! Possible no handshake recieved! {}"", ws);
+			}
+		}
+		if( isclosed.get() && connections.size() == 0 ) {
+			selectorthread.interrupt();
+		}
+		return removed;
+	}",607-621
+org.java_websocket.server.WebSocketServer,onWebsocketHandshakeReceivedAsServer,(Lorg/java_websocket/WebSocket;Lorg/java_websocket/drafts/Draft;Lorg/java_websocket/handshake/ClientHandshake;)Lorg/java_websocket/handshake/ServerHandshakeBuilder;,1,1,100.0%,"@Override
+	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
+		return super.onWebsocketHandshakeReceivedAsServer( conn, draft, request );
+	}",622-625
+org.java_websocket.server.WebSocketServer,addConnection,(Lorg/java_websocket/WebSocket;)Z,5,7,71.4%,"protected boolean addConnection( WebSocket ws ) {
+		if( !isclosed.get() ) {
+			synchronized ( connections ) {
+				boolean succ = this.connections.add( ws );
+				assert ( succ );
+				return succ;
+			}
+		} else {
+			// This case will happen when a new connection gets ready while the server is already stopping.
+			ws.close( CloseFrame.GOING_AWAY );
+			return true;// for consistency sake we will make sure that both onOpen will be called
+		}
+	}",632-644
+org.java_websocket.server.WebSocketServer,onWriteDemand,(Lorg/java_websocket/WebSocket;)V,5,7,71.4%,"@Override
+	public final void onWriteDemand( WebSocket w ) {
+		WebSocketImpl conn = (WebSocketImpl) w;
+		try {
+			conn.key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
+		} catch ( CancelledKeyException e ) {
+			// the thread which cancels key is responsible for possible cleanup
+			conn.outQueue.clear();
+		}
+		selector.wakeup();
+	}",651-661
+org.java_websocket.server.WebSocketServer,onWebsocketClosing,(Lorg/java_websocket/WebSocket;ILjava/lang/String;Z)V,2,2,100.0%,"@Override
+	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
+		onClosing( conn, code, reason, remote );
+
+	}",668-672
+org.java_websocket.server.WebSocketServer,onClosing,(Lorg/java_websocket/WebSocket;ILjava/lang/String;Z)V,1,1,100.0%,"public void onClosing( WebSocket conn, int code, String reason, boolean remote ) {
+
+	}",677-679
+org.java_websocket.server.WebSocketServer,onConnect,(Ljava/nio/channels/SelectionKey;)Z,1,1,100.0%,"protected boolean onConnect( SelectionKey key ) {
+		//FIXME
+		return true;
+	}",698-701
