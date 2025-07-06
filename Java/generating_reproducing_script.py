@@ -30,6 +30,30 @@ from heuristics import rank_methods_by_similarity, clustering_methods, rank_meth
 
 login(token="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")
 
+def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25):
+    """
+    Scan ranked_df2 first, picking entries also in ranked_df1[key_col].
+    Returns the first n common entries in the order they appear in ranked_df2.
+    """
+    # Build a lookup set of keys from df1
+    set1 = set(ranked_df1[key_col])
+
+    common_keys = []
+    for key in ranked_df2[key_col]:
+        if key in set1:
+            common_keys.append(key)
+            if len(common_keys) >= n:
+                break
+
+    # Now filter and reorder ranked_df2 by those keys
+    common_df = (
+        ranked_df2
+        .set_index(key_col)       # index by the key
+        .loc[common_keys]         # pick only those keys, in order of df2
+        .reset_index()            # turn the index back into a column
+    )
+    return common_df
+
 def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
     retry_count = 0
     #print("messages=", messages)
@@ -123,7 +147,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
     #exit()
     print("filtered_df=", filtered_df.head(2))
     print("filtered_df columns=", filtered_df.columns)
-    
 
     '''all_clusters = sorted(filtered_df["Cluster"].unique())
     for cluster_id in {1..1}:
@@ -166,6 +189,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         else:
             meth_code = "</Output> not found" #response_content
         print("**meth_code=", meth_code)
+        #exit()
         # Suppose meth_code is your multiline string as shown above
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** index=", idx, ",Processing line:", line)
@@ -186,12 +210,16 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 class_name = class_simple_name.split('$')[0]
                 #print(f"Class name after split: {class_name}", ",line=", line_number)
                 #print("class_name, slug, module=", class_name, slug, module)
+
+                with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
+                    print("Tried lines")
+                    writer = csv.writer(f)
+                    writer.writerow([slug, module, test, class_name, line_number,code_line])
                 class_path = find_class_file(class_name, slug, module)
                 #print("**** class_path=", class_path)
 
                 if class_path:
-                    inject_sleep_before_line(class_path, line_number)
-
+                    inject_sleep_before_line(class_path, line_number, method_name, descriptor, code_line)
                     try:
                         result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
                         out = result_run.stdout.strip()
@@ -307,7 +335,7 @@ def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, m
     changed_code = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
     print(changed_code)
-    exit()
+    #exit()
 
     return "" #, category_token_map, top_tokens_per_test
 
@@ -434,7 +462,7 @@ def extract_block(path, test):
     buf = []
 
     in_block = False
-
+    print("path=", path)
     with open(path) as f:
         for line in f:
             if not in_block and start_re.search(line):
@@ -480,15 +508,12 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     Org_test_per_project_group = {}
     #print(len(input_data))
 
+    print("test_code_csv=", test_code_csv)
     test_meth_code_df = pd.read_csv(test_code_csv) #read_data(test_code_csv)
-
-
-
 
     failure_log_df = pd.read_csv(failure_log_csv)
     test_code = test_meth_code_df.iloc[0] 
     failure_log = failure_log_df.iloc[0]
-
     df = pd.read_csv(
         dataset_path,
             quoting=csv.QUOTE_ALL,
@@ -497,19 +522,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
                     )
 
 
-    # Convert LineRange to span
-    #df["LineSpan"] = df["LineRange"].apply(
-    #    lambda x: abs(int(x.split("-")[1]) - int(x.split("-")[0])) if "-" in x else float("inf")
-    #    )
-
-    #depth_filtered_df = df[(df['CallDepth'] >=1) & (df['CallDepth'] <= 5)]
-    #depth_filtered_df = df[(df['CallDepth'] >=0) & (df['CallDepth'] <=1) & (df["LineSpan"] <= 15)]
-    #depth_filtered_df = df[(df['CallDepth'] >= 1) & (df["LineSpan"] >= 4) & (df["LineSpan"] <= 20)]
-
-    #depth_filtered_df = df[(df["LineSpan"] <= 15)].sample(n=20, random_state=42) #First 20 methods; works mainly for Java-WebSocket, or when used dynamic trace
-    #depth_filtered_df = df[df["LineSpan"] <= 20].sample(n=min(25, len(df[df["LineSpan"] <= 20])), random_state=42) # when use static trace
     print("test_code_csv=",test_code_csv, ",dataset_path=", dataset_path) 
-
     test_df = pd.read_csv(test_code_csv)
     method_df = pd.read_csv(dataset_path)
 
@@ -520,7 +533,24 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
 
     #exit()
     #ranked_df = rank_methods_by_similarity(test_df, df_with_cluster)
-    ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codebert")
+    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codebert")
+    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "bigbird")
+    #ranked_df_codet5 = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codet5")
+    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "gpt2")
+    ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "llama")
+
+    ## Now scan GPT-2’s top list first for common entries:
+    #ranked_df = top_n_common_scan_second_first(
+    #    ranked_df_codet5,
+    #    ranked_df_gpt2,
+    #    key_col="Body",
+    #    n=20
+    #)
+    
+    #print(common_top10)
+
+    ranked_df.to_csv("metadata/embedings/"+test+"_codebert_embeddings.csv", index=False)
+    exit()
 
     #print(ranked_df.head(2))
     #print("ranked_df columns=", ranked_df.columns)
@@ -532,24 +562,22 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     ranked_df["HasBody"] = ranked_df["Body"].apply(is_non_empty_body)
     ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
     ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)
-     
+    ranked_df["SimilarityFloat"] = ranked_df["similarity"].astype(float)
+    threshold = ranked_df["SimilarityFloat"].quantile(0.90)
+    print("threshold=", threshold) 
     # Filter by LineSpan < 30, then get top 20
     depth_filtered_df = ranked_df[ #(ranked_df["LineSpan"] <= 30) & 
-                                  (ranked_df["HasBody"]) &  (ranked_df["CoverageFloat"] >= 90.0) & 
+                                  (ranked_df["HasBody"]) &  (ranked_df["CoverageFloat"] >= 90.0) & (ranked_df["SimilarityFloat"] > threshold) & 
                                   (~ranked_df["IsSynchronized"])] #.head(30)
 
-    #print(depth_filtered_df["Coverage %"])
-    depth_filtered_df.to_csv("lll.csv", index=False) 
-    #exit()
-    #print(depth_filtered_df)
-    #print('****',slug, module, test, len(depth_filtered_df))
-    with open("meta_data.csv", mode="a", newline="") as f:
+    with open("metadata/meta_data.csv", mode="a", newline="") as f:
+        print("I AM from metadata")
         writer = csv.writer(f)
         writer.writerow([slug, module, test, len(depth_filtered_df)])
-
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
-
+    
+    depth_filtered_df.to_csv("metadata/Depth_filtered_df.csv", index=False)
     print(failure_log)
     print(test_code)
 
@@ -561,7 +589,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
             print('***************** All preds=')
             print(preds)
     
-
     elif ml_technique == "llama3_8b":
         #model_name, tokenizer, auto_model = llama3_8b_model_define()
         with torch.no_grad():

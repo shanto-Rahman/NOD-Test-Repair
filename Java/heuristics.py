@@ -1,9 +1,80 @@
 import pandas as pd
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, AutoModel
 import torch
+from transformers import BigBirdTokenizer, BigBirdForSequenceClassification
+from transformers import BigBirdModel
+from transformers import T5Tokenizer, T5EncoderModel
+from transformers import LlamaTokenizer, LlamaModel
 
+def llama_model_define():
+    model_name = "meta-llama/Llama-2-7b-hf"
+    # Load the tokenizer & model
+    tokenizer = LlamaTokenizer.from_pretrained(model_name, use_fast=False)
+    # Llama doesn’t define a pad token by default—set it to eos
+    tokenizer.pad_token = tokenizer.eos_token
+    model = LlamaModel.from_pretrained(model_name)
+    # Tell the model which ID is pad
+    model.config.pad_token_id = tokenizer.eos_token_id
+    return model_name, tokenizer, model
+
+def get_llama_embeddings(code: str,
+                         tokenizer: LlamaTokenizer,
+                         model: LlamaModel,
+                         device: torch.device) -> np.ndarray:
+    """
+    Tokenize up to the model's context length (default 4096 for Llama-2),
+    run the encoder, then mean-pool over tokens to get a [1, hidden_size] vector.
+    """
+    inputs = tokenizer(
+        code,
+        return_tensors="pt",
+        truncation=True,
+        padding="longest",
+        max_length=4096   # adjust if you use a smaller Llama variant
+    ).to(device)
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+        # last_hidden_state: [1, seq_len, hidden_size]
+        hidden_states = outputs.last_hidden_state
+
+    # mean-pool → [1, hidden_size]
+    emb = hidden_states.mean(dim=1)
+
+    # return a 2D numpy array so cosine_similarity still works
+    return emb.cpu().numpy()
+
+
+def gpt2_model_define():
+    model_name = "gpt2-medium"
+    tokenizer  = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+    # tell GPT-2 to pad with its EOS token
+    tokenizer.pad_token = tokenizer.eos_token
+    model      = AutoModel.from_pretrained(model_name)
+    # also set the model’s padding‐token‐id so it won’t warn you
+    model.config.pad_token_id = model.config.eos_token_id
+    return model_name, tokenizer, model
+
+def bigbird_model_define():
+    model_name = "google/bigbird-roberta-base"  # 4096-token variant
+    tokenizer = BigBirdTokenizer.from_pretrained(model_name)
+    auto_model = BigBirdModel.from_pretrained(model_name)
+    return model_name, tokenizer, auto_model
+
+def codet5_model_define():
+    model_name = "Salesforce/codet5-large"
+    # Use AutoTokenizer and force the slow (sentencepiece) version
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+    model     = T5EncoderModel.from_pretrained(model_name)
+    return model_name, tokenizer, model
+#def codet5_model_define():
+#    model_name = "Salesforce/codet5-large"
+#    tokenizer  = T5Tokenizer.from_pretrained(model_name)
+#    model      = T5EncoderModel.from_pretrained(model_name)
+#    return model_name, tokenizer, model
 
 def codebert_model_define():    
     model_name = "microsoft/codebert-base"
@@ -12,7 +83,51 @@ def codebert_model_define():
     auto_model = AutoModel.from_pretrained(model_name, config=model_config) 
     return model_name, tokenizer, auto_model
 
-def get_code_embeddings(code, tokenizer, model, device):
+def get_gpt2_embeddings(code: str,
+                        tokenizer,
+                        model,
+                        device: torch.device) -> np.ndarray:
+    """
+    Encode up to 1024 tokens with GPT2-Medium and mean-pool to get a 1024-dim vector.
+    """
+    inputs = tokenizer(
+        code,
+        return_tensors="pt",
+        truncation=True,
+        padding="longest",
+        max_length=1024    # now matches GPT-2’s context window
+    ).to(device)
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+        # outputs.last_hidden_state: [1, seq_len, hidden_size=1024]
+        hidden_states = outputs.last_hidden_state
+
+    # mean-pool across the sequence → [1, 1024]
+    emb = hidden_states.mean(dim=1)
+    return emb.cpu().numpy()  # → (1024,)
+
+def get_bigbird_embeddings(code: str, tokenizer, model, device):
+    # Tokenize up to 4096 tokens
+    inputs = tokenizer(
+        code,
+        return_tensors="pt",
+        truncation=True,
+        padding="max_length",
+        max_length=1024
+    ).to(device)
+    
+    with torch.no_grad():
+        outputs = model(**inputs)
+        # last_hidden_state: [batch, seq_len, hidden_size]
+        hidden_states = outputs.last_hidden_state
+
+    # Mean-pool across the sequence dimension
+    emb = hidden_states.mean(dim=1)  # → [batch, hidden_size]
+    return emb.cpu().numpy()
+
+
+def get_codebert_embeddings(code, tokenizer, model, device):
     """Get better code embeddings using attention-weighted pooling"""
     inputs = tokenizer(code, 
                       padding=True,
@@ -24,20 +139,62 @@ def get_code_embeddings(code, tokenizer, model, device):
         outputs = model(**inputs)
         # Get last hidden states [batch_size, seq_length, hidden_size]
         hidden_states = outputs[0]
-        
-        # Use mean pooling instead of attention weights
-        # Take mean of token embeddings along sequence length dimension
         mean_embeddings = torch.mean(hidden_states, dim=1)
         
     return mean_embeddings.cpu().numpy()
+
+import torch
+
+def get_codet5_embeddings(code: str,
+                          tokenizer,
+                          model,
+                          device: torch.device) -> np.ndarray:
+    """
+    Get code embeddings from CodeT5-Large by mean-pooling its encoder outputs.
+
+    Args:
+      code: the code snippet to embed
+      tokenizer: a T5Tokenizer from 'Salesforce/codet5-large'
+      model: a T5EncoderModel from 'Salesforce/codet5-large'
+      device: torch.device ('cuda' or 'cpu')
+
+    Returns:
+      A NumPy array of shape (hidden_size,)—for CodeT5-Large that is (1024,).
+    """
+    # 1) Tokenize & move inputs to device
+    inputs = tokenizer(
+        code,
+        return_tensors="pt",
+        truncation=True,
+        padding="longest",
+        max_length=512
+    ).to(device)
+
+    # 2) Forward pass, grab last_hidden_state
+    with torch.no_grad():
+        outputs = model(**inputs)
+        # outputs.last_hidden_state: [batch, seq_len, hidden_size]
+        hidden_states = outputs.last_hidden_state
+
+    # 3) Mean-pool over the sequence dimension → [batch, hidden_size]
+    embeddings = hidden_states.mean(dim=1)
+
+    # 4) Detach, move to CPU, convert to NumPy → (hidden_size,)
+    return embeddings.cpu().numpy()
+
 
 def rank_methods_by_llm_embedding_similarity(test_df, method_df, llm="codebert") -> pd.DataFrame:
     # Load BERT model (using Microsoft's CodeBERT variant)
     if llm == "codebert":
         model_name, tokenizer, model = codebert_model_define()
-    else:
-        model_name, tokenizer, model = codebert_model_define()  # Default to CodeBERT if no other model specified 
-    
+    elif llm == "codet5":
+        model_name, tokenizer, model = codet5_model_define()  # Default to CodeBERT if no other model specified 
+    elif llm == "bigbird":
+        model_name, tokenizer, model = bigbird_model_define()  # Default to CodeBERT if no other model specified 
+    elif llm == "gpt2":
+        model_name, tokenizer, model = gpt2_model_define()
+    elif llm == "llama":
+        model_name, tokenizer, model = llama_model_define()
     # Generate embeddings
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -48,10 +205,22 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, llm="codebert")
     method_bodies = method_df['Body'].tolist()
     
     # Generate embeddings
-    test_embedding = get_code_embeddings(test_code, tokenizer, model, device)
-    #print("test_embedding", len(test_embedding), test_embedding.shape)
-    method_embeddings = [get_code_embeddings(body, tokenizer, model, device) for body in method_bodies]
-    #print("method_embeddings", len(method_embeddings), method_embeddings[0].shape)
+    if llm == "codebert":
+        test_embedding = get_codebert_embeddings(test_code, tokenizer, model, device) 
+        method_embeddings = [get_codebert_embeddings(body, tokenizer, model, device) for body in method_bodies]
+    elif llm  == "codet5":
+        test_embedding = get_codet5_embeddings(test_code, tokenizer, model, device)
+        method_embeddings = [get_codet5_embeddings(body, tokenizer, model, device) for body in method_bodies]
+    elif llm == "bigbird":
+        test_embedding = get_bigbird_embeddings(test_code, tokenizer, model, device)
+        method_embeddings = [get_bigbird_embeddings(body, tokenizer, model, device) for body in method_bodies]
+    elif llm == "gpt2":
+        test_embedding   = get_gpt2_embeddings(test_code, tokenizer, model, device)
+        method_embeddings = [get_gpt2_embeddings(body, tokenizer, model, device) for body in method_bodies]
+    elif llm == "llama":
+        print("I am llama")
+        test_embedding   = get_llama_embeddings(test_code, tokenizer, model, device)
+        method_embeddings = [get_llama_embeddings(body, tokenizer, model, device) for body in method_bodies]
     # Compute cosine similarity
     similarities = [cosine_similarity(test_embedding, method_embedding).item() for method_embedding in method_embeddings]
     #print("similarities", len(similarities), similarities[:5])
@@ -59,7 +228,6 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, llm="codebert")
     method_df['similarity'] = similarities
     # Sort by similarity
     method_df = method_df.sort_values(by='similarity', ascending=False).reset_index(drop=True)
-    #print("method_df", method_df.shape, method_df.head())
     return method_df
 
 def rank_methods_by_similarity(test_df, method_df) -> pd.DataFrame:

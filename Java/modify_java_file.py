@@ -1,14 +1,14 @@
 import os
 import re
 
-def inject_sleep_before_line(file_path, line_number):
+def inject_sleep_before_line(file_path, line_number, method_name, descriptor, code_line):
     """
     Inserts 'Thread.sleep(100);' before the given line_number in the file,
     preserving the indentation of the target line.
     """
     with open(file_path, 'r') as file:
         lines = file.readlines()
-
+    print(file_path, line_number, method_name, descriptor, code_line)
     # Get indentation of the target line
     target_line = lines[line_number - 1]
     #leading_spaces = len(target_line) - len(target_line.lstrip())
