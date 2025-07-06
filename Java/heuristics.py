@@ -9,6 +9,265 @@ from transformers import BigBirdModel
 from transformers import T5Tokenizer, T5EncoderModel
 from transformers import LlamaTokenizer, LlamaModel
 
+def qwen_model_define():
+    model_name = "Qwen/Qwen-7B"
+    tokenizer  = AutoTokenizer.from_pretrained(
+        model_name,
+        trust_remote_code=True,
+        use_fast=False,
+        use_auth_token=True
+    )
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        trust_remote_code=True,
+        use_auth_token=True
+    )
+    return model_name, tokenizer, model
+
+import torch
+import numpy as np
+
+def get_qwen_embeddings(code: str,
+                        tokenizer,
+                        model,
+                        device: torch.device) -> np.ndarray:
+    """
+    1. Tokenizes the code (no padding).
+    2. Runs the Qwen model with `output_hidden_states=True`.
+    3. Mean‐pools the final hidden layer weighted by the attention mask.
+    4. Casts to float32 and returns a NumPy array of shape (1, hidden_size).
+    """
+    # 1) Tokenize with truncation only
+    inputs = tokenizer(
+        code,
+        return_tensors="pt",
+        truncation=True,
+        max_length=tokenizer.model_max_length,
+        return_attention_mask=True
+    ).to(device)
+
+    # 2) Forward pass, request hidden states
+    with torch.no_grad():
+        outputs = model(**inputs, output_hidden_states=True)
+        # Grab the last hidden layer: (1, seq_len, hidden_size)
+        last_hidden = outputs.hidden_states[-1]
+
+    # 3) Compute attention‐mask‐weighted mean over seq_len
+    mask = inputs.attention_mask.unsqueeze(-1)  # (1, seq_len, 1)
+    summed = (last_hidden * mask).sum(dim=1)    # (1, hidden_size)
+    counts = mask.sum(dim=1)                    # (1, 1)
+    emb    = summed / counts                    # (1, hidden_size)
+
+    # 4) Cast to float32 (avoid bfloat16→NumPy errors) and return
+    return emb.cpu().to(torch.float32).numpy()  # → array shape (1, hidden_size)
+
+
+#def get_qwen_embeddings(code: str,
+#                        tokenizer,
+#                        model,
+#                        device: torch.device) -> np.ndarray:
+#    # …tokenize & forward with output_hidden_states…
+#    with torch.no_grad():
+#        outputs = model(**inputs, output_hidden_states=True)
+#        last_hidden = outputs.hidden_states[-1]   # [1, seq_len, hidden_size] in bfloat16
+#
+#    # mask‐weighted pooling as before
+#    mask = inputs.attention_mask.unsqueeze(-1)
+#    summed = (last_hidden * mask).sum(dim=1)
+#    counts = mask.sum(dim=1)
+#    emb    = summed / counts                   # still bfloat16
+#
+#    # **cast to float32 before numpy**
+#    return emb.cpu().to(torch.float32).numpy() # → (1, hidden_size) float32
+
+#def get_qwen_embeddings(code: str,
+#                        tokenizer,
+#                        model,
+#                        device: torch.device) -> np.ndarray:
+#    """
+#    Truncate (no padding), run the Qwen causal LM encoder with hidden states,
+#    then attention‐mask‐weighted mean‐pool over the final layer.
+#    Returns a (1, hidden_size) numpy array.
+#    """
+#    # 1) Tokenize with truncation only
+#    inputs = tokenizer(
+#        code,
+#        return_tensors="pt",
+#        truncation=True,
+#        max_length=tokenizer.model_max_length,
+#        return_attention_mask=True
+#    ).to(device)
+#
+#    # 2) Forward pass asking for hidden_states
+#    with torch.no_grad():
+#        outputs = model(**inputs, output_hidden_states=True)
+#        # outputs.hidden_states: tuple of (embeddings, layer1, ..., layerN)
+#        last_hidden = outputs.hidden_states[-1]  # [1, seq_len, hidden_size]
+#
+#    # 3) Mask‐weighted pooling
+#    mask = inputs.attention_mask.unsqueeze(-1)        # [1, seq_len, 1]
+#    summed = (last_hidden * mask).sum(dim=1)          # [1, hidden_size]
+#    counts = mask.sum(dim=1)                          # [1, 1]
+#    emb    = summed / counts                          # [1, hidden_size]
+#
+#    return emb.cpu().numpy()                          # → (1, hidden_size)
+
+#def get_qwen_embeddings(code: str,
+#                        tokenizer,
+#                        model,
+#                        device: torch.device) -> np.ndarray:
+#    """
+#    Truncate (no padding), run the model, then attention-mask-weighted mean-pool.
+#    Returns a 2D array of shape (1, hidden_size).
+#    """
+#    # 1) Tokenize with truncation only
+#    inputs = tokenizer(
+#        code,
+#        return_tensors="pt",
+#        truncation=True,
+#        max_length=tokenizer.model_max_length,
+#        return_attention_mask=True
+#    ).to(device)
+#
+#    # 2) Forward pass
+#    with torch.no_grad():
+#        outputs = model(**inputs)
+#        hidden_states = outputs.last_hidden_state  # [1, seq_len, hidden_size]
+#
+#    # 3) Weighted mean-pool over tokens using attention mask
+#    mask = inputs.attention_mask.unsqueeze(-1)      # [1, seq_len, 1]
+#    masked_states = hidden_states * mask            # zero-out any pad tokens (if any)
+#    sum_states = masked_states.sum(dim=1)           # [1, hidden_size]
+#    lengths    = mask.sum(dim=1)                    # [1, 1]
+#    emb        = sum_states / lengths               # [1, hidden_size]
+#
+#    return emb.cpu().numpy() 
+
+#def qwen_model_define():
+#    model_name = "Qwen/Qwen-7B"
+#    # 1) load tokenizer (slow) so we can add tokens
+#    tokenizer = AutoTokenizer.from_pretrained(
+#        model_name,
+#        trust_remote_code=True,
+#        use_fast=False,
+#        use_auth_token=True
+#    )
+#    # 2) explicitly add a new pad token (choose an arbitrary string)
+#    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+#    
+#    # 3) load the model, then resize embeddings for the new token
+#    model = AutoModelForCausalLM.from_pretrained(
+#        model_name,
+#        trust_remote_code=True,
+#        use_auth_token=True
+#    )
+#    model.resize_token_embeddings(len(tokenizer))
+#    # 4) configure pad_token_id on the model
+#    model.config.pad_token_id = tokenizer.pad_token_id
+#
+#    return model_name, tokenizer, model
+#
+#def get_qwen_embeddings(code: str, tokenizer, model, device: torch.device) -> np.ndarray:
+#    inputs = tokenizer(
+#        code,
+#        return_tensors="pt",
+#        truncation=True,
+#        padding="max_length",
+#        max_length=tokenizer.model_max_length
+#    ).to(device)
+#
+#    with torch.no_grad():
+#        outputs = model(**inputs)
+#        hidden_states = outputs.last_hidden_state  # [1, seq_len, hidden_size]
+#
+#    emb = hidden_states.mean(dim=1)                # [1, hidden_size]
+#    return emb.cpu().numpy() 
+
+#def qwen_model_define():
+#    model_name = "Qwen/Qwen-7B"
+#    tokenizer  = AutoTokenizer.from_pretrained(
+#        model_name,
+#        trust_remote_code=True,
+#        use_fast=False,
+#        use_auth_token=True
+#    )
+#    #tokenizer.pad_token = tokenizer.eos_token
+#    # 2) explicitly add a pad token (we’ll reuse eos_token for simplicity)
+#    tokenizer.add_special_tokens({'pad_token': tokenizer.eos_token})
+#            
+#
+#    model = AutoModelForCausalLM.from_pretrained(
+#        model_name,
+#        trust_remote_code=True,
+#        use_auth_token=True
+#    )
+#    model.resize_token_embeddings(len(tokenizer))
+#    # 4) configure the model’s pad_token_id
+#    model.config.pad_token_id = tokenizer.pad_token_id
+#
+#    return model_name, tokenizer, model
+#
+#def get_qwen_embeddings(code: str, tokenizer, model, device: torch.device) -> np.ndarray:
+#    inputs = tokenizer(
+#        code,
+#        return_tensors="pt",
+#        truncation=True,
+#        padding="max_length",
+#        max_length=tokenizer.model_max_length
+#    ).to(device)
+#
+#    with torch.no_grad():
+#        # AutoModelForCausalLM still returns last_hidden_state from the base model
+#        outputs = model(**inputs)
+#        hidden_states = outputs.last_hidden_state  # [1, seq_len, hidden_size]
+#
+#    emb = hidden_states.mean(dim=1)                # [1, hidden_size]
+#    return emb.cpu().numpy()  
+
+#def qwen_model_define():
+#    model_name = "Qwen/Qwen-7B"            # or whichever Qwen variant you want
+#    # Qwen uses custom code, so we set trust_remote_code=True
+#    tokenizer  = AutoTokenizer.from_pretrained(
+#        model_name,
+#        trust_remote_code=True,
+#        use_fast=False,
+#        use_auth_token=True
+#
+#    )
+#    # ensure we have a pad token
+#    tokenizer.pad_token = tokenizer.eos_token
+#    model = AutoModel.from_pretrained(
+#        model_name,
+#        trust_remote_code=True
+#    )
+#    model.config.pad_token_id = tokenizer.eos_token_id
+#    return model_name, tokenizer, model
+#
+#def get_qwen_embeddings(code: str,
+#                        tokenizer,
+#                        model,
+#                        device: torch.device) -> np.ndarray:
+#    """
+#    Tokenize up to the model's max context, run the encoder,
+#    then mean-pool over the sequence to get a [1, hidden_size] vector.
+#    """
+#    inputs = tokenizer(
+#        code,
+#        return_tensors="pt",
+#        truncation=True,
+#        padding="longest",
+#        max_length=tokenizer.model_max_length  # often 2048+ for Qwen
+#    ).to(device)
+#
+#    with torch.no_grad():
+#        outputs = model(**inputs)
+#        # last_hidden_state: [1, seq_len, hidden_size]
+#        hidden_states = outputs.last_hidden_state
+#
+#    # mean-pool → [1, hidden_size]
+#    emb = hidden_states.mean(dim=1)
+#    return emb.cpu().numpy() 
+
 def llama_model_define():
     model_name = "meta-llama/Llama-2-7b-hf"
     # Load the tokenizer & model
@@ -195,6 +454,9 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, llm="codebert")
         model_name, tokenizer, model = gpt2_model_define()
     elif llm == "llama":
         model_name, tokenizer, model = llama_model_define()
+    elif llm == "qwen":
+        model_name, tokenizer, model = qwen_model_define()
+
     # Generate embeddings
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -218,9 +480,12 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, llm="codebert")
         test_embedding   = get_gpt2_embeddings(test_code, tokenizer, model, device)
         method_embeddings = [get_gpt2_embeddings(body, tokenizer, model, device) for body in method_bodies]
     elif llm == "llama":
-        print("I am llama")
         test_embedding   = get_llama_embeddings(test_code, tokenizer, model, device)
         method_embeddings = [get_llama_embeddings(body, tokenizer, model, device) for body in method_bodies]
+
+    elif llm == "qwen":
+        test_embedding   = get_qwen_embeddings(test_code, tokenizer, model, device)
+        method_embeddings = [get_qwen_embeddings(body, tokenizer, model, device) for body in method_bodies]
     # Compute cosine similarity
     similarities = [cosine_similarity(test_embedding, method_embedding).item() for method_embedding in method_embeddings]
     #print("similarities", len(similarities), similarities[:5])
