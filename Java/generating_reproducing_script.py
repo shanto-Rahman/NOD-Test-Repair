@@ -223,7 +223,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     try:
                         result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
                         out = result_run.stdout.strip()
-                        #print("***out****", out)
+                        print("***out****", out)
                         firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
 
                         #print("*** test_run result, Script output: ",firstLine)
@@ -233,7 +233,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                             #break 
                             return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
                             #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
-
                     except subprocess.CalledProcessError as e:
                         print("run_test.sh failed with exit code", e.returncode)
                         print("--- stdout ---")
@@ -551,7 +550,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #print(common_top10)
 
     ranked_df.to_csv("metadata/embedings/"+test+"_codebert_embeddings.csv", index=False)
-    exit()
 
     #print(ranked_df.head(2))
     #print("ranked_df columns=", ranked_df.columns)
@@ -563,7 +561,8 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     ranked_df["HasBody"] = ranked_df["Body"].apply(is_non_empty_body)
     ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
     ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)
-    ranked_df["SimilarityFloat"] = ranked_df["similarity"].astype(float)
+    #ranked_df["SimilarityFloat"] = ranked_df["similarity"].astype(float)
+    ranked_df["SimilarityFloat"] = ranked_df["combined_sim"].astype(float)
     threshold = ranked_df["SimilarityFloat"].quantile(0.90)
     print("threshold=", threshold) 
     # Filter by LineSpan < 30, then get top 20
