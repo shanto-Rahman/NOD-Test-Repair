@@ -536,8 +536,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codebert")
     #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "bigbird")
     #ranked_df_codet5 = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codet5")
-    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "gpt2")
-    ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "llama")
+    ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, failure_log_df, "gpt2")
+    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "llama")
+    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "qwen")
 
     ## Now scan GPT-2’s top list first for common entries:
     #ranked_df = top_n_common_scan_second_first(
@@ -663,24 +664,25 @@ if __name__ == "__main__":
     base, _ = os.path.splitext(fail_log_csv)
     fail_log_csv = f"{base}.csv"
 
-    cleaned = [line for line in filtered_fail_log_txt if line.strip()]
+    cleaned_fail_log = [line for line in filtered_fail_log_txt if line.strip()]
 
     # 2) drop lines that are just “[INFO]” (with optional spaces)
     info_only = re.compile(r'^\[INFO\]\s*$')
-    cleaned = [line for line in cleaned if not info_only.match(line)]
-    print("fail cleaned=", cleaned)
+    cleaned_fail_log = [line for line in cleaned_fail_log if not info_only.match(line)]
+    print("fail cleaned=", cleaned_fail_log)
 
     #big_block = "\n".join(filtered_fail_log_txt)
-    big_block = "\n".join(cleaned)
+    big_block_fail_log = "\n".join(cleaned_fail_log)
 
     with open(fail_log_csv, "w", newline="") as fw:
         writer = csv.writer(fw,
                         delimiter=",",
                         quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
         writer.writerow(["Failure"])
-        writer.writerow([big_block]) 
+        writer.writerow([big_block_fail_log]) 
 
     start_time = time.time()
+    #print(type(big_block_fail_log))
     line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
