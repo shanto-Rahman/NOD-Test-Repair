@@ -44,7 +44,7 @@ You will be provided with:
 
 Your task:
 - Carefully analyze each provided method and identify the **single most likely location** before which injecting a deliberate delay (e.g., Thread.sleep(...)) would consistently trigger the test failure.
-- Output a ranked list (most likely first) of up to 10 locations, each in the following format:
+- Output a ranked list (most likely first) of exactly 10 locations, each in the following format:
     Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
 - The FileLineNumber is the actual line number in the source file, as shown before each line in the method body.
 - The ActualCodeLine should be the exact code at that line, shown inside parentheses.
@@ -53,13 +53,18 @@ Your task:
 
 **Rules:**
 1. Never choose a location inside any `synchronized {{ ... }}` block or lock context.
-2. Output a ranked list of up to 10 locations, each formatted as:
+2. Output a ranked list of exactly 10 locations, each formatted as:
    Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
 3. Do NOT output the full method source or any other text.
 4. Wrap your answer **only** in <Output> and </Output>, with no extra text before or after.
 5. End your answer with </Output>.
 6. Only suggest injecting a delay before the start of a complete Java statement, not in the middle of a multi-line statement or expression.
 7. Never suggest a line that is a continuation of the previous line (e.g., lines starting with '.', ',', or inside parentheses).
+8. Only suggest injection points **between two complete Java statements**, never within an expression, lambda, constructor, method call, or method argument list.
+9. For multi-line expressions or method calls (e.g., parameters passed across multiple lines), **never insert a delay between those lines**, even if they look like separate statements.
+10. If unsure whether a line is part of a complete statement, **skip it**.
+11. You must preserve Java syntax and compilation correctness.
+
 
 <Input>
     <Failure>

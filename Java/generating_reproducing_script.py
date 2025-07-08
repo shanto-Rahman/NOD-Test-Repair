@@ -146,15 +146,15 @@ def is_synchronized_signature(body):
 
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
-    max_retries = 3
+    max_retries = 5
     tried_methods = set()
 
     #call a method to check if any api call happened which is the same as api found by flakerake paper
     #../data/flakerake-timing-related-apis.txt
     #find_api_match_with_flakerake(filtered_df, "../data/flakerake-timing-related-apis.txt") 
     #exit()
-    print("filtered_df=", filtered_df.head(2))
-    print("filtered_df columns=", filtered_df.columns)
+    #print("filtered_df=", filtered_df.head(2))
+    #print("filtered_df columns=", filtered_df.columns)
 
     '''all_clusters = sorted(filtered_df["Cluster"].unique())
     for cluster_id in {1..1}:
@@ -248,27 +248,23 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         print(e.stdout)
                         print("--- stderr ---")
                         print(e.stderr)
-                        if slug == "doanduyhai/Achilles":
-                            currentDir_when_exception_occurs = os.getcwd()
-                            before, after = test.rsplit('.', 1)
-                            test_with_hash = f"{before}#{after}"
-                            log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+".txt"
-                            if has_errors_or_failures(log_file):
-                                print("Found Errors: 1 or Failures: 1")
-                                return line, str(retry_count)+"_"+str(idx), "Failure found."
-                            else:
-                                print("No Errors: 1 or Failures: 1")
+                        #if slug == "doanduyhai/Achilles" or "Java-WebSocket":
+                        currentDir_when_exception_occurs = os.getcwd()
+                        before, after = test.rsplit('.', 1)
+                        test_with_hash = f"{before}#{after}"
+                        log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+".txt"
+                        print("log file name=", log_file)
+                        if has_errors_or_failures(log_file):
+                            print("Found Errors: 1 or Failures: 1")
+                            return line, str(retry_count)+"_"+str(idx), "Failure found."
+                        else:
+                            print("No Errors: 1 or Failures: 1")
 
 
                 else:
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
                 print("Line did not match expected format:", line)
-        #exit()
-
-        #if method_name in tried_methods:
-        #    print(f"[INFO] Already tried {method_name}, skipping to next retry.")
-        #else:
         tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
         feedback = (
             f"Your previous suggestion did not reproduce the failure.\n"
@@ -278,6 +274,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             f"Please suggest a new location for delay injection in a different method, "
             f"or a different location within a method that has not already been tried. "
             f"Do not repeat any of the previous suggestions."
+            f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
         )
         messages.append({"role": "user", "content": feedback}) 
         retry_count += 1
@@ -571,7 +568,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #print(common_top10)
 
     ranked_df.to_csv("metadata/embedings/"+test+"_codebert_embeddings.csv", index=False)
-
     #print(ranked_df.head(2))
     #print("ranked_df columns=", ranked_df.columns)
     # Compute line span from LineRange column (e.g., "38-43" → 6 lines)
