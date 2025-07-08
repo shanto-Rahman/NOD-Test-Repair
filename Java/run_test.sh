@@ -14,20 +14,22 @@ module=$2
 testName_with_dot=$3
 testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
 id=$4
-
+#JMVNOPTIONS="-Dcassandra.start_native_transport=false \
+#             -Dsigar.sigar_enabled=false"
+JMVNOPTIONS=""
 cd $inputProj/$slug
-#echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName -Dcheckstyle.skip=true"
-#exit
 mvn clean install -pl $module  -am -DskipTests
-timeout 5m mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName -Dcheckstyle.skip=true >  "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt"
+timeout 10m mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName -Dcheckstyle.skip=true >  "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt" 2>/dev/null
 bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt")
 if [[ $bugCount -gt 0  ]]; then
-    echo "Failure found."
     git checkout -- '**/*.java'
+    echo "Failure found."
+    exit 1
 else
     echo "Failure not found."
     #git stash
     #git checkout $(find -name "*.java")
     git checkout -- '**/*.java'
+    exit 0 
 fi
 

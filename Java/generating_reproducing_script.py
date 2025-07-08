@@ -30,6 +30,11 @@ from heuristics import rank_methods_by_similarity, clustering_methods, rank_meth
 
 login(token="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")
 
+def has_errors_or_failures(path):
+    with open(path, 'r') as f:
+        text = f.read()
+    return 'Errors: 1' in text or 'Failures: 1' in text
+
 def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25):
     """
     Scan ranked_df2 first, picking entries also in ranked_df1[key_col].
@@ -221,6 +226,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 if class_path:
                     inject_sleep_before_line(class_path, line_number, method_name, descriptor, code_line)
                     try:
+                        print("./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx))
                         result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
                         out = result_run.stdout.strip()
                         print("***out****", out)
@@ -239,6 +245,18 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         print(e.stdout)
                         print("--- stderr ---")
                         print(e.stderr)
+                        if slug == "doanduyhai/Achilles":
+                            currentDir_when_exception_occurs = os.getcwd()
+                            before, after = test.rsplit('.', 1)
+                            test_with_hash = f"{before}#{after}"
+                            log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+".txt"
+                            if has_errors_or_failures(log_file):
+                                print("Found Errors: 1 or Failures: 1")
+                                return line, str(retry_count)+"_"+str(idx), "Failure found."
+                            else:
+                                print("No Errors: 1 or Failures: 1")
+
+
                 else:
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
