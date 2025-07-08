@@ -106,25 +106,28 @@ def find_class_file(class_name, slug, module):
 
     # Step 2: Search all modules under projects/<slug>/
     base_dir = Path(f"projects/{slug}")
-    #print("class_name=", class_name)
-    #print("rel_path=", rel_path)
-    #print("base_dir=", base_dir)
-    candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
-    #candidates = list(base_dir.glob(f"**/src/main/java/{rel_path}"))
+    #candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
+    candidates = list(base_dir.glob(f"**/src/main/java/**/{rel_path}"))
     print("All candidates before filtering:", candidates)
 
     # Step 3: Filter out matches from the given module itself
 
-    if module != ".":
-        candidates = [c for c in candidates if module not in str(c)]
-    print("Filtered candidates:", candidates)  # <-- Add this line
+    #if module != ".":
+    #    module_path = (base_dir / module).resolve()
+    #    candidates = [c for c in candidates if module_path not in c.resolve().parents]
+    for c in candidates:
+        if c.exists():
+            print(f"[INFO] Found class file: {c}")
+            return str(c)
+    #print("Filtered candidates:", candidates)  # <-- Add this line
 
     # Step 4: Return the first alternative match (if any)
-    if candidates:
-        print(f"[INFO] Class {class_name} not found in {module}, using {candidates[0]}")
-        return str(candidates[0])
+    #if candidates:
+    #    print(f"[INFO] Class {class_name} not found in {module}, using {candidates[0]}")
+    #    return str(candidates[0])
 
     print(f"[WARN] Class {class_name} not found in any module.")
+    exit()
     
     return None
 
