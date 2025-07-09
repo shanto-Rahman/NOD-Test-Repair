@@ -41,6 +41,7 @@ while read line
             if [[ $2 == "idoft" ]]; then
                 fail_log_csv_name=$(find logs -name "${module_with_dot}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
             else # $2 = flakerake
+               python3 find_failure_message_and_save.py "$id" "$slug_org" "$sha" "$module_org" "$testName" "../Results/unique_failures_10K_reruns_flakerake_775.csv" "$module_with_dot" "$proj_name_only" # It outputs $id_$module_with_dot_$testName_stacktrace.txt
                 fail_log_csv_name="logs/${id}_${module_with_dot}_${testName}_stacktrace.csv"
             fi
         fi
