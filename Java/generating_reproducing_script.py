@@ -675,27 +675,29 @@ if __name__ == "__main__":
     sha = sys.argv[8] 
     module = sys.argv[9] 
     test = sys.argv[10] 
+    data_is_from_which_csv = sys.argv[11] 
     initialize_environment(42)
-    filtered_fail_log_txt = extract_block(fail_log_csv, test)
-    base, _ = os.path.splitext(fail_log_csv)
-    fail_log_csv = f"{base}.csv"
+    if data_is_from_which_csv == "idoft":
+        filtered_fail_log_txt = extract_block(fail_log_csv, test)
+        base, _ = os.path.splitext(fail_log_csv)
+        fail_log_csv = f"{base}.csv"
 
-    cleaned_fail_log = [line for line in filtered_fail_log_txt if line.strip()]
+        cleaned_fail_log = [line for line in filtered_fail_log_txt if line.strip()]
 
-    # 2) drop lines that are just “[INFO]” (with optional spaces)
-    info_only = re.compile(r'^\[INFO\]\s*$')
-    cleaned_fail_log = [line for line in cleaned_fail_log if not info_only.match(line)]
-    print("fail cleaned=", cleaned_fail_log)
+        # 2) drop lines that are just “[INFO]” (with optional spaces)
+        info_only = re.compile(r'^\[INFO\]\s*$')
+        cleaned_fail_log = [line for line in cleaned_fail_log if not info_only.match(line)]
+        print("fail cleaned=", cleaned_fail_log)
 
-    #big_block = "\n".join(filtered_fail_log_txt)
-    big_block_fail_log = "\n".join(cleaned_fail_log)
+        #big_block = "\n".join(filtered_fail_log_txt)
+        big_block_fail_log = "\n".join(cleaned_fail_log)
 
-    with open(fail_log_csv, "w", newline="") as fw:
-        writer = csv.writer(fw,
-                        delimiter=",",
-                        quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
-        writer.writerow(["Failure"])
-        writer.writerow([big_block_fail_log]) 
+        with open(fail_log_csv, "w", newline="") as fw:
+            writer = csv.writer(fw,
+                            delimiter=",",
+                            quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
+            writer.writerow(["Failure"])
+            writer.writerow([big_block_fail_log]) 
 
     start_time = time.time()
     #print(type(big_block_fail_log))
