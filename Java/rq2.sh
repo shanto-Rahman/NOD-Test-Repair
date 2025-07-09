@@ -48,7 +48,7 @@ while IFS= read -r line
         echo "No solutions found before"
         continue
     fi
-    file_path=$(echo $file_meth_line_to_inject_delay | cut -d':' -f1)
+    file_path=$(echo $file_meth_line_to_inject_delay | cut -d':' -f1 | cut -d'$' -f1)
     method_name=$(echo $file_meth_line_to_inject_delay | cut -d':' -f2)
     method_descriptor=$(echo $file_meth_line_to_inject_delay | cut -d':' -f3)
     line_number=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f1)
@@ -126,6 +126,7 @@ while IFS= read -r line
     start=$(date +%s.%N)
     for i in {1..100}; do
         echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash"
+        #exit
         mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash >  "$logs/$testName-$i.txt"
 
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
