@@ -361,7 +361,8 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, fail_log_df, ll
     df = method_df.copy()
     df["sim_to_test"]    = test_sims
     df["sim_to_log"]     = log_sims
-    df["combined_sim"]   = (df["sim_to_test"] + df["sim_to_log"]) / 2
+    #df["combined_sim"]   = (df["sim_to_test"] + df["sim_to_log"]) / 2
+    df["combined_sim"]   = (0.3*df["sim_to_test"] + 0.7*df["sim_to_log"])
 
     # 6) rank and return
     return df.sort_values("combined_sim", ascending=False).reset_index(drop=True) 
