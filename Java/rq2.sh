@@ -44,6 +44,10 @@ while IFS= read -r line
     module=$(echo $line | cut -d',' -f3)
     testName=$(echo $line | cut -d',' -f4)
     file_meth_line_to_inject_delay=$(echo $line | cut -d',' -f5)
+    if [[ file_meth_line_to_inject_delay == "" ]]; then
+        echo "No solutions found before"
+        continue
+    fi
     file_path=$(echo $file_meth_line_to_inject_delay | cut -d':' -f1)
     method_name=$(echo $file_meth_line_to_inject_delay | cut -d':' -f2)
     method_descriptor=$(echo $file_meth_line_to_inject_delay | cut -d':' -f3)
@@ -93,7 +97,7 @@ while IFS= read -r line
      }' pom.xml
  
     fi  
-    echo -n "${slug},${sha},${module},${testName}," >> "$currentDir/$outputDir/Re-run-Baseline-Result.csv"
+    echo -n "${slug},${sha},${module},${testName}," >> "$currentDir/$outputDir/RQ2-Result.csv"
     
     if [[ $module != "." ]]; then
         projName=$(sed 's;/;.;g' <<< $module-$testName)
@@ -118,20 +122,18 @@ while IFS= read -r line
     cd $currentDir
     python3 run_injection.py "$file_path" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
     cd -
-    exit
    
     start=$(date +%s.%N)
-    for i in {1..10}; do
+    for i in {1..100}; do
         echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash"
-        exit
-        mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash >  "$logs/$id-$testName-$i.txt"
+        mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash >  "$logs/$testName-$i.txt"
 
-        bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$id-$testName-$i.txt")
+        bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
-            echo -n "${bugCount};" >> "$currentDir/$outputDir/RQ2-Result.csv"
+            echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv"
             echo "Failure found."
         else
-            echo -n "${bugCount};" >> "$currentDir/$outputDir/RQ2-Result.csv"
+            echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv"
             echo "Failure not found."
         fi
     done
@@ -139,5 +141,5 @@ while IFS= read -r line
     take=$(echo "scale=2; ${end} - ${start}" | bc)
     take=$(echo $take | awk '{printf("%.2f\n", $1) }')
     echo ",$take" >> "$currentDir/$outputDir/RQ2-Result.csv"
-    exit
+    git checkout -- '**/*.java'
 done < $1
