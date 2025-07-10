@@ -1,0 +1,961 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,Cluster,sim_to_test,sim_to_log,combined_sim
+me.prettyprint.cassandra.service.JmxMonitor,registerPerf4J,()V,7,20,35.0%,"private void registerPerf4J() {
+    URL url = getClass().getClassLoader().getResource(""hectorLog4j.xml"");
+    if (url == null) {
+      log.warn(""Unable to locate hectorLog4j.xml; performance counters will not be exported"");
+    } else {
+      try {
+        final Class<?> domConfiguratorClass = getClass().getClassLoader().loadClass(""org.apache.log4j.xml.DOMConfigurator"");
+        final Method method = domConfiguratorClass.getMethod( ""configure"", URL.class );
+        method.invoke( null, url );
+      } catch( ClassNotFoundException e ) {
+        log.warn(""Unable to load log4j's DOMConfigurator. Performance counters will not be exported. To fix, include the log4j jar in your application's classpath."");
+      } catch( SecurityException e ) {
+        log.error( ""Could not access method DOMConfigurator.configure(URL)"", e );
+      } catch( NoSuchMethodException e ) {
+        log.error( ""Could not find method DOMConfigurator.configure(URL)"", e );
+      } catch( IllegalArgumentException e ) {
+        log.error( ""Could not invoke method DOMConfigurator.configure(URL)"", e );
+      } catch( IllegalAccessException e ) {
+        log.error( ""Could not invoke method DOMConfigurator.configure(URL)"", e );
+      } catch( InvocationTargetException e ) {
+        throw new RuntimeException(e.getCause());
+      }
+    }
+  }",84-107,1,0.9980439,0.9972365,0.9974787
+me.prettyprint.cassandra.connection.HConnectionManager,operateWithFailover,(Lme/prettyprint/cassandra/service/Operation;)V,16,48,33.3%,"public void operateWithFailover(Operation<?> op) throws HectorException {
+    final StopWatch stopWatch = new Slf4JStopWatch(perf4jLogger);
+    int retries = Math.min(op.failoverPolicy.numRetries, hostPools.size());
+    HThriftClient client = null;
+    boolean success = false;
+    boolean retryable = false;
+    Set<CassandraHost> excludeHosts = new HashSet<CassandraHost>();
+    // TODO start timer for limiting retry time spent
+    while ( !success ) {
+      try {
+        // TODO how to 'timeout' on this op when underlying pool is exhausted
+        client =  getClientFromLBPolicy(excludeHosts);
+        Cassandra.Client c = client.getCassandra(op.keyspaceName);
+        // Keyspace can be null for some system_* api calls
+        if ( !op.credentials.isEmpty() ) {
+          c.login(new AuthenticationRequest(op.credentials));
+        }
+
+        op.executeAndSetResult(c, client.cassandraHost);
+        success = true;
+        stopWatch.stop(op.stopWatchTagName + "".success_"");
+        break;
+
+      } catch (Exception ex) {
+        HectorException he = exceptionsTranslator.translate(ex);
+        if ( he instanceof HInvalidRequestException || he instanceof HCassandraInternalException ) {
+          throw he;
+        } else if ( he instanceof HUnavailableException || he instanceof HectorTransportException) {
+          --retries;
+          client.close();
+          markHostAsDown(client);
+          excludeHosts.add(client.cassandraHost);
+          retryable = true;
+          if ( retries > 0 ) {
+            monitor.incCounter(Counter.RECOVERABLE_TRANSPORT_EXCEPTIONS);
+          }
+        } else if ( he instanceof HTimedOutException ) {
+          // DO NOT drecrement retries, we will be keep retrying on timeouts until it comes back
+          retryable = true;
+          monitor.incCounter(Counter.RECOVERABLE_TIMED_OUT_EXCEPTIONS);
+          client.close();
+          // TODO timecheck on how long we've been waiting on timeouts here
+          // suggestion per user moores on hector-users
+        } else if ( he instanceof PoolExhaustedException ) {
+          retryable = true;
+          --retries;
+          if ( hostPools.size() == 1 ) {
+            throw he;
+          }
+          monitor.incCounter(Counter.POOL_EXHAUSTED);
+          excludeHosts.add(client.cassandraHost);
+        }
+        if ( retries == 0 || retryable == false) throw he;
+        log.error(""Could not fullfill request on this host {}"", client);
+        log.error(""Exception: "", he);
+        monitor.incCounter(Counter.SKIP_HOST_SUCCESS);
+        sleepBetweenHostSkips(op.failoverPolicy);
+      } finally {
+        if ( !success ) {
+          monitor.incCounter(op.failCounter);
+          stopWatch.stop(op.stopWatchTagName + "".fail_"");
+        }
+        releaseClient(client);
+      }
+    }
+  }",137-202,1,0.9971653,0.99694854,0.99701357
+me.prettyprint.cassandra.connection.HConnectionManager,<init>,(Lme/prettyprint/cassandra/service/CassandraHostConfigurator;)V,14,19,73.7%,"public HConnectionManager(CassandraHostConfigurator cassandraHostConfigurator) {
+    loadBalancingPolicy = cassandraHostConfigurator.getLoadBalancingPolicy();
+    clock = cassandraHostConfigurator.getClockResolution();
+    hostPools = new NonBlockingHashMap<CassandraHost, ConcurrentHClientPool>();
+    if ( cassandraHostConfigurator.getRetryDownedHosts() ) {
+      cassandraHostRetryService = new CassandraHostRetryService(this, cassandraHostConfigurator);
+    }
+    for ( CassandraHost host : cassandraHostConfigurator.buildCassandraHosts() ) {
+      try {
+        ConcurrentHClientPool chcp = new ConcurrentHClientPool(host);
+        hostPools.put(host,chcp);
+      } catch (HectorTransportException hte) {
+        log.error(""Could not start connection pool for host {}"", host);
+        if ( cassandraHostRetryService != null ) {
+          cassandraHostRetryService.add(host);
+        }
+      }
+    }
+
+    if ( cassandraHostConfigurator.getAutoDiscoverHosts() ) {
+      nodeAutoDiscoverService = new NodeAutoDiscoverService(this, cassandraHostConfigurator);
+    }
+    monitor = JmxMonitor.getInstance(this).getCassandraMonitor();
+    exceptionsTranslator = new ExceptionsTranslatorImpl();
+  }",53-77,3,0.9975073,0.9967536,0.9969797
+me.prettyprint.cassandra.connection.ConcurrentHClientPool,borrowClient,()Lme/prettyprint/cassandra/connection/HThriftClient;,10,33,30.3%,"public HThriftClient borrowClient() throws HectorException {
+    if ( !active.get() ) {
+      throw new HectorException(""Attempt to borrow on in-active pool: "" + getName());
+    }
+    HThriftClient cassandraClient;
+    int currentActive = numActive.incrementAndGet();
+    int tillExhausted = cassandraHost.getMaxActive() - currentActive;
+
+    numBlocked.incrementAndGet();
+    cassandraClient = availableClientQueue.poll();
+    if ( cassandraClient == null ) {
+      if ( tillExhausted > 0 ) {
+        // if we start with #of threads == getMaxActive, we could trigger this condition
+        addClientToPoolGently(new HThriftClient(cassandraHost).open());
+        log.debug(""created new client. NumActive:{} untilExhausted: {}"", currentActive, tillExhausted);
+      }
+      // blocked take on the queue if we are configured to wait forever
+      if ( log.isDebugEnabled() ) {
+        log.debug(""blocking on queue - current block count {}"", numBlocked.get());
+      }
+      // wait and catch, creating a new one if the counts have changed. Infinite wait should just recurse.
+      if ( maxWaitTimeWhenExhausted == 0 ) {
+        while (cassandraClient == null && active.get() ) {
+          try {
+            cassandraClient = availableClientQueue.poll(100, TimeUnit.MILLISECONDS);
+          } catch (InterruptedException ie) {
+            log.error(""InterruptedException poll operation on retry forever"", ie);
+            break;
+          }
+        }
+      } else {
+
+        try {
+          cassandraClient = availableClientQueue.poll(maxWaitTimeWhenExhausted, TimeUnit.MILLISECONDS);
+          if ( cassandraClient == null ) {
+            numBlocked.decrementAndGet();
+            throw new PoolExhaustedException(String.format(""maxWaitTimeWhenExhausted exceeded for thread %s on host %s"",
+                new Object[]{
+                Thread.currentThread().getName(),
+                cassandraHost.getName()}
+            ));
+          }
+        } catch (InterruptedException ie) {
+          //monitor.incCounter(Counter.POOL_EXHAUSTED);
+          numActive.decrementAndGet();
+        }
+      }
+
+    }
+    if ( cassandraClient == null ) {
+      throw new HectorException(""HConnectionManager returned a null client after aquisition - are we shutting down?"");
+    }
+    activeClients.add(cassandraClient);
+    numBlocked.decrementAndGet();
+
+
+    return cassandraClient;
+  }",55-112,1,0.996931,0.9950416,0.99560845
+me.prettyprint.cassandra.connection.HThriftClient,getTimeout,(Lme/prettyprint/cassandra/service/CassandraHost;)I,6,11,54.5%,"private int getTimeout(CassandraHost cassandraHost) {
+    int timeoutVar = 0;
+    if ( cassandraHost != null && cassandraHost.getCassandraThriftSocketTimeout() > 0 ) {
+      timeoutVar = cassandraHost.getCassandraThriftSocketTimeout();
+    } else {
+      String timeoutStr = System.getProperty(
+          SystemProperties.CASSANDRA_THRIFT_SOCKET_TIMEOUT.toString());
+      if (timeoutStr != null && timeoutStr.length() > 0) {
+        try {
+          timeoutVar = Integer.valueOf(timeoutStr);
+        } catch (NumberFormatException e) {
+          log.error(""Invalid value for CASSANDRA_THRIFT_SOCKET_TIMEOUT"", e);
+        }
+      }
+    }
+    return timeoutVar;
+  }",141-157,1,0.99729955,0.99456125,0.9953827
+me.prettyprint.cassandra.service.CassandraHostConfigurator,applyConfig,(Lme/prettyprint/cassandra/service/CassandraHost;)V,10,12,83.3%,"public void applyConfig(CassandraHost cassandraHost) {
+
+    cassandraHost.setMaxActive(maxActive);
+    cassandraHost.setMaxIdle(maxIdle);
+    cassandraHost.setLifo(lifo);
+    cassandraHost.setMinEvictableIdleTimeMillis(minEvictableIdleTimeMillis);
+    cassandraHost.setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
+    cassandraHost.setMaxWaitTimeWhenExhausted(maxWaitTimeWhenExhausted);
+    cassandraHost.setUseThriftFramedTransport(useThriftFramedTransport);
+
+    // this is special as it can be passed in as a system property
+    if (cassandraThriftSocketTimeout > 0) {
+      cassandraHost.setCassandraThriftSocketTimeout(cassandraThriftSocketTimeout);
+    }
+    if (exhaustedPolicy != null) {
+      cassandraHost.setExhaustedPolicy(exhaustedPolicy);
+    }
+  }",60-77,1,0.99721545,0.9938787,0.9948797
+me.prettyprint.cassandra.service.JmxMonitor,<init>,(Lme/prettyprint/cassandra/connection/HConnectionManager;)V,8,16,50.0%,"private JmxMonitor(HConnectionManager connectionManager) {
+    CassandraClientMonitor cassandraClientMonitor = new CassandraClientMonitor(connectionManager);
+    mbs = ManagementFactory.getPlatformMBeanServer();
+    this.cassandraClientMonitor = cassandraClientMonitor;
+    try {
+      registerMonitor(""me.prettyprint.cassandra.service"", ""hector"",
+          cassandraClientMonitor);
+    } catch (MalformedObjectNameException e) {
+      log.error(""Unable to register JMX monitor"", e);
+    } catch (InstanceAlreadyExistsException e) {
+      log.error(""Unable to register JMX monitor"", e);
+    } catch (MBeanRegistrationException e) {
+      log.error(""Unable to register JMX monitor"", e);
+    } catch (NotCompliantMBeanException e) {
+      log.error(""Unable to register JMX monitor"", e);
+    }
+  }",34-50,1,0.9963559,0.9934733,0.99433804
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,multigetSlice,(Ljava/util/List;Lorg/apache/cassandra/thrift/ColumnParent;Lorg/apache/cassandra/thrift/SlicePredicate;)Ljava/util/Map;,3,3,100.0%,"@Override
+  public Map<ByteBuffer, List<Column>> multigetSlice(final List<ByteBuffer> keys,
+      final ColumnParent columnParent, final SlicePredicate predicate) throws HectorException {
+    Operation<Map<ByteBuffer, List<Column>>> getCount = new Operation<Map<ByteBuffer, List<Column>>>(
+        OperationType.READ, failoverPolicy, keyspaceName, credentials) {
+
+      @Override
+      public Map<ByteBuffer, List<Column>> execute(Cassandra.Client cassandra) throws HectorException {
+        try {
+          Map<ByteBuffer, List<ColumnOrSuperColumn>> cfmap = cassandra.multiget_slice(
+              keys, columnParent, predicate, getThriftCl(OperationType.READ));
+
+          Map<ByteBuffer, List<Column>> result = new HashMap<ByteBuffer, List<Column>>();
+          for (Map.Entry<ByteBuffer, List<ColumnOrSuperColumn>> entry : cfmap.entrySet()) {
+            result.put(entry.getKey(), getColumnList(entry.getValue()));
+          }
+          return result;
+        } catch (Exception e) {
+          throw xtrans.translate(e);
+        }
+      }
+    };
+    operateWithFailover(getCount);
+    return getCount.getResult();
+
+  }",379-404,0,0.99726903,0.99303377,0.9943043
+me.prettyprint.cassandra.service.CassandraHost,setMinEvictableIdleTimeMillis,(J)V,2,2,100.0%,"public void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
+    this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
+  }",217-219,0,0.995514,0.99342126,0.9940491
+me.prettyprint.hector.api.factory.HFactory,createClockResolution,(Ljava/lang/String;)Lme/prettyprint/hector/api/ClockResolution;,5,9,55.6%,"public static ClockResolution createClockResolution(String clockResolutionName) {
+      if (clockResolutionName.equals(ClockResolution.SECONDS)) {
+          return new SecondsClockResolution();
+      } else if (clockResolutionName.equals(ClockResolution.MILLISECONDS)) {
+          return new MillisecondsClockResolution();
+      } else if (clockResolutionName.equals(ClockResolution.MICROSECONDS)) {
+          return new MicrosecondsClockResolution();
+      } else if (clockResolutionName.equals(ClockResolution.MICROSECONDS_SYNC)) {
+          return new MicrosecondsSyncClockResolution();
+      }
+      throw new RuntimeException(String.format(""Unsupported clock resolution: %s"", clockResolutionName));
+  }",321-332,1,0.9910941,0.99474674,0.993651
+me.prettyprint.cassandra.service.CassandraHost,setTimeBetweenEvictionRunsMillis,(J)V,2,2,100.0%,"public void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
+    this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
+  }",225-227,0,0.9953171,0.9929363,0.99365056
+me.prettyprint.cassandra.model.thrift.ThriftConverter,consistencyLevel,(Lme/prettyprint/hector/api/HConsistencyLevel;)Lorg/apache/cassandra/thrift/ConsistencyLevel;,2,8,25.0%,"public static ConsistencyLevel consistencyLevel(HConsistencyLevel c) {
+    switch (c) {
+    case ALL:
+      return ConsistencyLevel.ALL;
+    case ANY:
+      return ConsistencyLevel.ANY;
+    case ONE:
+      return ConsistencyLevel.ONE;
+    case QUORUM:
+      return ConsistencyLevel.QUORUM;
+    case EACH_QUORUM:
+      return ConsistencyLevel.EACH_QUORUM;
+    case LOCAL_QUORUM:
+      return ConsistencyLevel.LOCAL_QUORUM;
+    default:
+      throw new RuntimeException(""Unregornized consistency level "" + c);
+    }
+  }",18-35,4,0.99007386,0.9943713,0.99308205
+me.prettyprint.cassandra.service.CassandraHost,setUseThriftFramedTransport,(Z)V,2,2,100.0%,"public void setUseThriftFramedTransport(boolean useThriftFramedTransport) {
+    this.useThriftFramedTransport = useThriftFramedTransport;
+  }",193-195,2,0.99453974,0.99140924,0.99234843
+me.prettyprint.cassandra.service.KeyspaceServiceImpl$10,execute,(Lorg/apache/cassandra/thrift/Cassandra$Client;)Ljava/util/Map;,7,9,77.8%,"@Override
+      public Void execute(Cassandra.Client cassandra) throws HectorException {
+        try {
+          cassandra.batch_mutate(mutationMap, getThriftCl(OperationType.WRITE));
+        } catch (Exception e) {
+          throw xtrans.translate(e);
+        }
+        return null;
+      }",90-98,4,0.99484026,0.9911431,0.99225223
+me.prettyprint.cassandra.service.KeyspaceServiceImpl$14,execute,(Lorg/apache/cassandra/thrift/Cassandra$Client;)Ljava/lang/Void;,2,4,50.0%,"@Override
+      public Void execute(Cassandra.Client cassandra) throws HectorException {
+        try {
+          cassandra.batch_mutate(mutationMap, getThriftCl(OperationType.WRITE));
+        } catch (Exception e) {
+          throw xtrans.translate(e);
+        }
+        return null;
+      }",90-98,4,0.99484026,0.9911431,0.99225223
+me.prettyprint.cassandra.service.KeyspaceServiceImpl$9,execute,(Lorg/apache/cassandra/thrift/Cassandra$Client;)Ljava/lang/Void;,2,4,50.0%,"@Override
+      public Void execute(Cassandra.Client cassandra) throws HectorException {
+        try {
+          cassandra.batch_mutate(mutationMap, getThriftCl(OperationType.WRITE));
+        } catch (Exception e) {
+          throw xtrans.translate(e);
+        }
+        return null;
+      }",90-98,4,0.99484026,0.9911431,0.99225223
+me.prettyprint.cassandra.connection.BackgroundCassandraHostService,<init>,(Lme/prettyprint/cassandra/connection/HConnectionManager;Lme/prettyprint/cassandra/service/CassandraHostConfigurator;)V,6,6,100.0%,"public BackgroundCassandraHostService(HConnectionManager connectionManager,
+      CassandraHostConfigurator cassandraHostConfigurator) {
+    this.connectionManager = connectionManager;
+    this.cassandraHostConfigurator = cassandraHostConfigurator;
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        shutdown();
+      }
+    });
+  }",19-29,3,0.9945472,0.9902897,0.99156696
+me.prettyprint.cassandra.connection.BackgroundCassandraHostService$1,<init>,(Lme/prettyprint/cassandra/connection/BackgroundCassandraHostService;)V,1,1,100.0%,"public BackgroundCassandraHostService(HConnectionManager connectionManager,
+      CassandraHostConfigurator cassandraHostConfigurator) {
+    this.connectionManager = connectionManager;
+    this.cassandraHostConfigurator = cassandraHostConfigurator;
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        shutdown();
+      }
+    });
+  }",19-29,3,0.9945472,0.9902897,0.99156696
+me.prettyprint.cassandra.service.JmxMonitor,getContextPath,()Ljava/lang/String;,3,7,42.9%,"private String getContextPath() {
+    URL url = getClass().getClassLoader().getResource(""/"");
+    if (url != null) {
+      String[] elements = url.toString().split(""/"");
+      for (int i = elements.length - 1; i > 0; --i) {
+        // URLs look like this: file:/.../ImageServer/WEB-INF/classes/
+        // And we want that part that's just before WEB-INF
+        if (""WEB-INF"".equals(elements[i])) {
+          return elements[i - 1];
+        }
+      }
+    }
+    return null;
+  }",140-153,1,0.9932201,0.98660946,0.9885926
+me.prettyprint.cassandra.service.CassandraHost,setMaxWaitTimeWhenExhausted,(J)V,2,2,100.0%,"public void setMaxWaitTimeWhenExhausted(long maxWaitTimeWhenExhausted) {
+    this.maxWaitTimeWhenExhausted = maxWaitTimeWhenExhausted;
+  }",169-171,0,0.99104464,0.986791,0.9880671
+me.prettyprint.cassandra.connection.RoundRobinBalancingPolicy,getPool,(Ljava/util/Collection;Ljava/util/Set;)Lme/prettyprint/cassandra/connection/ConcurrentHClientPool;,5,7,71.4%,"@Override
+  public ConcurrentHClientPool getPool(Collection<ConcurrentHClientPool> pools,
+      Set<CassandraHost> excludeHosts) {
+    ConcurrentHClientPool[] pa = pools.toArray(new ConcurrentHClientPool[pools.size()]);
+    int location = getAndIncrement(pa.length);
+    ConcurrentHClientPool pool = pa[location];
+    if ( excludeHosts != null && excludeHosts.size() > 0 ) {
+      while ( excludeHosts.contains(pool.getCassandraHost()) ) {
+        pool = pa[getAndIncrement(pa.length)]; 
+      }
+    }
+    return pool;
+  }",19-31,1,0.9918656,0.9831359,0.9857548
+me.prettyprint.cassandra.connection.CassandraHostRetryService$RetryRunner,<init>,(Lme/prettyprint/cassandra/connection/CassandraHostRetryService;)V,1,1,100.0%,"public CassandraHostRetryService(HConnectionManager connectionManager,
+      CassandraHostConfigurator cassandraHostConfigurator) {
+    super(connectionManager, cassandraHostConfigurator);
+    this.exceptionsTranslator = connectionManager.exceptionsTranslator;
+    this.retryDelayInSeconds = cassandraHostConfigurator.getRetryDownedHostsDelayInSeconds();
+    downedHostQueue = new LinkedBlockingQueue<CassandraHost>(cassandraHostConfigurator.getRetryDownedHostsQueueSize());
+    sf = executor.scheduleWithFixedDelay(new RetryRunner(), this.retryDelayInSeconds,this.retryDelayInSeconds, TimeUnit.SECONDS);
+
+    log.info(""Downed Host Retry service started with queue size {} and retry delay {}s"",
+        cassandraHostConfigurator.getRetryDownedHostsQueueSize(),
+        retryDelayInSeconds);
+  }",29-40,3,0.9901544,0.98365337,0.9856037
+me.prettyprint.cassandra.connection.CassandraHostRetryService,<init>,(Lme/prettyprint/cassandra/connection/HConnectionManager;Lme/prettyprint/cassandra/service/CassandraHostConfigurator;)V,9,9,100.0%,"public CassandraHostRetryService(HConnectionManager connectionManager,
+      CassandraHostConfigurator cassandraHostConfigurator) {
+    super(connectionManager, cassandraHostConfigurator);
+    this.exceptionsTranslator = connectionManager.exceptionsTranslator;
+    this.retryDelayInSeconds = cassandraHostConfigurator.getRetryDownedHostsDelayInSeconds();
+    downedHostQueue = new LinkedBlockingQueue<CassandraHost>(cassandraHostConfigurator.getRetryDownedHostsQueueSize());
+    sf = executor.scheduleWithFixedDelay(new RetryRunner(), this.retryDelayInSeconds,this.retryDelayInSeconds, TimeUnit.SECONDS);
+
+    log.info(""Downed Host Retry service started with queue size {} and retry delay {}s"",
+        cassandraHostConfigurator.getRetryDownedHostsQueueSize(),
+        retryDelayInSeconds);
+  }",29-40,3,0.9901544,0.98365337,0.9856037
+me.prettyprint.cassandra.connection.ConcurrentHClientPool,releaseClient,(Lme/prettyprint/cassandra/connection/HThriftClient;)V,8,13,61.5%,"public void releaseClient(HThriftClient client) throws HectorException {
+    activeClients.remove(client);
+    numActive.decrementAndGet();
+    boolean open = client.isOpen();
+    if ( open ) {
+      if ( active.get() ) {
+        addClientToPoolGently(client);
+      } else {
+        log.info(""Open client {} released to in-active pool for host {}. Closing."", client, cassandraHost);
+        client.close();
+      }
+    } else {
+      if ( activeClients.size() < getMaxActive() && numBlocked.get() > 0) {
+        addClientToPoolGently(new HThriftClient(cassandraHost).open());
+      }
+    }
+
+    if ( log.isDebugEnabled() ) {
+      log.debug(""Status of releaseClient {} to queue: {}"", client.toString(), open);
+    }
+  }",187-207,1,0.99044263,0.98334885,0.985477
+me.prettyprint.cassandra.serializers.StringSerializer,fromByteBuffer,(Ljava/nio/ByteBuffer;)Ljava/lang/String;,3,7,42.9%,"@Override
+  public String fromByteBuffer(ByteBuffer byteBuffer) {
+    if (byteBuffer == null) {
+      return null;
+    }
+    try {
+    return new String(byteBuffer.array(), byteBuffer.arrayOffset() + byteBuffer.position(),
+        byteBuffer.remaining(), UTF_8);
+    } catch (UnsupportedEncodingException e) {
+      // not really possible
+      e.printStackTrace();
+    }
+    return null;
+  }",32-45,1,0.9904401,0.9824539,0.9848498
+me.prettyprint.cassandra.service.FailoverPolicy,<init>,(II)V,4,4,100.0%,"public FailoverPolicy(int numRetries, int sleepBwHostsMilli) {
+    this.numRetries = numRetries;
+    sleepBetweenHostsMilli = sleepBwHostsMilli;
+  }",29-32,2,0.98861647,0.98305607,0.9847242
+me.prettyprint.cassandra.service.CassandraHostConfigurator,buildCassandraHosts,()[Lme/prettyprint/cassandra/service/CassandraHost;,8,9,88.9%,"public CassandraHost[] buildCassandraHosts() {
+    if (this.hosts == null) {
+      return null;
+    }
+    String[] hostVals = hosts.split("","");
+    CassandraHost[] cassandraHosts = new CassandraHost[hostVals.length];
+    for (int x=0; x<hostVals.length; x++) {
+      CassandraHost cassandraHost = this.port == CassandraHost.DEFAULT_PORT ? new CassandraHost(hostVals[x]) : new CassandraHost(hostVals[x], this.port);
+      applyConfig(cassandraHost);
+      cassandraHosts[x] = cassandraHost;
+    }
+    return cassandraHosts;
+  }",46-58,1,0.98613024,0.9815495,0.9829237
+me.prettyprint.cassandra.service.JmxMonitor,generateMonitorName,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,7,7,100.0%,"private String generateMonitorName(String className, String monitorType) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(className);
+    sb.append("":ServiceType="");
+    // append the classloader name so we have unique names in web apps.
+    sb.append(getUniqueClassloaderIdentifier());
+    if (null != monitorType && monitorType.length() > 0) {
+      sb.append("",MonitorType="" + monitorType);
+    }
+    return sb.toString();
+  }",109-119,1,0.9892739,0.97946966,0.98241097
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,insert,(Ljava/lang/String;Lorg/apache/cassandra/thrift/ColumnPath;Ljava/nio/ByteBuffer;)V,5,6,83.3%,"@Override
+  public void insert(final ByteBuffer key, final ColumnParent columnParent, final Column column) throws HectorException {
+    Operation<Void> op = new Operation<Void>(OperationType.WRITE, failoverPolicy, keyspaceName, credentials) {
+
+      @Override
+      public Void execute(Cassandra.Client cassandra) throws HectorException {
+        try {
+          cassandra.insert(key, columnParent, column, getThriftCl(OperationType.WRITE));
+          return null;
+        } catch (Exception e) {
+          throw xtrans.translate(e);
+        }
+      }
+    };
+    operateWithFailover(op);
+  }",339-354,4,0.9884651,0.9797726,0.9823804
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,insert,(Ljava/nio/ByteBuffer;Lorg/apache/cassandra/thrift/ColumnParent;Lorg/apache/cassandra/thrift/Column;)V,3,3,100.0%,"@Override
+  public void insert(final ByteBuffer key, final ColumnParent columnParent, final Column column) throws HectorException {
+    Operation<Void> op = new Operation<Void>(OperationType.WRITE, failoverPolicy, keyspaceName, credentials) {
+
+      @Override
+      public Void execute(Cassandra.Client cassandra) throws HectorException {
+        try {
+          cassandra.insert(key, columnParent, column, getThriftCl(OperationType.WRITE));
+          return null;
+        } catch (Exception e) {
+          throw xtrans.translate(e);
+        }
+      }
+    };
+    operateWithFailover(op);
+  }",339-354,4,0.9884651,0.9797726,0.9823804
+me.prettyprint.cassandra.connection.ConcurrentHClientPool,<init>,(Lme/prettyprint/cassandra/service/CassandraHost;)V,12,16,75.0%,"public ConcurrentHClientPool(CassandraHost host) {
+    this.cassandraHost = host;
+
+    availableClientQueue = new ArrayBlockingQueue<HThriftClient>(cassandraHost.getMaxActive(), true);
+    activeClients = new NonBlockingHashSet<HThriftClient>();
+    numActive = new AtomicInteger();
+    numBlocked = new AtomicInteger();
+    active = new AtomicBoolean(true);
+
+    maxWaitTimeWhenExhausted = cassandraHost.getMaxWaitTimeWhenExhausted() < 0 ? 0 : cassandraHost.getMaxWaitTimeWhenExhausted();
+
+    for (int i = 0; i < cassandraHost.getMaxActive()/3; i++) {
+      availableClientQueue.add(new HThriftClient(cassandraHost).open());
+    }
+    if ( log.isDebugEnabled() ) {
+      log.debug(""Concurrent Host pool started with {} active clients; max: {} exhausted wait: {}"",
+          new Object[]{getNumIdle(),
+          cassandraHost.getMaxActive(),
+          maxWaitTimeWhenExhausted});
+    }
+  }",32-52,1,0.9839584,0.9758971,0.9783155
+me.prettyprint.cassandra.service.CassandraHost,setMaxIdle,(I)V,2,2,100.0%,"public void setMaxIdle(int maxIdle) {
+    this.maxIdle = maxIdle;
+  }",161-163,0,0.9835795,0.9752956,0.97778076
+me.prettyprint.cassandra.serializers.StringSerializer,toByteBuffer,(Ljava/lang/String;)Ljava/nio/ByteBuffer;,2,5,40.0%,"@Override
+  public ByteBuffer toByteBuffer(String obj) {
+    if (obj == null) {
+      return null;
+    }
+    try {
+      return ByteBuffer.wrap(obj.getBytes(UTF_8));
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+  }",20-30,1,0.9847263,0.974768,0.9777555
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,loadYamlTables,()V,7,7,100.0%,"private void loadYamlTables() throws ConfigurationException {
+    for (KSMetaData table : DatabaseDescriptor.readTablesFromYaml()) {
+      for (CFMetaData cfm : table.cfMetaData().values()) {
+        CFMetaData.map(cfm);
+      }
+      DatabaseDescriptor.setTableDefinition(table, DatabaseDescriptor.getDefsVersion());
+    }
+  }",67-74,0,0.9838125,0.9719715,0.9755238
+me.prettyprint.cassandra.service.Operation,executeAndSetResult,(Lorg/apache/cassandra/thrift/Cassandra$Client;Lme/prettyprint/cassandra/service/CassandraHost;)V,5,5,100.0%,"public void executeAndSetResult(Cassandra.Client cassandra, CassandraHost cassandraHost) throws HectorException {
+    this.cassandraHost = cassandraHost;
+    long startTime = System.nanoTime();
+    setResult(execute(cassandra));
+    execTime = System.nanoTime() - startTime;
+  }",98-103,1,0.98168683,0.97145754,0.97452635
+me.prettyprint.cassandra.connection.HThriftClient,open,()Lme/prettyprint/cassandra/connection/HThriftClient;,7,14,50.0%,"HThriftClient open() {
+    if ( isOpen() ) {
+      throw new IllegalStateException(""Open called on already open connection. You should not have gotten here."");
+    }
+    if ( log.isDebugEnabled() ) {
+      log.debug(""Creating a new thrift connection to {}"", cassandraHost);
+    }
+
+    if (cassandraHost.getUseThriftFramedTransport()) {
+      transport = new TFramedTransport(new TSocket(cassandraHost.getHost(), cassandraHost.getPort(), timeout));
+    } else {
+      transport = new TSocket(cassandraHost.getHost(), cassandraHost.getPort(), timeout);
+    }
+    try {
+      transport.open();
+    } catch (TTransportException e) {
+      // Thrift exceptions aren't very good in reporting, so we have to catch the exception here and
+      // add details to it.
+      log.error(""Unable to open transport to "" + cassandraHost.getName(), e);
+      //clientMonitor.incCounter(Counter.CONNECT_ERROR);
+      throw new HectorTransportException(""Unable to open transport to "" + cassandraHost.getName() +"" , "" +
+          e.getLocalizedMessage(), e);
+    }
+    return this;
+  }",96-120,1,0.97923267,0.97066945,0.97323847
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,setup,()V,13,13,100.0%,"public void setup() throws TTransportException, IOException, InterruptedException, ConfigurationException {
+    // delete tmp dir first
+    rmdir(TMP);
+    // make a tmp dir and copy cassandra.yaml and log4j.properties to it
+    copy(""/log4j.properties"", TMP);
+    copy(yamlFile, TMP);
+    System.setProperty(""cassandra.config"", ""file:""+ TMP + yamlFile);
+
+    CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
+    cleaner.prepare();
+
+    loadYamlTables();
+
+    cassandra = new EmbeddedCassandraService();
+    cassandra.init();
+    Thread t = new Thread(cassandra);
+    t.setDaemon(true);
+    t.start();
+  }",45-63,1,0.9789883,0.9690188,0.97200966
+me.prettyprint.cassandra.service.CassandraHost,getUseThriftFramedTransport,()Z,1,1,100.0%,"public boolean getUseThriftFramedTransport() {
+    return useThriftFramedTransport;
+  }",189-191,2,0.97559917,0.9665791,0.96928513
+me.prettyprint.cassandra.service.clock.MicrosecondsSyncClockResolution,createClock,()J,7,7,100.0%,"@Override
+  public long createClock() {
+    // The following simulates a microseconds resolution by advancing a static counter
+    // every time a client calls the createClock method, simulating a tick.
+    long us = getSystemMilliseconds() * ONE_THOUSAND;
+    // Synchronized to guarantee unique time within and across threads.
+    synchronized (MicrosecondsSyncClockResolution.class) {
+      if (us > lastTime) {
+        lastTime = us;
+      } else {
+        // the time i got from the system is equals or less
+        // (hope not - clock going backwards)
+        // One more ""microsecond""
+        us = ++lastTime;
+      }
+    }
+    return us;
+  }",20-37,1,0.9743027,0.96687603,0.96910405
+me.prettyprint.cassandra.service.CassandraHost,parseHostFromUrl,(Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"public static String parseHostFromUrl(String urlPort) {
+    return urlPort.lastIndexOf(':') > 0 ? urlPort.substring(0, urlPort.lastIndexOf(':')) : urlPort;
+  }",197-199,2,0.9756781,0.96623707,0.96906936
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,teardown,()V,5,6,83.3%,"public void teardown() {
+    CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
+
+    try {
+      cleaner.cleanupDataDirectories();
+      rmdir(TMP);
+    } catch (IOException e) {
+      // IGNORE
+    }
+  }",76-85,0,0.97562057,0.9648787,0.96810126
+me.prettyprint.cassandra.service.KeyspaceServiceImpl$9,<init>,(Lme/prettyprint/cassandra/service/KeyspaceServiceImpl;Lme/prettyprint/cassandra/service/OperationType;Lme/prettyprint/cassandra/service/FailoverPolicy;Ljava/lang/String;Ljava/util/Map;Ljava/nio/ByteBuffer;Lorg/apache/cassandra/thrift/ColumnParent;Lorg/apache/cassandra/thrift/Column;)V,1,1,100.0%,"public KeyspaceServiceImpl(String keyspaceName,
+      ConsistencyLevelPolicy consistencyLevel,
+      HConnectionManager connectionManager,
+      FailoverPolicy failoverPolicy)
+      throws HectorTransportException {
+    this(keyspaceName, consistencyLevel, connectionManager, failoverPolicy, EMPTY_CREDENTIALS);
+  }",62-68,4,0.972792,0.9631195,0.9660213
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,<init>,(Ljava/lang/String;Lme/prettyprint/hector/api/ConsistencyLevelPolicy;Lme/prettyprint/cassandra/connection/HConnectionManager;Lme/prettyprint/cassandra/service/FailoverPolicy;)V,2,2,100.0%,"public KeyspaceServiceImpl(String keyspaceName,
+      ConsistencyLevelPolicy consistencyLevel,
+      HConnectionManager connectionManager,
+      FailoverPolicy failoverPolicy)
+      throws HectorTransportException {
+    this(keyspaceName, consistencyLevel, connectionManager, failoverPolicy, EMPTY_CREDENTIALS);
+  }",62-68,4,0.972792,0.9631195,0.9660213
+me.prettyprint.cassandra.service.KeyspaceServiceImpl$10,<init>,(Lme/prettyprint/cassandra/service/KeyspaceServiceImpl;Lme/prettyprint/cassandra/service/OperationType;Lme/prettyprint/cassandra/service/FailoverPolicy;Ljava/lang/String;Ljava/util/Map;Ljava/util/List;Lorg/apache/cassandra/thrift/ColumnParent;Lorg/apache/cassandra/thrift/SlicePredicate;)V,1,1,100.0%,"public KeyspaceServiceImpl(String keyspaceName,
+      ConsistencyLevelPolicy consistencyLevel,
+      HConnectionManager connectionManager,
+      FailoverPolicy failoverPolicy)
+      throws HectorTransportException {
+    this(keyspaceName, consistencyLevel, connectionManager, failoverPolicy, EMPTY_CREDENTIALS);
+  }",62-68,4,0.972792,0.9631195,0.9660213
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,<init>,(Ljava/lang/String;Lme/prettyprint/hector/api/ConsistencyLevelPolicy;Lme/prettyprint/cassandra/connection/HConnectionManager;Lme/prettyprint/cassandra/service/FailoverPolicy;Ljava/util/Map;)V,8,8,100.0%,"public KeyspaceServiceImpl(String keyspaceName,
+      ConsistencyLevelPolicy consistencyLevel,
+      HConnectionManager connectionManager,
+      FailoverPolicy failoverPolicy)
+      throws HectorTransportException {
+    this(keyspaceName, consistencyLevel, connectionManager, failoverPolicy, EMPTY_CREDENTIALS);
+  }",62-68,4,0.972792,0.9631195,0.9660213
+me.prettyprint.cassandra.service.KeyspaceServiceImpl$14,<init>,(Lme/prettyprint/cassandra/service/KeyspaceServiceImpl;Lme/prettyprint/cassandra/service/OperationType;Lme/prettyprint/cassandra/service/FailoverPolicy;Ljava/lang/String;Ljava/util/Map;Ljava/nio/ByteBuffer;Lorg/apache/cassandra/thrift/ColumnPath;J)V,1,1,100.0%,"public KeyspaceServiceImpl(String keyspaceName,
+      ConsistencyLevelPolicy consistencyLevel,
+      HConnectionManager connectionManager,
+      FailoverPolicy failoverPolicy)
+      throws HectorTransportException {
+    this(keyspaceName, consistencyLevel, connectionManager, failoverPolicy, EMPTY_CREDENTIALS);
+  }",62-68,4,0.972792,0.9631195,0.9660213
+me.prettyprint.cassandra.utils.StringUtils,bytes,(Ljava/lang/String;)[B,1,4,25.0%,"public static byte[] bytes(String s) {
+    try {
+      return s.getBytes(ENCODING);
+    } catch (UnsupportedEncodingException e) {
+      log.error(""UnsupportedEncodingException "", e);
+      throw new RuntimeException(e);
+    }
+  }",26-33,1,0.9741646,0.9610015,0.96495044
+me.prettyprint.cassandra.service.JmxMonitor,registerMonitor,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V,9,11,81.8%,"public void registerMonitor(String name, String monitorType, Object monitoringInterface)
+      throws MalformedObjectNameException, InstanceAlreadyExistsException,
+      MBeanRegistrationException, NotCompliantMBeanException {
+
+    String monitorName = generateMonitorName(name, monitorType);
+    log.info(""Registering JMX {}"", monitorName);
+
+    ObjectName oName = new ObjectName(monitorName);
+
+    // Check if the monitor is already registered
+    if (mbs.isRegistered(oName)) {
+      log.info(""Monitor already registered: {}"", oName);
+      return;
+    }
+
+    mbs.registerMBean(monitoringInterface, oName);
+
+    // Register perf4j monitors
+    if (""true"".equalsIgnoreCase(
+        System.getProperty(""com.prettyprint.cassandra.load_hector_log4j"", ""true""))) {
+      registerPerf4J();
+    }
+  }",60-82,1,0.9733427,0.96092105,0.96464753
+me.prettyprint.cassandra.service.Operation,<init>,(Lme/prettyprint/cassandra/service/OperationType;Lme/prettyprint/cassandra/service/FailoverPolicy;Ljava/lang/String;Ljava/util/Map;)V,8,8,100.0%,"public Operation(OperationType operationType) {
+    this.failCounter = operationType.equals(OperationType.READ) ? Counter.READ_FAIL :
+      Counter.WRITE_FAIL;
+    this.operationType = operationType;
+    this.stopWatchTagName = operationType.name();
+  }",44-49,4,0.9714688,0.9583892,0.9623131
+me.prettyprint.cassandra.connection.HConnectionManager,getClientFromLBPolicy,(Ljava/util/Set;)Lme/prettyprint/cassandra/connection/HThriftClient;,4,7,57.1%,"private HThriftClient getClientFromLBPolicy(Set<CassandraHost> excludeHosts) {
+    HThriftClient client;
+    if ( hostPools.size() == 0 ) {
+      throw new HectorException(""All host pools marked down. Retry burden pushed out to client."");
+    }
+    try {
+      client = loadBalancingPolicy.getPool(hostPools.values(), excludeHosts).borrowClient();
+    } catch (Exception e) {
+      throw new HectorException(""General exception in getClientFromLBPolicy"",e);
+    }
+    return client;
+  }",222-233,1,0.97036016,0.95841867,0.96200114
+me.prettyprint.cassandra.service.CassandraHost,setMaxActive,(I)V,2,2,100.0%,"public void setMaxActive(int maxActive) {
+    this.maxActive = maxActive;
+  }",153-155,0,0.9691453,0.9557271,0.95975256
+me.prettyprint.cassandra.service.CassandraClientMonitor,<init>,(Lme/prettyprint/cassandra/connection/HConnectionManager;)V,6,6,100.0%,"public CassandraClientMonitor(HConnectionManager connectionManager) {
+    this.connectionManager = connectionManager;
+    counters = new HashMap<Counter, AtomicLong>();
+    for (Counter counter: Counter.values()) {
+      counters.put(counter, new AtomicLong(0));
+    }
+  }",45-51,3,0.96896785,0.9542727,0.9586812
+me.prettyprint.cassandra.connection.CassandraHostRetryService,shutdown,()V,7,7,100.0%,"@Override
+  void shutdown() {
+    log.info(""Downed Host retry shutdown hook called"");
+    if ( sf != null ) {
+      sf.cancel(true);
+    }
+    if ( executor != null ) {
+      executor.shutdownNow();
+    }
+    log.info(""Downed Host retry shutdown complete"");
+  }",42-52,0,0.96691716,0.95424914,0.95804954
+me.prettyprint.cassandra.service.CassandraHostConfigurator,getRetryDownedHostsDelayInSeconds,()I,1,1,100.0%,"public int getRetryDownedHostsDelayInSeconds() {
+    return retryDownedHostsDelayInSeconds;
+  }",127-129,2,0.96423674,0.95287615,0.9562843
+me.prettyprint.cassandra.connection.HThriftClient,getCassandra,()Lorg/apache/cassandra/thrift/Cassandra$Client;,4,5,80.0%,"public Cassandra.Client getCassandra() {
+    if ( !isOpen() ) {
+      throw new IllegalStateException(""getCassandra called on client that was not open. You should not have gotten here."");
+    }
+    if ( cassandraClient == null ) {
+      cassandraClient = new Cassandra.Client(new TBinaryProtocol(transport));
+    }
+    return cassandraClient;
+  }",48-56,1,0.95873183,0.9463665,0.9500761
+me.prettyprint.cassandra.connection.HThriftClient,getCassandra,(Ljava/lang/String;)Lorg/apache/cassandra/thrift/Cassandra$Client;,7,12,58.3%,"public Cassandra.Client getCassandra() {
+    if ( !isOpen() ) {
+      throw new IllegalStateException(""getCassandra called on client that was not open. You should not have gotten here."");
+    }
+    if ( cassandraClient == null ) {
+      cassandraClient = new Cassandra.Client(new TBinaryProtocol(transport));
+    }
+    return cassandraClient;
+  }",48-56,1,0.95873183,0.9463665,0.9500761
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,copy,(Ljava/lang/String;Ljava/lang/String;)V,11,11,100.0%,"private static void copy(String resource, String directory) throws IOException {
+    mkdir(directory);
+    InputStream is = EmbeddedServerHelper.class.getResourceAsStream(resource);
+    String fileName = resource.substring(resource.lastIndexOf(""/"") + 1);
+    File file = new File(directory + System.getProperty(""file.separator"") + fileName);
+    OutputStream out = new FileOutputStream(file);
+    byte buf[] = new byte[1024];
+    int len;
+    while ((len = is.read(buf)) > 0) {
+      out.write(buf, 0, len);
+    }
+    out.close();
+    is.close();
+  }",100-113,1,0.96176195,0.94482654,0.9499072
+me.prettyprint.cassandra.connection.HConnectionManager,releaseClient,(Lme/prettyprint/cassandra/connection/HThriftClient;)V,5,7,71.4%,"void releaseClient(HThriftClient client) {
+    if ( client == null ) return;
+    ConcurrentHClientPool pool = hostPools.get(client.cassandraHost);
+    if ( pool != null ) {
+      pool.releaseClient(client);
+    } else {
+      log.info(""Client {} released to inactive or dead pool. Closing."", client);
+      client.close();
+    }
+  }",235-244,1,0.95800704,0.9451265,0.9489907
+me.prettyprint.cassandra.service.CassandraHost,parsePortFromUrl,(Ljava/lang/String;)I,1,1,100.0%,"public static int parsePortFromUrl(String urlPort) {
+    return urlPort.lastIndexOf(':') > 0 ? Integer.valueOf(urlPort.substring(urlPort.lastIndexOf(':')+1, urlPort.length())) : DEFAULT_PORT;
+  }",201-203,2,0.9573373,0.9451008,0.9487717
+me.prettyprint.cassandra.service.CassandraHost,setLifo,(Z)V,2,2,100.0%,"public void setLifo(boolean lifo) {
+    this.lifo = lifo;
+  }",209-211,2,0.9573976,0.94312596,0.9474074
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,remove,(Ljava/nio/ByteBuffer;Lorg/apache/cassandra/thrift/ColumnPath;J)V,3,3,100.0%,"@Override
+  public void remove(ByteBuffer key, ColumnPath columnPath) {
+    this.remove(key, columnPath, connectionManager.createClock());
+  }",521-524,0,0.9581546,0.94277954,0.9473921
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,remove,(Ljava/lang/String;Lorg/apache/cassandra/thrift/ColumnPath;)V,2,2,100.0%,"@Override
+  public void remove(ByteBuffer key, ColumnPath columnPath) {
+    this.remove(key, columnPath, connectionManager.createClock());
+  }",521-524,0,0.9581546,0.94277954,0.9473921
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,remove,(Ljava/nio/ByteBuffer;Lorg/apache/cassandra/thrift/ColumnPath;)V,2,2,100.0%,"@Override
+  public void remove(ByteBuffer key, ColumnPath columnPath) {
+    this.remove(key, columnPath, connectionManager.createClock());
+  }",521-524,0,0.9581546,0.94277954,0.9473921
+me.prettyprint.cassandra.service.JmxMonitor,getInstance,(Lme/prettyprint/cassandra/connection/HConnectionManager;)Lme/prettyprint/cassandra/service/JmxMonitor;,3,3,100.0%,"public static JmxMonitor getInstance(HConnectionManager connectionManager) {
+    if ( monitorInstance == null ) {
+      monitorInstance = new JmxMonitor(connectionManager);
+    }
+    return monitorInstance;
+  }",52-57,3,0.9584402,0.94260967,0.94735885
+me.prettyprint.cassandra.connection.HThriftClient,<init>,(Lme/prettyprint/cassandra/service/CassandraHost;)V,5,5,100.0%,"HThriftClient(CassandraHost cassandraHost) {
+    this.cassandraHost = cassandraHost;
+    this.timeout = getTimeout(cassandraHost);
+    mySerial = serial.incrementAndGet();
+  }",38-42,1,0.9538133,0.9411665,0.9449606
+me.prettyprint.cassandra.connection.ConcurrentHClientPool,addClientToPoolGently,(Lme/prettyprint/cassandra/connection/HThriftClient;)V,3,6,50.0%,"private void addClientToPoolGently(HThriftClient client) {
+    try {
+      availableClientQueue.add(client);
+    } catch (IllegalStateException ise) {
+      log.error(""Capacity hit adding client back to queue. Closing extra."");
+      client.close();
+    }
+  }",215-222,1,0.95317423,0.9391754,0.94337505
+me.prettyprint.cassandra.service.Operation,setResult,(Ljava/lang/Object;)V,2,2,100.0%,"public void setResult(T executionResult) {
+    result = executionResult;
+  }",75-77,0,0.95209026,0.939366,0.9431833
+me.prettyprint.cassandra.connection.RoundRobinBalancingPolicy,getAndIncrement,(I)I,1,1,100.0%,"private int getAndIncrement(int size) {
+    return (int)counter.getAndIncrement() % size;    
+  }",33-35,2,0.9529689,0.93887234,0.9431013
+me.prettyprint.cassandra.service.CassandraHost,getMaxWaitTimeWhenExhausted,()J,1,1,100.0%,"public long getMaxWaitTimeWhenExhausted() {
+    return maxWaitTimeWhenExhausted;
+  }",165-167,2,0.94912934,0.9369166,0.94058037
+me.prettyprint.cassandra.service.CassandraHostConfigurator,getRetryDownedHostsQueueSize,()I,1,1,100.0%,"public int getRetryDownedHostsQueueSize() {
+    return retryDownedHostsQueueSize;
+  }",119-121,2,0.95006496,0.9357174,0.94002163
+me.prettyprint.cassandra.service.JmxMonitor,getUniqueClassloaderIdentifier,()Ljava/lang/String;,3,4,75.0%,"private String getUniqueClassloaderIdentifier() {
+    String contextPath = getContextPath();
+    if (contextPath != null) {
+      return contextPath;
+    }
+    return ""hector"";
+  }",126-132,1,0.9503206,0.9344328,0.9391992
+me.prettyprint.cassandra.service.CassandraHostConfigurator,getRetryDownedHosts,()Z,1,1,100.0%,"public boolean getRetryDownedHosts() {
+    return this.retryDownedHosts;
+  }",107-109,2,0.94974893,0.9339152,0.93866533
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,getColumnList,(Ljava/util/List;)Ljava/util/List;,5,5,100.0%,"private static List<Column> getColumnList(List<ColumnOrSuperColumn> columns) {
+    ArrayList<Column> list = new ArrayList<Column>(columns.size());
+    for (ColumnOrSuperColumn col : columns) {
+      list.add(col.getColumn());
+    }
+    return list;
+  }",647-653,0,0.95300394,0.9323977,0.93857956
+me.prettyprint.cassandra.model.QuorumAllConsistencyLevelPolicy,get,(Lme/prettyprint/cassandra/service/OperationType;)Lme/prettyprint/hector/api/HConsistencyLevel;,1,1,100.0%,"@Override
+  public HConsistencyLevel get(OperationType op) {
+    return HConsistencyLevel.QUORUM;
+  }",16-19,4,0.94764334,0.93444145,0.93840206
+me.prettyprint.cassandra.service.CassandraHost,getCassandraThriftSocketTimeout,()I,1,1,100.0%,"public int getCassandraThriftSocketTimeout() {
+    return cassandraThriftSocketTimeout;
+  }",181-183,2,0.9464112,0.9334551,0.9373419
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,operateWithFailover,(Lme/prettyprint/cassandra/service/Operation;)V,3,3,100.0%,"private void operateWithFailover(Operation<?> op) throws HectorException {
+    connectionManager.operateWithFailover(op);
+    this.cassandraHost = op.getCassandraHost();
+  }",128-131,3,0.94522256,0.9298615,0.9344698
+me.prettyprint.cassandra.service.CassandraHostConfigurator,getAutoDiscoverHosts,()Z,1,1,100.0%,"public boolean getAutoDiscoverHosts() {
+    return autoDiscoverHosts;
+  }",208-210,2,0.94456476,0.92884755,0.93356276
+me.prettyprint.cassandra.utils.StringUtils,string,([B)Ljava/lang/String;,2,6,33.3%,"public static String string(byte[] bytes) {
+    if (bytes == null) {
+      return null;
+    }
+    try {
+      return new String(bytes, ENCODING);
+    } catch (UnsupportedEncodingException e) {
+      log.error(""UnsupportedEncodingException "", e);
+      throw new RuntimeException(e);
+    }
+  }",40-50,1,0.940911,0.93007517,0.9333259
+me.prettyprint.cassandra.service.CassandraHostConfigurator,getClockResolution,()Lme/prettyprint/hector/api/ClockResolution;,1,1,100.0%,"public ClockResolution getClockResolution() {
+    return clockResolution;
+  }",200-202,2,0.9396006,0.9271551,0.9308888
+me.prettyprint.cassandra.service.CassandraHost,isPerformNameResolution,()Z,3,3,100.0%,"public boolean isPerformNameResolution() {
+    String sysprop = System.getProperty(
+        SystemProperties.HECTOR_PERFORM_NAME_RESOLUTION.toString());
+    return sysprop != null && Boolean.valueOf(sysprop);
+
+  }",107-112,2,0.93985844,0.9250478,0.92949104
+me.prettyprint.cassandra.service.CassandraHost,hashCode,()I,1,1,100.0%,"@Override
+  public int hashCode() {
+    return ip.hashCode();
+  }",144-147,0,0.9380761,0.922601,0.9272435
+me.prettyprint.cassandra.service.JmxMonitor,getCassandraMonitor,()Lme/prettyprint/cassandra/service/CassandraClientMonitor;,1,1,100.0%,"public CassandraClientMonitor getCassandraMonitor() {
+    return cassandraClientMonitor;
+  }",155-157,2,0.9366285,0.9227743,0.9269306
+me.prettyprint.cassandra.connection.HConnectionManager,createClock,()J,1,1,100.0%,"public long createClock() {
+    return this.clock.createClock();
+  }",269-271,2,0.9361605,0.92215306,0.92635536
+me.prettyprint.cassandra.service.CassandraHostConfigurator,getLoadBalancingPolicy,()Lme/prettyprint/cassandra/connection/LoadBalancingPolicy;,1,1,100.0%,"public LoadBalancingPolicy getLoadBalancingPolicy() {
+    return loadBalancingPolicy;
+  }",224-226,2,0.9339022,0.9199035,0.92410314
+me.prettyprint.cassandra.serializers.StringSerializer,get,()Lme/prettyprint/cassandra/serializers/StringSerializer;,1,1,100.0%,"public static StringSerializer get() {
+    return instance;
+  }",16-18,2,0.9348551,0.91933453,0.9239907
+me.prettyprint.cassandra.service.CassandraHost,getHost,()Ljava/lang/String;,1,1,100.0%,"public String getHost() {
+    return host;
+  }",118-120,1,0.9341789,0.918592,0.9232681
+me.prettyprint.cassandra.serializers.AbstractSerializer,toBytesList,(Ljava/util/List;)Ljava/util/List;,5,5,100.0%,"@Override
+  public List<ByteBuffer> toBytesList(List<T> list) {
+    List<ByteBuffer> bytesList = new ArrayList<ByteBuffer>();
+    for (T s : list) {
+      bytesList.add(toByteBuffer(s));
+    }
+    return bytesList;
+  }",84-91,0,0.9382029,0.91660696,0.92308575
+me.prettyprint.cassandra.service.CassandraHost,getMaxActive,()I,1,1,100.0%,"public int getMaxActive() {
+    return maxActive;
+  }",149-151,2,0.9300369,0.91472614,0.91931933
+me.prettyprint.cassandra.connection.HThriftClient,isOpen,()Z,5,6,83.3%,"boolean isOpen() {
+    boolean open = false;
+    if (transport != null) {
+      open = transport.isOpen();
+    }
+    if ( log.isDebugEnabled() ) {
+      log.debug(""Transport open status {} for client {}"", open, this);
+    }
+    return open;
+  }",123-132,1,0.9325093,0.91296965,0.9188315
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,mkdir,(Ljava/lang/String;)V,2,2,100.0%,"private static void mkdir(String dir) throws IOException {
+    FileUtils.createDirectory(dir);
+  }",120-122,0,0.9288542,0.9138413,0.9183452
+me.prettyprint.cassandra.service.CassandraHost,getPort,()I,1,1,100.0%,"public int getPort() {
+    return port;
+  }",126-128,2,0.9288614,0.9137867,0.9183091
+me.prettyprint.cassandra.service.Operation,getResult,()Ljava/lang/Object;,1,1,100.0%,"public T getResult() {
+    // TODO remove in favor of getExecutionResult
+    return result;
+  }",84-87,2,0.92708546,0.91227037,0.9167149
+me.prettyprint.cassandra.service.KeyspaceServiceImpl,getThriftCl,(Lme/prettyprint/cassandra/service/OperationType;)Lorg/apache/cassandra/thrift/ConsistencyLevel;,1,1,100.0%,"private ConsistencyLevel getThriftCl(OperationType operationType) {
+    return ThriftConverter.consistencyLevel(consistency.get(operationType));
+  }",622-624,4,0.9272813,0.91195923,0.9165559
+me.prettyprint.cassandra.service.clock.AbstractClockResolution,getSystemMilliseconds,()J,1,1,100.0%,"protected long getSystemMilliseconds() {
+      return System.currentTimeMillis();
+    }",23-25,2,0.92680717,0.9107682,0.9155799
+me.prettyprint.cassandra.service.Operation,getCassandraHost,()Lme/prettyprint/cassandra/service/CassandraHost;,1,1,100.0%,"public CassandraHost getCassandraHost() {
+    return this.cassandraHost;
+  }",117-119,1,0.92121214,0.90601015,0.91057074
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,rmdir,(Ljava/lang/String;)V,4,4,100.0%,"private static void rmdir(String dir) throws IOException {
+    File dirFile = new File(dir);
+    if (dirFile.exists()) {
+      FileUtils.deleteRecursive(new File(dir));
+    }
+  }",87-92,1,0.92260796,0.9037757,0.9094254
+me.prettyprint.cassandra.service.CassandraHost,<init>,(Ljava/lang/String;I)V,26,30,86.7%,"public CassandraHost(String url) {
+    this(url, parsePortFromUrl(url));
+  }",68-70,1,0.9193671,0.9037901,0.9084632
+me.prettyprint.cassandra.service.CassandraHost,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public CassandraHost(String url) {
+    this(url, parsePortFromUrl(url));
+  }",68-70,1,0.9193671,0.9037901,0.9084632
+me.prettyprint.cassandra.serializers.AbstractSerializer,fromBytesMap,(Ljava/util/Map;)Ljava/util/Map;,5,5,100.0%,"@Override
+  public <V> Map<T, V> fromBytesMap(Map<ByteBuffer, V> map) {
+    Map<T, V> objMap = new LinkedHashMap<T, V>();
+    for (Entry<ByteBuffer, V> entry : map.entrySet()) {
+      objMap.put(fromByteBuffer(entry.getKey()), entry.getValue());
+    }
+    return objMap;
+  }",111-118,0,0.9211223,0.8949924,0.90283144
+me.prettyprint.cassandra.connection.RoundRobinBalancingPolicy,<init>,()V,3,3,100.0%,"public RoundRobinBalancingPolicy() {
+    counter = new AtomicLong(Long.MIN_VALUE);
+  }",15-17,1,0.9138933,0.89795804,0.9027386
+me.prettyprint.cassandra.service.CassandraHostConfigurator,<init>,(Ljava/lang/String;)V,18,18,100.0%,"public CassandraHostConfigurator() {
+    this.hosts = null;
+  }",38-40,3,0.9141029,0.89783937,0.9027184
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,<init>,()V,2,2,100.0%,"public EmbeddedServerHelper() {
+    this(""/cassandra.yaml"");
+  }",31-33,3,0.91043043,0.8954172,0.8999212
+me.prettyprint.cassandra.testutils.EmbeddedServerHelper,<init>,(Ljava/lang/String;)V,3,3,100.0%,"public EmbeddedServerHelper() {
+    this(""/cassandra.yaml"");
+  }",31-33,3,0.91043043,0.8954172,0.8999212
+me.prettyprint.cassandra.connection.BackgroundCassandraHostService$1,run,()V,2,2,100.0%,"@Override
+      public void run() {
+        shutdown();
+      }",24-27,0,0.77734584,0.7448677,0.75461113
