@@ -1,0 +1,3882 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,Cluster,sim_to_test,sim_to_log,combined_sim
+com.squareup.okhttp.internal.http.HttpEngine,connect,()V,20,23,87.0%,"private void connect() throws IOException {
+    if (connection != null) throw new IllegalStateException();
+
+    if (routeSelector == null) {
+      String uriHost = request.url().getHost();
+      if (uriHost == null || uriHost.length() == 0) {
+        throw new UnknownHostException(request.url().toString());
+      }
+      SSLSocketFactory sslSocketFactory = null;
+      HostnameVerifier hostnameVerifier = null;
+      if (request.isHttps()) {
+        sslSocketFactory = client.getSslSocketFactory();
+        hostnameVerifier = client.getHostnameVerifier();
+      }
+      Address address = new Address(uriHost, getEffectivePort(request.url()), sslSocketFactory,
+          hostnameVerifier, client.getAuthenticator(), client.getProxy(), client.getProtocols());
+      routeSelector = new RouteSelector(address, request.uri(), client.getProxySelector(),
+          client.getConnectionPool(), Dns.DEFAULT, client.getRoutesDatabase());
+    }
+
+    connection = routeSelector.next(request.method());
+
+    if (!connection.isConnected()) {
+      connection.connect(client.getConnectTimeout(), client.getReadTimeout(), getTunnelConfig());
+      if (connection.isSpdy()) client.getConnectionPool().share(connection);
+      client.getRoutesDatabase().connected(connection.getRoute());
+    } else if (!connection.isSpdy()) {
+      connection.updateReadTimeout(client.getReadTimeout());
+    }
+
+    route = connection.getRoute();
+  }",214-245,1,0.97284347,0.99385804,0.9875537
+com.squareup.okhttp.internal.http.RouteSelector,<init>,(Lcom/squareup/okhttp/Address;Ljava/net/URI;Ljava/net/ProxySelector;Lcom/squareup/okhttp/ConnectionPool;Lcom/squareup/okhttp/internal/Dns;Lcom/squareup/okhttp/RouteDatabase;)V,11,11,100.0%,"public RouteSelector(Address address, URI uri, ProxySelector proxySelector, ConnectionPool pool,
+      Dns dns, RouteDatabase routeDatabase) {
+    this.address = address;
+    this.uri = uri;
+    this.proxySelector = proxySelector;
+    this.pool = pool;
+    this.dns = dns;
+    this.routeDatabase = routeDatabase;
+    this.postponedRoutes = new LinkedList<Route>();
+
+    resetNextProxy(uri, address.getProxy());
+  }",81-92,2,0.9712861,0.9925224,0.9861516
+com.squareup.okhttp.internal.http.HttpConnection,readResponse,()Lcom/squareup/okhttp/Response$Builder;,12,14,85.7%,"public Response.Builder readResponse() throws IOException {
+    if (state != STATE_OPEN_REQUEST_BODY && state != STATE_READ_RESPONSE_HEADERS) {
+      throw new IllegalStateException(""state: "" + state);
+    }
+
+    while (true) {
+      String statusLineString = source.readUtf8Line(true);
+      StatusLine statusLine = new StatusLine(statusLineString);
+
+      Response.Builder responseBuilder = new Response.Builder()
+          .statusLine(statusLine)
+          .header(OkHeaders.SELECTED_PROTOCOL, Protocol.HTTP_11.name.utf8());
+
+      Headers.Builder headersBuilder = new Headers.Builder();
+      readHeaders(headersBuilder);
+      responseBuilder.headers(headersBuilder.build());
+
+      if (statusLine.code() != HTTP_CONTINUE) {
+        state = STATE_OPEN_RESPONSE_BODY;
+        return responseBuilder;
+      }
+    }
+  }",141-163,1,0.9638334,0.9954522,0.98596656
+com.squareup.okhttp.Address,<init>,(Ljava/lang/String;ILjavax/net/ssl/SSLSocketFactory;Ljavax/net/ssl/HostnameVerifier;Lcom/squareup/okhttp/OkAuthenticator;Ljava/net/Proxy;Ljava/util/List;)V,13,13,100.0%,"public Address(String uriHost, int uriPort, SSLSocketFactory sslSocketFactory,
+      HostnameVerifier hostnameVerifier, OkAuthenticator authenticator, Proxy proxy,
+      List<Protocol> protocols) throws UnknownHostException {
+    if (uriHost == null) throw new NullPointerException(""uriHost == null"");
+    if (uriPort <= 0) throw new IllegalArgumentException(""uriPort <= 0: "" + uriPort);
+    if (authenticator == null) throw new IllegalArgumentException(""authenticator == null"");
+    if (protocols == null) throw new IllegalArgumentException(""protocols == null"");
+    this.proxy = proxy;
+    this.uriHost = uriHost;
+    this.uriPort = uriPort;
+    this.sslSocketFactory = sslSocketFactory;
+    this.hostnameVerifier = hostnameVerifier;
+    this.authenticator = authenticator;
+    this.protocols = Util.immutableList(protocols);
+  }",46-60,1,0.97158116,0.99209607,0.98594165
+com.squareup.okhttp.internal.Util,hash,(Ljava/lang/String;)Ljava/lang/String;,3,7,42.9%,"public static String hash(String s) {
+    try {
+      MessageDigest messageDigest = MessageDigest.getInstance(""MD5"");
+      byte[] md5bytes = messageDigest.digest(s.getBytes(""UTF-8""));
+      return ByteString.of(md5bytes).hex();
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError(e);
+    } catch (UnsupportedEncodingException e) {
+      throw new AssertionError(e);
+    }
+  }",250-260,1,0.97046345,0.9918727,0.9854499
+com.squareup.okhttp.internal.SslContextBuilder,localhost,()Ljavax/net/ssl/SSLContext;,4,8,50.0%,"public static synchronized SSLContext localhost() {
+    if (localhost == null) {
+      try {
+        localhost = new SslContextBuilder(InetAddress.getLocalHost().getHostName()).build();
+      } catch (GeneralSecurityException e) {
+        throw new RuntimeException(e);
+      } catch (UnknownHostException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return localhost;
+  }",68-79,1,0.96520007,0.99392503,0.9853075
+com.squareup.okhttp.Protocol,<init>,(Ljava/lang/String;ILjava/lang/String;Z)V,4,4,100.0%,"Protocol(String name, boolean spdyVariant) {
+    this.name = ByteString.encodeUtf8(name);
+    this.spdyVariant = spdyVariant;
+  }",58-61,2,0.96284366,0.9948978,0.9852815
+com.squareup.okhttp.mockwebserver.MockWebServer,writeResponse,(Ljava/io/OutputStream;Lcom/squareup/okhttp/mockwebserver/MockResponse;)V,18,24,75.0%,"private void writeResponse(OutputStream out, MockResponse response) throws IOException {
+    out.write((response.getStatus() + ""\r\n"").getBytes(Util.US_ASCII));
+    List<String> headers = response.getHeaders();
+    for (int i = 0, size = headers.size(); i < size; i++) {
+      String header = headers.get(i);
+      out.write((header + ""\r\n"").getBytes(Util.US_ASCII));
+    }
+    out.write((""\r\n"").getBytes(Util.US_ASCII));
+    out.flush();
+
+    InputStream in = response.getBodyStream();
+    if (in == null) return;
+
+    // Stream data in MTU-sized increments, sleeping every bytesPerPeriod bytes.
+    byte[] buffer = new byte[1452];
+    while (true) {
+      int bytesPerPeriod = response.getThrottleBytesPerPeriod();
+      for (int b = 0; b < bytesPerPeriod; ) {
+        int read = in.read(buffer, 0, Math.min(buffer.length, bytesPerPeriod - b));
+        if (read == -1) return;
+
+        out.write(buffer, 0, read);
+        out.flush();
+        b += read;
+      }
+
+      try {
+        long delayMs = response.getThrottleUnit().toMillis(response.getThrottlePeriod());
+        if (delayMs != 0) Thread.sleep(delayMs);
+      } catch (InterruptedException e) {
+        throw new AssertionError();
+      }
+    }
+  }",513-546,1,0.9723325,0.9907366,0.98521537
+com.squareup.okhttp.internal.http.OkHeaders,addCookies,(Lcom/squareup/okhttp/Request$Builder;Ljava/util/Map;)V,6,7,85.7%,"public static void addCookies(Request.Builder builder, Map<String, List<String>> cookieHeaders) {
+    for (Map.Entry<String, List<String>> entry : cookieHeaders.entrySet()) {
+      String key = entry.getKey();
+      if ((""Cookie"".equalsIgnoreCase(key) || ""Cookie2"".equalsIgnoreCase(key))
+          && !entry.getValue().isEmpty()) {
+        builder.addHeader(key, buildCookieHeader(entry.getValue()));
+      }
+    }
+  }",105-113,1,0.95979565,0.9956093,0.9848652
+com.squareup.okhttp.internal.http.HttpConnection$AbstractSource,endOfInput,()V,8,11,72.7%,"protected final void endOfInput() throws IOException {
+      if (state != STATE_READING_RESPONSE_BODY) throw new IllegalStateException(""state: "" + state);
+
+      if (cacheRequest != null) {
+        cacheBody.close();
+      }
+
+      state = STATE_IDLE;
+      if (onIdle == ON_IDLE_POOL) {
+        onIdle = ON_IDLE_HOLD; // Set the on idle policy back to the default.
+        pool.recycle(connection);
+      } else if (onIdle == ON_IDLE_CLOSE) {
+        state = STATE_CLOSED;
+        connection.close();
+      }
+    }",359-374,1,0.9620401,0.99456835,0.9848099
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,getResponse,()Lcom/squareup/okhttp/internal/http/HttpEngine;,8,23,34.8%,"private HttpEngine getResponse() throws IOException {
+    initHttpEngine();
+
+    if (httpEngine.hasResponse()) {
+      return httpEngine;
+    }
+
+    while (true) {
+      if (!execute(true)) {
+        continue;
+      }
+
+      Retry retry = processResponseHeaders();
+      if (retry == Retry.NONE) {
+        httpEngine.releaseConnection();
+        return httpEngine;
+      }
+
+      // The first request was insufficient. Prepare for another...
+      String retryMethod = method;
+      Sink requestBody = httpEngine.getRequestBody();
+
+      // Although RFC 2616 10.3.2 specifies that a HTTP_MOVED_PERM
+      // redirect should keep the same method, Chrome, Firefox and the
+      // RI all issue GETs when following any redirect.
+      int responseCode = httpEngine.getResponse().code();
+      if (responseCode == HTTP_MULT_CHOICE
+          || responseCode == HTTP_MOVED_PERM
+          || responseCode == HTTP_MOVED_TEMP
+          || responseCode == HTTP_SEE_OTHER) {
+        retryMethod = ""GET"";
+        requestHeaders.removeAll(""Content-Length"");
+        requestBody = null;
+      }
+
+      if (requestBody != null && !(requestBody instanceof RetryableSink)) {
+        throw new HttpRetryException(""Cannot retry streamed HTTP body"", responseCode);
+      }
+
+      if (retry == Retry.DIFFERENT_CONNECTION) {
+        httpEngine.releaseConnection();
+      }
+
+      Connection connection = httpEngine.close();
+      httpEngine = newHttpEngine(retryMethod, connection, (RetryableSink) requestBody);
+    }
+  }",317-363,1,0.9644802,0.9931494,0.9845486
+com.squareup.okhttp.OkHttpClient,getDefaultSSLSocketFactory,()Ljavax/net/ssl/SSLSocketFactory;,6,8,75.0%,"private synchronized SSLSocketFactory getDefaultSSLSocketFactory() {
+    if (sslSocketFactory == null) {
+      try {
+        SSLContext sslContext = SSLContext.getInstance(""TLS"");
+        sslContext.init(null, null, null);
+        sslSocketFactory = sslContext.getSocketFactory();
+      } catch (GeneralSecurityException e) {
+        throw new AssertionError(); // The system has no TLS. Just give up.
+      }
+    }
+    return sslSocketFactory;
+  }",485-496,1,0.9586973,0.99529064,0.98431265
+com.squareup.okhttp.internal.http.HttpEngine,prepareRawRequestHeaders,()V,19,20,95.0%,"private void prepareRawRequestHeaders() throws IOException {
+    Request.Builder result = request.newBuilder();
+
+    if (request.getUserAgent() == null) {
+      result.setUserAgent(getDefaultUserAgent());
+    }
+
+    if (request.header(""Host"") == null) {
+      result.header(""Host"", hostHeader(request.url()));
+    }
+
+    if ((connection == null || connection.getHttpMinorVersion() != 0)
+        && request.header(""Connection"") == null) {
+      result.header(""Connection"", ""Keep-Alive"");
+    }
+
+    if (request.header(""Accept-Encoding"") == null) {
+      transparentGzip = true;
+      result.header(""Accept-Encoding"", ""gzip"");
+    }
+
+    if (hasRequestBody() && request.header(""Content-Type"") == null) {
+      result.header(""Content-Type"", ""application/x-www-form-urlencoded"");
+    }
+
+    CookieHandler cookieHandler = client.getCookieHandler();
+    if (cookieHandler != null) {
+      Map<String, List<String>> cookies = cookieHandler.get(
+          request.uri(), OkHeaders.toMultimap(request.getHeaders(), null));
+      OkHeaders.addCookies(result, cookies);
+    }
+
+    request = result.build();
+  }",478-511,1,0.9805287,0.9857615,0.9841917
+com.squareup.okhttp.ConnectionPool,recycle,(Lcom/squareup/okhttp/Connection;)V,11,18,61.1%,"public void recycle(Connection connection) {
+    if (connection.isSpdy()) {
+      return;
+    }
+
+    if (!connection.isAlive()) {
+      Util.closeQuietly(connection);
+      return;
+    }
+
+    try {
+      Platform.get().untagSocket(connection.getSocket());
+    } catch (SocketException e) {
+      // When unable to remove tagging, skip recycling and close.
+      Platform.get().logW(""Unable to untagSocket(): "" + e);
+      Util.closeQuietly(connection);
+      return;
+    }
+
+    synchronized (this) {
+      connections.addFirst(connection);
+      connection.incrementRecycleCount();
+      connection.resetIdleStartTime();
+    }
+
+    executorService.execute(connectionsCleanupRunnable);
+  }",216-242,1,0.97344345,0.98799556,0.98362994
+com.squareup.okhttp.internal.http.CacheStrategy$Factory,get,()Lcom/squareup/okhttp/internal/http/CacheStrategy;,3,10,30.0%,"public CacheStrategy get() {
+      CacheStrategy candidate = getCandidate();
+
+      if (candidate.source != ResponseSource.CACHE && request.cacheControl().onlyIfCached()) {
+        // We're forbidden from using the network, but the cache is insufficient.
+        Response noneResponse = new Response.Builder()
+            .request(candidate.request)
+            .statusLine(GATEWAY_TIMEOUT_STATUS_LINE)
+            .setResponseSource(ResponseSource.NONE)
+            .body(EMPTY_BODY)
+            .build();
+        return new CacheStrategy(candidate.request, noneResponse, ResponseSource.NONE);
+      }
+
+      return candidate;
+    }",164-179,1,0.95416754,0.9962506,0.98362565
+com.squareup.okhttp.ConnectionPool,<init>,(IJ)V,8,8,100.0%,"public ConnectionPool(int maxIdleConnections, long keepAliveDurationMs) {
+    this.maxIdleConnections = maxIdleConnections;
+    this.keepAliveDurationNs = keepAliveDurationMs * 1000 * 1000;
+  }",118-121,2,0.9496537,0.9980718,0.9835464
+com.squareup.okhttp.ConnectionPool$1,<init>,(Lcom/squareup/okhttp/ConnectionPool;)V,1,1,100.0%,"public ConnectionPool(int maxIdleConnections, long keepAliveDurationMs) {
+    this.maxIdleConnections = maxIdleConnections;
+    this.keepAliveDurationNs = keepAliveDurationMs * 1000 * 1000;
+  }",118-121,2,0.9496537,0.9980718,0.9835464
+com.squareup.okhttp.internal.http.CacheStrategy,isCacheable,(Lcom/squareup/okhttp/Response;Lcom/squareup/okhttp/Request;)Z,6,12,50.0%,"public static boolean isCacheable(Response response, Request request) {
+    // Always go to network for uncacheable response codes (RFC 2616, 13.4),
+    // This implementation doesn't support caching partial content.
+    int responseCode = response.code();
+    if (responseCode != HttpURLConnection.HTTP_OK
+        && responseCode != HttpURLConnection.HTTP_NOT_AUTHORITATIVE
+        && responseCode != HttpURLConnection.HTTP_MULT_CHOICE
+        && responseCode != HttpURLConnection.HTTP_MOVED_PERM
+        && responseCode != HttpURLConnection.HTTP_GONE) {
+      return false;
+    }
+
+    // Responses to authorized requests aren't cacheable unless they include
+    // a 'public', 'must-revalidate' or 's-maxage' directive.
+    CacheControl responseCaching = response.cacheControl();
+    if (request.header(""Authorization"") != null
+        && !responseCaching.isPublic()
+        && !responseCaching.mustRevalidate()
+        && responseCaching.sMaxAgeSeconds() == -1) {
+      return false;
+    }
+
+    if (responseCaching.noStore()) {
+      return false;
+    }
+
+    return true;
+  }",64-91,1,0.9699486,0.98930496,0.9834981
+com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/ServerSocket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (RuntimeException rethrown) {
+        throw rethrown;
+      } catch (Exception ignored) {
+      }
+    }
+  }",94-103,1,0.96398723,0.9917094,0.9833928
+com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/Socket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (RuntimeException rethrown) {
+        throw rethrown;
+      } catch (Exception ignored) {
+      }
+    }
+  }",94-103,1,0.96398723,0.9917094,0.9833928
+com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/io/Closeable;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (RuntimeException rethrown) {
+        throw rethrown;
+      } catch (Exception ignored) {
+      }
+    }
+  }",94-103,1,0.96398723,0.9917094,0.9833928
+okio.RealBufferedSource,readUtf8Line,(Z)Ljava/lang/String;,12,14,85.7%,"@Override public String readUtf8Line(boolean throwOnEof) throws IOException {
+    checkNotClosed();
+    long start = 0;
+    long newline;
+    while ((newline = buffer.indexOf((byte) '\n', start)) == -1) {
+      start = buffer.size;
+      if (source.read(buffer, Segment.SIZE) == -1) {
+        if (throwOnEof) throw new EOFException();
+        return buffer.size != 0 ? readUtf8(buffer.size) : null;
+      }
+    }
+
+    if (newline > 0 && buffer.getByte(newline - 1) == '\r') {
+      // Read everything until '\r\n', then skip the '\r\n'.
+      String result = readUtf8((newline - 1));
+      skip(2);
+      return result;
+
+    } else {
+      // Read everything until '\n', then skip the '\n'.
+      String result = readUtf8((newline));
+      skip(1);
+      return result;
+    }
+  }",83-107,3,0.9619734,0.9922829,0.98319006
+com.squareup.okhttp.internal.http.RouteSelector,next,(Ljava/lang/String;)Lcom/squareup/okhttp/Connection;,13,19,68.4%,"public Connection next(String method) throws IOException {
+    // Always prefer pooled connections over new connections.
+    for (Connection pooled; (pooled = pool.get(address)) != null; ) {
+      if (method.equals(""GET"") || pooled.isReadable()) return pooled;
+      pooled.close();
+    }
+
+    // Compute the next route to attempt.
+    if (!hasNextTlsMode()) {
+      if (!hasNextInetSocketAddress()) {
+        if (!hasNextProxy()) {
+          if (!hasNextPostponed()) {
+            throw new NoSuchElementException();
+          }
+          return new Connection(pool, nextPostponed());
+        }
+        lastProxy = nextProxy();
+        resetNextInetSocketAddress(lastProxy);
+      }
+      lastInetSocketAddress = nextInetSocketAddress();
+      resetNextTlsMode();
+    }
+
+    boolean modernTls = nextTlsMode() == TLS_MODE_MODERN;
+    Route route = new Route(address, lastProxy, lastInetSocketAddress, modernTls);
+    if (routeDatabase.shouldPostpone(route)) {
+      postponedRoutes.add(route);
+      // We will only recurse in order to skip previously failed routes. They will be
+      // tried last.
+      return next(method);
+    }
+
+    return new Connection(pool, route);
+  }",107-140,1,0.9700127,0.98881984,0.9831777
+com.squareup.okhttp.HttpResponseCache,maybeRemove,(Lcom/squareup/okhttp/Request;)Z,2,6,33.3%,"@Override public boolean maybeRemove(Request request) {
+    if (HttpMethod.invalidatesCache(request.method())) {
+      try {
+        cache.remove(urlToKey(request));
+      } catch (IOException ignored) {
+        // The cache cannot be written.
+      }
+      return true;
+    }
+    return false;
+  }",198-208,1,0.9581497,0.9932117,0.9826931
+okio.Okio$2,read,(Lokio/OkBuffer;J)J,9,9,100.0%,"@Override public long read(OkBuffer sink, long byteCount) throws IOException {
+        if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+        deadline.throwIfReached();
+        Segment tail = sink.writableSegment(1);
+        int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
+        int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
+        if (bytesRead == -1) return -1;
+        tail.limit += bytesRead;
+        sink.size += bytesRead;
+        return bytesRead;
+      }",108-118,3,0.9520161,0.99559265,0.9825197
+com.squareup.okhttp.internal.http.HttpEngine,readResponse,()V,25,47,53.2%,"public final void readResponse() throws IOException {
+    if (response != null) return;
+    if (responseSource == null) throw new IllegalStateException(""call sendRequest() first!"");
+    if (!responseSource.requiresConnection()) return;
+
+    // Flush the request body if there's data outstanding.
+    if (bufferedRequestBody != null && bufferedRequestBody.buffer().size() > 0) {
+      bufferedRequestBody.flush();
+    }
+
+    if (sentRequestMillis == -1) {
+      if (OkHeaders.contentLength(request) == -1 && requestBodyOut instanceof RetryableSink) {
+        // We might not learn the Content-Length until the request body has been buffered.
+        long contentLength = ((RetryableSink) requestBodyOut).contentLength();
+        request = request.newBuilder()
+            .header(""Content-Length"", Long.toString(contentLength))
+            .build();
+      }
+      transport.writeRequestHeaders(request);
+    }
+
+    if (requestBodyOut != null) {
+      if (bufferedRequestBody != null) {
+        // This also closes the wrapped requestBodyOut.
+        bufferedRequestBody.close();
+      } else {
+        requestBodyOut.close();
+      }
+      if (requestBodyOut instanceof RetryableSink) {
+        transport.writeRequestBody((RetryableSink) requestBodyOut);
+      }
+    }
+
+    transport.flushRequest();
+
+    response = transport.readResponseHeaders()
+        .request(request)
+        .handshake(connection.getHandshake())
+        .header(OkHeaders.SENT_MILLIS, Long.toString(sentRequestMillis))
+        .header(OkHeaders.RECEIVED_MILLIS, Long.toString(System.currentTimeMillis()))
+        .setResponseSource(responseSource)
+        .build();
+    connection.setHttpMinorVersion(response.httpMinorVersion());
+    receiveHeaders(response.headers());
+
+    if (responseSource == ResponseSource.CONDITIONAL_CACHE) {
+      if (validatingResponse.validate(response)) {
+        transport.emptyTransferStream();
+        releaseConnection();
+        response = combine(validatingResponse, response);
+
+        // Update the cache after combining headers but before stripping the
+        // Content-Encoding header (as performed by initContentStream()).
+        OkResponseCache responseCache = client.getOkResponseCache();
+        responseCache.trackConditionalCacheHit();
+        responseCache.update(validatingResponse, cacheableResponse());
+
+        if (validatingResponse.body() != null) {
+          initContentStream(validatingResponse.body().source());
+        }
+        return;
+      } else {
+        closeQuietly(validatingResponse.body());
+      }
+    }
+
+    if (!hasResponseBody()) {
+      // Don't call initContentStream() when the response doesn't have any content.
+      responseTransferSource = transport.getTransferStream(cacheRequest);
+      responseBody = responseTransferSource;
+      return;
+    }
+
+    maybeCache();
+    initContentStream(transport.getTransferStream(cacheRequest));
+  }",528-603,1,0.9702791,0.98766506,0.9824493
+com.squareup.okhttp.internal.DiskLruCache,open,(Ljava/io/File;IIJ)Lcom/squareup/okhttp/internal/DiskLruCache;,10,24,41.7%,"public static DiskLruCache open(File directory, int appVersion, int valueCount, long maxSize)
+      throws IOException {
+    if (maxSize <= 0) {
+      throw new IllegalArgumentException(""maxSize <= 0"");
+    }
+    if (valueCount <= 0) {
+      throw new IllegalArgumentException(""valueCount <= 0"");
+    }
+
+    // If a bkp file exists, use it instead.
+    File backupFile = new File(directory, JOURNAL_FILE_BACKUP);
+    if (backupFile.exists()) {
+      File journalFile = new File(directory, JOURNAL_FILE);
+      // If journal file also exists just delete backup file.
+      if (journalFile.exists()) {
+        backupFile.delete();
+      } else {
+        renameTo(backupFile, journalFile, false);
+      }
+    }
+
+    // Prefer to pick up where we left off.
+    DiskLruCache cache = new DiskLruCache(directory, appVersion, valueCount, maxSize);
+    if (cache.journalFile.exists()) {
+      try {
+        cache.readJournal();
+        cache.processJournal();
+        cache.journalWriter = Okio.buffer(Okio.sink(new FileOutputStream(cache.journalFile, true)));
+        return cache;
+      } catch (IOException journalIsCorrupt) {
+        Platform.get().logW(""DiskLruCache "" + directory + "" is corrupt: ""
+            + journalIsCorrupt.getMessage() + "", removing"");
+        cache.delete();
+      }
+    }
+
+    // Create a new empty cache.
+    directory.mkdirs();
+    cache = new DiskLruCache(directory, appVersion, valueCount, maxSize);
+    cache.rebuildJournal();
+    return cache;
+  }",200-241,4,0.96926266,0.9877883,0.9822306
+com.squareup.okhttp.Route,<init>,(Lcom/squareup/okhttp/Address;Ljava/net/Proxy;Ljava/net/InetSocketAddress;Z)V,9,9,100.0%,"public Route(Address address, Proxy proxy, InetSocketAddress inetSocketAddress,
+      boolean modernTls) {
+    if (address == null) throw new NullPointerException(""address == null"");
+    if (proxy == null) throw new NullPointerException(""proxy == null"");
+    if (inetSocketAddress == null) throw new NullPointerException(""inetSocketAddress == null"");
+    this.address = address;
+    this.proxy = proxy;
+    this.inetSocketAddress = inetSocketAddress;
+    this.modernTls = modernTls;
+  }",42-51,1,0.9642905,0.98970276,0.9820791
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,execute,(Z)Z,7,14,50.0%,"private boolean execute(boolean readResponse) throws IOException {
+    try {
+      httpEngine.sendRequest();
+      route = httpEngine.getRoute();
+      handshake = httpEngine.getConnection() != null
+          ? httpEngine.getConnection().getHandshake()
+          : null;
+      if (readResponse) {
+        httpEngine.readResponse();
+      }
+
+      return true;
+    } catch (IOException e) {
+      HttpEngine retryEngine = httpEngine.recover(e);
+      if (retryEngine != null) {
+        httpEngine = retryEngine;
+        return false;
+      }
+
+      // Give up; recovery is not possible.
+      httpEngineFailure = e;
+      throw e;
+    }
+  }",370-393,1,0.9638489,0.98960286,0.98187673
+okio.OkBuffer,skip,(J)V,12,12,100.0%,"public void skip(long byteCount) {
+    checkOffsetAndCount(this.size, 0, byteCount);
+
+    this.size -= byteCount;
+    while (byteCount > 0) {
+      int toSkip = (int) Math.min(byteCount, head.limit - head.pos);
+      byteCount -= toSkip;
+      head.pos += toSkip;
+
+      if (head.pos == head.limit) {
+        Segment toRecycle = head;
+        head = toRecycle.pop();
+        SegmentPool.INSTANCE.recycle(toRecycle);
+      }
+    }
+  }",348-363,3,0.9549672,0.9933971,0.98186815
+com.squareup.okhttp.internal.http.StatusLine,<init>,(Ljava/lang/String;)V,18,28,64.3%,"public StatusLine(String statusLine) throws IOException {
+    // H T T P / 1 . 1   2 0 0   T e m p o r a r y   R e d i r e c t
+    // 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+
+    // Parse protocol like ""HTTP/1.1"" followed by a space.
+    int codeStart;
+    int httpMinorVersion;
+    if (statusLine.startsWith(""HTTP/1."")) {
+      if (statusLine.length() < 9 || statusLine.charAt(8) != ' ') {
+        throw new ProtocolException(""Unexpected status line: "" + statusLine);
+      }
+      httpMinorVersion = statusLine.charAt(7) - '0';
+      codeStart = 9;
+      if (httpMinorVersion < 0 || httpMinorVersion > 9) {
+        throw new ProtocolException(""Unexpected status line: "" + statusLine);
+      }
+    } else if (statusLine.startsWith(""ICY "")) {
+      // Shoutcast uses ICY instead of ""HTTP/1.0"".
+      httpMinorVersion = 0;
+      codeStart = 4;
+    } else {
+      throw new ProtocolException(""Unexpected status line: "" + statusLine);
+    }
+
+    // Parse response code like ""200"". Always 3 digits.
+    if (statusLine.length() < codeStart + 3) {
+      throw new ProtocolException(""Unexpected status line: "" + statusLine);
+    }
+    int responseCode;
+    try {
+      responseCode = Integer.parseInt(statusLine.substring(codeStart, codeStart + 3));
+    } catch (NumberFormatException e) {
+      throw new ProtocolException(""Unexpected status line: "" + statusLine);
+    }
+
+    // Parse an optional response message like ""OK"" or ""Not Modified"". If it
+    // exists, it is separated from the response code by a space.
+    String responseMessage = """";
+    if (statusLine.length() > codeStart + 3) {
+      if (statusLine.charAt(codeStart + 3) != ' ') {
+        throw new ProtocolException(""Unexpected status line: "" + statusLine);
+      }
+      responseMessage = statusLine.substring(codeStart + 4);
+    }
+
+    this.responseMessage = responseMessage;
+    this.responseCode = responseCode;
+    this.statusLine = statusLine;
+    this.httpMinorVersion = httpMinorVersion;
+  }",17-66,1,0.9728645,0.98538685,0.9816301
+com.squareup.okhttp.internal.Util,threadFactory,(Ljava/lang/String;Z)Ljava/util/concurrent/ThreadFactory;,1,1,100.0%,"public static ThreadFactory threadFactory(final String name, final boolean daemon) {
+    return new ThreadFactory() {
+      @Override public Thread newThread(Runnable runnable) {
+        Thread result = new Thread(runnable, name);
+        result.setDaemon(daemon);
+        return result;
+      }
+    };
+  }",272-280,1,0.9556815,0.99268466,0.9815837
+com.squareup.okhttp.ConnectionPool,get,(Lcom/squareup/okhttp/Address;)Lcom/squareup/okhttp/Connection;,16,22,72.7%,"public synchronized Connection get(Address address) {
+    Connection foundConnection = null;
+    for (ListIterator<Connection> i = connections.listIterator(connections.size());
+        i.hasPrevious(); ) {
+      Connection connection = i.previous();
+      if (!connection.getRoute().getAddress().equals(address)
+          || !connection.isAlive()
+          || System.nanoTime() - connection.getIdleStartTimeNs() >= keepAliveDurationNs) {
+        continue;
+      }
+      i.remove();
+      if (!connection.isSpdy()) {
+        try {
+          Platform.get().tagSocket(connection.getSocket());
+        } catch (SocketException e) {
+          Util.closeQuietly(connection);
+          // When unable to tag, skip recycling and close
+          Platform.get().logW(""Unable to tagSocket(): "" + e);
+          continue;
+        }
+      }
+      foundConnection = connection;
+      break;
+    }
+
+    if (foundConnection != null && foundConnection.isSpdy()) {
+      connections.addFirst(foundConnection); // Add it back after iteration.
+    }
+
+    executorService.execute(connectionsCleanupRunnable);
+    return foundConnection;
+  }",177-208,1,0.97262913,0.98539895,0.98156804
+okio.Okio,source,(Ljava/io/InputStream;)Lokio/Source;,1,1,100.0%,"public static Source source(final InputStream in) {
+    return new Source() {
+      private Deadline deadline = Deadline.NONE;
+
+      @Override public long read(OkBuffer sink, long byteCount) throws IOException {
+        if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+        deadline.throwIfReached();
+        Segment tail = sink.writableSegment(1);
+        int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
+        int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
+        if (bytesRead == -1) return -1;
+        tail.limit += bytesRead;
+        sink.size += bytesRead;
+        return bytesRead;
+      }
+
+      @Override public void close() throws IOException {
+        in.close();
+      }
+
+      @Override public Source deadline(Deadline deadline) {
+        if (deadline == null) throw new IllegalArgumentException(""deadline == null"");
+        this.deadline = deadline;
+        return this;
+      }
+
+      @Override public String toString() {
+        return ""source("" + in + "")"";
+      }
+    };
+  }",104-134,3,0.95677435,0.99190557,0.9813662
+com.squareup.okhttp.mockwebserver.MockWebServer$2,execute,()V,9,13,69.2%,"@Override protected void execute() {
+        try {
+          acceptConnections();
+        } catch (Throwable e) {
+          logger.log(Level.WARNING, ""MockWebServer connection failed"", e);
+        }
+
+        // This gnarly block of code will release all sockets and all thread,
+        // even if any close fails.
+        Util.closeQuietly(serverSocket);
+        for (Iterator<Socket> s = openClientSockets.keySet().iterator(); s.hasNext(); ) {
+          Util.closeQuietly(s.next());
+          s.remove();
+        }
+        for (Iterator<SpdyConnection> s = openSpdyConnections.keySet().iterator(); s.hasNext(); ) {
+          Util.closeQuietly(s.next());
+          s.remove();
+        }
+        executor.shutdown();
+      }",249-268,1,0.97074926,0.9857462,0.9812471
+com.squareup.okhttp.mockwebserver.MockWebServer$3,execute,()V,3,5,60.0%,"@Override protected void execute() {
+        try {
+          acceptConnections();
+        } catch (Throwable e) {
+          logger.log(Level.WARNING, ""MockWebServer connection failed"", e);
+        }
+
+        // This gnarly block of code will release all sockets and all thread,
+        // even if any close fails.
+        Util.closeQuietly(serverSocket);
+        for (Iterator<Socket> s = openClientSockets.keySet().iterator(); s.hasNext(); ) {
+          Util.closeQuietly(s.next());
+          s.remove();
+        }
+        for (Iterator<SpdyConnection> s = openSpdyConnections.keySet().iterator(); s.hasNext(); ) {
+          Util.closeQuietly(s.next());
+          s.remove();
+        }
+        executor.shutdown();
+      }",249-268,1,0.97074926,0.9857462,0.9812471
+com.squareup.okhttp.internal.http.HttpConnection$FixedLengthSource,read,(Lokio/OkBuffer;J)J,10,12,83.3%,"@Override public long read(OkBuffer sink, long byteCount)
+        throws IOException {
+      if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+      if (closed) throw new IllegalStateException(""closed"");
+      if (bytesRemaining == 0) return -1;
+
+      long read = source.read(sink, Math.min(bytesRemaining, byteCount));
+      if (read == -1) {
+        unexpectedEndOfInput(); // the server didn't supply the promised content length
+        throw new ProtocolException(""unexpected end of stream"");
+      }
+
+      bytesRemaining -= read;
+      cacheWrite(sink, read);
+      if (bytesRemaining == 0) {
+        endOfInput();
+      }
+      return read;
+    }",409-427,3,0.95483786,0.9919045,0.98078454
+com.squareup.okhttp.Headers$Builder,addLine,(Ljava/lang/String;)Lcom/squareup/okhttp/Headers$Builder;,3,6,50.0%,"public Builder addLine(String line) {
+      int index = line.indexOf("":"", 1);
+      if (index != -1) {
+        return addLenient(line.substring(0, index), line.substring(index + 1));
+      } else if (line.startsWith("":"")) {
+        // Work around empty header names and header names that start with a
+        // colon (created by old broken SPDY versions of the response cache).
+        return addLenient("""", line.substring(1)); // Empty header name.
+      } else {
+        return addLenient("""", line); // No header name.
+      }
+    }",143-154,2,0.95536697,0.99167037,0.9807793
+com.squareup.okhttp.Connection,initSourceAndSink,()V,3,3,100.0%,"private void initSourceAndSink() throws IOException {
+    source = Okio.buffer(Okio.source(in));
+    sink = Okio.buffer(Okio.sink(out));
+  }",356-359,3,0.96217006,0.9886068,0.9806758
+com.squareup.okhttp.HttpResponseCache,trackResponse,(Lcom/squareup/okhttp/ResponseSource;)V,4,6,66.7%,"@Override public synchronized void trackResponse(ResponseSource source) {
+    requestCount++;
+
+    switch (source) {
+      case CACHE:
+        hitCount++;
+        break;
+      case CONDITIONAL_CACHE:
+      case NETWORK:
+        networkCount++;
+        break;
+    }
+  }",276-288,2,0.96299744,0.98824704,0.9806722
+com.squareup.okhttp.internal.DiskLruCache$Entry,getLengths,()Ljava/lang/String;,4,4,100.0%,"public String getLengths() throws IOException {
+      StringBuilder result = new StringBuilder();
+      for (long size : lengths) {
+        result.append(' ').append(size);
+      }
+      return result.toString();
+    }",888-894,1,0.95762515,0.99026704,0.9804745
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,initHttpEngine,()V,8,16,50.0%,"private void initHttpEngine() throws IOException {
+    if (httpEngineFailure != null) {
+      throw httpEngineFailure;
+    } else if (httpEngine != null) {
+      return;
+    }
+
+    connected = true;
+    try {
+      if (doOutput) {
+        if (method.equals(""GET"")) {
+          // they are requesting a stream to write to. This implies a POST method
+          method = ""POST"";
+        } else if (!HttpMethod.hasRequestBody(method)) {
+          // If the request method is neither POST nor PUT nor PATCH, then you're not writing
+          throw new ProtocolException(method + "" does not support writing"");
+        }
+      }
+      httpEngine = newHttpEngine(method, null, null);
+    } catch (IOException e) {
+      httpEngineFailure = e;
+      throw e;
+    }
+  }",255-278,1,0.9535149,0.9916193,0.980188
+com.squareup.okhttp.mockwebserver.MockResponse,clone,()Lcom/squareup/okhttp/mockwebserver/MockResponse;,4,6,66.7%,"@Override public MockResponse clone() {
+    try {
+      MockResponse result = (MockResponse) super.clone();
+      result.headers = new ArrayList<String>(headers);
+      result.promises = new ArrayList<PushPromise>(promises);
+      return result;
+    } catch (CloneNotSupportedException e) {
+      throw new AssertionError();
+    }
+  }",56-65,1,0.9555003,0.9906635,0.9801146
+com.squareup.okhttp.internal.http.HttpConnection$FixedLengthSource,<init>,(Lcom/squareup/okhttp/internal/http/HttpConnection;Ljava/net/CacheRequest;J)V,5,6,83.3%,"public HttpConnection(ConnectionPool pool, Connection connection, BufferedSource source,
+      BufferedSink sink) {
+    this.pool = pool;
+    this.connection = connection;
+    this.source = source;
+    this.sink = sink;
+  }",81-87,3,0.9810635,0.9796241,0.9800559
+com.squareup.okhttp.internal.http.HttpConnection,<init>,(Lcom/squareup/okhttp/ConnectionPool;Lcom/squareup/okhttp/Connection;Lokio/BufferedSource;Lokio/BufferedSink;)V,8,8,100.0%,"public HttpConnection(ConnectionPool pool, Connection connection, BufferedSource source,
+      BufferedSink sink) {
+    this.pool = pool;
+    this.connection = connection;
+    this.source = source;
+    this.sink = sink;
+  }",81-87,3,0.9810635,0.9796241,0.9800559
+com.squareup.okhttp.internal.http.HttpConnection$AbstractSource,<init>,(Lcom/squareup/okhttp/internal/http/HttpConnection;Ljava/net/CacheRequest;)V,6,7,85.7%,"public HttpConnection(ConnectionPool pool, Connection connection, BufferedSource source,
+      BufferedSink sink) {
+    this.pool = pool;
+    this.connection = connection;
+    this.source = source;
+    this.sink = sink;
+  }",81-87,3,0.9810635,0.9796241,0.9800559
+com.squareup.okhttp.HttpResponseCache$Entry,response,(Lcom/squareup/okhttp/Request;Lcom/squareup/okhttp/internal/DiskLruCache$Snapshot;)Lcom/squareup/okhttp/Response;,9,9,100.0%,"public Response response(Request request, DiskLruCache.Snapshot snapshot) {
+      String contentType = responseHeaders.get(""Content-Type"");
+      String contentLength = responseHeaders.get(""Content-Length"");
+      return new Response.Builder()
+          .request(request)
+          .statusLine(statusLine)
+          .headers(responseHeaders)
+          .body(new CacheResponseBody(snapshot, contentType, contentLength))
+          .handshake(handshake)
+          .build();
+    }",526-536,1,0.97836196,0.98078114,0.9800554
+com.squareup.okhttp.internal.http.CacheStrategy$Factory,computeFreshnessLifetime,()J,6,15,40.0%,"private long computeFreshnessLifetime() {
+      CacheControl responseCaching = cacheResponse.cacheControl();
+      if (responseCaching.maxAgeSeconds() != -1) {
+        return SECONDS.toMillis(responseCaching.maxAgeSeconds());
+      } else if (expires != null) {
+        long servedMillis = servedDate != null
+            ? servedDate.getTime()
+            : receivedResponseMillis;
+        long delta = expires.getTime() - servedMillis;
+        return delta > 0 ? delta : 0;
+      } else if (lastModified != null
+          && cacheResponse.request().url().getQuery() == null) {
+        // As recommended by the HTTP RFC and implemented in Firefox, the
+        // max age of a document should be defaulted to 10% of the
+        // document's age at the time it was served. Default expiration
+        // dates aren't used for URIs containing a query.
+        long servedMillis = servedDate != null
+            ? servedDate.getTime()
+            : sentRequestMillis;
+        long delta = servedMillis - lastModified.getTime();
+        return delta > 0 ? (delta / 10) : 0;
+      }
+      return 0;
+    }",259-282,1,0.95666486,0.9900528,0.98003644
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,processResponseHeaders,()Lcom/squareup/okhttp/internal/http/HttpURLConnectionImpl$Retry;,7,35,20.0%,"private Retry processResponseHeaders() throws IOException {
+    Connection connection = httpEngine.getConnection();
+    Proxy selectedProxy = connection != null
+        ? connection.getRoute().getProxy()
+        : client.getProxy();
+    final int responseCode = getResponseCode();
+    switch (responseCode) {
+      case HTTP_PROXY_AUTH:
+        if (selectedProxy.type() != Proxy.Type.HTTP) {
+          throw new ProtocolException(""Received HTTP_PROXY_AUTH (407) code while not using proxy"");
+        }
+        // fall-through
+      case HTTP_UNAUTHORIZED:
+        Request successorRequest = HttpAuthenticator.processAuthHeader(client.getAuthenticator(),
+            httpEngine.getResponse(), selectedProxy);
+        if (successorRequest == null) return Retry.NONE;
+        requestHeaders = successorRequest.getHeaders().newBuilder();
+        return Retry.SAME_CONNECTION;
+
+      case HTTP_MULT_CHOICE:
+      case HTTP_MOVED_PERM:
+      case HTTP_MOVED_TEMP:
+      case HTTP_SEE_OTHER:
+      case HTTP_TEMP_REDIRECT:
+        if (!getInstanceFollowRedirects()) {
+          return Retry.NONE;
+        }
+        if (++redirectionCount > MAX_REDIRECTS) {
+          throw new ProtocolException(""Too many redirects: "" + redirectionCount);
+        }
+        if (responseCode == HTTP_TEMP_REDIRECT && !method.equals(""GET"") && !method.equals(""HEAD"")) {
+          // ""If the 307 status code is received in response to a request other than GET or HEAD,
+          // the user agent MUST NOT automatically redirect the request""
+          return Retry.NONE;
+        }
+        String location = getHeaderField(""Location"");
+        if (location == null) {
+          return Retry.NONE;
+        }
+        URL previousUrl = url;
+        url = new URL(previousUrl, location);
+        if (!url.getProtocol().equals(""https"") && !url.getProtocol().equals(""http"")) {
+          return Retry.NONE; // Don't follow redirects to unsupported protocols.
+        }
+        boolean sameProtocol = previousUrl.getProtocol().equals(url.getProtocol());
+        if (!sameProtocol && !client.getFollowProtocolRedirects()) {
+          return Retry.NONE; // This client doesn't follow redirects across protocols.
+        }
+        boolean sameHost = previousUrl.getHost().equals(url.getHost());
+        boolean samePort = getEffectivePort(previousUrl) == getEffectivePort(url);
+        if (sameHost && samePort && sameProtocol) {
+          return Retry.SAME_CONNECTION;
+        } else {
+          return Retry.DIFFERENT_CONNECTION;
+        }
+
+      default:
+        return Retry.NONE;
+    }
+  }",406-465,1,0.9697499,0.98438895,0.9799973
+com.squareup.okhttp.internal.http.HttpTransport,canReuseConnection,()Z,4,7,57.1%,"@Override public boolean canReuseConnection() {
+    // If the request specified that the connection shouldn't be reused, don't reuse it.
+    if (""close"".equalsIgnoreCase(httpEngine.getRequest().header(""Connection""))) {
+      return false;
+    }
+
+    // If the response specified that the connection shouldn't be reused, don't reuse it.
+    if (""close"".equalsIgnoreCase(httpEngine.getResponse().header(""Connection""))) {
+      return false;
+    }
+
+    if (httpConnection.isClosed()) {
+      return false;
+    }
+
+    return true;
+  }",112-128,1,0.9785998,0.98049325,0.9799252
+com.squareup.okhttp.mockwebserver.RecordedRequest,<init>,(Ljava/lang/String;Ljava/util/List;Ljava/util/List;J[BILjava/net/Socket;)V,16,18,88.9%,"public RecordedRequest(String requestLine, List<String> headers, List<Integer> chunkSizes,
+      long bodySize, byte[] body, int sequenceNumber, Socket socket) {
+    this.requestLine = requestLine;
+    this.headers = headers;
+    this.chunkSizes = chunkSizes;
+    this.bodySize = bodySize;
+    this.body = body;
+    this.sequenceNumber = sequenceNumber;
+    this.sslProtocol = socket instanceof SSLSocket
+        ? ((SSLSocket) socket).getSession().getProtocol()
+        : null;
+
+    if (requestLine != null) {
+      int methodEnd = requestLine.indexOf(' ');
+      int pathEnd = requestLine.indexOf(' ', methodEnd + 1);
+      this.method = requestLine.substring(0, methodEnd);
+      this.path = requestLine.substring(methodEnd + 1, pathEnd);
+    } else {
+      this.method = null;
+      this.path = null;
+    }
+  }",37-58,2,0.96795094,0.9849145,0.97982544
+com.squareup.okhttp.internal.DiskLruCache,get,(Ljava/lang/String;)Lcom/squareup/okhttp/internal/DiskLruCache$Snapshot;,14,21,66.7%,"public synchronized Snapshot get(String key) throws IOException {
+    checkNotClosed();
+    validateKey(key);
+    Entry entry = lruEntries.get(key);
+    if (entry == null) {
+      return null;
+    }
+
+    if (!entry.readable) {
+      return null;
+    }
+
+    // Open all streams eagerly to guarantee that we see a single published
+    // snapshot. If we opened streams lazily then the streams could come
+    // from different edits.
+    InputStream[] ins = new InputStream[valueCount];
+    try {
+      for (int i = 0; i < valueCount; i++) {
+        ins[i] = new FileInputStream(entry.getCleanFile(i));
+      }
+    } catch (FileNotFoundException e) {
+      // A file must have been deleted manually!
+      for (int i = 0; i < valueCount; i++) {
+        if (ins[i] != null) {
+          Util.closeQuietly(ins[i]);
+        } else {
+          break;
+        }
+      }
+      return null;
+    }
+
+    redundantOpCount++;
+    journalWriter.writeUtf8(READ + ' ' + key + '\n');
+    if (journalRebuildRequired()) {
+      executorService.execute(cleanupRunnable);
+    }
+
+    return new Snapshot(key, entry.sequenceNumber, ins, entry.lengths);
+  }",398-437,1,0.9577048,0.98918927,0.9797439
+com.squareup.okhttp.internal.SslContextBuilder,selfSignedCertificate,(Ljava/security/KeyPair;)Ljava/security/cert/X509Certificate;,11,11,100.0%,"@SuppressWarnings(""deprecation"") // use the old Bouncy Castle APIs to reduce dependencies.
+  private X509Certificate selfSignedCertificate(KeyPair keyPair) throws GeneralSecurityException {
+    X509V3CertificateGenerator generator = new X509V3CertificateGenerator();
+    X500Principal issuer = new X500Principal(""CN="" + hostName);
+    X500Principal subject = new X500Principal(""CN="" + hostName);
+    generator.setSerialNumber(BigInteger.ONE);
+    generator.setIssuerDN(issuer);
+    generator.setNotBefore(new Date(notBefore));
+    generator.setNotAfter(new Date(notAfter));
+    generator.setSubjectDN(subject);
+    generator.setPublicKey(keyPair.getPublic());
+    generator.setSignatureAlgorithm(""SHA256WithRSAEncryption"");
+    return generator.generateX509Certificate(keyPair.getPrivate(), ""BC"");
+  }",117-130,1,0.95987725,0.9881671,0.9796802
+com.squareup.okhttp.internal.http.RouteSelector,resetNextProxy,(Ljava/net/URI;Ljava/net/Proxy;)V,6,7,85.7%,"private void resetNextProxy(URI uri, Proxy proxy) {
+    this.hasNextProxy = true; // This includes NO_PROXY!
+    if (proxy != null) {
+      this.userSpecifiedProxy = proxy;
+    } else {
+      List<Proxy> proxyList = proxySelector.select(uri);
+      if (proxyList != null) {
+        this.proxySelectorProxies = proxyList.iterator();
+      }
+    }
+  }",171-181,2,0.9630589,0.9866755,0.97959054
+okio.OkBuffer,writableSegment,(I)Lokio/Segment;,7,8,87.5%,"Segment writableSegment(int minimumCapacity) {
+    if (minimumCapacity < 1 || minimumCapacity > Segment.SIZE) throw new IllegalArgumentException();
+
+    if (head == null) {
+      head = SegmentPool.INSTANCE.take(); // Acquire a first segment.
+      return head.next = head.prev = head;
+    }
+
+    Segment tail = head.prev;
+    if (tail.limit + minimumCapacity > Segment.SIZE) {
+      tail = tail.push(SegmentPool.INSTANCE.take()); // Append a new empty segment to fill up.
+    }
+    return tail;
+  }",434-447,3,0.95193326,0.9911712,0.9793998
+com.squareup.okhttp.internal.SslContextBuilder,build,()Ljavax/net/ssl/SSLContext;,14,14,100.0%,"public SSLContext build() throws GeneralSecurityException {
+    char[] password = ""password"".toCharArray();
+
+    // Generate public and private keys and use them to make a self-signed certificate.
+    KeyPair keyPair = generateKeyPair();
+    X509Certificate certificate = selfSignedCertificate(keyPair);
+
+    // Put 'em in a key store.
+    KeyStore keyStore = newEmptyKeyStore(password);
+    Certificate[] certificateChain = { certificate };
+    keyStore.setKeyEntry(""private"", keyPair.getPrivate(), password, certificateChain);
+    keyStore.setCertificateEntry(""cert"", certificate);
+
+    // Wrap it up in an SSL context.
+    KeyManagerFactory keyManagerFactory =
+        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    keyManagerFactory.init(keyStore, password);
+    TrustManagerFactory trustManagerFactory =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    trustManagerFactory.init(keyStore);
+    SSLContext sslContext = SSLContext.getInstance(""TLS"");
+    sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(),
+        new SecureRandom());
+    return sslContext;
+  }",81-105,1,0.9420479,0.9952,0.97925436
+com.squareup.okhttp.HttpResponseCache$Entry,writeTo,(Lcom/squareup/okhttp/internal/DiskLruCache$Editor;)V,13,18,72.2%,"public void writeTo(DiskLruCache.Editor editor) throws IOException {
+      OutputStream out = editor.newOutputStream(ENTRY_METADATA);
+      Writer writer = new BufferedWriter(new OutputStreamWriter(out, UTF_8));
+
+      writer.write(url + '\n');
+      writer.write(requestMethod + '\n');
+      writer.write(Integer.toString(varyHeaders.size()) + '\n');
+      for (int i = 0; i < varyHeaders.size(); i++) {
+        writer.write(varyHeaders.name(i) + "": "" + varyHeaders.value(i) + '\n');
+      }
+
+      writer.write(statusLine + '\n');
+      writer.write(Integer.toString(responseHeaders.size()) + '\n');
+      for (int i = 0; i < responseHeaders.size(); i++) {
+        writer.write(responseHeaders.name(i) + "": "" + responseHeaders.value(i) + '\n');
+      }
+
+      if (isHttps()) {
+        writer.write('\n');
+        writer.write(handshake.cipherSuite() + '\n');
+        writeCertArray(writer, handshake.peerCertificates());
+        writeCertArray(writer, handshake.localCertificates());
+      }
+      writer.close();
+    }",459-483,1,0.9764909,0.97997797,0.97893184
+okio.OkBuffer,readUtf8,(J)Ljava/lang/String;,10,14,71.4%,"public String readUtf8(long byteCount) {
+    checkOffsetAndCount(this.size, 0, byteCount);
+    if (byteCount > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException(""byteCount > Integer.MAX_VALUE: "" + byteCount);
+    }
+    if (byteCount == 0) return """";
+
+    Segment head = this.head;
+    if (head.pos + byteCount > head.limit) {
+      // If the string spans multiple segments, delegate to readBytes().
+      return new String(readBytes(byteCount), Util.UTF_8);
+    }
+
+    String result = new String(head.data, head.pos, (int) byteCount, UTF_8);
+    head.pos += byteCount;
+    this.size -= byteCount;
+
+    if (head.pos == head.limit) {
+      this.head = head.pop();
+      SegmentPool.INSTANCE.recycle(head);
+    }
+
+    return result;
+  }",246-269,3,0.95545906,0.98889315,0.97886294
+com.squareup.okhttp.internal.http.RouteSelector,resetNextInetSocketAddress,(Ljava/net/Proxy;)V,7,14,50.0%,"private void resetNextInetSocketAddress(Proxy proxy) throws UnknownHostException {
+    socketAddresses = null; // Clear the addresses. Necessary if getAllByName() below throws!
+
+    String socketHost;
+    if (proxy.type() == Proxy.Type.DIRECT) {
+      socketHost = uri.getHost();
+      socketPort = getEffectivePort(uri);
+    } else {
+      SocketAddress proxyAddress = proxy.address();
+      if (!(proxyAddress instanceof InetSocketAddress)) {
+        throw new IllegalArgumentException(
+            ""Proxy.address() is not an "" + ""InetSocketAddress: "" + proxyAddress.getClass());
+      }
+      InetSocketAddress proxySocketAddress = (InetSocketAddress) proxyAddress;
+      socketHost = proxySocketAddress.getHostName();
+      socketPort = proxySocketAddress.getPort();
+    }
+
+    // Try each address for best behavior in mixed IPv4/IPv6 environments.
+    socketAddresses = dns.getAllByName(socketHost);
+    nextSocketAddressIndex = 0;
+  }",213-234,1,0.9434394,0.9935926,0.9785466
+com.squareup.okhttp.internal.DiskLruCache$Entry,<init>,(Lcom/squareup/okhttp/internal/DiskLruCache;Ljava/lang/String;)V,4,4,100.0%,"private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
+    this.directory = directory;
+    this.appVersion = appVersion;
+    this.journalFile = new File(directory, JOURNAL_FILE);
+    this.journalFileTmp = new File(directory, JOURNAL_FILE_TEMP);
+    this.journalFileBackup = new File(directory, JOURNAL_FILE_BACKUP);
+    this.valueCount = valueCount;
+    this.maxSize = maxSize;
+  }",181-189,4,0.97816306,0.9786976,0.97853726
+com.squareup.okhttp.internal.DiskLruCache$2,<init>,()V,1,1,100.0%,"private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
+    this.directory = directory;
+    this.appVersion = appVersion;
+    this.journalFile = new File(directory, JOURNAL_FILE);
+    this.journalFileTmp = new File(directory, JOURNAL_FILE_TEMP);
+    this.journalFileBackup = new File(directory, JOURNAL_FILE_BACKUP);
+    this.valueCount = valueCount;
+    this.maxSize = maxSize;
+  }",181-189,4,0.97816306,0.9786976,0.97853726
+com.squareup.okhttp.internal.DiskLruCache,<init>,(Ljava/io/File;IIJ)V,15,15,100.0%,"private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
+    this.directory = directory;
+    this.appVersion = appVersion;
+    this.journalFile = new File(directory, JOURNAL_FILE);
+    this.journalFileTmp = new File(directory, JOURNAL_FILE_TEMP);
+    this.journalFileBackup = new File(directory, JOURNAL_FILE_BACKUP);
+    this.valueCount = valueCount;
+    this.maxSize = maxSize;
+  }",181-189,4,0.97816306,0.9786976,0.97853726
+com.squareup.okhttp.internal.DiskLruCache$Editor,<init>,(Lcom/squareup/okhttp/internal/DiskLruCache;Lcom/squareup/okhttp/internal/DiskLruCache$Entry;)V,4,4,100.0%,"private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
+    this.directory = directory;
+    this.appVersion = appVersion;
+    this.journalFile = new File(directory, JOURNAL_FILE);
+    this.journalFileTmp = new File(directory, JOURNAL_FILE_TEMP);
+    this.journalFileBackup = new File(directory, JOURNAL_FILE_BACKUP);
+    this.valueCount = valueCount;
+    this.maxSize = maxSize;
+  }",181-189,4,0.97816306,0.9786976,0.97853726
+com.squareup.okhttp.internal.DiskLruCache$Editor$FaultHidingOutputStream,<init>,(Lcom/squareup/okhttp/internal/DiskLruCache$Editor;Ljava/io/OutputStream;)V,3,3,100.0%,"private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
+    this.directory = directory;
+    this.appVersion = appVersion;
+    this.journalFile = new File(directory, JOURNAL_FILE);
+    this.journalFileTmp = new File(directory, JOURNAL_FILE_TEMP);
+    this.journalFileBackup = new File(directory, JOURNAL_FILE_BACKUP);
+    this.valueCount = valueCount;
+    this.maxSize = maxSize;
+  }",181-189,4,0.97816306,0.9786976,0.97853726
+com.squareup.okhttp.internal.DiskLruCache$1,<init>,(Lcom/squareup/okhttp/internal/DiskLruCache;)V,1,1,100.0%,"private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
+    this.directory = directory;
+    this.appVersion = appVersion;
+    this.journalFile = new File(directory, JOURNAL_FILE);
+    this.journalFileTmp = new File(directory, JOURNAL_FILE_TEMP);
+    this.journalFileBackup = new File(directory, JOURNAL_FILE_BACKUP);
+    this.valueCount = valueCount;
+    this.maxSize = maxSize;
+  }",181-189,4,0.97816306,0.9786976,0.97853726
+com.squareup.okhttp.internal.DiskLruCache$Snapshot,<init>,(Lcom/squareup/okhttp/internal/DiskLruCache;Ljava/lang/String;J[Ljava/io/InputStream;[J)V,6,6,100.0%,"private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
+    this.directory = directory;
+    this.appVersion = appVersion;
+    this.journalFile = new File(directory, JOURNAL_FILE);
+    this.journalFileTmp = new File(directory, JOURNAL_FILE_TEMP);
+    this.journalFileBackup = new File(directory, JOURNAL_FILE_BACKUP);
+    this.valueCount = valueCount;
+    this.maxSize = maxSize;
+  }",181-189,4,0.97816306,0.9786976,0.97853726
+com.squareup.okhttp.internal.DiskLruCache$Editor,commit,()V,4,6,66.7%,"public void commit() throws IOException {
+      if (hasErrors) {
+        completeEdit(this, false);
+        remove(entry.key); // The previous entry is stale.
+      } else {
+        completeEdit(this, true);
+      }
+      committed = true;
+    }",802-810,1,0.95455825,0.98879945,0.97852707
+com.squareup.okhttp.internal.http.HttpEngine,initContentStream,(Lokio/Source;)V,4,9,44.4%,"private void initContentStream(Source transferSource) throws IOException {
+    responseTransferSource = transferSource;
+    if (transparentGzip && ""gzip"".equalsIgnoreCase(response.header(""Content-Encoding""))) {
+      response = response.newBuilder()
+          .removeHeader(""Content-Encoding"")
+          .removeHeader(""Content-Length"")
+          .build();
+      responseBody = new GzipSource(transferSource);
+    } else {
+      responseBody = transferSource;
+    }
+  }",431-442,1,0.9673343,0.9824489,0.9779145
+com.squareup.okhttp.internal.http.RouteSelector,nextTlsMode,()I,4,7,57.1%,"private int nextTlsMode() {
+    if (nextTlsMode == TLS_MODE_MODERN) {
+      nextTlsMode = TLS_MODE_COMPATIBLE;
+      return TLS_MODE_MODERN;
+    } else if (nextTlsMode == TLS_MODE_COMPATIBLE) {
+      nextTlsMode = TLS_MODE_NULL;  // So that hasNextTlsMode() returns false.
+      return TLS_MODE_COMPATIBLE;
+    } else {
+      throw new AssertionError();
+    }
+  }",264-274,1,0.96818286,0.9819787,0.97783995
+com.squareup.okhttp.Connection,setHttpMinorVersion,(I)V,2,2,100.0%,"public void setHttpMinorVersion(int httpMinorVersion) {
+    this.httpMinorVersion = httpMinorVersion;
+  }",287-289,2,0.9508298,0.9893666,0.9778056
+com.squareup.okhttp.internal.NamedRunnable,run,()V,5,5,100.0%,"@Override public final void run() {
+    String oldName = Thread.currentThread().getName();
+    Thread.currentThread().setName(name);
+    try {
+      execute();
+    } finally {
+      Thread.currentThread().setName(oldName);
+    }
+  }",29-37,2,0.97602856,0.9784979,0.97775716
+com.squareup.okhttp.internal.DiskLruCache$Editor$FaultHidingOutputStream,close,()V,3,5,60.0%,"public synchronized void close() throws IOException {
+    if (journalWriter == null) {
+      return; // Already closed.
+    }
+    // Copying for safe iteration.
+    for (Object next : lruEntries.values().toArray()) {
+      Entry entry = (Entry) next;
+      if (entry.currentEditor != null) {
+        entry.currentEditor.abort();
+      }
+    }
+    trimToSize();
+    journalWriter.close();
+    journalWriter = null;
+  }",620-634,1,0.956535,0.9868272,0.9777396
+com.squareup.okhttp.internal.DiskLruCache,close,()V,8,10,80.0%,"public synchronized void close() throws IOException {
+    if (journalWriter == null) {
+      return; // Already closed.
+    }
+    // Copying for safe iteration.
+    for (Object next : lruEntries.values().toArray()) {
+      Entry entry = (Entry) next;
+      if (entry.currentEditor != null) {
+        entry.currentEditor.abort();
+      }
+    }
+    trimToSize();
+    journalWriter.close();
+    journalWriter = null;
+  }",620-634,1,0.956535,0.9868272,0.9777396
+com.squareup.okhttp.internal.DiskLruCache$Snapshot,close,()V,3,3,100.0%,"public synchronized void close() throws IOException {
+    if (journalWriter == null) {
+      return; // Already closed.
+    }
+    // Copying for safe iteration.
+    for (Object next : lruEntries.values().toArray()) {
+      Entry entry = (Entry) next;
+      if (entry.currentEditor != null) {
+        entry.currentEditor.abort();
+      }
+    }
+    trimToSize();
+    journalWriter.close();
+    journalWriter = null;
+  }",620-634,1,0.956535,0.9868272,0.9777396
+com.squareup.okhttp.internal.http.CacheStrategy$Factory,getCandidate,()Lcom/squareup/okhttp/internal/http/CacheStrategy;,23,39,59.0%,"private CacheStrategy getCandidate() {
+      // No cached response.
+      if (cacheResponse == null) {
+        return new CacheStrategy(request, cacheResponse, ResponseSource.NETWORK);
+      }
+
+      // Drop the cached response if it's missing a required handshake.
+      if (request.isHttps() && cacheResponse.handshake() == null) {
+        return new CacheStrategy(request, cacheResponse, ResponseSource.NETWORK);
+      }
+
+      // If this response shouldn't have been stored, it should never be used
+      // as a response source. This check should be redundant as long as the
+      // persistence store is well-behaved and the rules are constant.
+      if (!isCacheable(cacheResponse, request)) {
+        return new CacheStrategy(request, cacheResponse, ResponseSource.NETWORK);
+      }
+
+      CacheControl requestCaching = request.cacheControl();
+      if (requestCaching.noCache() || hasConditions(request)) {
+        return new CacheStrategy(request, cacheResponse, ResponseSource.NETWORK);
+      }
+
+      long ageMillis = cacheResponseAge();
+      long freshMillis = computeFreshnessLifetime();
+
+      if (requestCaching.maxAgeSeconds() != -1) {
+        freshMillis = Math.min(freshMillis, SECONDS.toMillis(requestCaching.maxAgeSeconds()));
+      }
+
+      long minFreshMillis = 0;
+      if (requestCaching.minFreshSeconds() != -1) {
+        minFreshMillis = SECONDS.toMillis(requestCaching.minFreshSeconds());
+      }
+
+      long maxStaleMillis = 0;
+      CacheControl responseCaching = cacheResponse.cacheControl();
+      if (!responseCaching.mustRevalidate() && requestCaching.maxStaleSeconds() != -1) {
+        maxStaleMillis = SECONDS.toMillis(requestCaching.maxStaleSeconds());
+      }
+
+      if (!responseCaching.noCache() && ageMillis + minFreshMillis < freshMillis + maxStaleMillis) {
+        Response.Builder builder = cacheResponse.newBuilder()
+            .setResponseSource(ResponseSource.CACHE); // Overwrite any stored response source.
+        if (ageMillis + minFreshMillis >= freshMillis) {
+          builder.addHeader(""Warning"", ""110 HttpURLConnection \""Response is stale\"""");
+        }
+        long oneDayMillis = 24 * 60 * 60 * 1000L;
+        if (ageMillis > oneDayMillis && isFreshnessLifetimeHeuristic()) {
+          builder.addHeader(""Warning"", ""113 HttpURLConnection \""Heuristic expiration\"""");
+        }
+        return new CacheStrategy(request, builder.build(), ResponseSource.CACHE);
+      }
+
+      Request.Builder conditionalRequestBuilder = request.newBuilder();
+
+      if (lastModified != null) {
+        conditionalRequestBuilder.header(""If-Modified-Since"", lastModifiedString);
+      } else if (servedDate != null) {
+        conditionalRequestBuilder.header(""If-Modified-Since"", servedDateString);
+      }
+
+      if (etag != null) {
+        conditionalRequestBuilder.header(""If-None-Match"", etag);
+      }
+
+      Request conditionalRequest = conditionalRequestBuilder.build();
+      ResponseSource responseSource = hasConditions(conditionalRequest)
+          ? ResponseSource.CONDITIONAL_CACHE
+          : ResponseSource.NETWORK;
+      return new CacheStrategy(conditionalRequest, cacheResponse, responseSource);
+    }",182-253,1,0.968135,0.981741,0.9776592
+com.squareup.okhttp.Headers,getAll,(Ljava/util/Set;)Lcom/squareup/okhttp/Headers;,5,6,83.3%,"public Headers getAll(Set<String> fieldNames) {
+    Builder result = new Builder();
+    for (int i = 0; i < namesAndValues.length; i += 2) {
+      String fieldName = namesAndValues[i];
+      if (fieldNames.contains(fieldName)) {
+        result.add(fieldName, namesAndValues[i + 1]);
+      }
+    }
+    return result.build();
+  }",105-114,0,0.96395725,0.9833472,0.9775302
+com.squareup.okhttp.internal.http.RouteSelector,nextProxy,()Ljava/net/Proxy;,8,11,72.7%,"private Proxy nextProxy() {
+    // If the user specifies a proxy, try that and only that.
+    if (userSpecifiedProxy != null) {
+      hasNextProxy = false;
+      return userSpecifiedProxy;
+    }
+
+    // Try each of the ProxySelector choices until one connection succeeds. If none succeed
+    // then we'll try a direct connection below.
+    if (proxySelectorProxies != null) {
+      while (proxySelectorProxies.hasNext()) {
+        Proxy candidate = proxySelectorProxies.next();
+        if (candidate.type() != Proxy.Type.DIRECT) {
+          return candidate;
+        }
+      }
+    }
+
+    // Finally try a direct connection.
+    hasNextProxy = false;
+    return Proxy.NO_PROXY;
+  }",189-210,1,0.94637996,0.9906934,0.97739935
+com.squareup.okhttp.internal.http.CacheStrategy$Factory,hasConditions,(Lcom/squareup/okhttp/Request;)Z,1,1,100.0%,"private static boolean hasConditions(Request request) {
+      return request.header(""If-Modified-Since"") != null || request.header(""If-None-Match"") != null;
+    }",314-316,1,0.9606502,0.9845162,0.97735643
+com.squareup.okhttp.internal.http.HttpTransport,getTransferStream,(Ljava/net/CacheRequest;)Lokio/Source;,5,8,62.5%,"@Override public Source getTransferStream(CacheRequest cacheRequest) throws IOException {
+    if (!httpEngine.hasResponseBody()) {
+      return httpConnection.newFixedLengthSource(cacheRequest, 0);
+    }
+
+    if (""chunked"".equalsIgnoreCase(httpEngine.getResponse().header(""Transfer-Encoding""))) {
+      return httpConnection.newChunkedSource(cacheRequest, httpEngine);
+    }
+
+    long contentLength = OkHeaders.contentLength(httpEngine.getResponse());
+    if (contentLength != -1) {
+      return httpConnection.newFixedLengthSource(cacheRequest, contentLength);
+    }
+
+    // Wrap the input stream from the connection (rather than just returning
+    // ""socketIn"" directly here), so that we can control its use after the
+    // reference escapes.
+    return httpConnection.newUnknownLengthSource(cacheRequest);
+  }",134-152,1,0.9470565,0.9900305,0.9771383
+okio.Okio,copy,(Lokio/OkBuffer;JJLjava/io/OutputStream;)V,11,13,84.6%,"public static void copy(OkBuffer source, long offset, long byteCount, OutputStream sink)
+      throws IOException {
+    checkOffsetAndCount(source.size, offset, byteCount);
+
+    // Skip segments that we aren't copying from.
+    Segment s = source.head;
+    while (offset >= (s.limit - s.pos)) {
+      offset -= (s.limit - s.pos);
+      s = s.next;
+    }
+
+    // Copy from one segment at a time.
+    while (byteCount > 0) {
+      int pos = (int) (s.pos + offset);
+      int toWrite = (int) Math.min(s.limit - pos, byteCount);
+      sink.write(s.data, pos, toWrite);
+      byteCount -= toWrite;
+      offset = 0;
+    }
+  }",37-56,3,0.94500184,0.9906965,0.9769881
+okio.RealBufferedSource,skip,(J)V,8,9,88.9%,"@Override public void skip(long byteCount) throws IOException {
+    checkNotClosed();
+    while (byteCount > 0) {
+      if (buffer.size == 0 && source.read(buffer, Segment.SIZE) == -1) {
+        throw new EOFException();
+      }
+      long toSkip = Math.min(byteCount, buffer.size());
+      buffer.skip(toSkip);
+      byteCount -= toSkip;
+    }
+  }",129-139,3,0.9474114,0.9893511,0.9767692
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,newHttpEngine,(Ljava/lang/String;Lcom/squareup/okhttp/Connection;Lcom/squareup/okhttp/internal/http/RetryableSink;)Lcom/squareup/okhttp/internal/http/HttpEngine;,12,18,66.7%,"private HttpEngine newHttpEngine(String method, Connection connection,
+      RetryableSink requestBody) {
+    Request.Builder builder = new Request.Builder()
+        .url(getURL())
+        .method(method, null /* No body; that's passed separately. */);
+    Headers headers = requestHeaders.build();
+    for (int i = 0; i < headers.size(); i++) {
+      builder.addHeader(headers.name(i), headers.value(i));
+    }
+
+    boolean bufferRequestBody;
+    if (fixedContentLength != -1) {
+      bufferRequestBody = false;
+      builder.header(""Content-Length"", Long.toString(fixedContentLength));
+    } else if (chunkLength > 0) {
+      bufferRequestBody = false;
+      builder.header(""Transfer-Encoding"", ""chunked"");
+    } else {
+      bufferRequestBody = true;
+    }
+
+    Request request = builder.build();
+
+    // If we're currently not using caches, make sure the engine's client doesn't have one.
+    OkHttpClient engineClient = client;
+    if (engineClient.getOkResponseCache() != null && !getUseCaches()) {
+      engineClient = client.clone().setOkResponseCache(null);
+    }
+
+    return new HttpEngine(engineClient, request, bufferRequestBody, connection, null, requestBody);
+  }",280-310,1,0.9448158,0.9902324,0.97660744
+com.squareup.okhttp.internal.http.HttpEngine,hasResponseBody,()Z,4,9,44.4%,"public final boolean hasResponseBody() {
+    // HEAD requests never yield a body regardless of the response headers.
+    if (request.method().equals(""HEAD"")) {
+      return false;
+    }
+
+    int responseCode = response.code();
+    if ((responseCode < HTTP_CONTINUE || responseCode >= 200)
+        && responseCode != HTTP_NO_CONTENT
+        && responseCode != HTTP_NOT_MODIFIED) {
+      return true;
+    }
+
+    // If the Content-Length or Transfer-Encoding headers disagree with the
+    // response code, the response is malformed. For best compatibility, we
+    // honor the headers.
+    if (OkHeaders.contentLength(response) != -1
+        || ""chunked"".equalsIgnoreCase(response.header(""Transfer-Encoding""))) {
+      return true;
+    }
+
+    return false;
+  }",448-470,1,0.94196033,0.99141407,0.97657794
+com.squareup.okhttp.internal.SslContextBuilder,generateKeyPair,()Ljava/security/KeyPair;,3,3,100.0%,"private KeyPair generateKeyPair() throws GeneralSecurityException {
+    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(""RSA"", ""BC"");
+    keyPairGenerator.initialize(1024, new SecureRandom());
+    return keyPairGenerator.generateKeyPair();
+  }",107-111,1,0.9354822,0.9939497,0.97640944
+okio.OkBuffer,readByte,()B,11,12,91.7%,"@Override public byte readByte() {
+    if (size == 0) throw new IllegalStateException(""size == 0"");
+
+    Segment segment = head;
+    int pos = segment.pos;
+    int limit = segment.limit;
+
+    byte[] data = segment.data;
+    byte b = data[pos++];
+    size -= 1;
+
+    if (pos == limit) {
+      head = segment.pop();
+      SegmentPool.INSTANCE.recycle(segment);
+    } else {
+      segment.pos = pos;
+    }
+
+    return b;
+  }",142-161,3,0.9431035,0.9905887,0.97634315
+okio.Okio$1,write,(Lokio/OkBuffer;J)V,14,14,100.0%,"@Override public void write(OkBuffer source, long byteCount)
+          throws IOException {
+        checkOffsetAndCount(source.size, 0, byteCount);
+        while (byteCount > 0) {
+          deadline.throwIfReached();
+          Segment head = source.head;
+          int toCopy = (int) Math.min(byteCount, head.limit - head.pos);
+          out.write(head.data, head.pos, toCopy);
+
+          head.pos += toCopy;
+          byteCount -= toCopy;
+          source.size -= toCopy;
+
+          if (head.pos == head.limit) {
+            source.head = head.pop();
+            SegmentPool.INSTANCE.recycle(head);
+          }
+        }
+      }",63-81,3,0.962917,0.9820089,0.9762813
+com.squareup.okhttp.mockwebserver.MockWebServer,getUrl,(Ljava/lang/String;)Ljava/net/URL;,3,5,60.0%,"public URL getUrl(String path) {
+    try {
+      return sslSocketFactory != null
+          ? new URL(""https://"" + getHostName() + "":"" + getPort() + path)
+          : new URL(""http://"" + getHostName() + "":"" + getPort() + path);
+    } catch (MalformedURLException e) {
+      throw new AssertionError(e);
+    }
+  }",135-143,1,0.9568204,0.9843635,0.97610056
+com.squareup.okhttp.mockwebserver.MockWebServer,readAsciiUntilCrlf,(Ljava/io/InputStream;)Ljava/lang/String;,8,9,88.9%,"private String readAsciiUntilCrlf(InputStream in) throws IOException {
+    StringBuilder builder = new StringBuilder();
+    while (true) {
+      int c = in.read();
+      if (c == '\n' && builder.length() > 0 && builder.charAt(builder.length() - 1) == '\r') {
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
+      } else if (c == -1) {
+        return builder.toString();
+      } else {
+        builder.append((char) c);
+      }
+    }
+  }",566-579,0,0.97182745,0.9778592,0.97604966
+com.squareup.okhttp.internal.Util$1,newThread,(Ljava/lang/Runnable;)Ljava/lang/Thread;,3,3,100.0%,"@Override public Thread newThread(Runnable runnable) {
+        Thread result = new Thread(runnable, name);
+        result.setDaemon(daemon);
+        return result;
+      }",274-278,1,0.9465367,0.98861676,0.9759928
+okio.SegmentPool,take,()Lokio/Segment;,9,9,100.0%,"Segment take() {
+    synchronized (this) {
+      if (next != null) {
+        Segment result = next;
+        next = result.next;
+        result.next = null;
+        byteCount -= Segment.SIZE;
+        return result;
+      }
+    }
+    return new Segment(); // Pool is empty. Don't zero-fill while holding a lock.
+  }",38-49,3,0.9494589,0.9872651,0.9759233
+com.squareup.okhttp.internal.Util,getDefaultPort,(Ljava/lang/String;)I,1,3,33.3%,"public static int getDefaultPort(String protocol) {
+    if (""http"".equals(protocol)) return 80;
+    if (""https"".equals(protocol)) return 443;
+    return -1;
+  }",73-77,2,0.9386418,0.9917,0.9757825
+com.squareup.okhttp.internal.http.CacheStrategy$1,<init>,()V,1,1,100.0%,"private CacheStrategy(
+      Request request, Response response, ResponseSource source) {
+    this.request = request;
+    this.response = response;
+    this.source = source;
+  }",53-58,1,0.9573175,0.9833099,0.9755122
+com.squareup.okhttp.internal.http.CacheStrategy$Factory,<init>,(JLcom/squareup/okhttp/Request;Lcom/squareup/okhttp/Response;)V,21,26,80.8%,"private CacheStrategy(
+      Request request, Response response, ResponseSource source) {
+    this.request = request;
+    this.response = response;
+    this.source = source;
+  }",53-58,1,0.9573175,0.9833099,0.9755122
+com.squareup.okhttp.internal.http.CacheStrategy,<init>,(Lcom/squareup/okhttp/Request;Lcom/squareup/okhttp/Response;Lcom/squareup/okhttp/ResponseSource;)V,5,5,100.0%,"private CacheStrategy(
+      Request request, Response response, ResponseSource source) {
+    this.request = request;
+    this.response = response;
+    this.source = source;
+  }",53-58,1,0.9573175,0.9833099,0.9755122
+com.squareup.okhttp.mockwebserver.MockWebServer,serveConnection,(Ljava/net/Socket;)V,2,2,100.0%,"private void serveConnection(final Socket raw) {
+    executor.execute(new NamedRunnable(""MockWebServer %s"", raw.getRemoteSocketAddress()) {
+      int sequenceNumber = 0;
+
+      @Override protected void execute() {
+        try {
+          processConnection();
+        } catch (Exception e) {
+          logger.log(Level.WARNING, ""MockWebServer connection failed"", e);
+        }
+      }
+
+      public void processConnection() throws Exception {
+        Protocol protocol = Protocol.HTTP_11;
+        Socket socket;
+        if (sslSocketFactory != null) {
+          if (tunnelProxy) {
+            createTunnel();
+          }
+          SocketPolicy socketPolicy = dispatcher.peekSocketPolicy();
+          if (socketPolicy == FAIL_HANDSHAKE) {
+            dispatchBookkeepingRequest(sequenceNumber, raw);
+            processHandshakeFailure(raw);
+            return;
+          }
+          socket = sslSocketFactory.createSocket(
+              raw, raw.getInetAddress().getHostAddress(), raw.getPort(), true);
+          SSLSocket sslSocket = (SSLSocket) socket;
+          sslSocket.setUseClientMode(false);
+          openClientSockets.put(socket, true);
+
+          if (npnEnabled) {
+            Platform.get().setNpnProtocols(sslSocket, npnProtocols);
+          }
+
+          sslSocket.startHandshake();
+
+          if (npnEnabled) {
+            ByteString selectedProtocol = Platform.get().getNpnSelectedProtocol(sslSocket);
+            protocol = Protocol.find(selectedProtocol);
+          }
+          openClientSockets.remove(raw);
+        } else {
+          socket = raw;
+        }
+
+        if (protocol.spdyVariant) {
+          SpdySocketHandler spdySocketHandler = new SpdySocketHandler(socket, protocol);
+          SpdyConnection spdyConnection = new SpdyConnection.Builder(false, socket)
+              .protocol(protocol)
+              .handler(spdySocketHandler).build();
+          openSpdyConnections.put(spdyConnection, Boolean.TRUE);
+          openClientSockets.remove(socket);
+          return;
+        }
+
+        InputStream in = new BufferedInputStream(socket.getInputStream());
+        OutputStream out = new BufferedOutputStream(socket.getOutputStream());
+
+        while (processOneRequest(socket, in, out)) {
+        }
+
+        if (sequenceNumber == 0) {
+          logger.warning(""MockWebServer connection didn't make a request"");
+        }
+
+        in.close();
+        out.close();
+        socket.close();
+        openClientSockets.remove(socket);
+      }
+
+      /**
+       * Respond to CONNECT requests until a SWITCH_TO_SSL_AT_END response is
+       * dispatched.
+       */
+      private void createTunnel() throws IOException, InterruptedException {
+        while (true) {
+          SocketPolicy socketPolicy = dispatcher.peekSocketPolicy();
+          if (!processOneRequest(raw, raw.getInputStream(), raw.getOutputStream())) {
+            throw new IllegalStateException(""Tunnel without any CONNECT!"");
+          }
+          if (socketPolicy == SocketPolicy.UPGRADE_TO_SSL_AT_END) return;
+        }
+      }
+
+      /**
+       * Reads a request and writes its response. Returns true if a request was
+       * processed.
+       */
+      private boolean processOneRequest(Socket socket, InputStream in, OutputStream out)
+          throws IOException, InterruptedException {
+        RecordedRequest request = readRequest(socket, in, out, sequenceNumber);
+        if (request == null) return false;
+        requestCount.incrementAndGet();
+        requestQueue.add(request);
+        MockResponse response = dispatcher.dispatch(request);
+        writeResponse(out, response);
+        if (response.getSocketPolicy() == SocketPolicy.DISCONNECT_AT_END) {
+          in.close();
+          out.close();
+        } else if (response.getSocketPolicy() == SocketPolicy.SHUTDOWN_INPUT_AT_END) {
+          socket.shutdownInput();
+        } else if (response.getSocketPolicy() == SocketPolicy.SHUTDOWN_OUTPUT_AT_END) {
+          socket.shutdownOutput();
+        }
+        if (logger.isLoggable(Level.INFO)) {
+          logger.info(""Received request: "" + request + "" and responded: "" + response);
+        }
+        sequenceNumber++;
+        return true;
+      }
+    });
+  }",297-410,1,0.96405745,0.9799832,0.9752055
+com.squareup.okhttp.internal.Platform,findPlatform,()Lcom/squareup/okhttp/internal/Platform;,11,34,32.4%,"private static Platform findPlatform() {
+    // Attempt to find Android 2.3+ APIs.
+    Class<?> openSslSocketClass;
+    Method setUseSessionTickets;
+    Method setHostname;
+    try {
+      try {
+        openSslSocketClass = Class.forName(""com.android.org.conscrypt.OpenSSLSocketImpl"");
+      } catch (ClassNotFoundException ignored) {
+        // Older platform before being unbundled.
+        openSslSocketClass = Class.forName(
+            ""org.apache.harmony.xnet.provider.jsse.OpenSSLSocketImpl"");
+      }
+
+      setUseSessionTickets = openSslSocketClass.getMethod(""setUseSessionTickets"", boolean.class);
+      setHostname = openSslSocketClass.getMethod(""setHostname"", String.class);
+
+      // Attempt to find Android 4.1+ APIs.
+      Method setNpnProtocols = null;
+      Method getNpnSelectedProtocol = null;
+      Method setAlpnProtocols = null;
+      Method getAlpnSelectedProtocol = null;
+      try {
+        setNpnProtocols = openSslSocketClass.getMethod(""setNpnProtocols"", byte[].class);
+        getNpnSelectedProtocol = openSslSocketClass.getMethod(""getNpnSelectedProtocol"");
+        try {
+          setAlpnProtocols = openSslSocketClass.getMethod(""setAlpnProtocols"", byte[].class);
+          getAlpnSelectedProtocol = openSslSocketClass.getMethod(""getAlpnSelectedProtocol"");
+        } catch (NoSuchMethodException ignored) {
+        }
+      } catch (NoSuchMethodException ignored) {
+      }
+
+      return new Android(openSslSocketClass, setUseSessionTickets, setHostname, setNpnProtocols,
+          getNpnSelectedProtocol, setAlpnProtocols, getAlpnSelectedProtocol);
+    } catch (ClassNotFoundException ignored) {
+      // This isn't an Android runtime.
+    } catch (NoSuchMethodException ignored) {
+      // This isn't Android 2.3 or better.
+    }
+
+    // Attempt to find the Jetty's NPN extension for OpenJDK.
+    try {
+      String npnClassName = ""org.eclipse.jetty.npn.NextProtoNego"";
+      Class<?> nextProtoNegoClass = Class.forName(npnClassName);
+      Class<?> providerClass = Class.forName(npnClassName + ""$Provider"");
+      Class<?> clientProviderClass = Class.forName(npnClassName + ""$ClientProvider"");
+      Class<?> serverProviderClass = Class.forName(npnClassName + ""$ServerProvider"");
+      Method putMethod = nextProtoNegoClass.getMethod(""put"", SSLSocket.class, providerClass);
+      Method getMethod = nextProtoNegoClass.getMethod(""get"", SSLSocket.class);
+      return new JdkWithJettyNpnPlatform(
+          putMethod, getMethod, clientProviderClass, serverProviderClass);
+    } catch (ClassNotFoundException ignored) {
+      // NPN isn't on the classpath.
+    } catch (NoSuchMethodException ignored) {
+      // The NPN version isn't what we expect.
+    }
+
+    return new Platform();
+  }",153-212,2,0.9676568,0.9778688,0.97480524
+com.squareup.okhttp.OkHttpClient,copyWithDefaults,()Lcom/squareup/okhttp/OkHttpClient;,18,18,100.0%,"OkHttpClient copyWithDefaults() {
+    OkHttpClient result = clone();
+    if (result.proxySelector == null) {
+      result.proxySelector = ProxySelector.getDefault();
+    }
+    if (result.cookieHandler == null) {
+      result.cookieHandler = CookieHandler.getDefault();
+    }
+    if (result.responseCache == null) {
+      result.responseCache = toOkResponseCacheOrNull(ResponseCache.getDefault());
+    }
+    if (result.sslSocketFactory == null) {
+      result.sslSocketFactory = getDefaultSSLSocketFactory();
+    }
+    if (result.hostnameVerifier == null) {
+      result.hostnameVerifier = OkHostnameVerifier.INSTANCE;
+    }
+    if (result.authenticator == null) {
+      result.authenticator = HttpAuthenticator.SYSTEM_DEFAULT;
+    }
+    if (result.connectionPool == null) {
+      result.connectionPool = ConnectionPool.getDefault();
+    }
+    if (result.protocols == null) {
+      result.protocols = Protocol.HTTP2_SPDY3_AND_HTTP;
+    }
+    return result;
+  }",445-472,1,0.96267194,0.9799327,0.97475445
+com.squareup.okhttp.mockwebserver.MockWebServer,readRequest,(Ljava/net/Socket;Ljava/io/InputStream;Ljava/io/OutputStream;I)Lcom/squareup/okhttp/mockwebserver/RecordedRequest;,27,57,47.4%,"private RecordedRequest readRequest(Socket socket, InputStream in, OutputStream out,
+      int sequenceNumber) throws IOException {
+    String request;
+    try {
+      request = readAsciiUntilCrlf(in);
+    } catch (IOException streamIsClosed) {
+      return null; // no request because we closed the stream
+    }
+    if (request.length() == 0) {
+      return null; // no request because the stream is exhausted
+    }
+
+    List<String> headers = new ArrayList<String>();
+    long contentLength = -1;
+    boolean chunked = false;
+    boolean expectContinue = false;
+    String header;
+    while ((header = readAsciiUntilCrlf(in)).length() != 0) {
+      headers.add(header);
+      String lowercaseHeader = header.toLowerCase(Locale.US);
+      if (contentLength == -1 && lowercaseHeader.startsWith(""content-length:"")) {
+        contentLength = Long.parseLong(header.substring(15).trim());
+      }
+      if (lowercaseHeader.startsWith(""transfer-encoding:"")
+          && lowercaseHeader.substring(18).trim().equals(""chunked"")) {
+        chunked = true;
+      }
+      if (lowercaseHeader.startsWith(""expect:"")
+          && lowercaseHeader.substring(7).trim().equals(""100-continue"")) {
+        expectContinue = true;
+      }
+    }
+
+    if (expectContinue) {
+      out.write((""HTTP/1.1 100 Continue\r\n"").getBytes(Util.US_ASCII));
+      out.write((""Content-Length: 0\r\n"").getBytes(Util.US_ASCII));
+      out.write((""\r\n"").getBytes(Util.US_ASCII));
+      out.flush();
+    }
+
+    boolean hasBody = false;
+    TruncatingOutputStream requestBody = new TruncatingOutputStream();
+    List<Integer> chunkSizes = new ArrayList<Integer>();
+    if (contentLength != -1) {
+      hasBody = true;
+      transfer(contentLength, in, requestBody);
+    } else if (chunked) {
+      hasBody = true;
+      while (true) {
+        int chunkSize = Integer.parseInt(readAsciiUntilCrlf(in).trim(), 16);
+        if (chunkSize == 0) {
+          readEmptyLine(in);
+          break;
+        }
+        chunkSizes.add(chunkSize);
+        transfer(chunkSize, in, requestBody);
+        readEmptyLine(in);
+      }
+    }
+
+    if (request.startsWith(""OPTIONS "")
+        || request.startsWith(""GET "")
+        || request.startsWith(""HEAD "")
+        || request.startsWith(""DELETE "")
+        || request.startsWith(""TRACE "")
+        || request.startsWith(""CONNECT "")) {
+      if (hasBody) {
+        throw new IllegalArgumentException(""Request must not have a body: "" + request);
+      }
+    } else if (!request.startsWith(""POST "")
+        && !request.startsWith(""PUT "")
+        && !request.startsWith(""PATCH "")) {
+      throw new UnsupportedOperationException(""Unexpected method: "" + request);
+    }
+
+    return new RecordedRequest(request, headers, chunkSizes, requestBody.numBytesReceived,
+        requestBody.toByteArray(), sequenceNumber, socket);
+  }",434-511,1,0.9738244,0.9748459,0.97453946
+com.squareup.okhttp.mockwebserver.MockWebServer$3,processOneRequest,(Ljava/net/Socket;Ljava/io/InputStream;Ljava/io/OutputStream;)Z,13,17,76.5%,"private boolean processOneRequest(Socket socket, InputStream in, OutputStream out)
+          throws IOException, InterruptedException {
+        RecordedRequest request = readRequest(socket, in, out, sequenceNumber);
+        if (request == null) return false;
+        requestCount.incrementAndGet();
+        requestQueue.add(request);
+        MockResponse response = dispatcher.dispatch(request);
+        writeResponse(out, response);
+        if (response.getSocketPolicy() == SocketPolicy.DISCONNECT_AT_END) {
+          in.close();
+          out.close();
+        } else if (response.getSocketPolicy() == SocketPolicy.SHUTDOWN_INPUT_AT_END) {
+          socket.shutdownInput();
+        } else if (response.getSocketPolicy() == SocketPolicy.SHUTDOWN_OUTPUT_AT_END) {
+          socket.shutdownOutput();
+        }
+        if (logger.isLoggable(Level.INFO)) {
+          logger.info(""Received request: "" + request + "" and responded: "" + response);
+        }
+        sequenceNumber++;
+        return true;
+      }",387-408,1,0.96954787,0.9762497,0.9742391
+com.squareup.okhttp.internal.Platform,<init>,()V,1,1,100.0%,"private Android(
+        Class<?> openSslSocketClass, Method setUseSessionTickets, Method setHostname,
+        Method setNpnProtocols, Method getNpnSelectedProtocol, Method setAlpnProtocols,
+        Method getAlpnSelectedProtocol) {
+      this.openSslSocketClass = openSslSocketClass;
+      this.setUseSessionTickets = setUseSessionTickets;
+      this.setHostname = setHostname;
+      this.setNpnProtocols = setNpnProtocols;
+      this.getNpnSelectedProtocol = getNpnSelectedProtocol;
+      this.setAlpnProtocols = setAlpnProtocols;
+      this.getAlpnSelectedProtocol = getAlpnSelectedProtocol;
+    }",232-243,2,0.9626,0.9787188,0.97388315
+com.squareup.okhttp.internal.Platform$JdkWithJettyNpnPlatform,<init>,(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;Ljava/lang/Class;Ljava/lang/Class;)V,6,6,100.0%,"private Android(
+        Class<?> openSslSocketClass, Method setUseSessionTickets, Method setHostname,
+        Method setNpnProtocols, Method getNpnSelectedProtocol, Method setAlpnProtocols,
+        Method getAlpnSelectedProtocol) {
+      this.openSslSocketClass = openSslSocketClass;
+      this.setUseSessionTickets = setUseSessionTickets;
+      this.setHostname = setHostname;
+      this.setNpnProtocols = setNpnProtocols;
+      this.getNpnSelectedProtocol = getNpnSelectedProtocol;
+      this.setAlpnProtocols = setAlpnProtocols;
+      this.getAlpnSelectedProtocol = getAlpnSelectedProtocol;
+    }",232-243,2,0.9626,0.9787188,0.97388315
+okio.RealBufferedSink,flush,()V,5,5,100.0%,"@Override public void flush() throws IOException {
+        // For backwards compatibility, a flush() on a closed stream is a no-op.
+        if (!RealBufferedSink.this.closed) {
+          RealBufferedSink.this.flush();
+        }
+      }",110-115,1,0.9435922,0.9868558,0.9738767
+com.squareup.okhttp.Headers$Builder,add,(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Headers$Builder;,4,5,80.0%,"public Builder add(String fieldName, String value) {
+      if (fieldName == null) throw new IllegalArgumentException(""fieldname == null"");
+      if (value == null) throw new IllegalArgumentException(""value == null"");
+      if (fieldName.length() == 0 || fieldName.indexOf('\0') != -1 || value.indexOf('\0') != -1) {
+        throw new IllegalArgumentException(""Unexpected header: "" + fieldName + "": "" + value);
+      }
+      return addLenient(fieldName, value);
+    }",157-164,1,0.97704256,0.9725143,0.9738728
+com.squareup.okhttp.mockwebserver.MockWebServer,setNpnEnabled,(Z)V,2,2,100.0%,"public void setNpnEnabled(boolean npnEnabled) {
+    this.npnEnabled = npnEnabled;
+  }",168-170,2,0.9412999,0.9877139,0.9737897
+com.squareup.okhttp.Headers,name,(I)Ljava/lang/String;,3,4,75.0%,"public String name(int index) {
+    int fieldNameIndex = index * 2;
+    if (fieldNameIndex < 0 || fieldNameIndex >= namesAndValues.length) {
+      return null;
+    }
+    return namesAndValues[fieldNameIndex];
+  }",63-69,2,0.95709324,0.9806969,0.9736158
+com.squareup.okhttp.internal.http.HttpEngine,sendRequest,()V,22,29,75.9%,"public final void sendRequest() throws IOException {
+    if (responseSource != null) return; // Already sent.
+    if (transport != null) throw new IllegalStateException();
+
+    prepareRawRequestHeaders();
+    OkResponseCache responseCache = client.getOkResponseCache();
+
+    Response cacheResponse = responseCache != null
+        ? responseCache.get(request)
+        : null;
+    long now = System.currentTimeMillis();
+    CacheStrategy cacheStrategy = new CacheStrategy.Factory(now, request, cacheResponse).get();
+    responseSource = cacheStrategy.source;
+    request = cacheStrategy.request;
+
+    if (responseCache != null) {
+      responseCache.trackResponse(responseSource);
+    }
+
+    if (responseSource != ResponseSource.NETWORK) {
+      validatingResponse = cacheStrategy.response;
+    }
+
+    if (cacheResponse != null && !responseSource.usesCache()) {
+      closeQuietly(cacheResponse.body()); // We don't need this cached response. Close it.
+    }
+
+    if (responseSource.requiresConnection()) {
+      // Open a connection unless we inherited one from a redirect.
+      if (connection == null) {
+        connect();
+      }
+
+      transport = (Transport) connection.newTransport(this);
+
+      // Create a request body if we don't have one already. We'll already have
+      // one if we're retrying a failed POST.
+      if (hasRequestBody() && requestBodyOut == null) {
+        requestBodyOut = transport.createRequestBody(request);
+      }
+
+    } else {
+      // We're using a cached response. Recycle a connection we may have inherited from a redirect.
+      if (connection != null) {
+        client.getConnectionPool().recycle(connection);
+        connection = null;
+      }
+
+      // No need for the network! Promote the cached response immediately.
+      this.response = validatingResponse;
+      if (validatingResponse.body() != null) {
+        initContentStream(validatingResponse.body().source());
+      }
+    }
+  }",151-205,1,0.94144017,0.9873346,0.9735663
+com.squareup.okhttp.Connection,isAlive,()Z,1,1,100.0%,"public boolean isAlive() {
+    return !socket.isClosed() && !socket.isInputShutdown() && !socket.isOutputShutdown();
+  }",199-201,2,0.93774956,0.9883945,0.97320104
+okio.RealBufferedSource,checkNotClosed,()V,2,3,66.7%,"private void checkNotClosed() throws IOException {
+        if (RealBufferedSource.this.closed) {
+          // By convention in java.io, IOException and not IllegalStateException is used.
+          throw new IOException(""closed"");
+        }
+      }",188-193,1,0.9350886,0.98918104,0.9729533
+okio.RealBufferedSource$1,checkNotClosed,()V,2,3,66.7%,"private void checkNotClosed() throws IOException {
+        if (RealBufferedSource.this.closed) {
+          // By convention in java.io, IOException and not IllegalStateException is used.
+          throw new IOException(""closed"");
+        }
+      }",188-193,1,0.9350886,0.98918104,0.9729533
+com.squareup.okhttp.internal.http.HttpTransport,releaseConnectionOnIdle,()V,3,4,75.0%,"@Override public void releaseConnectionOnIdle() throws IOException {
+    if (canReuseConnection()) {
+      httpConnection.poolOnIdle();
+    } else {
+      httpConnection.closeOnIdle();
+    }
+  }",104-110,1,0.94528943,0.9845911,0.9728006
+okio.SegmentPool,recycle,(Lokio/Segment;)V,9,9,100.0%,"void recycle(Segment segment) {
+    if (segment.next != null || segment.prev != null) throw new IllegalArgumentException();
+    synchronized (this) {
+      if (byteCount + Segment.SIZE > MAX_SIZE) return; // Pool is full.
+      byteCount += Segment.SIZE;
+      segment.next = next;
+      segment.pos = segment.limit = 0;
+      next = segment;
+    }
+  }",51-60,3,0.93761903,0.9875233,0.97255206
+com.squareup.okhttp.internal.http.CacheStrategy$Factory,cacheResponseAge,()J,7,7,100.0%,"private long cacheResponseAge() {
+      long apparentReceivedAge = servedDate != null
+          ? Math.max(0, receivedResponseMillis - servedDate.getTime())
+          : 0;
+      long receivedAge = ageSeconds != -1
+          ? Math.max(apparentReceivedAge, SECONDS.toMillis(ageSeconds))
+          : apparentReceivedAge;
+      long responseDuration = receivedResponseMillis - sentRequestMillis;
+      long residentDuration = nowMillis - receivedResponseMillis;
+      return receivedAge + responseDuration + residentDuration;
+    }",288-298,1,0.94705784,0.98337203,0.9724778
+okio.ByteString,encodeUtf8,(Ljava/lang/String;)Lokio/ByteString;,3,3,100.0%,"public static ByteString encodeUtf8(String s) {
+    ByteString byteString = new ByteString(s.getBytes(Util.UTF_8));
+    byteString.utf8 = s;
+    return byteString;
+  }",60-64,2,0.9520342,0.98106784,0.97235775
+com.squareup.okhttp.internal.http.HttpTransport,<init>,(Lcom/squareup/okhttp/internal/http/HttpEngine;Lcom/squareup/okhttp/internal/http/HttpConnection;)V,4,4,100.0%,"public HttpTransport(HttpEngine httpEngine, HttpConnection httpConnection) {
+    this.httpEngine = httpEngine;
+    this.httpConnection = httpConnection;
+  }",30-33,1,0.94504094,0.98353577,0.9719873
+com.squareup.okhttp.internal.http.RequestLine,requestPath,(Ljava/net/URL;)Ljava/lang/String;,4,4,100.0%,"public static String requestPath(URL url) {
+    String pathAndQuery = url.getFile();
+    if (pathAndQuery == null) return ""/"";
+    if (!pathAndQuery.startsWith(""/"")) return ""/"" + pathAndQuery;
+    return pathAndQuery;
+  }",45-50,2,0.96674705,0.97405386,0.97186184
+com.squareup.okhttp.internal.DiskLruCache$Editor,newOutputStream,(I)Ljava/io/OutputStream;,8,15,53.3%,"public OutputStream newOutputStream(int index) throws IOException {
+      synchronized (DiskLruCache.this) {
+        if (entry.currentEditor != this) {
+          throw new IllegalStateException();
+        }
+        if (!entry.readable) {
+          written[index] = true;
+        }
+        File dirtyFile = entry.getDirtyFile(index);
+        FileOutputStream outputStream;
+        try {
+          outputStream = new FileOutputStream(dirtyFile);
+        } catch (FileNotFoundException e) {
+          // Attempt to recreate the cache directory.
+          directory.mkdirs();
+          try {
+            outputStream = new FileOutputStream(dirtyFile);
+          } catch (FileNotFoundException e2) {
+            // We are unable to recover. Silently eat the writes.
+            return NULL_OUTPUT_STREAM;
+          }
+        }
+        return new FaultHidingOutputStream(outputStream);
+      }
+    }",765-789,1,0.9581077,0.97681046,0.97119963
+com.squareup.okhttp.internal.Util,equal,(Ljava/lang/Object;Ljava/lang/Object;)Z,1,1,100.0%,"public static boolean equal(Object a, Object b) {
+    return a == b || (a != null && a.equals(b));
+  }",86-88,2,0.9331682,0.9867423,0.9706701
+com.squareup.okhttp.internal.SslContextBuilder,newEmptyKeyStore,([C)Ljava/security/KeyStore;,4,6,66.7%,"private KeyStore newEmptyKeyStore(char[] password) throws GeneralSecurityException {
+    try {
+      KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      InputStream in = null; // By convention, 'null' creates an empty key store.
+      keyStore.load(in, password);
+      return keyStore;
+    } catch (IOException e) {
+      throw new AssertionError(e);
+    }
+  }",132-141,1,0.9324026,0.9867376,0.9704371
+com.squareup.okhttp.Response,validate,(Lcom/squareup/okhttp/Response;)Z,4,7,57.1%,"public boolean validate(Response network) {
+    if (network.code() == HttpURLConnection.HTTP_NOT_MODIFIED) {
+      return true;
+    }
+
+    // The HTTP spec says that if the network's response is older than our
+    // cached response, we may return the cache's response. Like Chrome (but
+    // unlike Firefox), this client prefers to return the newer response.
+    ParsedHeaders networkHeaders = network.parsedHeaders();
+    if (parsedHeaders().lastModified != null
+        && networkHeaders.lastModified != null
+        && networkHeaders.lastModified.getTime() < parsedHeaders().lastModified.getTime()) {
+      return true;
+    }
+
+    return false;
+  }",172-188,1,0.9278011,0.9885058,0.97029436
+okio.Okio,sink,(Ljava/io/OutputStream;)Lokio/Sink;,1,1,100.0%,"public static Sink sink(final OutputStream out) {
+    return new Sink() {
+      private Deadline deadline = Deadline.NONE;
+
+      @Override public void write(OkBuffer source, long byteCount)
+          throws IOException {
+        checkOffsetAndCount(source.size, 0, byteCount);
+        while (byteCount > 0) {
+          deadline.throwIfReached();
+          Segment head = source.head;
+          int toCopy = (int) Math.min(byteCount, head.limit - head.pos);
+          out.write(head.data, head.pos, toCopy);
+
+          head.pos += toCopy;
+          byteCount -= toCopy;
+          source.size -= toCopy;
+
+          if (head.pos == head.limit) {
+            source.head = head.pop();
+            SegmentPool.INSTANCE.recycle(head);
+          }
+        }
+      }
+
+      @Override public void flush() throws IOException {
+        out.flush();
+      }
+
+      @Override public void close() throws IOException {
+        out.close();
+      }
+
+      @Override public Sink deadline(Deadline deadline) {
+        if (deadline == null) throw new IllegalArgumentException(""deadline == null"");
+        this.deadline = deadline;
+        return this;
+      }
+
+      @Override public String toString() {
+        return ""sink("" + out + "")"";
+      }
+    };
+  }",59-101,3,0.9618739,0.973578,0.9700667
+okio.ByteString,hex,()Ljava/lang/String;,6,6,100.0%,"public String hex() {
+    char[] result = new char[data.length * 2];
+    int c = 0;
+    for (byte b : data) {
+      result[c++] = HEX_DIGITS[(b >> 4) & 0xf];
+      result[c++] = HEX_DIGITS[b & 0xf];
+    }
+    return new String(result);
+  }",92-100,1,0.9435784,0.980802,0.96963495
+com.squareup.okhttp.internal.http.HeaderParser,skipWhitespace,(Ljava/lang/String;I)I,5,5,100.0%,"public static int skipWhitespace(String input, int pos) {
+    for (; pos < input.length(); pos++) {
+      char c = input.charAt(pos);
+      if (c != ' ' && c != '\t') {
+        break;
+      }
+    }
+    return pos;
+  }",38-46,2,0.96216434,0.97278947,0.9696019
+com.squareup.okhttp.internal.DiskLruCache,renameTo,(Ljava/io/File;Ljava/io/File;Z)V,3,5,60.0%,"private static void renameTo(File from, File to, boolean deleteDestination) throws IOException {
+    if (deleteDestination) {
+      deleteIfExists(to);
+    }
+    if (!from.renameTo(to)) {
+      throw new IOException();
+    }
+  }",384-391,1,0.93982583,0.9814977,0.96899617
+com.squareup.okhttp.Connection,connect,(IILcom/squareup/okhttp/TunnelRequest;)V,11,12,91.7%,"public void connect(int connectTimeout, int readTimeout, TunnelRequest tunnelRequest)
+      throws IOException {
+    if (connected) throw new IllegalStateException(""already connected"");
+
+    socket = (route.proxy.type() != Proxy.Type.HTTP) ? new Socket(route.proxy) : new Socket();
+    Platform.get().connectSocket(socket, route.inetSocketAddress, connectTimeout);
+    socket.setSoTimeout(readTimeout);
+    in = socket.getInputStream();
+    out = socket.getOutputStream();
+
+    if (route.address.sslSocketFactory != null) {
+      upgradeToTls(tunnelRequest);
+    } else {
+      initSourceAndSink();
+      httpConnection = new HttpConnection(pool, this, source, sink);
+    }
+    connected = true;
+  }",90-107,2,0.9373625,0.9810027,0.96791065
+com.squareup.okhttp.mockwebserver.MockWebServer$3,processConnection,()V,13,41,31.7%,"public void processConnection() throws Exception {
+        Protocol protocol = Protocol.HTTP_11;
+        Socket socket;
+        if (sslSocketFactory != null) {
+          if (tunnelProxy) {
+            createTunnel();
+          }
+          SocketPolicy socketPolicy = dispatcher.peekSocketPolicy();
+          if (socketPolicy == FAIL_HANDSHAKE) {
+            dispatchBookkeepingRequest(sequenceNumber, raw);
+            processHandshakeFailure(raw);
+            return;
+          }
+          socket = sslSocketFactory.createSocket(
+              raw, raw.getInetAddress().getHostAddress(), raw.getPort(), true);
+          SSLSocket sslSocket = (SSLSocket) socket;
+          sslSocket.setUseClientMode(false);
+          openClientSockets.put(socket, true);
+
+          if (npnEnabled) {
+            Platform.get().setNpnProtocols(sslSocket, npnProtocols);
+          }
+
+          sslSocket.startHandshake();
+
+          if (npnEnabled) {
+            ByteString selectedProtocol = Platform.get().getNpnSelectedProtocol(sslSocket);
+            protocol = Protocol.find(selectedProtocol);
+          }
+          openClientSockets.remove(raw);
+        } else {
+          socket = raw;
+        }
+
+        if (protocol.spdyVariant) {
+          SpdySocketHandler spdySocketHandler = new SpdySocketHandler(socket, protocol);
+          SpdyConnection spdyConnection = new SpdyConnection.Builder(false, socket)
+              .protocol(protocol)
+              .handler(spdySocketHandler).build();
+          openSpdyConnections.put(spdyConnection, Boolean.TRUE);
+          openClientSockets.remove(socket);
+          return;
+        }
+
+        InputStream in = new BufferedInputStream(socket.getInputStream());
+        OutputStream out = new BufferedOutputStream(socket.getOutputStream());
+
+        while (processOneRequest(socket, in, out)) {
+        }
+
+        if (sequenceNumber == 0) {
+          logger.warning(""MockWebServer connection didn't make a request"");
+        }
+
+        in.close();
+        out.close();
+        socket.close();
+        openClientSockets.remove(socket);
+      }",309-367,2,0.96472085,0.96869844,0.96750516
+com.squareup.okhttp.mockwebserver.MockWebServer$2,acceptConnections,()V,9,11,81.8%,"private void acceptConnections() throws Exception {
+        while (true) {
+          Socket socket;
+          try {
+            socket = serverSocket.accept();
+          } catch (SocketException e) {
+            return;
+          }
+          SocketPolicy socketPolicy = dispatcher.peekSocketPolicy();
+          if (socketPolicy == DISCONNECT_AT_START) {
+            dispatchBookkeepingRequest(0, socket);
+            socket.close();
+          } else {
+            openClientSockets.put(socket, true);
+            serveConnection(socket);
+          }
+        }
+      }",270-287,2,0.95960414,0.97051996,0.9672452
+com.squareup.okhttp.internal.http.HttpDate,parse,(Ljava/lang/String;)Ljava/util/Date;,1,12,8.3%,"public static Date parse(String value) {
+    try {
+      return STANDARD_DATE_FORMAT.get().parse(value);
+    } catch (ParseException ignored) {
+    }
+    synchronized (BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS) {
+      for (int i = 0, count = BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS.length; i < count; i++) {
+        DateFormat format = BROWSER_COMPATIBLE_DATE_FORMATS[i];
+        if (format == null) {
+          format = new SimpleDateFormat(BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS[i], Locale.US);
+          BROWSER_COMPATIBLE_DATE_FORMATS[i] = format;
+        }
+        try {
+          return format.parse(value);
+        } catch (ParseException ignored) {
+        }
+      }
+    }
+    return null;
+  }",68-87,1,0.9605085,0.97000784,0.9671581
+okio.RealBufferedSink,checkNotClosed,()V,2,3,66.7%,"private void checkNotClosed() throws IOException {
+        // By convention in java.io, IOException and not IllegalStateException is used.
+        if (RealBufferedSink.this.closed) {
+          throw new IOException(""closed"");
+        }
+      }",125-130,1,0.9329445,0.981745,0.9671048
+com.squareup.okhttp.internal.http.HttpConnection,writeRequest,(Lcom/squareup/okhttp/Headers;Ljava/lang/String;)V,10,10,100.0%,"public void writeRequest(Headers headers, String requestLine) throws IOException {
+    if (state != STATE_IDLE) throw new IllegalStateException(""state: "" + state);
+    sink.writeUtf8(requestLine).writeUtf8(""\r\n"");
+    for (int i = 0; i < headers.size(); i ++) {
+      sink.writeUtf8(headers.name(i))
+          .writeUtf8("": "")
+          .writeUtf8(headers.value(i))
+          .writeUtf8(""\r\n"");
+    }
+    sink.writeUtf8(""\r\n"");
+    state = STATE_OPEN_REQUEST_BODY;
+  }",127-138,1,0.98668367,0.95863205,0.9670476
+com.squareup.okhttp.Address,hashCode,()I,9,9,100.0%,"@Override public int hashCode() {
+    int result = 17;
+    result = 31 * result + uriHost.hashCode();
+    result = 31 * result + uriPort;
+    result = 31 * result + (sslSocketFactory != null ? sslSocketFactory.hashCode() : 0);
+    result = 31 * result + (hostnameVerifier != null ? hostnameVerifier.hashCode() : 0);
+    result = 31 * result + (authenticator != null ? authenticator.hashCode() : 0);
+    result = 31 * result + (proxy != null ? proxy.hashCode() : 0);
+    result = 31 * result + protocols.hashCode();
+    return result;
+  }",130-140,1,0.96691453,0.9666175,0.96670663
+com.squareup.okhttp.mockwebserver.QueueDispatcher,dispatch,(Lcom/squareup/okhttp/mockwebserver/RecordedRequest;)Lcom/squareup/okhttp/mockwebserver/MockResponse;,4,7,57.1%,"@Override public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+    // To permit interactive/browser testing, ignore requests for favicons.
+    final String requestLine = request.getRequestLine();
+    if (requestLine != null && requestLine.equals(""GET /favicon.ico HTTP/1.1"")) {
+      System.out.println(""served "" + requestLine);
+      return new MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND);
+    }
+
+    if (failFastResponse != null && responseQueue.peek() == null) {
+      // Fail fast if there's no response queued up.
+      return failFastResponse;
+    }
+
+    return responseQueue.take();
+  }",31-45,1,0.9241293,0.9835144,0.96569896
+com.squareup.okhttp.Response$Builder,build,()Lcom/squareup/okhttp/Response;,3,3,100.0%,"public Response build() {
+      if (request == null) throw new IllegalStateException(""request == null"");
+      if (statusLine == null) throw new IllegalStateException(""statusLine == null"");
+      return new Response(this);
+    }",447-451,1,0.9300141,0.9807336,0.96551776
+com.squareup.okhttp.internal.http.OkHeaders,stringToLong,(Ljava/lang/String;)J,2,4,50.0%,"private static long stringToLong(String s) {
+    if (s == null) return -1;
+    try {
+      return Long.parseLong(s);
+    } catch (NumberFormatException e) {
+      return -1;
+    }
+  }",70-77,1,0.97287387,0.96065307,0.96431935
+com.squareup.okhttp.Connection,isIdle,()Z,1,1,100.0%,"public boolean isIdle() {
+    return spdyConnection == null || spdyConnection.isIdle();
+  }",239-241,2,0.9221544,0.9822487,0.9642204
+com.squareup.okhttp.CacheControl,<init>,(ZZIIZZIIZ)V,11,11,100.0%,"private CacheControl(boolean noCache, boolean noStore, int maxAgeSeconds, int sMaxAgeSeconds,
+      boolean isPublic, boolean mustRevalidate, int maxStaleSeconds, int minFreshSeconds,
+      boolean onlyIfCached) {
+    this.noCache = noCache;
+    this.noStore = noStore;
+    this.maxAgeSeconds = maxAgeSeconds;
+    this.sMaxAgeSeconds = sMaxAgeSeconds;
+    this.isPublic = isPublic;
+    this.mustRevalidate = mustRevalidate;
+    this.maxStaleSeconds = maxStaleSeconds;
+    this.minFreshSeconds = minFreshSeconds;
+    this.onlyIfCached = onlyIfCached;
+  }",24-36,2,0.95773506,0.966979,0.96420586
+com.squareup.okhttp.mockwebserver.MockResponse,removeHeader,(Ljava/lang/String;)Lcom/squareup/okhttp/mockwebserver/MockResponse;,7,7,100.0%,"public MockResponse removeHeader(String name) {
+    name += "":"";
+    for (Iterator<String> i = headers.iterator(); i.hasNext(); ) {
+      String header = i.next();
+      if (name.regionMatches(true, 0, header, 0, name.length())) {
+        i.remove();
+      }
+    }
+    return this;
+  }",123-132,2,0.94721615,0.97095025,0.96383
+com.squareup.okhttp.Headers$Builder,removeAll,(Ljava/lang/String;)Lcom/squareup/okhttp/Headers$Builder;,3,5,60.0%,"public Builder removeAll(String fieldName) {
+      for (int i = 0; i < namesAndValues.size(); i += 2) {
+        if (fieldName.equalsIgnoreCase(namesAndValues.get(i))) {
+          namesAndValues.remove(i); // field name
+          namesAndValues.remove(i); // value
+        }
+      }
+      return this;
+    }",176-184,0,0.97483087,0.9580878,0.9631107
+com.squareup.okhttp.CacheControl,maxStaleSeconds,()I,1,1,100.0%,"public int maxStaleSeconds() {
+    return maxStaleSeconds;
+  }",80-82,2,0.9177113,0.9824974,0.9630616
+com.squareup.okhttp.Route,hashCode,()I,6,6,100.0%,"@Override public int hashCode() {
+    int result = 17;
+    result = 31 * result + address.hashCode();
+    result = 31 * result + proxy.hashCode();
+    result = 31 * result + inetSocketAddress.hashCode();
+    result = result + (modernTls ? (31 * result) : 0);
+    return result;
+  }",89-96,1,0.9324584,0.9760434,0.96296793
+com.squareup.okhttp.CacheControl,mustRevalidate,()Z,1,1,100.0%,"public boolean mustRevalidate() {
+    return mustRevalidate;
+  }",76-78,2,0.9213538,0.98052347,0.9627726
+okio.OkBuffer,getByte,(J)B,4,5,80.0%,"public byte getByte(long i) {
+    checkOffsetAndCount(size, i, 1);
+    for (Segment s = head; true; s = s.next) {
+      int segmentByteCount = s.limit - s.pos;
+      if (i < segmentByteCount) return s.data[s.pos + (int) i];
+      i -= segmentByteCount;
+    }
+  }",164-171,3,0.94151485,0.97188073,0.96277094
+com.squareup.okhttp.Response,parsedHeaders,()Lcom/squareup/okhttp/Response$ParsedHeaders;,2,2,100.0%,"private ParsedHeaders parsedHeaders() {
+    ParsedHeaders result = parsedHeaders;
+    return result != null ? result : (parsedHeaders = new ParsedHeaders(headers));
+  }",276-279,1,0.9102035,0.98484623,0.96245337
+com.squareup.okhttp.Request,parsedHeaders,()Lcom/squareup/okhttp/Request$ParsedHeaders;,2,2,100.0%,"private ParsedHeaders parsedHeaders() {
+    ParsedHeaders result = parsedHeaders;
+    return result != null ? result : (parsedHeaders = new ParsedHeaders(headers));
+  }",112-115,1,0.9102035,0.98484623,0.96245337
+okio.RealBufferedSource,read,(Lokio/OkBuffer;J)J,7,7,100.0%,"@Override public long read(OkBuffer sink, long byteCount) throws IOException {
+    if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+    checkNotClosed();
+
+    if (buffer.size == 0) {
+      long read = source.read(buffer, Segment.SIZE);
+      if (read == -1) return -1;
+    }
+
+    long toRead = Math.min(byteCount, buffer.size);
+    return buffer.read(sink, toRead);
+  }",43-54,3,0.9165305,0.981985,0.96234864
+okio.RealBufferedSource$1,read,()I,5,5,100.0%,"@Override public long read(OkBuffer sink, long byteCount) throws IOException {
+    if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+    checkNotClosed();
+
+    if (buffer.size == 0) {
+      long read = source.read(buffer, Segment.SIZE);
+      if (read == -1) return -1;
+    }
+
+    long toRead = Math.min(byteCount, buffer.size);
+    return buffer.read(sink, toRead);
+  }",43-54,3,0.9165305,0.981985,0.96234864
+com.squareup.okhttp.internal.http.HttpEngine,getDefaultUserAgent,()Ljava/lang/String;,2,2,100.0%,"public static String getDefaultUserAgent() {
+    String agent = System.getProperty(""http.agent"");
+    return agent != null ? agent : (""Java"" + System.getProperty(""java.version""));
+  }",513-516,2,0.92483866,0.9781297,0.96214235
+com.squareup.okhttp.HttpResponseCache$CacheRequestImpl$1,write,([BII)V,2,2,100.0%,"@Override public void write(byte[] buffer, int offset, int length) throws IOException {
+          // Since we don't override ""write(int oneByte)"", we can write directly to ""out""
+          // and avoid the inefficient implementation from the FilterOutputStream.
+          out.write(buffer, offset, length);
+        }",328-332,1,0.91366345,0.9827573,0.96202916
+com.squareup.okhttp.internal.http.HttpEngine,getTunnelConfig,()Lcom/squareup/okhttp/TunnelRequest;,1,6,16.7%,"private TunnelRequest getTunnelConfig() {
+    if (!request.isHttps()) return null;
+
+    String userAgent = request.getUserAgent();
+    if (userAgent == null) userAgent = getDefaultUserAgent();
+
+    URL url = request.url();
+    return new TunnelRequest(url.getHost(), getEffectivePort(url), userAgent,
+        request.getProxyAuthorization());
+  }",650-659,1,0.9183954,0.98043394,0.9618224
+com.squareup.okhttp.Dispatcher,<init>,()V,6,6,100.0%,"public Dispatcher(ExecutorService executorService) {
+    this.executorService = executorService;
+  }",47-49,2,0.91906047,0.97982585,0.96159625
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,getInputStream,()Ljava/io/InputStream;,6,9,66.7%,"@Override public final InputStream getInputStream() throws IOException {
+    if (!doInput) {
+      throw new ProtocolException(""This protocol does not support input"");
+    }
+
+    HttpEngine response = getResponse();
+
+    // if the requested file does not exist, throw an exception formerly the
+    // Error page from the server was returned if the requested file was
+    // text/html this has changed to return FileNotFoundException for all
+    // file types
+    if (getResponseCode() >= HTTP_BAD_REQUEST) {
+      throw new FileNotFoundException(url.toString());
+    }
+
+    InputStream result = response.getResponseBodyBytes();
+    if (result == null) {
+      throw new ProtocolException(""No response body exists; responseCode="" + getResponseCode());
+    }
+    return result;
+  }",188-208,1,0.9133444,0.98134243,0.96094304
+com.squareup.okhttp.internal.http.RouteSelector,nextInetSocketAddress,()Ljava/net/InetSocketAddress;,3,5,60.0%,"private InetSocketAddress nextInetSocketAddress() throws UnknownHostException {
+    InetSocketAddress result =
+        new InetSocketAddress(socketAddresses[nextSocketAddressIndex++], socketPort);
+    if (nextSocketAddressIndex == socketAddresses.length) {
+      socketAddresses = null; // So that hasNextInetSocketAddress() returns false.
+      nextSocketAddressIndex = 0;
+    }
+
+    return result;
+  }",242-251,1,0.9201169,0.9783511,0.9608808
+okio.RealBufferedSource,inputStream,()Ljava/io/InputStream;,1,1,100.0%,"@Override public InputStream inputStream() {
+    return new InputStream() {
+      @Override public int read() throws IOException {
+        checkNotClosed();
+        if (buffer.size == 0) {
+          long count = source.read(buffer, Segment.SIZE);
+          if (count == -1) return -1;
+        }
+        return buffer.readByte() & 0xff;
+      }
+
+      @Override public int read(byte[] data, int offset, int byteCount) throws IOException {
+        checkNotClosed();
+        checkOffsetAndCount(data.length, offset, byteCount);
+
+        if (buffer.size == 0) {
+          long count = source.read(buffer, Segment.SIZE);
+          if (count == -1) return -1;
+        }
+
+        return buffer.read(data, offset, byteCount);
+      }
+
+      @Override public int available() throws IOException {
+        checkNotClosed();
+        return (int) Math.min(buffer.size, Integer.MAX_VALUE);
+      }
+
+      @Override public void close() throws IOException {
+        RealBufferedSource.this.close();
+      }
+
+      @Override public String toString() {
+        return RealBufferedSource.this + "".inputStream()"";
+      }
+
+      private void checkNotClosed() throws IOException {
+        if (RealBufferedSource.this.closed) {
+          // By convention in java.io, IOException and not IllegalStateException is used.
+          throw new IOException(""closed"");
+        }
+      }
+
+    };
+  }",152-196,3,0.9659701,0.95817816,0.96051574
+com.squareup.okhttp.Request,uri,()Ljava/net/URI;,2,4,50.0%,"public URI uri() throws IOException {
+    try {
+      URI result = uri;
+      return result != null ? result : (uri = Platform.get().toUriLenient(url));
+    } catch (URISyntaxException e) {
+      throw new IOException(e.getMessage());
+    }
+  }",59-66,1,0.91995114,0.9778606,0.9604878
+com.squareup.okhttp.OkHttpClient,clone,()Lcom/squareup/okhttp/OkHttpClient;,1,3,33.3%,"@Override public OkHttpClient clone() {
+    try {
+      return (OkHttpClient) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new AssertionError();
+    }
+  }",499-505,1,0.9318141,0.9727607,0.9604767
+com.squareup.okhttp.mockwebserver.MockWebServer,getHostName,()Ljava/lang/String;,1,3,33.3%,"public String getHostName() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      throw new AssertionError(e);
+    }
+  }",119-125,1,0.9491124,0.96495795,0.96020424
+com.squareup.okhttp.internal.http.HttpTransport,writeRequestHeaders,(Lcom/squareup/okhttp/Request;)V,6,6,100.0%,"public void writeRequestHeaders(Request request) throws IOException {
+    httpEngine.writingRequestHeaders();
+    String requestLine = RequestLine.get(request,
+        httpEngine.getConnection().getRoute().getProxy().type(),
+        httpEngine.getConnection().getHttpMinorVersion());
+    httpConnection.writeRequest(request.getHeaders(), requestLine);
+  }",92-98,1,0.9254072,0.9750823,0.96017975
+com.squareup.okhttp.ConnectionPool$1,run,()V,15,26,57.7%,"@Override public void run() {
+      List<Connection> expiredConnections = new ArrayList<Connection>(MAX_CONNECTIONS_TO_CLEANUP);
+      int idleConnectionCount = 0;
+      synchronized (ConnectionPool.this) {
+        for (ListIterator<Connection> i = connections.listIterator(connections.size());
+            i.hasPrevious(); ) {
+          Connection connection = i.previous();
+          if (!connection.isAlive() || connection.isExpired(keepAliveDurationNs)) {
+            i.remove();
+            expiredConnections.add(connection);
+            if (expiredConnections.size() == MAX_CONNECTIONS_TO_CLEANUP) break;
+          } else if (connection.isIdle()) {
+            idleConnectionCount++;
+          }
+        }
+
+        for (ListIterator<Connection> i = connections.listIterator(connections.size());
+            i.hasPrevious() && idleConnectionCount > maxIdleConnections; ) {
+          Connection connection = i.previous();
+          if (connection.isIdle()) {
+            expiredConnections.add(connection);
+            i.remove();
+            --idleConnectionCount;
+          }
+        }
+      }
+      for (Connection expiredConnection : expiredConnections) {
+        Util.closeQuietly(expiredConnection);
+      }
+    }",86-115,1,0.95886713,0.9603281,0.95988977
+com.squareup.okhttp.HttpResponseCache,readInt,(Lokio/BufferedSource;)I,2,4,50.0%,"private static int readInt(BufferedSource source) throws IOException {
+    String line = source.readUtf8Line(true);
+    try {
+      return Integer.parseInt(line);
+    } catch (NumberFormatException e) {
+      throw new IOException(""Expected an integer but was \"""" + line + ""\"""");
+    }
+  }",539-546,1,0.92908233,0.9728549,0.9597231
+com.squareup.okhttp.internal.http.HttpEngine,<init>,(Lcom/squareup/okhttp/OkHttpClient;Lcom/squareup/okhttp/Request;ZLcom/squareup/okhttp/Connection;Lcom/squareup/okhttp/internal/http/RouteSelector;Lcom/squareup/okhttp/internal/http/RetryableSink;)V,10,10,100.0%,"public HttpEngine(OkHttpClient client, Request request, boolean bufferRequestBody,
+      Connection connection, RouteSelector routeSelector, RetryableSink requestBodyOut) {
+    this.client = client;
+    this.request = request;
+    this.bufferRequestBody = bufferRequestBody;
+    this.connection = connection;
+    this.routeSelector = routeSelector;
+    this.route = connection != null ? connection.getRoute() : null;
+    this.requestBodyOut = requestBodyOut;
+  }",135-144,1,0.9872954,0.94710696,0.9591634
+com.squareup.okhttp.Headers$Builder,<init>,()V,2,2,100.0%,"private Headers(Builder builder) {
+    this.namesAndValues = builder.namesAndValues.toArray(new String[builder.namesAndValues.size()]);
+  }",48-50,0,0.91035324,0.9797016,0.95889705
+com.squareup.okhttp.Headers,<init>,(Lcom/squareup/okhttp/Headers$Builder;)V,3,3,100.0%,"private Headers(Builder builder) {
+    this.namesAndValues = builder.namesAndValues.toArray(new String[builder.namesAndValues.size()]);
+  }",48-50,0,0.91035324,0.9797016,0.95889705
+com.squareup.okhttp.internal.Util,deleteContents,(Ljava/io/File;)V,6,9,66.7%,"public static void deleteContents(File dir) throws IOException {
+    File[] files = dir.listFiles();
+    if (files == null) {
+      throw new IOException(""not a readable directory: "" + dir);
+    }
+    for (File file : files) {
+      if (file.isDirectory()) {
+        deleteContents(file);
+      }
+      if (!file.delete()) {
+        throw new IOException(""failed to delete file: "" + file);
+      }
+    }
+  }",162-175,4,0.9733956,0.9525513,0.9588046
+com.squareup.okhttp.internal.http.RouteSelector,resetNextTlsMode,()V,2,2,100.0%,"private void resetNextTlsMode() {
+    nextTlsMode = (address.getSslSocketFactory() != null) ? TLS_MODE_MODERN : TLS_MODE_COMPATIBLE;
+  }",254-256,1,0.9098158,0.97814256,0.9576445
+com.squareup.okhttp.internal.Util,getEffectivePort,(Ljava/net/URI;)I,1,1,100.0%,"public static int getEffectivePort(URI uri) {
+    return getEffectivePort(uri.getScheme(), uri.getPort());
+  }",61-63,2,0.9150945,0.975182,0.9571557
+com.squareup.okhttp.internal.Util,getEffectivePort,(Ljava/net/URL;)I,1,1,100.0%,"public static int getEffectivePort(URI uri) {
+    return getEffectivePort(uri.getScheme(), uri.getPort());
+  }",61-63,2,0.9150945,0.975182,0.9571557
+com.squareup.okhttp.internal.Util,getEffectivePort,(Ljava/lang/String;I)I,1,1,100.0%,"public static int getEffectivePort(URI uri) {
+    return getEffectivePort(uri.getScheme(), uri.getPort());
+  }",61-63,2,0.9150945,0.975182,0.9571557
+com.squareup.okhttp.internal.http.HttpConnection$FixedLengthSource,close,()V,4,5,80.0%,"@Override public void close() throws IOException {
+      if (closed) return;
+      closed = true;
+      if (bytesRemaining > 0) throw new ProtocolException(""unexpected end of stream"");
+      state = STATE_READ_RESPONSE_HEADERS;
+    }",269-274,1,0.91520697,0.9748994,0.9569917
+com.squareup.okhttp.internal.http.HttpEngine,writingRequestHeaders,()V,3,3,100.0%,"public void writingRequestHeaders() {
+    if (sentRequestMillis != -1) throw new IllegalStateException();
+    sentRequestMillis = System.currentTimeMillis();
+  }",251-254,1,0.9125116,0.9758948,0.95687985
+com.squareup.okhttp.internal.http.HttpConnection,newFixedLengthSource,(Ljava/net/CacheRequest;J)Lokio/Source;,3,3,100.0%,"public Source newFixedLengthSource(CacheRequest cacheRequest, long length)
+      throws IOException {
+    if (state != STATE_OPEN_RESPONSE_BODY) throw new IllegalStateException(""state: "" + state);
+    state = STATE_READING_RESPONSE_BODY;
+    return new FixedLengthSource(cacheRequest, length);
+  }",212-217,1,0.91748524,0.97368854,0.9568275
+com.squareup.okhttp.Connection,isExpired,(J)Z,1,1,100.0%,"public boolean isExpired(long keepAliveDurationNs) {
+    return getIdleStartTimeNs() < System.nanoTime() - keepAliveDurationNs;
+  }",247-249,2,0.91248125,0.9756982,0.9567331
+com.squareup.okhttp.internal.DiskLruCache,journalRebuildRequired,()Z,3,3,100.0%,"private boolean journalRebuildRequired() {
+    final int redundantOpCompactThreshold = 2000;
+    return redundantOpCount >= redundantOpCompactThreshold
+        && redundantOpCount >= lruEntries.size();
+  }",561-565,2,0.91220087,0.97478676,0.95601094
+com.squareup.okhttp.CacheControl,parse,(Lcom/squareup/okhttp/Headers;)Lcom/squareup/okhttp/CacheControl;,32,54,59.3%,"public static CacheControl parse(Headers headers) {
+    boolean noCache = false;
+    boolean noStore = false;
+    int maxAgeSeconds = -1;
+    int sMaxAgeSeconds = -1;
+    boolean isPublic = false;
+    boolean mustRevalidate = false;
+    int maxStaleSeconds = -1;
+    int minFreshSeconds = -1;
+    boolean onlyIfCached = false;
+
+    for (int i = 0; i < headers.size(); i++) {
+      if (!headers.name(i).equalsIgnoreCase(""Cache-Control"")
+          && !headers.name(i).equalsIgnoreCase(""Pragma"")) {
+        continue;
+      }
+
+      String string = headers.value(i);
+      int pos = 0;
+      while (pos < string.length()) {
+        int tokenStart = pos;
+        pos = HeaderParser.skipUntil(string, pos, ""=,;"");
+        String directive = string.substring(tokenStart, pos).trim();
+        String parameter;
+
+        if (pos == string.length() || string.charAt(pos) == ',' || string.charAt(pos) == ';') {
+          pos++; // consume ',' or ';' (if necessary)
+          parameter = null;
+        } else {
+          pos++; // consume '='
+          pos = HeaderParser.skipWhitespace(string, pos);
+
+          // quoted string
+          if (pos < string.length() && string.charAt(pos) == '\""') {
+            pos++; // consume '""' open quote
+            int parameterStart = pos;
+            pos = HeaderParser.skipUntil(string, pos, ""\"""");
+            parameter = string.substring(parameterStart, pos);
+            pos++; // consume '""' close quote (if necessary)
+
+            // unquoted string
+          } else {
+            int parameterStart = pos;
+            pos = HeaderParser.skipUntil(string, pos, "",;"");
+            parameter = string.substring(parameterStart, pos).trim();
+          }
+        }
+
+        if (""no-cache"".equalsIgnoreCase(directive)) {
+          noCache = true;
+        } else if (""no-store"".equalsIgnoreCase(directive)) {
+          noStore = true;
+        } else if (""max-age"".equalsIgnoreCase(directive)) {
+          maxAgeSeconds = HeaderParser.parseSeconds(parameter);
+        } else if (""s-maxage"".equalsIgnoreCase(directive)) {
+          sMaxAgeSeconds = HeaderParser.parseSeconds(parameter);
+        } else if (""public"".equalsIgnoreCase(directive)) {
+          isPublic = true;
+        } else if (""must-revalidate"".equalsIgnoreCase(directive)) {
+          mustRevalidate = true;
+        } else if (""max-stale"".equalsIgnoreCase(directive)) {
+          maxStaleSeconds = HeaderParser.parseSeconds(parameter);
+        } else if (""min-fresh"".equalsIgnoreCase(directive)) {
+          minFreshSeconds = HeaderParser.parseSeconds(parameter);
+        } else if (""only-if-cached"".equalsIgnoreCase(directive)) {
+          onlyIfCached = true;
+        }
+      }
+    }
+
+    return new CacheControl(noCache, noStore, maxAgeSeconds, sMaxAgeSeconds, isPublic,
+        mustRevalidate, maxStaleSeconds, minFreshSeconds, onlyIfCached);
+  }",103-175,2,0.960367,0.95357305,0.9556112
+com.squareup.okhttp.internal.http.HttpDate$1,initialValue,()Ljava/text/DateFormat;,3,3,100.0%,"@Override protected DateFormat initialValue() {
+          DateFormat rfc1123 = new SimpleDateFormat(""EEE, dd MMM yyyy HH:mm:ss zzz"", Locale.US);
+          rfc1123.setTimeZone(TimeZone.getTimeZone(""GMT""));
+          return rfc1123;
+        }",37-41,2,0.9372587,0.9633112,0.9554955
+com.squareup.okhttp.internal.http.HttpEngine,maybeCache,()V,5,7,71.4%,"private void maybeCache() throws IOException {
+    OkResponseCache responseCache = client.getOkResponseCache();
+    if (responseCache == null) return;
+
+    // Should we cache this response for this request?
+    if (!CacheStrategy.isCacheable(response, request)) {
+      responseCache.maybeRemove(request);
+      return;
+    }
+
+    // Offer this request to the cache.
+    cacheRequest = responseCache.put(cacheableResponse());
+  }",352-364,1,0.9094766,0.9748749,0.9552554
+com.squareup.okhttp.CacheControl,minFreshSeconds,()I,1,1,100.0%,"public int minFreshSeconds() {
+    return minFreshSeconds;
+  }",84-86,2,0.9095377,0.9740032,0.9546635
+com.squareup.okhttp.HttpResponseCache,urlToKey,(Lcom/squareup/okhttp/Request;)Ljava/lang/String;,1,1,100.0%,"private static String urlToKey(Request requst) {
+    return Util.hash(requst.urlString());
+  }",137-139,1,0.9120177,0.9728677,0.95461273
+com.squareup.okhttp.mockwebserver.MockResponse,getThrottleBytesPerPeriod,()I,1,1,100.0%,"public int getThrottleBytesPerPeriod() {
+    return throttleBytesPerPeriod;
+  }",228-230,2,0.907228,0.97452056,0.95433277
+com.squareup.okhttp.internal.http.RequestLine,includeAuthorityInRequestLine,(Lcom/squareup/okhttp/Request;Ljava/net/Proxy$Type;)Z,1,1,100.0%,"private static boolean includeAuthorityInRequestLine(Request request, Proxy.Type proxyType) {
+    return !request.isHttps() && proxyType == Proxy.Type.HTTP;
+  }",37-39,1,0.91222155,0.97189766,0.95399487
+com.squareup.okhttp.internal.DiskLruCache,completeEdit,(Lcom/squareup/okhttp/internal/DiskLruCache$Editor;Z)V,27,36,75.0%,"private synchronized void completeEdit(Editor editor, boolean success) throws IOException {
+    Entry entry = editor.entry;
+    if (entry.currentEditor != editor) {
+      throw new IllegalStateException();
+    }
+
+    // If this edit is creating the entry for the first time, every index must have a value.
+    if (success && !entry.readable) {
+      for (int i = 0; i < valueCount; i++) {
+        if (!editor.written[i]) {
+          editor.abort();
+          throw new IllegalStateException(""Newly created entry didn't create value for index "" + i);
+        }
+        if (!entry.getDirtyFile(i).exists()) {
+          editor.abort();
+          return;
+        }
+      }
+    }
+
+    for (int i = 0; i < valueCount; i++) {
+      File dirty = entry.getDirtyFile(i);
+      if (success) {
+        if (dirty.exists()) {
+          File clean = entry.getCleanFile(i);
+          dirty.renameTo(clean);
+          long oldLength = entry.lengths[i];
+          long newLength = clean.length();
+          entry.lengths[i] = newLength;
+          size = size - oldLength + newLength;
+        }
+      } else {
+        deleteIfExists(dirty);
+      }
+    }
+
+    redundantOpCount++;
+    entry.currentEditor = null;
+    if (entry.readable | success) {
+      entry.readable = true;
+      journalWriter.writeUtf8(CLEAN + ' ' + entry.key + entry.getLengths() + '\n');
+      if (success) {
+        entry.sequenceNumber = nextSequenceNumber++;
+      }
+    } else {
+      lruEntries.remove(entry.key);
+      journalWriter.writeUtf8(REMOVE + ' ' + entry.key + '\n');
+    }
+    journalWriter.flush();
+
+    if (size > maxSize || journalRebuildRequired()) {
+      executorService.execute(cleanupRunnable);
+    }
+  }",502-555,1,0.9661755,0.9485816,0.9538597
+com.squareup.okhttp.CacheControl,onlyIfCached,()Z,1,1,100.0%,"public boolean onlyIfCached() {
+    return onlyIfCached;
+  }",95-97,2,0.9076499,0.9731656,0.9535109
+com.squareup.okhttp.Connection,getIdleStartTimeNs,()J,1,1,100.0%,"public long getIdleStartTimeNs() {
+    return spdyConnection == null ? idleStartTimeNs : spdyConnection.getIdleStartTimeNs();
+  }",255-257,1,0.9092478,0.972351,0.95342004
+com.squareup.okhttp.CacheControl,maxAgeSeconds,()I,1,1,100.0%,"public int maxAgeSeconds() {
+    return maxAgeSeconds;
+  }",59-61,2,0.9047017,0.97339255,0.9527853
+com.squareup.okhttp.internal.http.RouteSelector,hasNextTlsMode,()Z,1,1,100.0%,"private boolean hasNextTlsMode() {
+    return nextTlsMode != TLS_MODE_NULL;
+  }",259-261,2,0.90534663,0.97304934,0.9527385
+okio.OkBuffer,completeSegmentByteCount,()J,6,6,100.0%,"public long completeSegmentByteCount() {
+    long result = size;
+    if (result == 0) return 0;
+
+    // Omit the tail if it's still writable.
+    Segment tail = head.prev;
+    if (tail.limit < Segment.SIZE) {
+      result -= tail.limit - tail.pos;
+    }
+
+    return result;
+  }",129-140,3,0.90672404,0.97233826,0.952654
+com.squareup.okhttp.internal.http.HttpConnection,poolOnIdle,()V,3,5,60.0%,"public void poolOnIdle() {
+    onIdle = ON_IDLE_POOL;
+
+    // If we're already idle, go to the pool immediately.
+    if (state == STATE_IDLE) {
+      onIdle = ON_IDLE_HOLD; // Set the on idle policy back to the default.
+      pool.recycle(connection);
+    }
+  }",93-101,1,0.901369,0.9745189,0.95257396
+com.squareup.okhttp.Connection,resetIdleStartTime,()V,3,3,100.0%,"public void resetIdleStartTime() {
+    if (spdyConnection != null) throw new IllegalStateException(""spdyConnection != null"");
+    this.idleStartTimeNs = System.nanoTime();
+  }",233-236,1,0.9106493,0.97032326,0.95242107
+com.squareup.okhttp.internal.http.HttpConnection$AbstractSource,cacheWrite,(Lokio/OkBuffer;J)V,3,3,100.0%,"protected final void cacheWrite(OkBuffer source, long byteCount) throws IOException {
+      if (cacheBody != null) {
+        Okio.copy(source, source.size() - byteCount, byteCount, cacheBody);
+      }
+    }",349-353,3,0.90422183,0.9730505,0.9524019
+com.squareup.okhttp.internal.http.RequestLine,version,(I)Ljava/lang/String;,1,1,100.0%,"public static String version(int httpMinorVersion) {
+    return httpMinorVersion == 1 ? ""HTTP/1.1"" : ""HTTP/1.0"";
+  }",52-54,2,0.9446235,0.9550665,0.9519336
+com.squareup.okhttp.internal.DiskLruCache,validateKey,(Ljava/lang/String;)V,3,4,75.0%,"private void validateKey(String key) {
+    Matcher matcher = LEGAL_KEY_PATTERN.matcher(key);
+    if (!matcher.matches()) {
+      throw new IllegalArgumentException(""keys must match regex [a-z0-9_-]{1,64}: \"""" + key + ""\"""");
+    }
+  }",653-658,1,0.9094529,0.969417,0.9514277
+com.squareup.okhttp.Connection,<init>,(Lcom/squareup/okhttp/ConnectionPool;Lcom/squareup/okhttp/Route;)V,6,6,100.0%,"public Connection(ConnectionPool pool, Route route) {
+    this.pool = pool;
+    this.route = route;
+  }",85-88,2,0.93979514,0.9535413,0.9494174
+okio.Okio,buffer,(Lokio/Sink;)Lokio/BufferedSink;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
+    return new RealBufferedSource(source);
+  }",28-30,3,0.89849234,0.9700429,0.9485777
+okio.Okio,buffer,(Lokio/Source;)Lokio/BufferedSource;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
+    return new RealBufferedSource(source);
+  }",28-30,3,0.89849234,0.9700429,0.9485777
+com.squareup.okhttp.internal.Dns$1,getAllByName,(Ljava/lang/String;)[Ljava/net/InetAddress;,2,2,100.0%,"@Override public InetAddress[] getAllByName(String host) throws UnknownHostException {
+      if (host == null) throw new UnknownHostException(""host == null"");
+      return InetAddress.getAllByName(host);
+    }",27-30,1,0.90841067,0.9656325,0.94846594
+com.squareup.okhttp.Headers,value,(I)Ljava/lang/String;,3,4,75.0%,"public String value(int index) {
+    int valueIndex = index * 2 + 1;
+    if (valueIndex < 0 || valueIndex >= namesAndValues.length) {
+      return null;
+    }
+    return namesAndValues[valueIndex];
+  }",72-78,2,0.9257534,0.9571928,0.94776094
+com.squareup.okhttp.RouteDatabase,shouldPostpone,(Lcom/squareup/okhttp/Route;)Z,1,1,100.0%,"public synchronized boolean shouldPostpone(Route route) {
+    return failedRoutes.contains(route);
+  }",42-44,2,0.90117353,0.96752495,0.9476195
+com.squareup.okhttp.internal.http.HttpEngine,receiveHeaders,(Lcom/squareup/okhttp/Headers;)V,4,4,100.0%,"public void receiveHeaders(Headers headers) throws IOException {
+    CookieHandler cookieHandler = client.getCookieHandler();
+    if (cookieHandler != null) {
+      cookieHandler.put(request.uri(), OkHeaders.toMultimap(headers, null));
+    }
+  }",661-666,1,0.90357715,0.9659371,0.9472291
+com.squareup.okhttp.Headers,get,([Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public String get(String fieldName) {
+    return get(namesAndValues, fieldName);
+  }",53-55,2,0.901723,0.96617186,0.94683725
+com.squareup.okhttp.Headers,get,(Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"public String get(String fieldName) {
+    return get(namesAndValues, fieldName);
+  }",53-55,2,0.901723,0.96617186,0.94683725
+com.squareup.okhttp.internal.http.RequestLine,get,(Lcom/squareup/okhttp/Request;Ljava/net/Proxy$Type;I)Ljava/lang/String;,8,9,88.9%,"static String get(Request request, Proxy.Type proxyType, int httpMinorVersion) {
+    StringBuilder result = new StringBuilder();
+    result.append(request.method());
+    result.append("" "");
+
+    if (includeAuthorityInRequestLine(request, proxyType)) {
+      result.append(request.url());
+    } else {
+      result.append(requestPath(request.url()));
+    }
+
+    result.append("" "");
+    result.append(version(httpMinorVersion));
+    return result.toString();
+  }",16-30,1,0.98597544,0.92988104,0.94670933
+com.squareup.okhttp.internal.http.OkHeaders,contentLength,(Lcom/squareup/okhttp/Request;)J,1,1,100.0%,"public static long contentLength(Request request) {
+    return contentLength(request.headers());
+  }",58-60,1,0.90193284,0.9654752,0.9464125
+com.squareup.okhttp.internal.http.OkHeaders,contentLength,(Lcom/squareup/okhttp/Response;)J,1,1,100.0%,"public static long contentLength(Request request) {
+    return contentLength(request.headers());
+  }",58-60,1,0.90193284,0.9654752,0.9464125
+com.squareup.okhttp.internal.http.OkHeaders,contentLength,(Lcom/squareup/okhttp/Headers;)J,1,1,100.0%,"public static long contentLength(Request request) {
+    return contentLength(request.headers());
+  }",58-60,1,0.90193284,0.9654752,0.9464125
+com.squareup.okhttp.internal.SslContextBuilder,<init>,(Ljava/lang/String;)V,5,5,100.0%,"public SslContextBuilder(String hostName) {
+    this.hostName = hostName;
+  }",63-65,2,0.8967189,0.967589,0.94632804
+com.squareup.okhttp.internal.Platform,toUriLenient,(Ljava/net/URL;)Ljava/net/URI;,1,1,100.0%,"public URI toUriLenient(URL url) throws URISyntaxException {
+    return url.toURI(); // this isn't as good as the built-in toUriLenient
+  }",89-91,2,0.88731,0.97019315,0.94532824
+com.squareup.okhttp.internal.DiskLruCache,rebuildJournal,()V,18,24,75.0%,"private synchronized void rebuildJournal() throws IOException {
+    if (journalWriter != null) {
+      journalWriter.close();
+    }
+
+    BufferedSink writer = Okio.buffer(Okio.sink(new FileOutputStream(journalFileTmp)));
+    try {
+      writer.writeUtf8(MAGIC);
+      writer.writeUtf8(""\n"");
+      writer.writeUtf8(VERSION_1);
+      writer.writeUtf8(""\n"");
+      writer.writeUtf8(Integer.toString(appVersion));
+      writer.writeUtf8(""\n"");
+      writer.writeUtf8(Integer.toString(valueCount));
+      writer.writeUtf8(""\n"");
+      writer.writeUtf8(""\n"");
+
+      for (Entry entry : lruEntries.values()) {
+        if (entry.currentEditor != null) {
+          writer.writeUtf8(DIRTY + ' ' + entry.key + '\n');
+        } else {
+          writer.writeUtf8(CLEAN + ' ' + entry.key + entry.getLengths() + '\n');
+        }
+      }
+    } finally {
+      writer.close();
+    }
+
+    if (journalFile.exists()) {
+      renameTo(journalFile, journalFileBackup, true);
+    }
+    renameTo(journalFileTmp, journalFile, false);
+    journalFileBackup.delete();
+
+    journalWriter = Okio.buffer(Okio.sink(new FileOutputStream(journalFile, true)));
+  }",341-376,1,0.970759,0.9330853,0.94438744
+com.squareup.okhttp.internal.http.OkHeaders,toMultimap,(Lcom/squareup/okhttp/Headers;Ljava/lang/String;)Ljava/util/Map;,11,13,84.6%,"public static Map<String, List<String>> toMultimap(Headers headers, String valueForNullKey) {
+    Map<String, List<String>> result = new TreeMap<String, List<String>>(FIELD_NAME_COMPARATOR);
+    for (int i = 0; i < headers.size(); i++) {
+      String fieldName = headers.name(i);
+      String value = headers.value(i);
+
+      List<String> allValues = new ArrayList<String>();
+      List<String> otherValues = result.get(fieldName);
+      if (otherValues != null) {
+        allValues.addAll(otherValues);
+      }
+      allValues.add(value);
+      result.put(fieldName, Collections.unmodifiableList(allValues));
+    }
+    if (valueForNullKey != null) {
+      result.put(null, Collections.unmodifiableList(Collections.singletonList(valueForNullKey)));
+    }
+    return Collections.unmodifiableMap(result);
+  }",85-103,2,0.96025723,0.93758357,0.94438565
+com.squareup.okhttp.HttpResponseCache$Entry,matches,(Lcom/squareup/okhttp/Request;Lcom/squareup/okhttp/Response;)Z,3,3,100.0%,"public boolean matches(Request request, Response response) {
+      return url.equals(request.urlString())
+          && requestMethod.equals(request.method())
+          && response.varyMatches(varyHeaders, request);
+    }",520-524,1,0.9255536,0.9522954,0.9442729
+okio.RealBufferedSource,readUtf8,(J)Ljava/lang/String;,2,2,100.0%,"@Override public String readUtf8(long byteCount) throws IOException {
+    require(byteCount);
+    return buffer.readUtf8(byteCount);
+  }",78-81,3,0.89558333,0.96503687,0.94420075
+com.squareup.okhttp.internal.DiskLruCache,trimToSize,()V,2,5,40.0%,"private void trimToSize() throws IOException {
+    while (size > maxSize) {
+      Map.Entry<String, Entry> toEvict = lruEntries.entrySet().iterator().next();
+      remove(toEvict.getKey());
+    }
+  }",636-641,1,0.89498615,0.9651448,0.9440972
+com.squareup.okhttp.internal.http.RouteSelector,hasNextProxy,()Z,1,1,100.0%,"private boolean hasNextProxy() {
+    return hasNextProxy;
+  }",184-186,2,0.8970462,0.96409976,0.9439837
+com.squareup.okhttp.Request,getUserAgent,()Ljava/lang/String;,1,1,100.0%,"public String getUserAgent() {
+    return parsedHeaders().userAgent;
+  }",104-106,2,0.9019397,0.9617652,0.9438176
+com.squareup.okhttp.mockwebserver.RecordedRequest,getRequestLine,()Ljava/lang/String;,1,1,100.0%,"public String getRequestLine() {
+    return requestLine;
+  }",60-62,2,0.9016662,0.9611277,0.9432893
+com.squareup.okhttp.mockwebserver.MockResponse,getBodyStream,()Ljava/io/InputStream;,1,1,100.0%,"InputStream getBodyStream() {
+    return bodyStream != null ? bodyStream : new ByteArrayInputStream(body);
+  }",140-142,1,0.89221144,0.96492046,0.9431077
+com.squareup.okhttp.Request,isHttps,()Z,1,1,100.0%,"public boolean isHttps() {
+    return url().getProtocol().equals(""https"");
+  }",126-128,2,0.89979845,0.9613557,0.9428885
+com.squareup.okhttp.internal.http.StatusLine,getStatusLine,()Ljava/lang/String;,1,1,100.0%,"public String getStatusLine() {
+    return statusLine;
+  }",68-70,2,0.90159327,0.9599536,0.9424455
+com.squareup.okhttp.Connection,isSpdy,()Z,1,1,100.0%,"public boolean isSpdy() {
+    return spdyConnection != null;
+  }",274-276,2,0.89754397,0.9613508,0.94220877
+com.squareup.okhttp.internal.Platform,get,()Lcom/squareup/okhttp/internal/Platform;,1,1,100.0%,"public static Platform get() {
+    return PLATFORM;
+  }",70-72,2,0.88942367,0.96452296,0.9419932
+com.squareup.okhttp.HttpResponseCache,getNetworkCount,()I,1,1,100.0%,"public synchronized int getNetworkCount() {
+    return networkCount;
+  }",294-296,2,0.8908259,0.9635173,0.9417099
+com.squareup.okhttp.Request$Builder,setUserAgent,(Ljava/lang/String;)Lcom/squareup/okhttp/Request$Builder;,1,1,100.0%,"public Builder setUserAgent(String userAgent) {
+      return header(""User-Agent"", userAgent);
+    }",295-297,2,0.89598775,0.96109074,0.94155985
+com.squareup.okhttp.Connection,getHttpMinorVersion,()I,1,1,100.0%,"public int getHttpMinorVersion() {
+    return httpMinorVersion;
+  }",283-285,2,0.89671963,0.9602567,0.9411956
+com.squareup.okhttp.internal.http.HttpConnection,isClosed,()Z,1,1,100.0%,"public boolean isClosed() {
+    return state == STATE_CLOSED;
+  }",118-120,2,0.8969086,0.96008945,0.94113517
+com.squareup.okhttp.HttpResponseCache,getRequestCount,()I,1,1,100.0%,"public synchronized int getRequestCount() {
+    return requestCount;
+  }",302-304,2,0.8904156,0.9620165,0.94053626
+com.squareup.okhttp.internal.http.StatusLine,httpMinorVersion,()I,1,1,100.0%,"public int httpMinorVersion() {
+    return httpMinorVersion != -1 ? httpMinorVersion : 1;
+  }",76-78,2,0.8903961,0.96191025,0.94045603
+com.squareup.okhttp.internal.http.HttpConnection,readHeaders,(Lcom/squareup/okhttp/Headers$Builder;)V,3,3,100.0%,"public void readHeaders(Headers.Builder builder) throws IOException {
+    // parse the result headers until the first blank line
+    for (String line; (line = source.readUtf8Line(true)).length() != 0; ) {
+      builder.addLine(line);
+    }
+  }",166-171,0,0.88498116,0.96416205,0.94040775
+okio.Util,checkOffsetAndCount,(JJJ)V,2,3,66.7%,"public static void checkOffsetAndCount(long arrayLength, long offset, long count) {
+    if ((offset | count) < 0 || offset > arrayLength || arrayLength - offset < count) {
+      throw new ArrayIndexOutOfBoundsException();
+    }
+  }",27-31,1,0.88687986,0.96308583,0.94022405
+com.squareup.okhttp.internal.Platform,untagSocket,(Ljava/net/Socket;)V,1,1,100.0%,"public void untagSocket(Socket socket) throws SocketException {
+  }",86-87,2,0.88733053,0.9628643,0.94020414
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,getResponseCode,()I,1,1,100.0%,"@Override public final int getResponseCode() throws IOException {
+    return getResponse().getResponse().code();
+  }",489-491,1,0.8947832,0.95941114,0.9400227
+com.squareup.okhttp.Response,varyMatches,(Lcom/squareup/okhttp/Headers;Lcom/squareup/okhttp/Request;)Z,2,4,50.0%,"public boolean varyMatches(Headers varyHeaders, Request newRequest) {
+    for (String field : parsedHeaders().varyFields) {
+      if (!equal(varyHeaders.values(field), newRequest.headers(field))) return false;
+    }
+    return true;
+  }",160-165,1,0.8981246,0.95762354,0.93977386
+com.squareup.okhttp.Headers,newBuilder,()Lcom/squareup/okhttp/Headers$Builder;,3,3,100.0%,"public Builder newBuilder() {
+    Builder result = new Builder();
+    result.namesAndValues.addAll(Arrays.asList(namesAndValues));
+    return result;
+  }",116-120,0,0.89004713,0.96096647,0.93969065
+com.squareup.okhttp.HttpResponseCache,getHitCount,()I,1,1,100.0%,"public synchronized int getHitCount() {
+    return hitCount;
+  }",298-300,2,0.88769174,0.9619658,0.93968356
+com.squareup.okhttp.ResponseSource,usesCache,()Z,1,1,100.0%,"public boolean usesCache() {
+    return this == CACHE || this == CONDITIONAL_CACHE;
+  }",45-47,2,0.88861597,0.96113825,0.9393816
+com.squareup.okhttp.mockwebserver.MockResponse,getStatus,()Ljava/lang/String;,1,1,100.0%,"public String getStatus() {
+    return status;
+  }",68-70,2,0.8971727,0.9573381,0.93928844
+com.squareup.okhttp.internal.Platform,getPrefix,()Ljava/lang/String;,1,1,100.0%,"public String getPrefix() {
+    return ""OkHttp"";
+  }",75-77,2,0.8926009,0.9590649,0.93912566
+com.squareup.okhttp.Connection,isConnected,()Z,1,1,100.0%,"public boolean isConnected() {
+    return connected;
+  }",177-179,2,0.8960414,0.95689636,0.9386399
+com.squareup.okhttp.Response$Builder,statusLine,(Ljava/lang/String;)Lcom/squareup/okhttp/Response$Builder;,1,3,33.3%,"public String statusLine() {
+    return statusLine.getStatusLine();
+  }",82-84,2,0.89367676,0.9579031,0.93863523
+com.squareup.okhttp.Response$Builder,statusLine,(Lcom/squareup/okhttp/internal/http/StatusLine;)Lcom/squareup/okhttp/Response$Builder;,3,3,100.0%,"public String statusLine() {
+    return statusLine.getStatusLine();
+  }",82-84,2,0.89367676,0.9579031,0.93863523
+com.squareup.okhttp.Response,statusLine,()Ljava/lang/String;,1,1,100.0%,"public String statusLine() {
+    return statusLine.getStatusLine();
+  }",82-84,2,0.89367676,0.9579031,0.93863523
+com.squareup.okhttp.internal.Util$1,<init>,(Ljava/lang/String;Z)V,1,1,100.0%,"private Util() {
+  }",58-59,1,0.8827954,0.9625166,0.93860024
+com.squareup.okhttp.CacheControl,noCache,()Z,1,1,100.0%,"public boolean noCache() {
+    return noCache;
+  }",46-48,2,0.89211464,0.95835567,0.93848336
+com.squareup.okhttp.Response,hasVaryAll,()Z,1,1,100.0%,"public boolean hasVaryAll() {
+    return parsedHeaders().varyFields.contains(""*"");
+  }",151-153,2,0.89320034,0.9572614,0.9380431
+okio.RealBufferedSink,<init>,(Lokio/Sink;Lokio/OkBuffer;)V,5,5,100.0%,"public RealBufferedSink(Sink sink, OkBuffer buffer) {
+    if (sink == null) throw new IllegalArgumentException(""sink == null"");
+    this.buffer = buffer;
+    this.sink = sink;
+  }",26-30,3,0.896582,0.9556916,0.9379587
+okio.RealBufferedSink,<init>,(Lokio/Sink;)V,2,2,100.0%,"public RealBufferedSink(Sink sink, OkBuffer buffer) {
+    if (sink == null) throw new IllegalArgumentException(""sink == null"");
+    this.buffer = buffer;
+    this.sink = sink;
+  }",26-30,3,0.896582,0.9556916,0.9379587
+com.squareup.okhttp.OkHttpClient,getProxySelector,()Ljava/net/ProxySelector;,1,1,100.0%,"public ProxySelector getProxySelector() {
+    return proxySelector;
+  }",143-145,2,0.8851658,0.96053195,0.9379221
+com.squareup.okhttp.internal.Platform,tagSocket,(Ljava/net/Socket;)V,1,1,100.0%,"public void tagSocket(Socket socket) throws SocketException {
+  }",83-84,2,0.8840386,0.96097285,0.93789256
+com.squareup.okhttp.internal.http.HeaderParser,parseSeconds,(Ljava/lang/String;)I,4,8,50.0%,"public static int parseSeconds(String value) {
+    try {
+      long seconds = Long.parseLong(value);
+      if (seconds > Integer.MAX_VALUE) {
+        return Integer.MAX_VALUE;
+      } else if (seconds < 0) {
+        return 0;
+      } else {
+        return (int) seconds;
+      }
+    } catch (NumberFormatException e) {
+      return -1;
+    }
+  }",52-65,2,0.9541601,0.93037385,0.9375097
+com.squareup.okhttp.CacheControl,noStore,()Z,1,1,100.0%,"public boolean noStore() {
+    return noStore;
+  }",51-53,2,0.8899516,0.9576308,0.937327
+com.squareup.okhttp.Request,urlString,()Ljava/lang/String;,1,1,100.0%,"public String urlString() {
+    return url.toString();
+  }",68-70,2,0.88920337,0.95774317,0.93718123
+com.squareup.okhttp.internal.http.HttpEngine,releaseConnection,()V,4,4,100.0%,"public final void releaseConnection() throws IOException {
+    if (transport != null) {
+      transport.releaseConnectionOnIdle();
+    }
+    connection = null;
+  }",371-376,1,0.8884107,0.9579928,0.9371182
+com.squareup.okhttp.Request$Builder,header,(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Request$Builder;,2,2,100.0%,"public String header(String name) {
+    return headers.get(name);
+  }",80-82,2,0.8929019,0.955905,0.9370041
+com.squareup.okhttp.Request,header,(Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"public String header(String name) {
+    return headers.get(name);
+  }",80-82,2,0.8929019,0.955905,0.9370041
+com.squareup.okhttp.Connection,incrementRecycleCount,()V,2,2,100.0%,"public void incrementRecycleCount() {
+    recycleCount++;
+  }",305-307,2,0.8858543,0.95857877,0.93676144
+com.squareup.okhttp.RouteDatabase,connected,(Lcom/squareup/okhttp/Route;)V,2,2,100.0%,"public synchronized void connected(Route route) {
+    failedRoutes.remove(route);
+  }",37-39,2,0.8810893,0.96026045,0.93650913
+com.squareup.okhttp.ResponseSource,requiresConnection,()Z,1,1,100.0%,"public boolean requiresConnection() {
+    return this == CONDITIONAL_CACHE || this == NETWORK;
+  }",41-43,2,0.888177,0.9567503,0.9361783
+com.squareup.okhttp.Route,getAddress,()Lcom/squareup/okhttp/Address;,1,1,100.0%,"public Address getAddress() {
+    return address;
+  }",54-56,2,0.8830812,0.95870894,0.9360206
+com.squareup.okhttp.internal.DiskLruCache,checkNotClosed,()V,2,3,66.7%,"private void checkNotClosed() {
+    if (journalWriter == null) {
+      throw new IllegalStateException(""cache is closed"");
+    }
+  }",606-610,1,0.89048684,0.95514584,0.9357481
+com.squareup.okhttp.OkHttpClient,getReadTimeout,()I,1,1,100.0%,"public int getReadTimeout() {
+    return readTimeout;
+  }",110-112,2,0.88386875,0.95785356,0.9356581
+com.squareup.okhttp.mockwebserver.RecordedRequest,toString,()Ljava/lang/String;,1,1,100.0%,"@Override public String toString() {
+    return requestLine;
+  }",152-154,2,0.8903971,0.95455253,0.93530595
+com.squareup.okhttp.internal.Platform,connectSocket,(Ljava/net/Socket;Ljava/net/InetSocketAddress;I)V,2,2,100.0%,"public void connectSocket(Socket socket, InetSocketAddress address,
+      int connectTimeout) throws IOException {
+    socket.connect(address, connectTimeout);
+  }",121-124,2,0.8919739,0.9537894,0.9352448
+com.squareup.okhttp.internal.http.RouteSelector,hasNextInetSocketAddress,()Z,1,1,100.0%,"private boolean hasNextInetSocketAddress() {
+    return socketAddresses != null;
+  }",237-239,1,0.88567823,0.95604354,0.9349339
+com.squareup.okhttp.ConnectionPool,getDefault,()Lcom/squareup/okhttp/ConnectionPool;,1,1,100.0%,"public static ConnectionPool getDefault() {
+    return systemDefault;
+  }",149-151,2,0.88233846,0.9567698,0.93444043
+okio.ByteString,utf8,()Ljava/lang/String;,2,2,100.0%,"public String utf8() {
+    String result = utf8;
+    // We don't care if we double-allocate in racy code.
+    return result != null ? result : (utf8 = new String(data, Util.UTF_8));
+  }",67-71,1,0.87691784,0.95884347,0.9342658
+com.squareup.okhttp.OkHttpClient,getConnectTimeout,()I,1,1,100.0%,"public int getConnectTimeout() {
+    return connectTimeout;
+  }",86-88,2,0.88291234,0.95622325,0.93422997
+com.squareup.okhttp.Response,code,()I,1,1,100.0%,"public int code() {
+    return statusLine.code();
+  }",86-88,2,0.8822298,0.95605874,0.9339101
+com.squareup.okhttp.mockwebserver.MockResponse,toString,()Ljava/lang/String;,1,1,100.0%,"@Override public String toString() {
+    return status;
+  }",267-269,2,0.8875774,0.9534003,0.9336535
+okio.OkBuffer,<init>,()V,2,2,100.0%,"public OkBuffer() {
+  }",49-50,2,0.8764851,0.95797074,0.933525
+com.squareup.okhttp.internal.http.HttpConnection,flush,()V,2,2,100.0%,"public void flush() throws IOException {
+    sink.flush();
+  }",122-124,1,0.8791969,0.95676464,0.9334943
+com.squareup.okhttp.Response,httpMinorVersion,()I,1,1,100.0%,"public int httpMinorVersion() {
+    return statusLine.httpMinorVersion();
+  }",94-96,2,0.8858081,0.95384145,0.9334315
+okio.ByteString,of,([B)Lokio/ByteString;,1,1,100.0%,"public static ByteString of(byte... data) {
+    return new ByteString(data.clone());
+  }",55-57,2,0.87865275,0.9567811,0.9333426
+okio.OkBuffer,writeUtf8,(Ljava/lang/String;)Lokio/OkBuffer;,2,2,100.0%,"@Override public OkBuffer writeUtf8(String string) {
+    byte[] data = string.getBytes(Util.UTF_8);
+    return write(data, 0, data.length);
+  }",371-374,2,0.8848067,0.9540158,0.93325305
+okio.Okio$1,<init>,(Ljava/io/OutputStream;)V,2,2,100.0%,"private Okio() {
+  }",25-26,1,0.87640786,0.95756483,0.93321776
+okio.Okio$2,<init>,(Ljava/io/InputStream;)V,2,2,100.0%,"private Okio() {
+  }",25-26,1,0.87640786,0.95756483,0.93321776
+okio.OkBuffer,indexOf,(BJ)J,8,14,57.1%,"public long indexOf(byte b) {
+    return indexOf(b, 0);
+  }",556-558,2,0.8792695,0.95614153,0.93307996
+okio.OkBuffer,clear,()V,2,2,100.0%,"public void clear() {
+    skip(size);
+  }",343-345,2,0.8794322,0.9560697,0.9330784
+okio.Deadline,<init>,()V,2,2,100.0%,"public Deadline() {
+  }",38-39,2,0.87617093,0.95723116,0.9329131
+okio.Deadline$1,<init>,()V,1,1,100.0%,"public Deadline() {
+  }",38-39,2,0.87617093,0.95723116,0.9329131
+com.squareup.okhttp.internal.http.OkHeaders$1,<init>,()V,1,1,100.0%,"private OkHeaders() {
+  }",55-56,1,0.875192,0.95760065,0.932878
+com.squareup.okhttp.internal.Util,immutableList,(Ljava/util/List;)Ljava/util/List;,1,1,100.0%,"public static <T> List<T> immutableList(List<T> list) {
+    return Collections.unmodifiableList(new ArrayList<T>(list));
+  }",263-265,2,0.87885517,0.95588917,0.93277895
+com.squareup.okhttp.mockwebserver.QueueDispatcher,peekSocketPolicy,()Lcom/squareup/okhttp/mockwebserver/SocketPolicy;,3,5,60.0%,"@Override public SocketPolicy peekSocketPolicy() {
+    MockResponse peek = responseQueue.peek();
+    if (peek == null) {
+      return failFastResponse != null
+          ? failFastResponse.getSocketPolicy()
+          : SocketPolicy.KEEP_OPEN;
+    }
+    return peek.getSocketPolicy();
+  }",47-55,1,0.8998526,0.9467901,0.93270886
+com.squareup.okhttp.mockwebserver.QueueDispatcher,enqueueResponse,(Lcom/squareup/okhttp/mockwebserver/MockResponse;)V,2,2,100.0%,"public void enqueueResponse(MockResponse response) {
+    responseQueue.add(response);
+  }",57-59,1,0.8803468,0.95469904,0.9323933
+com.squareup.okhttp.internal.http.HttpEngine,getRequest,()Lcom/squareup/okhttp/Request;,1,1,100.0%,"public final Request getRequest() {
+    return request;
+  }",283-285,1,0.8777982,0.9556959,0.9323266
+com.squareup.okhttp.internal.http.StatusLine,code,()I,1,1,100.0%,"public int code() {
+    return responseCode;
+  }",81-83,2,0.8788244,0.9552531,0.9323245
+com.squareup.okhttp.OkHttpClient,getProtocols,()Ljava/util/List;,1,1,100.0%,"public List<Protocol> getProtocols() {
+    return protocols;
+  }",361-363,2,0.8776965,0.9554633,0.9321333
+com.squareup.okhttp.Address,getSslSocketFactory,()Ljavax/net/ssl/SSLSocketFactory;,1,1,100.0%,"public SSLSocketFactory getSslSocketFactory() {
+    return sslSocketFactory;
+  }",79-81,2,0.8813651,0.9535363,0.93188494
+com.squareup.okhttp.OkHttpClient,getRoutesDatabase,()Lcom/squareup/okhttp/RouteDatabase;,1,1,100.0%,"public RouteDatabase getRoutesDatabase() {
+    return routeDatabase;
+  }",272-274,2,0.88126194,0.95351446,0.9318387
+com.squareup.okhttp.Response,getVaryFields,()Ljava/util/Set;,1,1,100.0%,"public Set<String> getVaryFields() {
+    return parsedHeaders().varyFields;
+  }",142-144,2,0.8835753,0.9521977,0.93161094
+com.squareup.okhttp.Connection,updateReadTimeout,(I)V,3,3,100.0%,"public void updateReadTimeout(int newTimeout) throws IOException {
+    if (!connected) throw new IllegalStateException(""updateReadTimeout - not connected"");
+    socket.setSoTimeout(newTimeout);
+  }",300-303,1,0.87891823,0.95416754,0.9315927
+okio.RealBufferedSource,<init>,(Lokio/Source;Lokio/OkBuffer;)V,5,5,100.0%,"public RealBufferedSource(Source source, OkBuffer buffer) {
+    if (source == null) throw new IllegalArgumentException(""source == null"");
+    this.buffer = buffer;
+    this.source = source;
+  }",29-33,3,0.89743817,0.9460364,0.9314569
+okio.RealBufferedSource,<init>,(Lokio/Source;)V,2,2,100.0%,"public RealBufferedSource(Source source, OkBuffer buffer) {
+    if (source == null) throw new IllegalArgumentException(""source == null"");
+    this.buffer = buffer;
+    this.source = source;
+  }",29-33,3,0.89743817,0.9460364,0.9314569
+okio.RealBufferedSource$1,<init>,(Lokio/RealBufferedSource;)V,1,1,100.0%,"public RealBufferedSource(Source source, OkBuffer buffer) {
+    if (source == null) throw new IllegalArgumentException(""source == null"");
+    this.buffer = buffer;
+    this.source = source;
+  }",29-33,3,0.89743817,0.9460364,0.9314569
+com.squareup.okhttp.OkHttpClient,<init>,()V,5,5,100.0%,"public OkHttpClient() {
+    routeDatabase = new RouteDatabase();
+    dispatcher = new Dispatcher();
+  }",61-64,1,0.87549514,0.9553924,0.9314232
+com.squareup.okhttp.internal.http.HttpEngine,hostHeader,(Ljava/net/URL;)Ljava/lang/String;,2,3,66.7%,"public static String hostHeader(URL url) {
+    return getEffectivePort(url) != getDefaultPort(url.getProtocol())
+        ? url.getHost() + "":"" + url.getPort()
+        : url.getHost();
+  }",518-522,2,0.9056075,0.9422628,0.93126625
+com.squareup.okhttp.HttpResponseCache,get,(Lcom/squareup/okhttp/Request;)Lcom/squareup/okhttp/Response;,9,13,69.2%,"@Override public CacheResponse get(URI uri, String s, Map<String, List<String>> stringListMap)
+      throws IOException {
+    throw new UnsupportedOperationException(""This is not a general purpose response cache."");
+  }",128-131,1,0.8818351,0.9522606,0.9311329
+com.squareup.okhttp.internal.http.HttpDate$1,<init>,()V,1,1,100.0%,"private HttpDate() {
+  }",94-95,2,0.8754861,0.9545161,0.9308071
+com.squareup.okhttp.Headers,size,()I,1,1,100.0%,"public int size() {
+    return namesAndValues.length / 2;
+  }",58-60,2,0.8774198,0.95349276,0.9306709
+com.squareup.okhttp.HttpResponseCache,delete,()V,2,2,100.0%,"public void delete() throws IOException {
+    cache.delete();
+  }",240-242,1,0.87560093,0.95399934,0.9304798
+com.squareup.okhttp.mockwebserver.MockWebServer,enqueue,(Lcom/squareup/okhttp/mockwebserver/MockResponse;)V,2,2,100.0%,"public void enqueue(MockResponse response) {
+    ((QueueDispatcher) dispatcher).enqueueResponse(response.clone());
+  }",225-227,1,0.87937266,0.9521234,0.9302982
+okio.RealBufferedSink,emitCompleteSegments,()Lokio/BufferedSink;,4,4,100.0%,"@Override public BufferedSink emitCompleteSegments() throws IOException {
+    checkNotClosed();
+    long byteCount = buffer.completeSegmentByteCount();
+    if (byteCount > 0) sink.write(buffer, byteCount);
+    return this;
+  }",89-94,3,0.8856214,0.9493169,0.93020827
+com.squareup.okhttp.internal.http.HttpTransport,flushRequest,()V,2,2,100.0%,"@Override public void flushRequest() throws IOException {
+    httpConnection.flush();
+  }",72-74,1,0.8757529,0.9535141,0.93018574
+com.squareup.okhttp.Address,getProxy,()Ljava/net/Proxy;,1,1,100.0%,"public Proxy getProxy() {
+    return proxy;
+  }",112-114,2,0.8765459,0.9528568,0.9299635
+com.squareup.okhttp.Route,getProxy,()Ljava/net/Proxy;,1,1,100.0%,"public Proxy getProxy() {
+    return proxy;
+  }",64-66,2,0.8765459,0.9528568,0.9299635
+com.squareup.okhttp.OkHttpClient,getProxy,()Ljava/net/Proxy;,1,1,100.0%,"public Proxy getProxy() {
+    return proxy;
+  }",125-127,2,0.8765459,0.9528568,0.9299635
+com.squareup.okhttp.internal.NamedRunnable,<init>,(Ljava/lang/String;[Ljava/lang/Object;)V,3,3,100.0%,"public NamedRunnable(String format, Object... args) {
+    this.name = String.format(format, args);
+  }",25-27,2,0.8756237,0.95318687,0.92991793
+com.squareup.okhttp.internal.http.HttpEngine,getRoute,()Lcom/squareup/okhttp/Route;,1,1,100.0%,"public Route getRoute() {
+    return route;
+  }",348-350,2,0.8760967,0.9529398,0.92988694
+com.squareup.okhttp.Connection,getRoute,()Lcom/squareup/okhttp/Route;,1,1,100.0%,"public Route getRoute() {
+    return route;
+  }",186-188,2,0.8760967,0.9529398,0.92988694
+okio.ByteString,<init>,([B)V,3,3,100.0%,"ByteString(byte[] data) {
+    this.data = data; // Trusted internal constructor doesn't clone data.
+  }",48-50,2,0.870106,0.95545316,0.929849
+com.squareup.okhttp.mockwebserver.MockResponse,getHeaders,()Ljava/util/List;,1,1,100.0%,"public List<String> getHeaders() {
+    return headers;
+  }",83-85,2,0.87750065,0.9521519,0.9297565
+com.squareup.okhttp.OkHttpClient,getOkResponseCache,()Lcom/squareup/okhttp/OkResponseCache;,1,1,100.0%,"public OkResponseCache getOkResponseCache() {
+    return responseCache;
+  }",190-192,2,0.8777159,0.95201236,0.92972344
+com.squareup.okhttp.HttpResponseCache$CacheRequestImpl$1,close,()V,8,9,88.9%,"public void close() throws IOException {
+    cache.close();
+  }",264-266,0,0.87474144,0.95325166,0.9296986
+com.squareup.okhttp.HttpResponseCache$CacheResponseBody$1,close,()V,3,3,100.0%,"public void close() throws IOException {
+    cache.close();
+  }",264-266,0,0.87474144,0.95325166,0.9296986
+com.squareup.okhttp.Headers$Builder,build,()Lcom/squareup/okhttp/Headers;,1,1,100.0%,"public Headers build() {
+      return new Headers(this);
+    }",206-208,2,0.8747303,0.95309556,0.929586
+com.squareup.okhttp.internal.http.HttpAuthenticator$1,<init>,()V,1,1,100.0%,"private HttpAuthenticator() {
+  }",87-88,1,0.8729314,0.9537151,0.92948
+com.squareup.okhttp.OkHttpClient,getAuthenticator,()Lcom/squareup/okhttp/OkAuthenticator;,1,1,100.0%,"public OkAuthenticator getAuthenticator() {
+    return authenticator;
+  }",237-239,2,0.87723786,0.9517833,0.9294197
+com.squareup.okhttp.HttpResponseCache$Entry,isHttps,()Z,1,1,100.0%,"private boolean isHttps() {
+      return url.startsWith(""https://"");
+    }",485-487,2,0.8933179,0.94465435,0.92925346
+com.squareup.okhttp.internal.DiskLruCache$Editor$FaultHidingOutputStream,write,([BII)V,3,5,60.0%,"@Override
+    public void write(int b) throws IOException {
+      // Eat all writes silently. Nom nom.
+    }",711-714,1,0.8706461,0.9539166,0.9289354
+com.squareup.okhttp.internal.http.HttpEngine,hasResponse,()Z,1,1,100.0%,"public final boolean hasResponse() {
+    return response != null;
+  }",275-277,1,0.8759935,0.9515817,0.92890525
+okio.RealBufferedSink,writeUtf8,(Ljava/lang/String;)Lokio/BufferedSink;,3,3,100.0%,"@Override public BufferedSink writeUtf8(String string) throws IOException {
+    checkNotClosed();
+    buffer.writeUtf8(string);
+    return emitCompleteSegments();
+  }",53-57,2,0.8834379,0.9483747,0.9288937
+com.squareup.okhttp.OkHttpClient,getConnectionPool,()Lcom/squareup/okhttp/ConnectionPool;,1,1,100.0%,"public ConnectionPool getConnectionPool() {
+    return connectionPool;
+  }",252-254,2,0.87471336,0.95166576,0.92858005
+okio.OkBuffer,size,()J,1,1,100.0%,"public long size() {
+    return size;
+  }",53-55,3,0.8719955,0.952784,0.9285475
+com.squareup.okhttp.mockwebserver.MockWebServer,play,(I)V,7,7,100.0%,"public void play() throws IOException {
+    play(0);
+  }",230-232,1,0.8739866,0.95189637,0.9285235
+com.squareup.okhttp.mockwebserver.MockWebServer,play,()V,2,2,100.0%,"public void play() throws IOException {
+    play(0);
+  }",230-232,1,0.8739866,0.95189637,0.9285235
+com.squareup.okhttp.mockwebserver.MockResponse,getSocketPolicy,()Lcom/squareup/okhttp/mockwebserver/SocketPolicy;,1,1,100.0%,"public SocketPolicy getSocketPolicy() {
+    return socketPolicy;
+  }",207-209,2,0.8756941,0.95115626,0.92851764
+com.squareup.okhttp.Connection,getSocket,()Ljava/net/Socket;,1,1,100.0%,"public Socket getSocket() {
+    return socket;
+  }",194-196,2,0.87486815,0.95124304,0.9283306
+com.squareup.okhttp.Response,headers,()Lcom/squareup/okhttp/Headers;,1,1,100.0%,"public List<String> headers(String name) {
+    return headers.values(name);
+  }",106-108,2,0.87533563,0.95099723,0.9282987
+com.squareup.okhttp.Response$Builder,headers,(Lcom/squareup/okhttp/Headers;)Lcom/squareup/okhttp/Response$Builder;,2,2,100.0%,"public List<String> headers(String name) {
+    return headers.values(name);
+  }",106-108,2,0.87533563,0.95099723,0.9282987
+com.squareup.okhttp.Request,method,()Ljava/lang/String;,1,1,100.0%,"public String method() {
+    return method;
+  }",72-74,2,0.87397486,0.9512735,0.9280839
+com.squareup.okhttp.Request$Builder,method,(Ljava/lang/String;Lcom/squareup/okhttp/Request$Body;)Lcom/squareup/okhttp/Request$Builder;,4,5,80.0%,"public String method() {
+    return method;
+  }",72-74,2,0.87397486,0.9512735,0.9280839
+com.squareup.okhttp.internal.http.HttpEngine,hasRequestBody,()Z,1,1,100.0%,"boolean hasRequestBody() {
+    return HttpMethod.hasRequestBody(request.method());
+  }",256-258,2,0.8796366,0.9486654,0.92795676
+com.squareup.okhttp.internal.http.HttpEngine,getConnection,()Lcom/squareup/okhttp/Connection;,1,1,100.0%,"public final Connection getConnection() {
+    return connection;
+  }",306-308,1,0.87189925,0.95108,0.9273258
+com.squareup.okhttp.Response,header,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,2,2,100.0%,"public String header(String name) {
+    return header(name, null);
+  }",110-112,2,0.87645996,0.9483516,0.92678416
+com.squareup.okhttp.Response$Builder,header,(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Response$Builder;,2,2,100.0%,"public String header(String name) {
+    return header(name, null);
+  }",110-112,2,0.87645996,0.9483516,0.92678416
+com.squareup.okhttp.Response,header,(Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"public String header(String name) {
+    return header(name, null);
+  }",110-112,2,0.87645996,0.9483516,0.92678416
+com.squareup.okhttp.OkHttpClient,getCookieHandler,()Ljava/net/CookieHandler;,1,1,100.0%,"public CookieHandler getCookieHandler() {
+    return cookieHandler;
+  }",159-161,2,0.87279284,0.94991404,0.9267777
+com.squareup.okhttp.HttpResponseCache,put,(Lcom/squareup/okhttp/Response;)Ljava/net/CacheRequest;,10,17,58.8%,"@Override public CacheRequest put(URI uri, URLConnection urlConnection) throws IOException {
+    throw new UnsupportedOperationException(""This is not a general purpose response cache."");
+  }",133-135,1,0.86866254,0.95162183,0.92673403
+com.squareup.okhttp.Response$Builder,setResponseSource,(Lcom/squareup/okhttp/ResponseSource;)Lcom/squareup/okhttp/Response$Builder;,1,1,100.0%,"public Builder setResponseSource(ResponseSource responseSource) {
+      return header(OkHeaders.RESPONSE_SOURCE, responseSource + "" "" + statusLine.code());
+    }",438-440,2,0.87486243,0.9487082,0.92655444
+com.squareup.okhttp.Request,url,()Ljava/net/URL;,1,1,100.0%,"public URL url() {
+    return url;
+  }",55-57,2,0.8700063,0.95003784,0.9260284
+com.squareup.okhttp.Request$Builder,url,(Ljava/net/URL;)Lcom/squareup/okhttp/Request$Builder;,3,3,100.0%,"public URL url() {
+    return url;
+  }",55-57,2,0.8700063,0.95003784,0.9260284
+com.squareup.okhttp.Request,newBuilder,()Lcom/squareup/okhttp/Request$Builder;,1,1,100.0%,"public Builder newBuilder() {
+    return new Builder(this);
+  }",96-98,0,0.8652239,0.95183325,0.9258504
+com.squareup.okhttp.Response,newBuilder,()Lcom/squareup/okhttp/Response$Builder;,1,1,100.0%,"public Builder newBuilder() {
+    return new Builder(this);
+  }",127-129,0,0.8652239,0.95183325,0.9258504
+com.squareup.okhttp.internal.http.HttpTransport,readResponseHeaders,()Lcom/squareup/okhttp/Response$Builder;,1,1,100.0%,"@Override public Response.Builder readResponseHeaders() throws IOException {
+    return httpConnection.readResponse();
+  }",100-102,0,0.8697537,0.94961697,0.925658
+com.squareup.okhttp.HttpResponseCache$CacheResponseBody$1,<init>,(Lcom/squareup/okhttp/HttpResponseCache$CacheResponseBody;Ljava/io/InputStream;Lcom/squareup/okhttp/internal/DiskLruCache$Snapshot;)V,1,1,100.0%,"public HttpResponseCache(File directory, long maxSize) throws IOException {
+    cache = DiskLruCache.open(directory, VERSION, ENTRY_COUNT, maxSize);
+  }",124-126,4,0.8697992,0.94940454,0.9255229
+com.squareup.okhttp.HttpResponseCache$CacheRequestImpl$1,<init>,(Lcom/squareup/okhttp/HttpResponseCache$CacheRequestImpl;Ljava/io/OutputStream;Lcom/squareup/okhttp/HttpResponseCache;Lcom/squareup/okhttp/internal/DiskLruCache$Editor;)V,1,1,100.0%,"public HttpResponseCache(File directory, long maxSize) throws IOException {
+    cache = DiskLruCache.open(directory, VERSION, ENTRY_COUNT, maxSize);
+  }",124-126,4,0.8697992,0.94940454,0.9255229
+com.squareup.okhttp.HttpResponseCache$Entry,<init>,(Lcom/squareup/okhttp/Response;)V,8,8,100.0%,"public HttpResponseCache(File directory, long maxSize) throws IOException {
+    cache = DiskLruCache.open(directory, VERSION, ENTRY_COUNT, maxSize);
+  }",124-126,4,0.8697992,0.94940454,0.9255229
+com.squareup.okhttp.HttpResponseCache$Entry,<init>,(Ljava/io/InputStream;)V,18,27,66.7%,"public HttpResponseCache(File directory, long maxSize) throws IOException {
+    cache = DiskLruCache.open(directory, VERSION, ENTRY_COUNT, maxSize);
+  }",124-126,4,0.8697992,0.94940454,0.9255229
+com.squareup.okhttp.HttpResponseCache,<init>,(Ljava/io/File;J)V,3,3,100.0%,"public HttpResponseCache(File directory, long maxSize) throws IOException {
+    cache = DiskLruCache.open(directory, VERSION, ENTRY_COUNT, maxSize);
+  }",124-126,4,0.8697992,0.94940454,0.9255229
+com.squareup.okhttp.HttpResponseCache$CacheResponseBody,<init>,(Lcom/squareup/okhttp/internal/DiskLruCache$Snapshot;Ljava/lang/String;Ljava/lang/String;)V,6,6,100.0%,"public HttpResponseCache(File directory, long maxSize) throws IOException {
+    cache = DiskLruCache.open(directory, VERSION, ENTRY_COUNT, maxSize);
+  }",124-126,4,0.8697992,0.94940454,0.9255229
+com.squareup.okhttp.HttpResponseCache$CacheRequestImpl,<init>,(Lcom/squareup/okhttp/HttpResponseCache;Lcom/squareup/okhttp/internal/DiskLruCache$Editor;)V,5,5,100.0%,"public HttpResponseCache(File directory, long maxSize) throws IOException {
+    cache = DiskLruCache.open(directory, VERSION, ENTRY_COUNT, maxSize);
+  }",124-126,4,0.8697992,0.94940454,0.9255229
+com.squareup.okhttp.OkHttpClient,open,(Ljava/net/URL;)Ljava/net/HttpURLConnection;,1,1,100.0%,"public HttpURLConnection open(URL url) {
+    return open(url, proxy);
+  }",427-429,2,0.87165195,0.94799775,0.925094
+com.squareup.okhttp.OkHttpClient,open,(Ljava/net/URL;Ljava/net/Proxy;)Ljava/net/HttpURLConnection;,4,6,66.7%,"public HttpURLConnection open(URL url) {
+    return open(url, proxy);
+  }",427-429,2,0.87165195,0.94799775,0.925094
+com.squareup.okhttp.mockwebserver.MockResponse,<init>,()V,11,11,100.0%,"public MockResponse() {
+    setBody(new byte[0]);
+  }",52-54,2,0.8693147,0.9489088,0.9250305
+com.squareup.okhttp.Connection,getHandshake,()Lcom/squareup/okhttp/Handshake;,1,1,100.0%,"public Handshake getHandshake() {
+    return handshake;
+  }",259-261,2,0.86816555,0.9484068,0.9243344
+com.squareup.okhttp.internal.http.HttpURLConnectionImpl,<init>,(Ljava/net/URL;Lcom/squareup/okhttp/OkHttpClient;)V,5,5,100.0%,"public HttpURLConnectionImpl(URL url, OkHttpClient client) {
+    super(url);
+    this.client = client;
+  }",97-100,2,0.87776357,0.94312507,0.92351663
+com.squareup.okhttp.mockwebserver.MockWebServer,shutdown,()V,3,3,100.0%,"public void shutdown() throws IOException {
+    if (serverSocket != null) {
+      serverSocket.close(); // Should cause acceptConnections() to break out.
+    }
+  }",291-295,1,0.8662687,0.94736177,0.92303383
+com.squareup.okhttp.Response$Builder,request,(Lcom/squareup/okhttp/Request;)Lcom/squareup/okhttp/Response$Builder;,2,2,100.0%,"public Request request() {
+    return request;
+  }",78-80,1,0.865076,0.9477602,0.9229549
+com.squareup.okhttp.Response,request,()Lcom/squareup/okhttp/Request;,1,1,100.0%,"public Request request() {
+    return request;
+  }",78-80,1,0.865076,0.9477602,0.9229549
+com.squareup.okhttp.internal.DiskLruCache$Snapshot,getInputStream,(I)Ljava/io/InputStream;,1,1,100.0%,"public InputStream getInputStream(int index) {
+      return ins[index];
+    }",689-691,2,0.8892637,0.93702227,0.9226947
+okio.RealBufferedSource,require,(J)V,3,4,75.0%,"@Override public void require(long byteCount) throws IOException {
+    checkNotClosed();
+    while (buffer.size < byteCount) {
+      if (source.read(buffer, Segment.SIZE) == -1) throw new EOFException();
+    }
+  }",61-66,3,0.88252646,0.9398554,0.9226568
+com.squareup.okhttp.OkHttpClient,toOkResponseCacheOrNull,(Ljava/net/ResponseCache;)Lcom/squareup/okhttp/OkResponseCache;,1,1,100.0%,"private OkResponseCache toOkResponseCacheOrNull(ResponseCache cache) {
+    return cache instanceof OkResponseCache ? ((OkResponseCache) cache) : null;
+  }",507-509,2,0.86474234,0.94633484,0.9218571
+okio.Deadline,throwIfReached,()V,2,2,100.0%,"public void throwIfReached() throws IOException {
+    // TODO: a more catchable exception type?
+    if (reached()) throw new IOException(""Deadline reached"");
+  }",50-53,1,0.8622818,0.9465749,0.92128694
+com.squareup.okhttp.Response$Builder,body,(Lcom/squareup/okhttp/Response$Body;)Lcom/squareup/okhttp/Response$Builder;,2,2,100.0%,"public Body body() {
+    return body;
+  }",123-125,2,0.86369246,0.9457759,0.9211509
+com.squareup.okhttp.Response,body,()Lcom/squareup/okhttp/Response$Body;,1,1,100.0%,"public Body body() {
+    return body;
+  }",123-125,2,0.86369246,0.9457759,0.9211509
+com.squareup.okhttp.internal.DiskLruCache,delete,()V,3,3,100.0%,"public void delete() throws IOException {
+    close();
+    Util.deleteContents(directory);
+  }",648-651,1,0.86794144,0.9436187,0.9209155
+com.squareup.okhttp.internal.DiskLruCache,edit,(Ljava/lang/String;)Lcom/squareup/okhttp/internal/DiskLruCache$Editor;,1,1,100.0%,"public Editor edit(String key) throws IOException {
+    return edit(key, ANY_SEQUENCE_NUMBER);
+  }",443-445,2,0.8671734,0.9437851,0.9208015
+com.squareup.okhttp.internal.DiskLruCache,edit,(Ljava/lang/String;J)Lcom/squareup/okhttp/internal/DiskLruCache$Editor;,13,16,81.2%,"public Editor edit(String key) throws IOException {
+    return edit(key, ANY_SEQUENCE_NUMBER);
+  }",443-445,2,0.8671734,0.9437851,0.9208015
+com.squareup.okhttp.Request,getHeaders,()Lcom/squareup/okhttp/Headers;,1,1,100.0%,"public Headers getHeaders() {
+    return headers;
+  }",100-102,2,0.8634541,0.94455606,0.9202255
+com.squareup.okhttp.Response$Builder,handshake,(Lcom/squareup/okhttp/Handshake;)Lcom/squareup/okhttp/Response$Builder;,2,2,100.0%,"public Handshake handshake() {
+    return handshake;
+  }",102-104,2,0.8597403,0.94491065,0.91935956
+com.squareup.okhttp.Response,handshake,()Lcom/squareup/okhttp/Handshake;,1,1,100.0%,"public Handshake handshake() {
+    return handshake;
+  }",102-104,2,0.8597403,0.94491065,0.91935956
+com.squareup.okhttp.Request,headers,()Lcom/squareup/okhttp/Headers;,1,1,100.0%,"public Headers headers() {
+    return headers;
+  }",76-78,2,0.8629386,0.94349957,0.9193313
+com.squareup.okhttp.mockwebserver.MockResponse,addHeader,(Ljava/lang/String;Ljava/lang/Object;)Lcom/squareup/okhttp/mockwebserver/MockResponse;,1,1,100.0%,"public MockResponse addHeader(String header) {
+    headers.add(header);
+    return this;
+  }",100-103,2,0.8677693,0.9411989,0.91917
+com.squareup.okhttp.mockwebserver.MockResponse,addHeader,(Ljava/lang/String;)Lcom/squareup/okhttp/mockwebserver/MockResponse;,2,2,100.0%,"public MockResponse addHeader(String header) {
+    headers.add(header);
+    return this;
+  }",100-103,2,0.8677693,0.9411989,0.91917
+com.squareup.okhttp.internal.DiskLruCache$Editor$FaultHidingOutputStream,flush,()V,3,5,60.0%,"public synchronized void flush() throws IOException {
+    checkNotClosed();
+    trimToSize();
+    journalWriter.flush();
+  }",613-617,1,0.8700489,0.9399878,0.9190061
+com.squareup.okhttp.Connection,newTransport,(Lcom/squareup/okhttp/internal/http/HttpEngine;)Ljava/lang/Object;,1,1,100.0%,"public Object newTransport(HttpEngine httpEngine) throws IOException {
+    return (spdyConnection != null)
+        ? new SpdyTransport(httpEngine, spdyConnection)
+        : new HttpTransport(httpEngine, httpConnection);
+  }",264-268,1,0.8698351,0.93941927,0.91854405
+com.squareup.okhttp.Address,equals,(Ljava/lang/Object;)Z,8,9,88.9%,"@Override public boolean equals(Object other) {
+    if (other instanceof Address) {
+      Address that = (Address) other;
+      return equal(this.proxy, that.proxy)
+          && this.uriHost.equals(that.uriHost)
+          && this.uriPort == that.uriPort
+          && equal(this.sslSocketFactory, that.sslSocketFactory)
+          && equal(this.hostnameVerifier, that.hostnameVerifier)
+          && equal(this.authenticator, that.authenticator)
+          && equal(this.protocols, that.protocols);
+    }
+    return false;
+  }",116-128,2,0.94378006,0.90737355,0.9182955
+com.squareup.okhttp.Response,cacheControl,()Lcom/squareup/okhttp/CacheControl;,2,2,100.0%,"public CacheControl cacheControl() {
+    CacheControl result = cacheControl;
+    return result != null ? result : (cacheControl = CacheControl.parse(headers));
+  }",285-288,1,0.8648307,0.9396498,0.917204
+com.squareup.okhttp.Request,cacheControl,()Lcom/squareup/okhttp/CacheControl;,2,2,100.0%,"public CacheControl cacheControl() {
+    CacheControl result = cacheControl;
+    return result != null ? result : (cacheControl = CacheControl.parse(headers));
+  }",121-124,1,0.8648307,0.9396498,0.917204
+com.squareup.okhttp.mockwebserver.MockWebServer,getPort,()I,2,2,100.0%,"public int getPort() {
+    if (port == -1) throw new IllegalStateException(""Cannot retrieve port before calling play()"");
+    return port;
+  }",114-117,1,0.8570523,0.94093394,0.91576946
+com.squareup.okhttp.internal.http.HttpEngine,cacheableResponse,()Lcom/squareup/okhttp/Response;,1,1,100.0%,"private Response cacheableResponse() {
+    // Use an unreadable response body when offering the response to the cache.
+    // The cache isn't allowed to consume the response body bytes!
+    return response.newBuilder().body(null).build();
+  }",207-211,1,0.8489551,0.9416061,0.9138108
+com.squareup.okhttp.Response$Body,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+      byteStream().close();
+    }",271-273,0,0.8677479,0.9332738,0.91361606
+com.squareup.okhttp.mockwebserver.MockResponse,setHeader,(Ljava/lang/String;Ljava/lang/Object;)Lcom/squareup/okhttp/mockwebserver/MockResponse;,2,2,100.0%,"public MockResponse setHeader(String name, Object value) {
+    removeHeader(name);
+    return addHeader(name, value);
+  }",117-120,2,0.8732789,0.93019676,0.9131214
+com.squareup.okhttp.internal.http.HttpEngine,getResponseBody,()Lokio/Source;,2,2,100.0%,"public final Source getResponseBody() {
+    if (response == null) throw new IllegalStateException();
+    return responseBody;
+  }",294-297,1,0.86043125,0.93399614,0.9119266
+com.squareup.okhttp.internal.http.HttpMethod,invalidatesCache,(Ljava/lang/String;)Z,4,4,100.0%,"public static boolean invalidatesCache(String method) {
+    return method.equals(""POST"")
+        || method.equals(""PATCH"")
+        || method.equals(""PUT"")
+        || method.equals(""DELETE"");
+  }",26-31,2,0.97425765,0.8848803,0.91169345
+com.squareup.okhttp.internal.DiskLruCache$Entry,getDirtyFile,(I)Ljava/io/File;,1,1,100.0%,"public File getDirtyFile(int i) {
+      return new File(directory, key + ""."" + i + "".tmp"");
+    }",919-921,4,0.8656076,0.93103397,0.91140604
+com.squareup.okhttp.internal.http.HttpEngine,getResponse,()Lcom/squareup/okhttp/Response;,2,2,100.0%,"public final Response getResponse() {
+    if (response == null) throw new IllegalStateException();
+    return response;
+  }",289-292,1,0.859995,0.93296796,0.91107607
+com.squareup.okhttp.mockwebserver.MockWebServer$TruncatingOutputStream,<init>,(Lcom/squareup/okhttp/mockwebserver/MockWebServer;)V,2,2,100.0%,"private SpdySocketHandler(Socket socket, Protocol protocol) {
+      this.socket = socket;
+      this.protocol = protocol;
+    }",620-623,2,0.90770304,0.9120251,0.91072845
+com.squareup.okhttp.mockwebserver.MockWebServer$1,<init>,()V,1,1,100.0%,"private SpdySocketHandler(Socket socket, Protocol protocol) {
+      this.socket = socket;
+      this.protocol = protocol;
+    }",620-623,2,0.90770304,0.9120251,0.91072845
+com.squareup.okhttp.mockwebserver.MockWebServer$2,<init>,(Lcom/squareup/okhttp/mockwebserver/MockWebServer;Ljava/lang/String;[Ljava/lang/Object;)V,1,1,100.0%,"private SpdySocketHandler(Socket socket, Protocol protocol) {
+      this.socket = socket;
+      this.protocol = protocol;
+    }",620-623,2,0.90770304,0.9120251,0.91072845
+com.squareup.okhttp.mockwebserver.MockWebServer$3,<init>,(Lcom/squareup/okhttp/mockwebserver/MockWebServer;Ljava/lang/String;[Ljava/lang/Object;Ljava/net/Socket;)V,2,2,100.0%,"private SpdySocketHandler(Socket socket, Protocol protocol) {
+      this.socket = socket;
+      this.protocol = protocol;
+    }",620-623,2,0.90770304,0.9120251,0.91072845
+com.squareup.okhttp.mockwebserver.MockWebServer,<init>,()V,10,10,100.0%,"private SpdySocketHandler(Socket socket, Protocol protocol) {
+      this.socket = socket;
+      this.protocol = protocol;
+    }",620-623,2,0.90770304,0.9120251,0.91072845
+com.squareup.okhttp.internal.DiskLruCache$Entry,getCleanFile,(I)Ljava/io/File;,1,1,100.0%,"public File getCleanFile(int i) {
+      return new File(directory, key + ""."" + i);
+    }",915-917,4,0.86524683,0.93008465,0.9106333
+com.squareup.okhttp.Response$Body,<init>,()V,1,1,100.0%,"private Response(Builder builder) {
+    this.request = builder.request;
+    this.statusLine = builder.statusLine;
+    this.handshake = builder.handshake;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.redirectedBy = builder.redirectedBy;
+  }",57-64,0,0.95005304,0.8923032,0.90962815
+com.squareup.okhttp.Response$Builder,<init>,(Lcom/squareup/okhttp/Response;)V,8,8,100.0%,"private Response(Builder builder) {
+    this.request = builder.request;
+    this.statusLine = builder.statusLine;
+    this.handshake = builder.handshake;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.redirectedBy = builder.redirectedBy;
+  }",57-64,0,0.95005304,0.8923032,0.90962815
+com.squareup.okhttp.Response$ParsedHeaders,<init>,(Lcom/squareup/okhttp/Headers;)V,9,13,69.2%,"private Response(Builder builder) {
+    this.request = builder.request;
+    this.statusLine = builder.statusLine;
+    this.handshake = builder.handshake;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.redirectedBy = builder.redirectedBy;
+  }",57-64,0,0.95005304,0.8923032,0.90962815
+com.squareup.okhttp.Response$Builder,<init>,()V,3,3,100.0%,"private Response(Builder builder) {
+    this.request = builder.request;
+    this.statusLine = builder.statusLine;
+    this.handshake = builder.handshake;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.redirectedBy = builder.redirectedBy;
+  }",57-64,0,0.95005304,0.8923032,0.90962815
+com.squareup.okhttp.Response,<init>,(Lcom/squareup/okhttp/Response$Builder;)V,8,8,100.0%,"private Response(Builder builder) {
+    this.request = builder.request;
+    this.statusLine = builder.statusLine;
+    this.handshake = builder.handshake;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.redirectedBy = builder.redirectedBy;
+  }",57-64,0,0.95005304,0.8923032,0.90962815
+com.squareup.okhttp.HttpResponseCache$CacheRequestImpl,getBody,()Ljava/io/OutputStream;,1,1,100.0%,"@Override public OutputStream getBody() throws IOException {
+      return body;
+    }",351-353,2,0.86537725,0.9269379,0.9084697
+com.squareup.okhttp.internal.http.HttpMethod,hasRequestBody,(Ljava/lang/String;)Z,3,3,100.0%,"public static boolean hasRequestBody(String method) {
+    return method.equals(""POST"")
+        || method.equals(""PUT"")
+        || method.equals(""PATCH"");
+  }",33-37,2,0.9617576,0.88365686,0.9070871
+com.squareup.okhttp.internal.http.HttpEngine,getResponseBodyBytes,()Ljava/io/InputStream;,3,3,100.0%,"public final InputStream getResponseBodyBytes() {
+    InputStream result = responseBodyBytes;
+    return result != null
+        ? result
+        : (responseBodyBytes = Okio.buffer(getResponseBody()).inputStream());
+  }",299-304,1,0.8732703,0.9189807,0.9052676
+com.squareup.okhttp.Request$Builder,build,()Lcom/squareup/okhttp/Request;,2,2,100.0%,"public Request build() {
+      if (url == null) throw new IllegalStateException(""url == null"");
+      return new Request(this);
+    }",334-337,1,0.8549504,0.9232213,0.90274
+com.squareup.okhttp.HttpResponseCache$CacheResponseBody,byteStream,()Ljava/io/InputStream;,1,1,100.0%,"@Override public InputStream byteStream() {
+      return bodyIn;
+    }",585-587,2,0.862547,0.9196336,0.90250766
+okio.Segment,pop,()Lokio/Segment;,6,6,100.0%,"public Segment pop() {
+    Segment result = next != this ? next : null;
+    prev.next = next;
+    next.prev = prev;
+    next = null;
+    prev = null;
+    return result;
+  }",52-59,1,0.8327742,0.89215916,0.8743437
+com.squareup.okhttp.Request$Builder,<init>,()V,4,4,100.0%,"private Request(Builder builder) {
+    this.url = builder.url;
+    this.method = builder.method;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.tag = builder.tag != null ? builder.tag : this;
+  }",47-53,0,0.8940181,0.8052482,0.83187914
+com.squareup.okhttp.Request,<init>,(Lcom/squareup/okhttp/Request$Builder;)V,7,7,100.0%,"private Request(Builder builder) {
+    this.url = builder.url;
+    this.method = builder.method;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.tag = builder.tag != null ? builder.tag : this;
+  }",47-53,0,0.8940181,0.8052482,0.83187914
+com.squareup.okhttp.Request$ParsedHeaders,<init>,(Lcom/squareup/okhttp/Headers;)V,3,9,33.3%,"private Request(Builder builder) {
+    this.url = builder.url;
+    this.method = builder.method;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.tag = builder.tag != null ? builder.tag : this;
+  }",47-53,0,0.8940181,0.8052482,0.83187914
+com.squareup.okhttp.Request$Builder,<init>,(Lcom/squareup/okhttp/Request;)V,7,7,100.0%,"private Request(Builder builder) {
+    this.url = builder.url;
+    this.method = builder.method;
+    this.headers = builder.headers.build();
+    this.body = builder.body;
+    this.tag = builder.tag != null ? builder.tag : this;
+  }",47-53,0,0.8940181,0.8052482,0.83187914
+okio.OkBuffer,write,(Lokio/OkBuffer;J)V,15,26,57.7%,"@Override public void write(int b) {
+        writeByte((byte) b);
+      }",63-65,2,0.82376033,0.82944083,0.8277367
+okio.OkBuffer,write,([BII)Lokio/OkBuffer;,10,10,100.0%,"@Override public void write(int b) {
+        writeByte((byte) b);
+      }",63-65,2,0.82376033,0.82944083,0.8277367
+okio.Deadline$1,reached,()Z,1,1,100.0%,"@Override public boolean reached() {
+      return false;
+    }",31-33,2,0.8208101,0.82974166,0.82706213
+okio.RealBufferedSink,close,()V,10,14,71.4%,"@Override public void close() throws IOException {
+        RealBufferedSink.this.close();
+      }",117-119,0,0.8083551,0.82892615,0.82275486
+okio.RealBufferedSource$1,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+        RealBufferedSource.this.close();
+      }",180-182,0,0.8057209,0.8227237,0.81762284
+okio.RealBufferedSource,close,()V,5,5,100.0%,"@Override public void close() throws IOException {
+        RealBufferedSource.this.close();
+      }",180-182,0,0.8057209,0.8227237,0.81762284
+com.squareup.okhttp.internal.http.HeaderParser,skipUntil,(Ljava/lang/String;ILjava/lang/String;)I,4,4,100.0%,"public static int skipUntil(String input, int pos, String characters) {
+    for (; pos < input.length(); pos++) {
+      if (characters.indexOf(input.charAt(pos)) != -1) {
+        break;
+      }
+    }
+    return pos;
+  }",25-32,2,0.87161034,0.76812035,0.7991674
+com.squareup.okhttp.internal.http.OkHeaders$1,compare,(Ljava/lang/String;Ljava/lang/String;)I,5,7,71.4%,"@Override public int compare(String a, String b) {
+      if (a == b) {
+        return 0;
+      } else if (a == null) {
+        return -1;
+      } else if (b == null) {
+        return 1;
+      } else {
+        return String.CASE_INSENSITIVE_ORDER.compare(a, b);
+      }
+    }",18-28,2,0.867532,0.7678769,0.7977735
+okio.OkBuffer,read,(Lokio/OkBuffer;J)J,4,4,100.0%,"@Override public int read() {
+        return readByte() & 0xff;
+      }",103-105,2,0.75813097,0.7429656,0.7475152
+okio.Okio$1,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+        out.close();
+      }",87-89,0,0.72703135,0.72393054,0.7248608
+okio.Okio$1,flush,()V,2,2,100.0%,"@Override public void flush() throws IOException {
+        out.flush();
+      }",83-85,1,0.70739985,0.6917107,0.69641745
+com.squareup.okhttp.mockwebserver.MockResponse,setBody,(Ljava/lang/String;)Lcom/squareup/okhttp/mockwebserver/MockResponse;,1,3,33.3%,"public MockResponse setBody(byte[] body) {
+    setHeader(""Content-Length"", body.length);
+    this.body = body;
+    this.bodyStream = null;
+    return this;
+  }",144-149,2,0.68912715,0.5971119,0.62471646
+com.squareup.okhttp.mockwebserver.MockResponse,setBody,([B)Lcom/squareup/okhttp/mockwebserver/MockResponse;,4,4,100.0%,"public MockResponse setBody(byte[] body) {
+    setHeader(""Content-Length"", body.length);
+    this.body = body;
+    this.bodyStream = null;
+    return this;
+  }",144-149,2,0.68912715,0.5971119,0.62471646
+com.squareup.okhttp.Headers$Builder,set,(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Headers$Builder;,3,3,100.0%,"public Builder set(String fieldName, String value) {
+      removeAll(fieldName);
+      add(fieldName, value);
+      return this;
+    }",190-194,0,0.4829662,0.3657913,0.40094376
+com.squareup.okhttp.Headers$Builder,addLenient,(Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/okhttp/Headers$Builder;,3,3,100.0%,"private Builder addLenient(String fieldName, String value) {
+      namesAndValues.add(fieldName);
+      namesAndValues.add(value.trim());
+      return this;
+    }",170-174,0,0.42659926,0.25164288,0.30412978

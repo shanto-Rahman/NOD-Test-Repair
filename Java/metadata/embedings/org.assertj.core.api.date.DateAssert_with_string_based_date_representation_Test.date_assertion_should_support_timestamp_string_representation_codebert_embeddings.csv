@@ -1,0 +1,169 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,Cluster,sim_to_test,sim_to_log,combined_sim
+org.assertj.core.api.AbstractDateAssert,parseDateWith,(Ljava/lang/String;Ljava/util/Collection;)Ljava/util/Date;,5,5,100.0%,"private Date parseDateWith(final String dateAsString, final Collection<DateFormat> dateFormats) {
+    for (DateFormat defaultDateFormat : dateFormats) {
+      try {
+        return defaultDateFormat.parse(dateAsString);
+      } catch (ParseException e) {
+        // ignore and try next date format
+      }
+    }
+    return null;
+  }",2534-2543,0,0.99034584,0.9926221,0.9919392
+org.assertj.core.util.introspection.FieldSupport,<init>,(Ljava/lang/String;IZ)V,3,3,100.0%,"FieldSupport(boolean allowUsingPrivateFields) {
+	this.allowUsingPrivateFields = allowUsingPrivateFields;
+  }",63-65,3,0.9906192,0.9856025,0.9871075
+org.assertj.core.api.AbstractDateAssert,parseDateWithDefaultDateFormats,(Ljava/lang/String;)Ljava/util/Date;,2,2,100.0%,"private Date parseDateWithDefaultDateFormats(final String dateAsString) {
+    synchronized (DEFAULT_DATE_FORMATS) {
+      return parseDateWith(dateAsString, DEFAULT_DATE_FORMATS);
+    }
+  }",2522-2526,0,0.9950406,0.9821958,0.9860493
+org.assertj.core.api.Assertions,assertThat,(Ljava/util/Date;)Lorg/assertj/core/api/AbstractDateAssert;,1,1,100.0%,"public static AbstractBigDecimalAssert<?> assertThat(BigDecimal actual) {
+    return new BigDecimalAssert(actual);
+  }",78-80,3,0.98267174,0.9678284,0.9722814
+org.assertj.core.api.AbstractDateAssert$1,initialValue,()Ljava/util/LinkedHashSet;,1,1,100.0%,"@Override
+    protected LinkedHashSet<DateFormat> initialValue() {
+      return new LinkedHashSet<>();
+    }",82-85,2,0.9844928,0.96648794,0.9718894
+org.assertj.core.api.Assertions,useDefaultDateFormatsOnly,()V,2,2,100.0%,"public static void useDefaultDateFormatsOnly() {
+    AbstractDateAssert.useDefaultDateFormatsOnly();
+  }",1312-1314,1,0.98491013,0.9662572,0.9718531
+org.assertj.core.internal.StandardComparisonStrategy,areEqual,(Ljava/lang/Object;Ljava/lang/Object;)Z,1,1,100.0%,"@Override
+  public boolean areEqual(Object actual, Object other) {
+    return Objects.areEqual(actual, other);
+  }",93-96,3,0.9822615,0.96126086,0.96756107
+org.assertj.core.internal.Objects,areEqual,(Ljava/lang/Object;Ljava/lang/Object;)Z,1,1,100.0%,"private boolean areEqual(Object actual, Object other) {
+    return comparisonStrategy.areEqual(actual, other);
+  }",340-342,3,0.9794888,0.95958465,0.9655559
+org.assertj.core.api.DateAssert,<init>,(Ljava/util/Date;)V,2,2,100.0%,"protected DateAssert(Date actual) {
+    super(actual, DateAssert.class);
+  }",42-44,3,0.973289,0.9516248,0.95812404
+org.assertj.core.api.AbstractDateAssert,isEqualTo,(Ljava/lang/String;)Lorg/assertj/core/api/AbstractDateAssert;,1,1,100.0%,"public S isEqualTo(String dateAsString) {
+    return isEqualTo(parse(dateAsString));
+  }",131-133,0,0.9708226,0.94898355,0.95553523
+org.assertj.core.internal.Conditions,<init>,()V,3,3,100.0%,"@VisibleForTesting
+  Conditions() {}",45-46,4,0.9685179,0.9495901,0.9552684
+org.assertj.core.api.AbstractDateAssert,useDefaultDateFormatsOnly,()V,2,2,100.0%,"public static void useDefaultDateFormatsOnly() {
+    userDateFormats.get().clear();
+  }",2466-2468,1,0.9711937,0.94662684,0.9539969
+org.assertj.core.internal.PropertySupport,<init>,()V,3,3,100.0%,"@VisibleForTesting
+  PropertySupport() {
+  }",53-55,4,0.9676397,0.9475114,0.95354986
+org.assertj.core.util.Dates,newIsoDateTimeFormat,()Ljava/text/DateFormat;,1,1,100.0%,"public static DateFormat newIsoDateTimeFormat() {
+    return new SimpleDateFormat(""yyyy-MM-dd'T'HH:mm:ss"");
+  }",60-62,2,0.96865034,0.9448992,0.9520245
+org.assertj.core.util.Dates,newIsoDateFormat,()Ljava/text/DateFormat;,1,1,100.0%,"public static DateFormat newIsoDateFormat() {
+    return new SimpleDateFormat(""yyyy-MM-dd"");
+  }",53-55,2,0.969198,0.9440962,0.9516268
+org.assertj.core.util.Dates,newTimestampDateFormat,()Ljava/text/DateFormat;,1,1,100.0%,"public static DateFormat newTimestampDateFormat() {
+    return new SimpleDateFormat(""yyyy-MM-dd HH:mm:ss.SSS"");
+  }",76-78,2,0.96800303,0.9440059,0.9512051
+org.assertj.core.internal.Dates,instance,()Lorg/assertj/core/internal/Dates;,1,1,100.0%,"public static Dates instance() {
+    return INSTANCE;
+  }",75-77,1,0.96613115,0.9413205,0.9487637
+org.assertj.core.internal.Failures,<init>,()V,4,4,100.0%,"@VisibleForTesting
+  Failures() {
+  }",71-73,4,0.96258545,0.9409253,0.94742334
+org.assertj.core.util.Dates,newIsoDateTimeWithMsFormat,()Ljava/text/DateFormat;,1,1,100.0%,"public static DateFormat newIsoDateTimeWithMsFormat() {
+    return new SimpleDateFormat(""yyyy-MM-dd'T'HH:mm:ss.SSS"");
+  }",68-70,2,0.96427315,0.93992054,0.94722635
+org.assertj.core.internal.Conditions,instance,()Lorg/assertj/core/internal/Conditions;,1,1,100.0%,"public static Conditions instance() {
+    return INSTANCE;
+  }",38-40,1,0.96255726,0.9378501,0.9452623
+org.assertj.core.api.AbstractAssert,<init>,(Ljava/lang/Object;Ljava/lang/Class;)V,9,9,100.0%,"@SuppressWarnings(""unchecked"")
+  protected AbstractAssert(A actual, Class<?> selfType) {
+    myself = (S) selfType.cast(this);
+    this.actual = actual;
+    info = new WritableAssertionInfo();
+  }",60-65,3,0.96313345,0.9370603,0.9448823
+org.assertj.core.internal.Dates,<init>,()V,2,2,100.0%,"@VisibleForTesting
+  Dates() {
+    this(StandardComparisonStrategy.instance());
+  }",82-85,1,0.9623794,0.93675005,0.9444388
+org.assertj.core.internal.Dates,<init>,(Lorg/assertj/core/internal/ComparisonStrategy;)V,5,5,100.0%,"@VisibleForTesting
+  Dates() {
+    this(StandardComparisonStrategy.instance());
+  }",82-85,1,0.9623794,0.93675005,0.9444388
+org.assertj.core.internal.Objects,instance,()Lorg/assertj/core/internal/Objects;,1,1,100.0%,"public static Objects instance() {
+    return INSTANCE;
+  }",76-78,1,0.9609351,0.9360523,0.94351715
+org.assertj.core.internal.PropertySupport,instance,()Lorg/assertj/core/internal/PropertySupport;,1,1,100.0%,"public static PropertySupport instance() {
+    return INSTANCE;
+  }",46-48,1,0.961182,0.93520236,0.94299626
+org.assertj.core.internal.Objects,<init>,()V,2,2,100.0%,"@VisibleForTesting
+  Objects() {
+    this(StandardComparisonStrategy.instance());
+  }",80-83,1,0.95950127,0.9345653,0.9420461
+org.assertj.core.internal.Objects,<init>,(Lorg/assertj/core/internal/ComparisonStrategy;)V,8,8,100.0%,"@VisibleForTesting
+  Objects() {
+    this(StandardComparisonStrategy.instance());
+  }",80-83,1,0.95950127,0.9345653,0.9420461
+org.assertj.core.internal.StandardComparisonStrategy,instance,()Lorg/assertj/core/internal/StandardComparisonStrategy;,1,1,100.0%,"public static StandardComparisonStrategy instance() {
+    return INSTANCE;
+  }",55-57,1,0.9596599,0.93419194,0.9418323
+org.assertj.core.api.AbstractDateAssert,<init>,(Ljava/util/Date;Ljava/lang/Class;)V,4,4,100.0%,"protected AbstractDateAssert(Date actual, Class<?> selfType) {
+    super(actual, selfType);
+  }",90-92,3,0.9610261,0.9329993,0.9414074
+org.assertj.core.api.AbstractDateAssert$1,<init>,()V,1,1,100.0%,"protected AbstractDateAssert(Date actual, Class<?> selfType) {
+    super(actual, selfType);
+  }",90-92,3,0.9610261,0.9329993,0.9414074
+org.assertj.core.internal.Failures,instance,()Lorg/assertj/core/internal/Failures;,1,1,100.0%,"public static Failures instance() {
+	return INSTANCE;
+  }",53-55,1,0.957837,0.93386835,0.941059
+org.assertj.core.util.introspection.FieldSupport,comparison,()Lorg/assertj/core/util/introspection/FieldSupport;,1,1,100.0%,"public static FieldSupport comparison() {
+	return COMPARISON;
+  }",54-56,1,0.9555648,0.9304235,0.93796587
+org.assertj.core.internal.Objects,assertEqual,(Lorg/assertj/core/api/AssertionInfo;Ljava/lang/Object;Ljava/lang/Object;)V,2,3,66.7%,"public void assertEqual(AssertionInfo info, Object actual, Object expected) {
+    if (areEqual(actual, expected)) {
+      return;
+    }
+    throw failures.failure(info, shouldBeEqual(actual, expected, comparisonStrategy, info.representation()));
+  }",311-316,3,0.958712,0.92819685,0.93735135
+org.assertj.core.internal.StandardComparisonStrategy,<init>,()V,2,2,100.0%,"protected StandardComparisonStrategy() {
+    // empty
+  }",63-65,3,0.9547027,0.92982817,0.9372905
+org.assertj.core.api.AbstractAssert,isEqualTo,(Ljava/lang/Object;)Lorg/assertj/core/api/AbstractAssert;,2,2,100.0%,"@Override
+  public S isEqualTo(Object expected) {
+    objects.assertEqual(info, actual, expected);
+    return myself;
+  }",196-200,3,0.9566638,0.9284739,0.9369309
+org.assertj.core.util.Lists,newArrayList,([Ljava/lang/Object;)Ljava/util/ArrayList;,4,5,80.0%,"@SafeVarargs
+  public static <T> ArrayList<T> newArrayList(T... elements) {
+    if (elements == null) {
+      return null;
+    }
+    ArrayList<T> list = newArrayList();
+    java.util.Collections.addAll(list, elements);
+    return list;
+  }",35-43,0,0.9588507,0.9257059,0.9356493
+org.assertj.core.util.Lists,newArrayList,()Ljava/util/ArrayList;,1,1,100.0%,"@SafeVarargs
+  public static <T> ArrayList<T> newArrayList(T... elements) {
+    if (elements == null) {
+      return null;
+    }
+    ArrayList<T> list = newArrayList();
+    java.util.Collections.addAll(list, elements);
+    return list;
+  }",35-43,0,0.9588507,0.9257059,0.9356493
+org.assertj.core.api.AbstractDateAssert,parse,(Ljava/lang/String;)Ljava/util/Date;,5,7,71.4%,"@VisibleForTesting
+  Date parse(String dateAsString) {
+    if (dateAsString == null) return null;
+    // parse with date format specified by user if any, otherwise use default formats
+    // no synchronization needed as userCustomDateFormat is thread local
+    Date date = parseDateWith(dateAsString, userDateFormats.get());
+    if (date != null) return date;
+    // no matching user date format, let's try default format
+    date = parseDateWithDefaultDateFormats(dateAsString);
+    if (date != null) return date;
+    // no matching date format, throw an error
+    throw new AssertionError(""Failed to parse "" + dateAsString + "" with any of these date formats: ""
+                             + info.representation().toStringOf(dateFormatsInOrderOfUsage()));
+  }",2507-2520,0,0.93933487,0.9003566,0.9120501
+org.assertj.core.util.Objects,areEqual,(Ljava/lang/Object;Ljava/lang/Object;)Z,3,5,60.0%,"public static boolean areEqual(Object o1, Object o2) {
+    if (o1 == null) {
+      return o2 == null;
+    }
+    if (o1.equals(o2)) {
+      return true;
+    }
+    return areEqualArrays(o1, o2);
+  }",37-45,3,-0.258013,-0.21987268,-0.23131478

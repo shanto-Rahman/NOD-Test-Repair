@@ -1,0 +1,433 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,Cluster,sim_to_test,sim_to_log,combined_sim
+ro.isdc.wro.model.group.processor.InjectorBuilder,createResourceBundleProcessorProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createResourceBundleProcessorProxy() {
+    return new InjectorObjectFactory<ResourceBundleProcessor>() {
+      public ResourceBundleProcessor create() {
+        if (bundleProcessor == null) {
+          bundleProcessor = new ResourceBundleProcessor();
+        }
+        return bundleProcessor;
+      }
+    };
+  }",101-110,1,0.9629834,0.989627,0.9816339
+ro.isdc.wro.model.resource.locator.wildcard.WildcardUriLocatorSupport,getWildcardStreamLocator,()Lro/isdc/wro/model/resource/locator/wildcard/WildcardStreamLocator;,3,3,100.0%,"public final WildcardStreamLocator getWildcardStreamLocator() {
+    if (wildcardStreamLocator == null) {
+      wildcardStreamLocator = newWildcardStreamLocator();
+    }
+    return this.wildcardStreamLocator;
+  }",40-45,3,0.9616042,0.98875916,0.98061264
+ro.isdc.wro.model.group.processor.Injector,processInjectAnnotation,(Ljava/lang/Object;)V,7,16,43.8%,"private void processInjectAnnotation(final Object object) {
+    try {
+      final Collection<Field> fields = getAllFields(object);
+      for (final Field field : fields) {
+        if (field.isAnnotationPresent(Inject.class)) {
+          if (!acceptAnnotatedField(object, field)) {
+            final String message = String.format(
+                ""@Inject cannot be applied on object: %s to field of type: %s using injector %s"", object,
+                field.getType(), this);
+            LOG.error(message + "". Supported types are: {}"", map.keySet());
+            throw new WroRuntimeException(message);
+          }
+        }
+      }
+      // handle special cases like decorators. Perform recursive injection
+      if (object instanceof ObjectDecorator) {
+        processInjectAnnotation(((ObjectDecorator<?>) object).getDecoratedObject());
+      }
+    } catch (final Exception e) {
+      LOG.error(""Error while scanning @Inject annotation"", e);
+      throw WroRuntimeException.wrap(e, ""Exception while trying to process @Inject annotation on object: "" + object);
+    }
+  }",69-91,1,0.97766966,0.9765664,0.97689736
+ro.isdc.wro.model.group.processor.InjectorBuilder,createPreProcessorExecutorProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,1,1,100.0%,"private InjectorObjectFactory<PreProcessorExecutor> createPreProcessorExecutorProxy() {
+    return new InjectorObjectFactory<PreProcessorExecutor>() {
+      public PreProcessorExecutor create() {
+        return preProcessorExecutor;
+      }
+    };
+  }",129-135,1,0.9802678,0.9743644,0.9761354
+ro.isdc.wro.model.resource.locator.wildcard.WildcardUriLocatorSupport,newWildcardStreamLocator,()Lro/isdc/wro/model/resource/locator/wildcard/WildcardStreamLocator;,1,1,100.0%,"public WildcardStreamLocator newWildcardStreamLocator() {
+    return new DefaultWildcardStreamLocator() {
+      @Override
+      public boolean hasWildcard(final String uri) {
+        return enableWildcards && super.hasWildcard(uri);
+      }
+    };
+  }",28-35,4,0.98252136,0.9729829,0.97584444
+ro.isdc.wro.util.ProxyFactory,create,()Ljava/lang/Object;,3,3,100.0%,"@SuppressWarnings(""unchecked"")
+  private T create() {
+    final InvocationHandler handler = new InvocationHandler() {
+      public Object invoke(final Object proxy, final Method method, final Object[] args)
+          throws Throwable {
+        try {
+          return method.invoke(objectFactory.create(), args);
+        } catch (final InvocationTargetException ex) {
+          // Preserve original exception
+          throw ex.getCause();
+        }
+      }
+    };
+    LOG.debug(""genericType: {}"", genericType);
+    return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), getInterfacesSet().toArray(
+        new Class[] {}), handler);
+  }",59-75,3,0.9812716,0.9733503,0.97572666
+ro.isdc.wro.util.ProxyFactory$1,<init>,(Lro/isdc/wro/util/ProxyFactory;)V,1,1,100.0%,"private ProxyFactory(final ObjectFactory<T> objectFactory, final Class<T> genericType) {
+    notNull(objectFactory);
+    notNull(genericType);
+    this.objectFactory = objectFactory;
+    this.genericType = genericType;
+  }",40-45,3,0.98043007,0.9721569,0.9746388
+ro.isdc.wro.util.ProxyFactory,<init>,(Lro/isdc/wro/util/ObjectFactory;Ljava/lang/Class;)V,6,6,100.0%,"private ProxyFactory(final ObjectFactory<T> objectFactory, final Class<T> genericType) {
+    notNull(objectFactory);
+    notNull(genericType);
+    this.objectFactory = objectFactory;
+    this.genericType = genericType;
+  }",40-45,3,0.98043007,0.9721569,0.9746388
+ro.isdc.wro.model.group.processor.Injector,getAllFields,(Ljava/lang/Object;)Ljava/util/Collection;,7,7,100.0%,"private Collection<Field> getAllFields(final Object object) {
+    final Collection<Field> fields = new ArrayList<Field>();
+    fields.addAll(Arrays.asList(object.getClass().getDeclaredFields()));
+    // inspect super classes
+    Class<?> superClass = object.getClass().getSuperclass();
+    while (superClass != null) {
+      fields.addAll(Arrays.asList(superClass.getDeclaredFields()));
+      superClass = superClass.getSuperclass();
+    }
+    return fields;
+  }",96-106,1,0.9828177,0.97032225,0.9740709
+ro.isdc.wro.config.Context,isContextSet,()Z,1,1,100.0%,"public static boolean isContextSet() {
+    return CORRELATION_ID.get() != null && CONTEXT_MAP.get(CORRELATION_ID.get()) != null;
+  }",113-115,4,0.98841345,0.9631197,0.97070783
+ro.isdc.wro.model.group.processor.InjectorBuilder,createGroupsProcessorProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,1,1,100.0%,"private InjectorObjectFactory<GroupsProcessor> createGroupsProcessorProxy() {
+    return new InjectorObjectFactory<GroupsProcessor>() {
+      public GroupsProcessor create() {
+        return groupsProcessor;
+      }
+    };
+  }",137-143,1,0.982585,0.96534765,0.9705188
+ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,getInputStream,(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/lang/String;)Ljava/io/InputStream;,9,22,40.9%,"public InputStream getInputStream(final HttpServletRequest request, final HttpServletResponse response,
+      final String location)
+      throws IOException {
+    if (request == null || response == null || location == null) {
+      throw new IOException(""Cannot get stream for location: "" + location
+          + "" because either request, response or location is not available"");
+    }
+
+    // where to write the bytes of the stream
+    final ByteArrayOutputStream os = new ByteArrayOutputStream();
+    boolean warnOnEmptyStream = false;
+
+    try {
+      final RequestDispatcher dispatcher = request.getRequestDispatcher(location);
+      if (dispatcher != null) {
+        // Wrap request
+        final ServletRequest servletRequest = getWrappedServletRequest(request, location);
+        // Wrap response
+        final ServletResponse servletResponse = new RedirectedStreamServletResponseWrapper(os, response);
+        LOG.debug(""dispatching request to location: {}"", location);
+        // use dispatcher
+        dispatcher.include(servletRequest, servletResponse);
+        warnOnEmptyStream = true;
+        // force flushing - the content will be written to
+        // BytArrayOutputStream. Otherwise exactly 32K of data will be
+        // written.
+        servletResponse.getWriter().flush();
+        os.close();
+      }
+    } catch (final Exception e) {
+      LOG.debug(""[FAIL] Error while dispatching the request for location {}"", location);
+      // Not only servletException can be thrown, also dispatch.include can throw NPE when the scheduler runs outside
+      // of the request cycle, thus connection is unavailable. This is caused mostly when invalid resources are
+      // included.
+      return locateExternal(request, location);
+    }
+    try {
+      // fallback to external resource locator if the dispatcher is empty
+      if (os.size() == 0) {
+        return locateExternal(request, location);
+      }
+    } finally {
+      if (warnOnEmptyStream && os.size() == 0) {
+        LOG.debug(""Wrong or empty resource with location: {}"", location);
+      }
+    }
+    return new ByteArrayInputStream(os.toByteArray());
+  }",54-101,4,0.98678774,0.9618763,0.96934974
+ro.isdc.wro.model.group.processor.InjectorBuilder,createCallbackRegistryProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,1,1,100.0%,"private InjectorObjectFactory<LifecycleCallbackRegistry> createCallbackRegistryProxy() {
+    return new InjectorObjectFactory<LifecycleCallbackRegistry>() {
+      public LifecycleCallbackRegistry create() {
+        return managerFactory.create().getCallbackRegistry();
+      }
+    };
+  }",145-151,1,0.9893946,0.9606285,0.9692583
+ro.isdc.wro.model.resource.locator.UrlUriLocator,locate,(Ljava/lang/String;)Ljava/io/InputStream;,9,12,75.0%,"public InputStream locate(final String uri)
+    throws IOException {
+    Validate.notNull(uri, ""uri cannot be NULL!"");
+    if (getWildcardStreamLocator().hasWildcard(uri)) {
+      final String fullPath = FilenameUtils.getFullPath(uri);
+      final URL url = new URL(fullPath);
+      return getWildcardStreamLocator().locateStream(uri, new File(URLDecoder.decode(url.getFile(), ""UTF-8"")));
+    }
+    final URL url = new URL(uri);
+    final URLConnection connection = url.openConnection();
+    // avoid jar file locking on Windows.
+    connection.setUseCaches(false);
+
+    final int timeout = getConnectionTimeout();
+    // setting these timeouts ensures the client does not deadlock indefinitely
+    // when the server has problems.
+    connection.setConnectTimeout(timeout);
+    connection.setReadTimeout(timeout);
+
+    return new BufferedInputStream(connection.getInputStream());
+  }",64-84,4,0.98860234,0.9571442,0.9665816
+ro.isdc.wro.model.group.processor.InjectorBuilder,createResourceAuthorizationManagerProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createResourceAuthorizationManagerProxy() {
+    return new InjectorObjectFactory<ResourceAuthorizationManager>() {
+      public ResourceAuthorizationManager create() {
+        return managerFactory.create().getResourceAuthorizationManager();
+      }
+    };
+  }",185-191,1,0.9885807,0.9565739,0.966176
+ro.isdc.wro.model.group.processor.InjectorBuilder,createHashStrategyProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createHashStrategyProxy() {
+    return new InjectorObjectFactory<HashStrategy>() {
+      public HashStrategy create() {
+        return managerFactory.create().getHashStrategy();
+      }
+    };
+  }",209-215,1,0.9893021,0.95587814,0.9659053
+ro.isdc.wro.model.resource.locator.wildcard.WildcardUriLocatorSupport$1,hasWildcard,(Ljava/lang/String;)Z,1,1,100.0%,"@Override
+      public boolean hasWildcard(final String uri) {
+        return enableWildcards && super.hasWildcard(uri);
+      }",30-33,4,0.99100614,0.9534764,0.9647354
+ro.isdc.wro.model.group.processor.InjectorBuilder,createInjectorProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,1,1,100.0%,"private InjectorObjectFactory<Injector> createInjectorProxy() {
+    return new InjectorObjectFactory<Injector>() {
+      public Injector create() {
+        return injector;
+      }
+    };
+  }",153-159,1,0.9833274,0.9558656,0.9641042
+ro.isdc.wro.model.group.processor.InjectorBuilder,createReadOnlyContextProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createReadOnlyContextProxy() {
+    return ProxyFactory.proxy(new ObjectFactory<ReadOnlyContext>() {
+      public ReadOnlyContext create() {
+        return Context.get();
+      }
+    }, ReadOnlyContext.class);
+  }",230-236,3,0.992178,0.9471569,0.9606632
+ro.isdc.wro.model.group.processor.InjectorBuilder,createNamingStrategyProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createNamingStrategyProxy() {
+    return new InjectorObjectFactory<NamingStrategy>() {
+      public NamingStrategy create() {
+        return managerFactory.create().getNamingStrategy();
+      }
+    };
+  }",201-207,1,0.99263215,0.9465392,0.9603671
+ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,createExternalResourceLocator,()Lro/isdc/wro/model/resource/locator/UriLocator;,2,2,100.0%,"UriLocator createExternalResourceLocator() {
+    final UriLocator locator = new UrlUriLocator() {
+      @Override
+      public boolean isEnableWildcards() {
+        return false;
+      };
+    };
+    return locator;
+  }",116-124,4,0.9916997,0.94598216,0.9596974
+ro.isdc.wro.util.ProxyFactory,getInterfacesSet,()Ljava/util/Set;,8,8,100.0%,"private Set<Class<?>> getInterfacesSet() {
+    final Set<Class<?>> set = new HashSet<Class<?>>();
+    if (genericType.isInterface()) {
+      set.add(genericType);
+    }
+    final Class[] classes = objectFactory.create().getClass().getInterfaces();
+    for (final Class<?> clazz : classes) {
+      set.add(clazz);
+    }
+    LOG.debug(""interfaces set: {}"", set);
+    return set;
+  }",80-91,2,0.94753593,0.9643761,0.959324
+ro.isdc.wro.model.group.processor.InjectorBuilder,createProcessorFactoryProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createProcessorFactoryProxy() {
+    return new InjectorObjectFactory<ProcessorsFactory>() {
+      public ProcessorsFactory create() {
+        return managerFactory.create().getProcessorsFactory();
+      }
+    };
+  }",169-175,1,0.9908889,0.9452451,0.95893824
+ro.isdc.wro.model.group.processor.InjectorBuilder,createLocatorFactoryProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createLocatorFactoryProxy() {
+    return new InjectorObjectFactory<UriLocatorFactory>() {
+      public UriLocatorFactory create() {
+        return managerFactory.create().getUriLocatorFactory();
+      }
+    };
+  }",177-183,1,0.98897666,0.9432644,0.9569781
+ro.isdc.wro.model.group.processor.InjectorBuilder,createGroupExtractorProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createGroupExtractorProxy() {
+    return new InjectorObjectFactory<GroupExtractor>() {
+      public GroupExtractor create() {
+        return managerFactory.create().getGroupExtractor();
+      }
+    };
+  }",161-167,1,0.99055624,0.940765,0.95570236
+ro.isdc.wro.model.group.processor.InjectorBuilder,initMap,()V,18,18,100.0%,"private void initMap() {
+    map.put(PreProcessorExecutor.class, createPreProcessorExecutorProxy());
+    map.put(GroupsProcessor.class, createGroupsProcessorProxy());
+    map.put(LifecycleCallbackRegistry.class, createCallbackRegistryProxy());
+    map.put(GroupExtractor.class, createGroupExtractorProxy());
+    map.put(Injector.class, createInjectorProxy());
+    map.put(UriLocatorFactory.class, createLocatorFactoryProxy());
+    map.put(ProcessorsFactory.class, createProcessorFactoryProxy());
+    map.put(WroModelFactory.class, createModelFactoryProxy());
+    map.put(NamingStrategy.class, createNamingStrategyProxy());
+    map.put(HashStrategy.class, createHashStrategyProxy());
+    map.put(ReadOnlyContext.class, createReadOnlyContextProxy());
+    map.put(WroConfiguration.class, createConfigProxy());
+    map.put(CacheStrategy.class, createCacheStrategyProxy());
+    map.put(ResourceAuthorizationManager.class, createResourceAuthorizationManagerProxy());
+    map.put(MetaDataFactory.class, createMetaDataFactoryProxy());
+    map.put(ResourceBundleProcessor.class, createResourceBundleProcessorProxy());
+    map.put(CacheKeyFactory.class, createCacheKeyFactoryProxy());
+  }",81-99,3,0.8729256,0.9878511,0.95337343
+ro.isdc.wro.model.group.processor.InjectorBuilder,createConfigProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,1,1,100.0%,"private InjectorObjectFactory<WroConfiguration> createConfigProxy() {
+    return new InjectorObjectFactory<WroConfiguration>() {
+      public WroConfiguration create() {
+        LOG.warn(""Do not @Inject WroConfiguration. Prefer using @Inject ReadOnlyContext context; (and context.getConfig())."");
+        return Context.get().getConfig();
+      }
+    };
+  }",120-127,2,0.99269843,0.9340669,0.95165634
+ro.isdc.wro.model.group.processor.InjectorBuilder$16,create,()Lro/isdc/wro/config/ReadOnlyContext;,1,1,100.0%,"public static InjectorBuilder create(final WroManagerFactory managerFactory) {
+    return new InjectorBuilder(managerFactory);
+  }",68-70,1,0.9899742,0.93347895,0.95042753
+ro.isdc.wro.model.group.processor.InjectorBuilder,create,(Lro/isdc/wro/manager/factory/WroManagerFactory;)Lro/isdc/wro/model/group/processor/InjectorBuilder;,1,1,100.0%,"public static InjectorBuilder create(final WroManagerFactory managerFactory) {
+    return new InjectorBuilder(managerFactory);
+  }",68-70,1,0.9899742,0.93347895,0.95042753
+ro.isdc.wro.util.ProxyFactory,proxy,(Lro/isdc/wro/util/ObjectFactory;Ljava/lang/Class;)Ljava/lang/Object;,1,4,25.0%,"public static <T> T proxy(final ObjectFactory<T> objectFactory, final Class<T> genericType) {
+    try {
+      return new ProxyFactory<T>(objectFactory, genericType).create();
+    } catch (final RuntimeException e) {
+      LOG.error(""exception"", e);
+      throw e;
+    }
+  }",47-54,3,0.98764825,0.93233716,0.9489305
+ro.isdc.wro.model.group.processor.InjectorBuilder,createCacheKeyFactoryProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createCacheKeyFactoryProxy() {
+    return new InjectorObjectFactory<CacheKeyFactory>() {
+      public CacheKeyFactory create() {
+        return managerFactory.create().getCacheKeyFactory();
+      }
+    };
+  }",238-244,1,0.98719734,0.93167585,0.9483323
+ro.isdc.wro.model.group.processor.InjectorBuilder,createCacheStrategyProxy,()Ljava/lang/Object;,1,1,100.0%,"@SuppressWarnings(""rawtypes"")
+  private Object createCacheStrategyProxy() {
+    return new InjectorObjectFactory<CacheStrategy>() {
+      public CacheStrategy create() {
+        return managerFactory.create().getCacheStrategy();
+      }
+    };
+  }",217-224,1,0.99609685,0.92757195,0.9481294
+ro.isdc.wro.model.group.processor.InjectorBuilder,createMetaDataFactoryProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createMetaDataFactoryProxy() {
+    return new InjectorObjectFactory<MetaDataFactory>() {
+      public MetaDataFactory create() {
+        return managerFactory.create().getMetaDataFactory();
+      }
+    };
+  }",112-118,1,0.99443245,0.92756945,0.9476284
+ro.isdc.wro.model.group.processor.InjectorBuilder,createModelFactoryProxy,()Ljava/lang/Object;,1,1,100.0%,"private Object createModelFactoryProxy() {
+    return new InjectorObjectFactory<WroModelFactory>() {
+      public WroModelFactory create() {
+        return managerFactory.create().getModelFactory();
+      }
+    };
+  }",193-199,1,0.99097,0.92350996,0.943748
+ro.isdc.wro.config.Context,get,()Lro/isdc/wro/config/Context;,3,3,100.0%,"public static Context get() {
+    validateContext();
+    final String correlationId = CORRELATION_ID.get();
+    return CONTEXT_MAP.get(correlationId);
+  }",104-108,2,0.9960293,0.9204331,0.94311196
+ro.isdc.wro.config.Context,setConfig,(Lro/isdc/wro/config/jmx/WroConfiguration;)V,2,2,100.0%,"public void setConfig(final WroConfiguration config) {
+    this.config = config;
+  }",79-81,2,0.9922517,0.91899514,0.9409721
+ro.isdc.wro.config.Context,generateCorrelationId,()Ljava/lang/String;,1,1,100.0%,"private static String generateCorrelationId() {
+    return UUID.randomUUID().toString();
+  }",153-155,4,0.99514794,0.9147942,0.93890035
+ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,locateExternal,(Ljavax/servlet/http/HttpServletRequest;Ljava/lang/String;)Ljava/io/InputStream;,3,3,100.0%,"private InputStream locateExternal(final HttpServletRequest request, final String location)
+      throws IOException {
+    // Returns the part URL from the protocol name up to the query string and contextPath.
+    final String servletContextPath = request.getRequestURL().toString().replace(request.getServletPath(), """");
+    final String absolutePath = servletContextPath + location;
+    return createExternalResourceLocator().locate(absolutePath);
+  }",103-109,4,0.9948366,0.9132503,0.9377262
+ro.isdc.wro.config.Context,set,(Lro/isdc/wro/config/Context;Lro/isdc/wro/config/jmx/WroConfiguration;)V,7,7,100.0%,"public static void set(final Context context) {
+    set(context, new WroConfiguration());
+  }",130-132,2,0.9909196,0.9144703,0.9374051
+ro.isdc.wro.config.Context,set,(Lro/isdc/wro/config/Context;)V,2,2,100.0%,"public static void set(final Context context) {
+    set(context, new WroConfiguration());
+  }",130-132,2,0.9909196,0.9144703,0.9374051
+ro.isdc.wro.config.Context,standaloneContext,()Lro/isdc/wro/config/Context;,1,1,100.0%,"public static Context standaloneContext() {
+    return new Context();
+  }",96-98,2,0.98754317,0.915334,0.9369967
+ro.isdc.wro.model.resource.locator.wildcard.DefaultWildcardStreamLocator,hasWildcard,(Ljava/lang/String;)Z,1,1,100.0%,"public boolean hasWildcard(final String uri) {
+    return uri.matches(WILDCARD_REGEX);
+  }",69-71,4,0.9945492,0.9085662,0.9343611
+ro.isdc.wro.model.resource.locator.UrlUriLocator,getConnectionTimeout,()I,1,1,100.0%,"private int getConnectionTimeout() {
+    return Context.isContextSet() ? Context.get().getConfig().getConnectionTimeout()
+        : WroConfiguration.DEFAULT_CONNECTION_TIMEOUT;
+  }",89-92,2,0.9951539,0.9064141,0.933036
+ro.isdc.wro.util.WroTestUtils,createInjector,()Lro/isdc/wro/model/group/processor/Injector;,1,1,100.0%,"public static Injector createInjector() {
+    return InjectorBuilder.create(new BaseWroManagerFactory()).build();
+  }",419-421,1,0.99268717,0.9069659,0.9326823
+ro.isdc.wro.model.group.processor.Injector,inject,(Ljava/lang/Object;)Ljava/lang/Object;,5,5,100.0%,"public <T> T inject(final T object) {
+    Validate.notNull(object);
+    if (!injectedObjects.containsKey(object)) {
+      processInjectAnnotation(object);
+      injectedObjects.put(System.identityHashCode(object), true);
+    }
+    return object;
+  }",53-60,1,0.9928067,0.8967425,0.9255618
+ro.isdc.wro.model.group.processor.InjectorBuilder,build,()Lro/isdc/wro/model/group/processor/Injector;,2,2,100.0%,"public Injector build() {
+    // first initialize the map
+    initMap();
+    return injector = new Injector(Collections.unmodifiableMap(map));
+  }",246-250,1,0.9884423,0.89645416,0.92405057
+ro.isdc.wro.model.group.processor.InjectorBuilder$11,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$16,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$17,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$12,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$13,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$14,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$15,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder,<init>,(Lro/isdc/wro/manager/factory/WroManagerFactory;)V,7,7,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$2,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$1,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$4,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$3,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$6,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$5,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$8,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$7,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$9,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.model.group.processor.InjectorBuilder$10,<init>,(Lro/isdc/wro/model/group/processor/InjectorBuilder;)V,1,1,100.0%,"public InjectorBuilder() {
+  }",62-63,0,0.98672795,0.8962808,0.92341495
+ro.isdc.wro.config.Context,getConfig,()Lro/isdc/wro/config/jmx/WroConfiguration;,1,1,100.0%,"public WroConfiguration getConfig() {
+    return config;
+  }",69-71,2,0.9885456,0.8925743,0.9213657
+ro.isdc.wro.config.Context,validateContext,()V,2,3,66.7%,"private static void validateContext() {
+    if (!isContextSet()) {
+      throw new WroRuntimeException(""No context associated with CURRENT request cycle!"");
+    }
+  }",121-125,2,0.9890481,0.89207435,0.92116654
+ro.isdc.wro.model.group.processor.Injector,<init>,(Ljava/util/Map;)V,5,5,100.0%,"Injector(final Map<Class<?>, Object> map) {
+    notNull(map);
+    this.map = map;
+  }",41-44,3,0.98850334,0.88550395,0.9164038
+ro.isdc.wro.config.jmx.WroConfiguration,getConnectionTimeout,()I,1,1,100.0%,"public int getConnectionTimeout() {
+        return this.connectionTimeout;
+    }",401-403,3,0.9797277,0.86944616,0.9025306
