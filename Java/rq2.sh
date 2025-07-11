@@ -71,17 +71,17 @@ while IFS= read -r line
     subProj=$(echo "$slug" | cut -d/ -f 2)
 
 	JMVNOPTIONS=""
-    if [[ "$slug" == "doanduyhai/Achilles" ]]; then
-        sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml
-        sed -i '/<plugin>/,/<\/plugin>/ {
-         /<groupId>org.apache.felix<\/groupId>/ {
-           N
-           /<artifactId>maven-bundle-plugin<\/artifactId>/ {
-             a\
-             <version>${felix.version}</version>
-           }
-         }
-       }' pom.xml
+    #if [[ "$slug" == "doanduyhai/Achilles" ]]; then
+    #    sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml
+    #    sed -i '/<plugin>/,/<\/plugin>/ {
+    #     /<groupId>org.apache.felix<\/groupId>/ {
+    #       N
+    #       /<artifactId>maven-bundle-plugin<\/artifactId>/ {
+    #         a\
+    #         <version>${felix.version}</version>
+    #       }
+    #     }
+    #   }' pom.xml
 
     elif [[ $slug == "apache/dubbo" ]]; then
         JMVNOPTIONS="-pl dubbo-dependencies-bom"
@@ -122,7 +122,7 @@ while IFS= read -r line
     cd $currentDir
     python3 run_injection.py "$file_path" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
     cd -
-   
+    mvn clean install -pl $module -am -DskipTests
     start=$(date +%s.%N)
     for i in {1..100}; do
         echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash"
