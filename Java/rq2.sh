@@ -83,7 +83,7 @@ while IFS= read -r line
     #     }
     #   }' pom.xml
 
-    elif [[ $slug == "apache/dubbo" ]]; then
+    if [[ $slug == "apache/dubbo" ]]; then
         JMVNOPTIONS="-pl dubbo-dependencies-bom"
 
     elif [[ $slug == "apache/httpcore" ]]; then
