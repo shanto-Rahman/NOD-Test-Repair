@@ -2,7 +2,7 @@
 #bash re-run_baseline.sh ../data/talank_with_test_id_idoft.csv results
 if [[ $1 == "" || $2 == "" ]]; then
     echo "arg1 - full path to the test file (eg. tmp.csv)"
-    echo "arg2 - relative path to the output file (eg. Result/output.csv)"
+    echo "arg2 - relative path to the output file (eg. results)"
     exit
 fi
 
@@ -44,7 +44,7 @@ while IFS= read -r line
     module=$(echo $line | cut -d',' -f3)
     testName=$(echo $line | cut -d',' -f4)
     file_meth_line_to_inject_delay=$(echo $line | cut -d',' -f5)
-    if [[ file_meth_line_to_inject_delay == "" ]]; then
+    if [[ $file_meth_line_to_inject_delay == "" ]]; then
         echo "No solutions found before"
         continue
     fi
