@@ -14,13 +14,13 @@
 92,orbit/orbit,7bcd0940f02974481cc652543ef57ec14a649ffd,actors/test/actor-tests,com.ea.orbit.actors.test.DeactivationTest#cleanupTest,1;,2.61,,
 93,qos-ch/logback,0f57531977287fd3d8c9046e9f68e281715f3b10,logback-core,ch.qos.logback.core.AsyncAppenderBaseTest#workerShouldStopEvenIfInterruptExceptionConsumedWithinSubappender,0;,2.64,,
 94,qos-ch/logback,0f57531977287fd3d8c9046e9f68e281715f3b10,logback-core,ch.qos.logback.core.rolling.TimeBasedRollingWithArchiveRemoval_Test#dailyRolloverWithInactivity10,0;,2.6,,
-125,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#readSendsWindowUpdate,0;,2.84,,
-126,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#pushPromiseStream,0;,2.69,,
+125,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#readSendsWindowUpdate,0;,2.84,, Already run and reproduce
+126,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#pushPromiseStream,0;,2.69,, Already run and reproduce
 127,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#serverClosesClientInputStream,0;,2.56,,
 128,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#replyWithNoData,0;,2.64,,
 129,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#headersOnlyStreamIsClosedAfterReplyHeaders,0;,2.62,,
 130,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#readSendsWindowUpdateHttp2,0;,2.82,,
-131,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,0;,2.54,,
+131,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,0;,2.54,,Found_in_idoft
 132,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithFixedLengthRequestForLargeRequest,0;,3.11,,
 133,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithChunkedRequestForSmallRequest,0;,3.05,,
 134,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#serverShutdownOutput,0;,3.17,,
@@ -46,5 +46,5 @@
 154,tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario7,1;,7.91,,
 155,tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario8,0;,2.95,,
 156,tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario9,0;,2.95,,
-157,tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue677Test#testIssue,0;,2.93,,
-158,wro4j/wro4j,7e3801e19fb43183c59607663ebd53c27a95cf77,wro4j-core,ro.isdc.wro.model.resource.locator.support.TestDispatcherStreamLocator#canLocateValidResource,0;,2.27,,
+157,tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue677Test#testIssue,0;,2.93,,already_in_idoft_set
+158,wro4j/wro4j,7e3801e19fb43183c59607663ebd53c27a95cf77,wro4j-core,ro.isdc.wro.model.resource.locator.support.TestDispatcherStreamLocator#canLocateValidResource,0;,2.27,,Ran but not able to reproduce
