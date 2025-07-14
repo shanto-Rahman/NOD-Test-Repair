@@ -1,0 +1,160 @@
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin#testDeleteTable,BUILD FAIL,0;,0.81,Found
+activiti/activiti,b11f757a,activiti-spring,org.activiti.spring.test.jobexecutor.SpringAsyncExecutorTest#testHappyJobExecutorPath,,0.81,,Found
+activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.jobexecutor.AsyncExecutorTest#testAsyncExecutorDisabledOnOneEngine,,0.81,,Found
+activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.api.repository.ProcessDefinitionSuspensionTest#testDelayedSuspendMultipleProcessDefinitionsByKey,,0.81,,Found
+activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.bpmn.event.timer.compatibility.BoundaryTimerEventRepeatCompatibilityTest#testRepeatWithoutEnd,,0.81,,Found
+activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.bpmn.event.timer.IntermediateTimerEventTest#testTimerEventWithStartAndDuration,,0.81,,Found
+activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.api.event.ActivityEventsTest#testActivityTimeOutEvent,,0.81,,Found
+Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c,.,tachyon.WorkerServiceHandlerTest#evictionTest,,0.81,,Found
+Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c,.,tachyon.client.TachyonFileTest#isInMemoryTest2,,0.81,,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin#testCreateTable,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestStatusResource#testGetClusterStatusXML,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestStatusResource#testGetClusterStatusPB,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster#testDFSMiniCluster,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster#testZooKeeperMiniCluster,BUILD FAIL,0;,0.81,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster#testHBaseMiniCluster,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster#testStargateServlet,BUILD FAIL,0;,0.82,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testGetTableDescriptor,BUILD FAIL,0;,0.81,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testGet,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testPut,BUILD FAIL,0;,0.81,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testDelete,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testScanner,BUILD FAIL,0;,0.81,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource#testTableListText,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource#testTableListJSON,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource#testTableListXML,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource#testTableListPB,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testNoFilter,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testPrefixFilter,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testPageFilter,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testInclusiveStopFilter,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testQualifierFilter,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testRowFilter,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testValueFilter,BUILD FAIL,0;,0.81,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testSkipFilter,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testFilterList,BUILD FAIL,0;,0.84,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testFirstKeyOnlyFilter,BUILD FAIL,0;,0.81,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.util.TestHTableTokenBucket#testTokenBucketConfig,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.util.TestHTableTokenBucket#testTokenBucket,BUILD FAIL,0;,0.84,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetPlainUser,BUILD FAIL,0;,0.81,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetAdminUser,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetUserUnknown,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetDisabledUser,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionText,BUILD FAIL,0;,0.88,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionXML,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionJSON,BUILD FAIL,0;,0.84,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionPB,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStorageClusterVersionText,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStorageClusterVersionXML,BUILD FAIL,0;,0.82,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStorageClusterVersionJSON,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testDelete,BUILD FAIL,0;,0.81,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetPutXML,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetPutPB,BUILD FAIL,0;,0.84,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetPutBinary,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetJSON,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testURLEncodedKey,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testMultiCellGetPutXML,BUILD FAIL,0;,0.82,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource#testMultiCellGetPutPB,BUILD FAIL,0;,0.81,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetPlainUser,BUILD FAIL,0;,0.82,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetAdminUser,BUILD FAIL,0;,0.84,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetUserUnknown,BUILD FAIL,0;,0.83,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetDisabledUser,BUILD FAIL,0;,0.82,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestSchemaResource#testTableCreateAndDeleteXML,BUILD FAIL,0;,1.28,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestSchemaResource#testTableCreateAndDeletePB,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource#testSimpleScannerXML,BUILD FAIL,0;,0.89,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource#testSimpleScannerPB,BUILD FAIL,0;,0.84,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource#testSimpleScannerBinary,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource#testFullTableScan,BUILD FAIL,0;,0.83,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.regionserver.TestHRegion#testWritesWhileGetting,BUILD FAIL,0;,0.85,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.io.hfile.TestLruBlockCache#testBackgroundEvictionThread,BUILD FAIL,0;,0.85,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.client.TestTimestamp#testTimestamps,BUILD FAIL,0;,0.85,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanEmptyToEmpty,BUILD FAIL,0;,0.86,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanEmptyToAPP,BUILD FAIL,0;,0.85,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanEmptyToBBA,BUILD FAIL,0;,0.86,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanEmptyToBBB,BUILD FAIL,0;,0.87,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanEmptyToOPP,BUILD FAIL,0;,0.85,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanOBBToOPP,BUILD FAIL,0;,0.84,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanOBBToQPP,BUILD FAIL,0;,0.91,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanOPPToEmpty,BUILD FAIL,0;,0.84,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanYYXToEmpty,BUILD FAIL,0;,0.86,
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.mapreduce.TestTableInputFormatScan#testScanYYYToEmpty,BUILD FAIL,0;,0.85,Found
+apache/hbase,e593f0efbf1144bcb5909d2630321e631a2e66bb,core,org.apache.hadoop.hbase.TestMultiParallelPut#testMultiPut,BUILD FAIL,0;,0.87,
+apache/httpcore,49247d208bde47f652812493e1d3576e136b8eb8,httpcore,org.apache.http.pool.TestConnPool#testStatefulConnectionRedistributionOnPerRouteMaxLimit,,0.87,,
+apache/httpcore,49247d208bde47f652812493e1d3576e136b8eb8,httpcore,org.apache.http.pool.TestConnPool#testLeaseTimeout,,0.87,,
+apache/incubator-dubbo,737f7a7e,dubbo-cluster,org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest#testSelect_multiInvokers,,0.87,,
+doanduyhai/Achilles,f52f7ec93b3da758119dbbbc1be8dad8e8783764,integration-test,info.archinnov.achilles.test.integration.tests.ClusteredEntityIT#should_persist_with_ttl,,0.87,,
+doanduyhai/Achilles,f52f7ec93b3da758119dbbbc1be8dad8e8783764,integration-test,info.archinnov.achilles.test.integration.tests.ClusteredEntityIT#should_update_with_ttl,,0.87,,
+jknack/handlebars.java,db77ef2b6fd2bac7498b4124b95c47f753cf3a2f,handlebars-humanize,com.github.jknack.handlebars.HumanizeHelperTest#naturalTime,,0.87,,Found
+ninjaframework/ninja,b1b58e874188e0aa2e80cfa020a284213a587f09,ninja-servlet-integration-test,controllers.ApplicationControllerTest#testThatHomepageWorks,,0.87,,
+orbit/orbit,7bcd0940f02974481cc652543ef57ec14a649ffd,actors/test/actor-tests,com.ea.orbit.actors.test.StatelessActorTest#statelessTest,,0.87,,Found
+orbit/orbit,7bcd0940f02974481cc652543ef57ec14a649ffd,actors/test/actor-tests,com.ea.orbit.actors.test.ReminderTest#persistedTimerTest,,0.87,,Found
+orbit/orbit,7bcd0940f02974481cc652543ef57ec14a649ffd,actors/test/actor-tests,com.ea.orbit.actors.test.TimerTest#timerTest,,0.87,,Found
+orbit/orbit,7bcd0940f02974481cc652543ef57ec14a649ffd,actors/test/actor-tests,com.ea.orbit.actors.test.ObserverTest#observerGarbageCollection,,0.87,,
+orbit/orbit,7bcd0940f02974481cc652543ef57ec14a649ffd,actors/test/actor-tests,com.ea.orbit.actors.test.DeactivationTest#cleanupTest,,0.87,,Found
+qos-ch/logback,0f57531977287fd3d8c9046e9f68e281715f3b10,logback-core,ch.qos.logback.core.AsyncAppenderBaseTest#workerShouldStopEvenIfInterruptExceptionConsumedWithinSubappender,,0.87,,Found
+qos-ch/logback,0f57531977287fd3d8c9046e9f68e281715f3b10,logback-core,ch.qos.logback.core.rolling.TimeBasedRollingWithArchiveRemoval_Test#dailyRolloverWithInactivity10,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.JarCommandIT#jarCreation,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.JarCommandIT#jarCreationWithGrabResolver,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.NoJarTests#nojar,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.MainClassTests#buildFromRunTask,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.FlatdirTests#flatdir,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.WarPackagingTests#onlyJettyIsPackackedInWebInfLibProvided,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.WarPackagingTests#onlyTomcatIsPackackedInWebInfLibProvided,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.ClassifierTests#classifierInBootExtension,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.ClassifierTests#classifierInBootTask,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.MultiProjectRepackagingTests#repackageWithCommonFileDependency,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.MultiProjectRepackagingTests#repackageWithTransitiveFileDependency,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.CustomVersionManagementTests#exclusionsAreStillInPlace,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.InstallTests#cleanInstallApp,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.InstallTests#cleanInstallVersionManagement,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.InstallTests#cleanInstall,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.RepackagingTests#repackagingEnabled,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.RepackagingTests#repackagingEnabledWithCustomRepackagedJar,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.RepackagingTests#repackagingDisabledWithCustomRepackagedJarUsingStringJarTaskReference,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.RepackagingTests#repackagingEnableWithCustomRepackagedJarUsingStringJarTaskReference,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.RepackagingTests#repackageWithFileDependency,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.RepackagingTests#repackagingDisabled,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.RepackagingTests#repackagingDisabledWithCustomRepackagedJar,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.SpringLoadedTests#defaultJvmArgsArePreservedWhenLoadedAgentIsConfigured,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-integration-tests,org.springframework.boot.gradle.SpringLoadedTests#springLoadedCanBeUsedWithGradle16,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.ClassLoaderIntegrationTests#runWithIsolatedClassLoader,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.command.CommandRunnerIntegrationTests#debugAddsAutoconfigReport,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.GrabCommandIntegrationTests#customMetadata,,0.87,,Found
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.SampleIntegrationTests#uiSample,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.SampleIntegrationTests#jmsSample,,0.87,,
+spring-projects/spring-boot,cf24af0bfbfdd778bfb076947ea6f012a88f372d,spring-boot-cli,org.springframework.boot.cli.SampleIntegrationTests#caching,,0.87,,
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#readSendsWindowUpdate,,0.87,,
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#pushPromiseStream,,0.87,,
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#serverClosesClientInputStream,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#replyWithNoData,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#headersOnlyStreamIsClosedAfterReplyHeaders,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#readSendsWindowUpdateHttp2,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithFixedLengthRequestForLargeRequest,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithChunkedRequestForSmallRequest,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#serverShutdownOutput,,0.87,,Found
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithFixedLengthRequestForSmallRequest,,0.87,,
+square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithChunkedRequestForLargeRequest,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario0,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario1,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario2,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario3,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario4,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario5,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario6,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario7,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario8,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectScenario9,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario0,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario1,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario2,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario3,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario4,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario5,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario6,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario7,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario8,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario9,,0.87,,Found
+tootallnate/java-websocket,fa3909c3,.,org.java_websocket.issues.Issue677Test#testIssue,,0.87,,Found
+wro4j/wro4j,7e3801e19fb43183c59607663ebd53c27a95cf77,wro4j-core,ro.isdc.wro.model.resource.locator.support.TestDispatcherStreamLocator#canLocateValidResource,,0.87,,
+zxing/zxing,59ea393a08e568d0c662707bccf56895acfb02cf,core/test,com.google.zxing.aztec.encoder.EncoderTest#testAztecWriter,,0.87,,
+zxing/zxing,59ea393a08e568d0c662707bccf56895acfb02cf,core/test,com.google.zxing.pdf417.decoder.ec.ErrorCorrectionTestCase#testTooManyErrors,,0.87,,
