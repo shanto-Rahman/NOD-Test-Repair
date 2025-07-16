@@ -74,6 +74,17 @@ def extract_failure_traces(log_path):
 
 
 
+def sanitize_stacktrace(failure_stacktrace_isolated):
+    failure_stacktrace_isolated = [line.replace('\n', ' ') for line in failure_stacktrace_isolated]
+    failure_stacktrace_isolated = [line.replace('\t', '') for line in failure_stacktrace_isolated]
+    failure_stacktrace_isolated = [line.replace('at ', '') for line in failure_stacktrace_isolated]
+    # if edu.gmu.swe.flaky.sleepy.runner.SleepyTestRunner.main in line, then remove that line
+    failure_stacktrace_isolated = [line for line in failure_stacktrace_isolated if 'edu.gmu.swe.flaky.sleepy.runner.SleepyTestRunner.main' not in line]
+    failure_stacktrace_isolated = ' '.join(failure_stacktrace_isolated)
+    failure_stacktrace_isolated = re.sub(r'\s+', ' ', failure_stacktrace_isolated)
+    return failure_stacktrace_isolated
+
+
 
 def match_bleu(failure1, failure2):
     """
@@ -123,6 +134,20 @@ file2 = sys.argv[2]
 
 stacktrace1, exception_line1, failure_message1 = extract_failure_traces(file1)
 stacktrace2, exception_line2, failure_message2 = extract_failure_traces(file2)
+
+# Sanitize stacktraces
+if stacktrace1 is not None:
+    stacktrace1 = sanitize_stacktrace(stacktrace1)
+if stacktrace2 is not None:
+    stacktrace2 = sanitize_stacktrace(stacktrace2)
+if exception_line1 is not None:
+    exception_line1 = sanitize_stacktrace(exception_line1)
+if exception_line2 is not None:
+    exception_line2 = sanitize_stacktrace(exception_line2)
+if failure_message1 is not None:
+    failure_message1 = sanitize_stacktrace(failure_message1)
+if failure_message2 is not None:
+    failure_message2 = sanitize_stacktrace(failure_message2)
 
 similarity_stacktrace = semantic_similarity_score(stacktrace1, stacktrace2)
 similarity_exception = semantic_similarity_score(exception_line1, exception_line2)
