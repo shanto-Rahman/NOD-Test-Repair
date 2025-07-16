@@ -115,10 +115,10 @@ def find_class_file(class_name, slug, module):
     #if module != ".":
     #    module_path = (base_dir / module).resolve()
     #    candidates = [c for c in candidates if module_path not in c.resolve().parents]
-    for c in candidates:
-        if c.exists():
-            print(f"[INFO] Found class file: {c}")
-            return str(c)
+    #for c in candidates:
+    #    if c.exists():
+    #        print(f"[INFO] Found class file: {c}")
+    #        return str(c)
     #print("Filtered candidates:", candidates)  # <-- Add this line
 
     # Step 4: Return the first alternative match (if any)
@@ -126,10 +126,10 @@ def find_class_file(class_name, slug, module):
     #    print(f"[INFO] Class {class_name} not found in {module}, using {candidates[0]}")
     #    return str(candidates[0])
 
-    print(f"[WARN] Class {class_name} not found in any module.")
-    exit()
+    #print(f"[WARN] Class {class_name} not found in any module.")
+    #exit()
     
-    return None
+    return candidates
 
 # Filter out methods with empty or trivial bodies
 def is_non_empty_body(body):
@@ -216,18 +216,18 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 #print(f"Class: {class_name}, Method: {method_name}, Descriptor: {descriptor}, Line: {line_number}, Code: {code_line}")
                 class_simple_name = class_name.split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
                 class_name = class_simple_name.split('$')[0]
-                #print(f"Class name after split: {class_name}", ",line=", line_number)
+                print(f"===Class name after split: {class_name}", ",line=", line_number)
                 #print("class_name, slug, module=", class_name, slug, module)
 
                 with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
                     print("Tried lines")
                     writer = csv.writer(f)
                     writer.writerow([slug, module, test, class_name, line_number,code_line])
-                class_path = find_class_file(class_name, slug, module)
+                class_path_list = find_class_file(class_name, slug, module)
                 #print("**** class_path=", class_path)
 
-                if class_path:
-                    inject_sleep_before_line(class_path, line_number, method_name, descriptor, code_line)
+                if class_path_list:
+                    inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
                     try:
                         print("./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx))
                         result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
