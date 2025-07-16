@@ -6,7 +6,7 @@ import hashlib
 import pandas as pd
 
 def extract_failure_traces(log_path):
-    exception_start = re.compile(r'^[a-zA-Z0-9_.]+(?:Exception|Error|Failure):')
+    exception_start = re.compile(r'^[a-zA-Z0-9_.]+(?:Exception|Error|Failure)\b')
     stack_line = re.compile(r'^\s+at\s')
     caused_by = re.compile(r'^\s*Caused by:')
     failed_test_line = re.compile(r'^\s*Failed tests:\s*$')
