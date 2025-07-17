@@ -1,0 +1,8 @@
+INFO:root:Beginning Script
+INFO:root:On host 'amd079.orc.gmu.edu'
+INFO:root:Using options Namespace(testMethodsFile='/scratch/tbaral/ase26/nod-rr/NOD-Test-Repair/run_flakerake/projects_complete/45/x.csv', reproduceFailureFile='', runs='5', debug='', logging='info', no_sleep=False, minimalizing_method='bisection', sleep_time_ms=10000)
+INFO:root:FlakeRakeStartTime=1752784447.73767
+INFO:root:(git rev-parse HEAD)=fa3909c391195178ccf5a92d4ac342a30ae247c8
+
+INFO:root:Using Sleepylines minimalizing method bisection
+INFO:root:Installing project with mvn opts='-DskipTests -q -B -fn -s $FLAKY_HOME/shell_scripts/maven-repo-fix-settings.xml -DskipITs'
