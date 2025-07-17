@@ -1,4 +1,4 @@
-#proj_name,sha,module,test_name,changed_code_to_get_fail,file,method,line_range,cot_count
+#proj_name,sha,module,test_name,changed_code_to_get_fail,file,method,line_range,cot_count,total_time
 TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario0,org.java_websocket.drafts.Draft_6455:createBinaryFrame:(Lorg/java_websocket/framing/Framedata;)Ljava/nio/ByteBuffer;:345 (getExtension().encodeFrame( framedata );),0_3,42.06057095527649
 Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c,.,tachyon.client.TachyonFSTest.deleteFileTest,,10,1654.9670765399933
 TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,org.java_websocket.drafts.Draft_6455:createBinaryFrame:(Lorg/java_websocket/framing/Framedata;)Ljava/nio/ByteBuffer;:345 (getExtension().encodeFrame( framedata );),0_3,41.89863657951355
