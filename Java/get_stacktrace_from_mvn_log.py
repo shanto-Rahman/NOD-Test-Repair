@@ -4,33 +4,36 @@ import base64
 from os import path
 import hashlib
 import pandas as pd
+from sentence_transformers import SentenceTransformer, util, SimilarityFunction
+
 
 def extract_failure_traces(log_path):
     exception_start = re.compile(r'^[a-zA-Z0-9_.]+(?:Exception|Error|Failure)\b')
     stack_line = re.compile(r'^\s+at\s')
     caused_by = re.compile(r'^\s*Caused by:')
     failed_test_line = re.compile(r'^\s*Failed tests:\s*$')
-    failed_test_entry = re.compile(r'^\s{2,}.*\):')  # Indented failure line
-    compact_failed_test_entry = re.compile(r'^\s*Failed tests:\s+(.*\):.*)')  # One-line form
+    failed_test_entry = re.compile(r'^\s{2,}.*\):')
+    compact_failed_test_entry = re.compile(r'^\s*Failed tests:\s+(.*\):.*)')
 
-    failures = []
-    in_trace = False
+    stacktrace = None
+    exception_line = None
+    failure_message = None
     trace_buf = []
-    found_stacktrace = False
-    summary_failures = []
+    in_trace = False
     in_failed_summary = False
+    summary_failures = []
 
     with open(log_path, encoding='utf-8') as f:
         for line in f:
             line = line.rstrip()
 
-            # Handle one-line summary format
+            # Handle one-line summary
             m = compact_failed_test_entry.match(line)
             if m:
                 summary_failures.append(m.group(1).strip())
                 continue
 
-            # Handle start of indented summary section
+            # Handle indented summary
             if failed_test_line.match(line):
                 in_failed_summary = True
                 continue
@@ -38,95 +41,35 @@ def extract_failure_traces(log_path):
                 if failed_test_entry.match(line):
                     summary_failures.append(line.strip())
                 elif line.strip() == "":
-                    in_failed_summary = False  # end of section
+                    in_failed_summary = False
 
-            # Stacktrace block detection
+            # Stacktrace detection
             if exception_start.match(line):
-                if trace_buf:
-                    failures.append('\n'.join(trace_buf))
-                    trace_buf = []
+                if not exception_line:
+                    exception_line = line
                 in_trace = True
-                found_stacktrace = True
-                trace_buf.append(line)
+                trace_buf = [line]
             elif in_trace and (stack_line.match(line) or caused_by.match(line)):
                 trace_buf.append(line)
             elif in_trace and line.strip() == "":
-                if trace_buf:
-                    failures.append('\n'.join(trace_buf))
-                    trace_buf = []
+                if trace_buf and not stacktrace:
+                    stacktrace = '\n'.join(trace_buf)
+                trace_buf = []
                 in_trace = False
             elif in_trace:
-                # non-stack line ends the block
-                if trace_buf:
-                    failures.append('\n'.join(trace_buf))
-                    trace_buf = []
+                if trace_buf and not stacktrace:
+                    stacktrace = '\n'.join(trace_buf)
+                trace_buf = []
                 in_trace = False
 
-    if trace_buf:
-        failures.append('\n'.join(trace_buf))
+    if trace_buf and not stacktrace:
+        stacktrace = '\n'.join(trace_buf)
 
-    # Only add summary-style failures if no stack traces found
-    if not found_stacktrace:
-        failures.extend(summary_failures)
+    if summary_failures:
+        failure_message = '\n'.join(summary_failures)
 
-    return failures
+    return exception_line,stacktrace, failure_message
 
-
-def get_failure_str(failure_file):
-    # Note: this refers to the failure.log file which is used by each run.
-    # This function returns the most recent failure.
-
-    if not path.exists(failure_file):
-        return "NoFail"
-    with open(failure_file, "r") as failure_file:
-        failure_str = failure_file.read()
-        # logging.debug("Failure from " + test_method)
-        logging.debug(failure_str)
-
-        if failure_str == SLEEPY_TIMEOUT_FAIL_STR or failure_str == FAILURE_THAT_COULD_NOT_BE_LOGGED:
-            # Since the generator will remove the sleepy timeout string (does not match a package prefix)
-            # We need to return it now.
-            return failure_str
-
-        failure_str_parts = failure_str.partition('\n')
-
-        failure_exception_line = failure_str_parts[0]
-        failure_exception_line = replace_number_by_x(failure_exception_line)
-        
-        failure_rest = failure_str_parts[2]
-
-        failure_rest = remove_bottom_trace_parts(failure_rest)
-
-        failure_rest_base64 = flake_rake_base64_encode(failure_rest)
-        failure_str = f'{failure_exception_line}FlakeRakeB64StackTrace={failure_rest_base64}'
-
-        # Handle if we dont find anything.
-        if failure_str.strip() == "":
-            failure_str = "NoFail"
-    return failure_str
-
-
-def flake_rake_base64_encode(arg):
-    return base64.b64encode(arg.encode('ascii')).decode('ascii')
-
-
-def flake_rake_base64_decode(arg):
-    return base64.b64decode(arg.encode('ascii')).decode('ascii')
-
-
-
-def remove_bottom_trace_parts(partial_log):
-    """
-    Remove the trace parts from the bottom of the stack trace. We need to remove the parts
-    after the line that contains "at org.junit.runners.ParentRunner.run(ParentRunner.java"
-    """
-    for line in partial_log.splitlines():
-        if "at org.junit.runners.ParentRunner.run(ParentRunner.java" in line:
-            # return partial_log.splitlines()[:i+1], but we need to convert it to string, \n
-            # return '\n'.join(partial_log.splitlines()[:i+1])
-            return '\n'.join(partial_log.splitlines()[:partial_log.splitlines().index(line) + 1])
-
-    return partial_log
 
 
 def replace_number_by_x(line):
@@ -171,7 +114,7 @@ def compare_stack_traces(a_parts, b_parts):
 
     #     return len(cs), cs
 
-    def lcs(s1, s2):
+    def lcs(s1, s2): # This function gets LCS in terms of String
         # print("Computing LCS for stack traces")
         # print("s1:", s1)
         # print("s2:", s2)
@@ -199,7 +142,7 @@ def compare_stack_traces(a_parts, b_parts):
 
 
 # You need to have compare_stack_traces.compare_stack_traces available!
-def stacktrace_similarity_score(stacktrace1: str, stacktrace2: str) -> float:
+def stacktrace_similarity_score_lcs(stacktrace1: str, stacktrace2: str) -> float:
     """
     Compute similarity score between two stacktrace strings.
     Returns a float between 0 and 1.
@@ -215,15 +158,39 @@ def stacktrace_similarity_score(stacktrace1: str, stacktrace2: str) -> float:
     # Similarity as in original code: (top + bottom) / (2 * total compared)
     total_compared = len(parts2)
     lcs_length = len(lcs[1])  # lcs[1] contains the longest common subsequence. The problem is that lcs counts characters not strings. And len(parts1) and len(parts2) count strings.
-    # print("lcs match:", lcs[1])
-    # print(min(len(parts1), len(parts2)))
-    # print("lcs length:", lcs_length)
     score = lcs_length / min(len(parts1), len(parts2))
-    # score = (len(top_matches) + len(bottom_matches)) / (2 * total_compared) if total_compared > 0 else 0.0
     return score
 
 
+
+def semantic_similarity_score(failure1, failure2):
+    # if any of the inputs are None, return None
+    if failure1 is None or failure2 is None:
+        return None
+
+    model = SentenceTransformer('sentence-transformers/stsb-roberta-large')
+    model.similarity_fn_name = SimilarityFunction.COSINE
+
+    # Use raw strings
+    failure1 = failure1.lower()
+    failure2 = failure2.lower()
+
+    embedding1 = model.encode(failure1, convert_to_tensor=True)
+    embedding2 = model.encode(failure2, convert_to_tensor=True)
+
+    similarity = util.cos_sim(embedding1, embedding2).item()  # Convert tensor to float
+
+    return similarity
+
+
 def sanitize_stacktrace(failure_stacktrace_isolated):
+    if failure_stacktrace_isolated is None:
+        return None
+
+    if isinstance(failure_stacktrace_isolated, str):
+        failure_stacktrace_isolated = failure_stacktrace_isolated.split('\n')
+
+
     failure_stacktrace_isolated = [line.replace('\n', ' ') for line in failure_stacktrace_isolated]
     failure_stacktrace_isolated = [line.replace('\t', '') for line in failure_stacktrace_isolated]
     failure_stacktrace_isolated = [line.replace('at ', '') for line in failure_stacktrace_isolated]
@@ -232,6 +199,7 @@ def sanitize_stacktrace(failure_stacktrace_isolated):
     failure_stacktrace_isolated = ' '.join(failure_stacktrace_isolated)
     failure_stacktrace_isolated = re.sub(r'\s+', ' ', failure_stacktrace_isolated)
     return failure_stacktrace_isolated
+
 
 
 def get_md5_from_stacktrace(stacktrace):
@@ -246,18 +214,19 @@ def get_md5_from_stacktrace(stacktrace):
 
 
 
-def get_unique_failures_idoft_remaining(output_file):
-    idoft = "data/idoft_remaining.csv"
-    # basepath_failed_logs = "../baseline_10k_reruns_failing_runs_only"
-    basepath_failed_logs = "/scratch/tbaral/ase26/nod-rr/run_10k/NOD-Test-Repair/Java/rerun-logs_remaining"
 
-    idoft_dataset = pd.read_csv(idoft) #ID,Project-Name,SHA,Module,Test-Name,"#Total-fail(Out of 10,000 runs)",#Uniq-Failure,flaky,Time,Time to get the first failure,# Test failed by 100 runs,Failure Run Id
+def get_unique_failures(data_source, dataset_path, basepath_failed_logs, output_file):
+    global failure_index
+    dataset = pd.read_csv(dataset_path) #ID,Project-Name,SHA,Module,Test-Name,"#Total-fail(Out of 10,000 runs)",#Uniq-Failure,flaky,Time,Time to get the first failure,# Test failed by 100 runs,Failure Run Id
 
     # filter the dataset to include those where "flaky" column is 1
-    idoft_dataset = idoft_dataset[idoft_dataset['flaky'] == 1]
+    dataset = dataset[dataset['flaky'] == 1]
 
-    for index, row in idoft_dataset.iterrows():
+    for index, row in dataset.iterrows():
+        test_id = row['ID']
+        test_name = row['Test-Name']
         project_name = row['Project-Name']
+        slug = row['Project-Name']
         sha = row['SHA']
         module = row['Module']
         total_fail = row['#Total-fail(Out of 10,000 runs)']
@@ -274,176 +243,132 @@ def get_unique_failures_idoft_remaining(output_file):
         test_name = row['Test-Name']
         failure_run_ids = row['Failure Run Id'].split(';')
 
+        failure_run_ids = [run_id for run_id in failure_run_ids if run_id.strip()]
 
         for failure_run_id in failure_run_ids:
             failure_log_file = path.join(basepath_failed_logs, f"{test_id}-{test_name}-{failure_run_id}.txt")
             if path.exists(failure_log_file):
                 found = False
-                failure_str = extract_failure_traces(failure_log_file)
-                failure_str = sanitize_stacktrace(failure_str)
+                exception_line, failure_stacktrace, failure_message = extract_failure_traces(failure_log_file)
+                
+                
+
+                exception_line = sanitize_stacktrace(exception_line)
+                failure_stacktrace = sanitize_stacktrace(failure_stacktrace)
+                failure_message = sanitize_stacktrace(failure_message)
+
+            
 
                 # if failure_str is empty, we skip it
-                if not failure_str:
+                if not exception_line and not failure_stacktrace and not failure_message:
                     # retry with the next run id, may be we mistakenly put one run id instead of the other
                     failure_run_id_tmp = str(int(failure_run_id) + 1)
                     failure_log_file = path.join(basepath_failed_logs, f"{test_id}-{test_name}-{failure_run_id_tmp}.txt")
-                    if path.exists(failure_log_file):
-                        failure_str = extract_failure_traces(failure_log_file)
-                        failure_str = sanitize_stacktrace(failure_str)
-                    if not failure_str:
-                        # look for failure run_id -1
-                        failure_run_id_tmp = str(int(failure_run_id_tmp) - 1)
-                        failure_log_file = path.join(basepath_failed_logs, f"{test_id}-{test_name}-{failure_run_id_tmp}.txt")
-                        if path.exists(failure_log_file):
-                            failure_str = extract_failure_traces(failure_log_file)
-                            failure_str = sanitize_stacktrace(failure_str)
-                        if not failure_str:
-                            test_ids_with_issues.add(test_id)
-                            # print(f"Skipping {test_name} ({test_id}) because failure_str is empty and no next run found.")
-                            continue
-
-                # if unique_failure_list is empty, add the first failure. It should be a list of tuples, (failure_str, [failure_run_id])
-                if not unique_failure_list:
-                    unique_failure_list.append((failure_str, [failure_run_id]))
-                    # print(f"First failure for {test_name} ({test_id}): {failure_str}")
-                else:
-                    # Check if the failure_str is already in the list
-                    for i, (existing_failure_str, run_ids) in enumerate(unique_failure_list):
-                        # check similarity score
-                        score = stacktrace_similarity_score(existing_failure_str, failure_str)
-                        if score > 0.9:  # You can adjust the threshold as needed
-                            found = True
-                            run_ids.append(failure_run_id)
-                            unique_failure_list[i] = (existing_failure_str, run_ids)
-                            break
-                    if not found:
-                        unique_failure_list.append((failure_str, [failure_run_id]))
-
-            else:
-                print(f"Failure log file {failure_log_file} does not exist.")
-
-        # now we save a new row for each unique failure
-        # if unique_failure_list is empty, we skip it
-        if not unique_failure_list:
-            print(f"Skipping {test_name} ({test_id}) because no unique failures found.")
-            continue
-
-        for unique_failure_str, run_ids in unique_failure_list:
-            run_ids_str = ';'.join(run_ids)
-            first_run_id = run_ids[0]
-            stacktrace_md5 = get_md5_from_stacktrace(unique_failure_str)
-            count_run_ids = len(run_ids)
-            slug = project_name
-            with open(output_file, "a") as f:
-                f.write(f'{test_id},{slug},{sha},{module},{test_name},{first_run_id},{stacktrace_md5},"{unique_failure_str}",{run_ids_str},{count_run_ids}\n')
-
-
-
-def get_unique_failures_idoft(output_file):
-    idoft = "data/idoft_69.csv"
-    # basepath_failed_logs = "../baseline_10k_reruns_failing_runs_only"
-    basepath_failed_logs = "/scratch/tbaral/ase26/nod-rr/run_10k/NOD-Test-Repair/Java/rerun-logs_first69"
-
-    idoft_dataset = pd.read_csv(idoft) #ID,Project-Name,SHA,Module,Test-Name,"#Total-fail(Out of 10,000 runs)",#Uniq-Failure,flaky,Time,Time to get the first failure,# Test failed by 100 runs,Failure Run Id
-
-    # filter the dataset to include those where "flaky" column is 1
-    idoft_dataset = idoft_dataset[idoft_dataset['flaky'] == 1]
-
-    for index, row in idoft_dataset.iterrows():
-        project_name = row['Project-Name']
-        sha = row['SHA']
-        module = row['Module']
-        total_fail = row['#Total-fail(Out of 10,000 runs)']
-        unique_fail = row['#Uniq-Failure']
-        flaky = row['flaky']
-        time = row['Time']
-        time_to_first_failure = row['Time to get the first failure']
-        num_test_failed_by_100_runs = row['# Test failed by 100 runs']
-        failure_run_ids = row['Failure Run Id']
-
-
-        unique_failure_list = []
-        test_id = row['ID']
-        test_name = row['Test-Name']
-        failure_run_ids = row['Failure Run Id'].split(';')
-
-
-        for failure_run_id in failure_run_ids:
-            failure_log_file = path.join(basepath_failed_logs, f"{test_id}-{test_name}-{failure_run_id}.txt")
-            if path.exists(failure_log_file):
-                found = False
-                failure_str = extract_failure_traces(failure_log_file)
-                failure_str = sanitize_stacktrace(failure_str)
-
-                # if failure_str is empty, we skip it
-                if not failure_str:
-                    # retry with the next run id, may be we mistakenly put one run id instead of the other
-                    failure_run_id_tmp = str(int(failure_run_id) + 1)
-                    failure_log_file = path.join(basepath_failed_logs, f"{test_id}-{test_name}-{failure_run_id_tmp}.txt")
-
-                    if path.exists(failure_log_file):
-                        failure_str = extract_failure_traces(failure_log_file)
-                        failure_str = sanitize_stacktrace(failure_str)
                     
-                    if not failure_str:
-                        # print(f"Skipping {test_name} ({test_id}) because failure_str is empty and no next run found.")
+                    if path.exists(failure_log_file):
+                        exception_line, failure_stacktrace, failure_message = extract_failure_traces(failure_log_file)
+                        
+                        exception_line = sanitize_stacktrace(exception_line)
+                        failure_stacktrace = sanitize_stacktrace(failure_stacktrace)
+                        failure_message = sanitize_stacktrace(failure_message)
+                        
+                    if not exception_line and not failure_stacktrace and not failure_message:
                         # look for failure run_id -1
                         failure_run_id_tmp = str(int(failure_run_id) - 1)
                         failure_log_file = path.join(basepath_failed_logs, f"{test_id}-{test_name}-{failure_run_id_tmp}.txt")
+                        
                         if path.exists(failure_log_file):
-                            failure_str = extract_failure_traces(failure_log_file)
-                            failure_str = sanitize_stacktrace(failure_str)
-                        if not failure_str:
+                            exception_line, failure_stacktrace, failure_message = extract_failure_traces(failure_log_file)
+                            
+                            exception_line = sanitize_stacktrace(exception_line)
+                            failure_stacktrace = sanitize_stacktrace(failure_stacktrace)
+                            failure_message = sanitize_stacktrace(failure_message)
+
+                        if not exception_line and not failure_stacktrace and not failure_message:
                             test_ids_with_issues.add(test_id)
                             continue
+                # test
+                if not exception_line and not failure_stacktrace and not failure_message:
+                    print(f"Skipping {test_name} ({test_id}) because failure log file {failure_log_file} does not contain valid failure information.")
+                    test_ids_with_issues.add(test_id)
+                    continue
 
                 # if unique_failure_list is empty, add the first failure. It should be a list of tuples, (failure_str, [failure_run_id])
                 if not unique_failure_list:
-                    unique_failure_list.append((failure_str, [failure_run_id]))
-                    # print(f"First failure for {test_name} ({test_id}): {failure_str}")
+                    unique_failure_list.append((exception_line, failure_stacktrace, failure_message, [failure_run_id]))
+
                 else:
                     # Check if the failure_str is already in the list
-                    for i, (existing_failure_str, run_ids) in enumerate(unique_failure_list):
+                    for i, (existing_exception_line, existing_failure_stacktrace, existing_failure_message, run_ids) in enumerate(unique_failure_list):
                         # check similarity score
-                        score = stacktrace_similarity_score(existing_failure_str, failure_str)
-                        if score > 0.9:  # You can adjust the threshold as needed
-                            found = True
-                            run_ids.append(failure_run_id)
-                            unique_failure_list[i] = (existing_failure_str, run_ids)
-                            break
-                    if not found:
-                        unique_failure_list.append((failure_str, [failure_run_id]))
+                        score_exception_line = semantic_similarity_score(existing_exception_line, exception_line)
+                        score_failure_stacktrace = semantic_similarity_score(existing_failure_stacktrace, failure_stacktrace)
+                        score_failure_message = semantic_similarity_score(existing_failure_message, failure_message)
+
+
+                        if score_exception_line is not None:
+                            score_exception_line = round(score_exception_line, 4)
+                        if score_failure_stacktrace is not None:
+                            score_failure_stacktrace = round(score_failure_stacktrace, 4)
+                        if score_failure_message is not None:
+                            score_failure_message = round(score_failure_message, 4)
+
+
+                        print(score_failure_stacktrace)
+                        if score_failure_stacktrace is not None:
+                            if score_failure_stacktrace > 0.9:  # You can adjust the threshold as needed
+                                found = True
+                                run_ids.append(failure_run_id)
+                                unique_failure_list[i] = (existing_exception_line, existing_failure_stacktrace, existing_failure_message, run_ids)
+                                break
+                        else:
+                            if score_failure_message is not None:
+                                if score_failure_message > 0.9:  # You can adjust the threshold as needed
+                                    found = True
+                                    run_ids.append(failure_run_id)
+                                    unique_failure_list[i] = (existing_exception_line, existing_failure_stacktrace, existing_failure_message, run_ids)
+                      
+                        if not found:
+                            unique_failure_list.append((exception_line, failure_stacktrace, failure_message, [failure_run_id]))
 
             else:
                 print(f"Failure log file {failure_log_file} does not exist.")
 
-        # now we save a new row for each unique failure
-        # if unique_failure_list is empty, we skip it
         if not unique_failure_list:
             print(f"Skipping {test_name} ({test_id}) because no unique failures found.")
             continue
 
-        for unique_failure_str, run_ids in unique_failure_list:
-            run_ids_str = ';'.join(run_ids)
-            first_run_id = run_ids[0]
-            stacktrace_md5 = get_md5_from_stacktrace(unique_failure_str)
-            count_run_ids = len(run_ids)
-            slug = project_name
-            with open(output_file, "a") as f:
-                f.write(f'{test_id},{slug},{sha},{module},{test_name},{first_run_id},{stacktrace_md5},"{unique_failure_str}",{run_ids_str},{count_run_ids}\n')
 
+        for exception_line, failure_stacktrace, failure_message, run_ids in unique_failure_list:
+            run_ids_str = ';'.join(run_ids)
+            frequency_of_failure = len(run_ids)
+            first_run_id = run_ids[0]
+            stacktrace_md5 = get_md5_from_stacktrace(failure_stacktrace)
+            failure_exceptioin_line = exception_line
+            failure_stacktrace = failure_stacktrace
+            failure_message = failure_message
+            with open(output_file, "a") as f:
+                f.write(f'{failure_index},{test_id},{data_source},{slug},{sha},{module},{test_name},{first_run_id},{stacktrace_md5},"{failure_exceptioin_line}","{failure_stacktrace}","{failure_message}",{frequency_of_failure},{run_ids_str}\n')
+                failure_index += 1
 
 
 # create a set of test ids that have issues
 test_ids_with_issues = set()
-
+global failure_index
+failure_index = 1
 
 if __name__ == "__main__":
-    output_file = "data/idoft_unique_failures_all.csv"
+    output_file = "data/idoft_unique_failures_all_dataset.csv"
     with open(output_file, "w") as f:
-        f.write("ID,slug,sha,module,test_name,run_id,stacktrace_md5,stacktrace,all_run_ids,count_run_ids\n")
-    get_unique_failures_idoft(output_file)
-    get_unique_failures_idoft_remaining(output_file)
+        # f.write("ID,slug,sha,module,test_name,run_id,stacktrace_md5,stacktrace,all_run_ids,count_run_ids\n")
+        f.write("failure_ID,test_ID,data_source,slug,sha,module,test_name,first_run_id,stacktrace_md5,failure_exception_line,failure_stacktrace,failure_message,frequency_of_failure,run_ids\n")
+    # get_unique_failures_idoft(output_file)
+    # get_unique_failures_idoft_remaining(output_file)
+    # get_unique_failures_flakerake(output_file)
+
+    get_unique_failures("idoft", "data/idoft_69.csv", "/scratch/tbaral/ase26/nod-rr/run_10k/NOD-Test-Repair/Java/rerun-logs_first69", output_file)
+    get_unique_failures("idoft", "data/idoft_remaining.csv", "/scratch/tbaral/ase26/nod-rr/run_10k/NOD-Test-Repair/Java/rerun-logs_remaining", output_file)
+    get_unique_failures("flakerake", "data/flakerake_129.csv", "/scratch/tbaral/ase26/nod-rr/baseline_10k_reruns_flakerake_dataset", output_file)
 
     # print test ids with issues
     if test_ids_with_issues:
@@ -451,40 +376,4 @@ if __name__ == "__main__":
         for test_id in test_ids_with_issues:
             print(test_id)
 
-exit(0)
 
-
-file="/scratch/tbaral/ase26/nod-rr/run_10k/NOD-Test-Repair/Java/rerun-logs_first69/13-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario4-2228.txt"
-failure_stacktrace= extract_failure_traces(file)
-failure_stacktrace = sanitize_stacktrace(failure_stacktrace)
-print(f"Failure stacktrace: {failure_stacktrace}")
-
-
-
-# Example usage
-LOGFILE = "baseline_10k_reruns_failing_runs_only/7-tachyon.client.TachyonFSTest#deleteFileTest-20.txt"
-LOGFILE2 = "baseline_10k_reruns_failing_runs_only/7-tachyon.client.TachyonFSTest#deleteFileTest-38.txt"
-
-failure_log_file="failure.log"
-
-SLEEPY_TIMEOUT_FAIL_STR = 'SleepyTimeOut(ProbableDeadlock)'
-FAILURE_THAT_COULD_NOT_BE_LOGGED = 'FAILURE_THAT_COULD_NOT_BE_LOGGED'
-
-
-failure_stacktrace_isolated_tmp=extract_failure_traces(LOGFILE)
-failure_stacktrace_isolated_tmp2=extract_failure_traces(LOGFILE2)
-
-failure_stacktrace_isolated = sanitize_stacktrace(failure_stacktrace_isolated_tmp)
-failure_stacktrace_isolated2 = sanitize_stacktrace(failure_stacktrace_isolated_tmp2)
-
-print(f"Failure stacktrace isolated: {failure_stacktrace_isolated}")
-print(f"Failure stacktrace isolated2: {failure_stacktrace_isolated2}")
-
-# failure_stacktrace_flakerake_file = "internal/flakerake_log.log"
-# with open(failure_stacktrace_flakerake_file, "r") as f:
-#     failure_stacktrace_flakerake = f.read().strip().splitlines()
-
-# failure_stacktrace_flakerake = sanitize_stacktrace(failure_stacktrace_flakerake)
-
-score = stacktrace_similarity_score(failure_stacktrace_isolated, failure_stacktrace_isolated2)
-print(f"Similarity score: {score:.2f}")
