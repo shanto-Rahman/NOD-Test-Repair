@@ -8,9 +8,9 @@ def prepare_candidates(class_path, class_name):
     #class_path = Path(class_path)
     print("class_path=", class_path)
     #class_path = Path(class_path[0]) if isinstance(class_path, list) else Path(class_path)
-    #class_path = Path(class_path[0])
-    if isinstance(class_path, list):
-        class_path = class_path[0]
+    class_path = Path(class_path[0])
+    #if isinstance(class_path, list):
+    #    class_path = class_path[0]
 
 
     if class_path.is_dir():
