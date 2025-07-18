@@ -479,7 +479,7 @@ def extract_block(path, test):
     buf = []
 
     in_block = False
-    print("path=", path)
+
     with open(path) as f:
         for line in f:
             if not in_block and start_re.search(line):
@@ -491,7 +491,16 @@ def extract_block(path, test):
                     continue
 
                 buf.append(line.rstrip("\n"))
-                print(line, end="")
+                # print(line, end="")
+
+    # if the stacktrace contains "Time elapsed: __ s(ec)" then remove that part
+    buf = [re.sub(r'Time\s+elapsed:?\s*\d+(?:\.\d+)?\s*(?:s|sec)\b', '', line) for line in buf]
+
+
+    # # also remove the "Total time:  11.854 s" and "Finished at: 2024-01-30T16:00:00" from the stacktrace
+    buf = [re.sub(r'Total time: \s+\d+\.\d+ s', '', line) for line in buf]
+    buf = [re.sub(r'Finished at:\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:\d{2})?', '', line) for line in buf]
+
     return buf
 
 
