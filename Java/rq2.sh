@@ -144,7 +144,7 @@ while IFS= read -r line
     cd -
     mvn clean install -pl $module -am -DskipTests
     start=$(date +%s.%N)
-    for i in {1..1}; do
+    for i in {1..100}; do
         echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash"
         mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash >  "$logs/$testName-$i.txt"
         #exit
@@ -174,5 +174,4 @@ while IFS= read -r line
     #git checkout -- '**/*.java'
     git stash
 
-    exit
 done < $1
