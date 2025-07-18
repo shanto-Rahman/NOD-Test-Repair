@@ -57,7 +57,6 @@ while IFS= read -r line
     line_number=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f1)
     echo "$file_meth_line_to_inject_delay"
     code_line=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f2- | sed 's/^(//; s/)$//')
-
     if [[ ! -d ${inputProj}/${slug} ]]; then
         git clone "https://github.com/$slug" $inputProj/$slug
     fi
@@ -118,13 +117,13 @@ while IFS= read -r line
     #module_with_underscore="${module//\//_}"
     #echo "$slug_with_underscore"
 
-    echo "$file_path"
+    echo "$class_name"
     echo "$method_name"
     echo "$method_descriptor"
     echo "line_number=$line_number"
     echo "$code_line"
     cd $currentDir
-    python3 run_injection.py "$file_path" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
+    python3 run_injection.py "$class_name" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
     #log for baseline
     log_search_csv=""
     if [[ $3 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
