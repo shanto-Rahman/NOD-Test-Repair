@@ -16,6 +16,7 @@ def main():
     else:
         output_csv = f"logs/{id_arg}_{module_with_dot}_{testName}_stacktrace.csv"
 
+    #print("output_csv=", output_csv)
     # Load the CSV
     try:
         df = pd.read_csv(fail_log_filename)
@@ -42,15 +43,6 @@ def main():
         print("[INFO] No matching rows found.")
         return
 
-    # Get first non-empty stacktrace
-    #for _, row in matched_rows.iterrows():
-    #    stacktrace = row.get('stacktrace', '')
-    #    if pd.notna(stacktrace) and stacktrace.strip():
-    #        with open(output_file, 'w') as f:
-    #            f.write(stacktrace.strip() + '\n')
-    #        print(f"[INFO] Stacktrace saved to {output_file}")
-    #        return
-    # Get the first non-empty stacktrace
     for _, row in matched_rows.iterrows():
         stacktrace = row.get('stacktrace', '')
         if pd.notna(stacktrace) and stacktrace.strip():

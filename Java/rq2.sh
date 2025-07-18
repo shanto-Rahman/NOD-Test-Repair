@@ -152,15 +152,15 @@ while IFS= read -r line
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
             result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
-            if [[ "$result" == "matched" ]] ; then
+            echo "$result"
+            if [[ "$result" == "MisMatched" ]] ; then
                 echo "$fail_log_csv_name"
-                echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv"
+                echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv"
                 echo "Failure found."
             else
-                echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
-                echo "Failure found."
+                echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
+                echo "Matched Failure found."
             fi
-            #exit
         else
             echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv" #No fail
             echo "Failure not found."
