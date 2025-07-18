@@ -137,9 +137,9 @@ while IFS= read -r line
     #id_arg, slug, sha, module_org, testName= ID  fa3909c391195178ccf5a92d4ac342a30ae247c8 . org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario0
 
     if [[ $module == "." ]]; then
-        fail_log_csv_name="$logs/ID_${proj_name_only}_${testName_with_hash}_stacktrace.csv"
+        fail_log_csv_name="$currentDir/logs/ID_${proj_name_only}_${testName_with_hash}_stacktrace.csv"
     else
-        fail_log_csv_name="$logs/ID_${module_with_dot}_${testName_with_hash}_stacktrace.csv"
+        fail_log_csv_name="$currentDir/logs/ID_${module_with_dot}_${testName_with_hash}_stacktrace.csv"
     fi
     cd -
     mvn clean install -pl $module -am -DskipTests
@@ -147,18 +147,22 @@ while IFS= read -r line
     for i in {1..1}; do
         echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash"
         mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash >  "$logs/$testName-$i.txt"
-        exit
+        #exit
 
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
-            python3 log_similarity_init.py "$logs/$testName-$i.txt" "$fail_log_csv_name" "$testName" #python3 get_similarity_score_stacktrace
-
-            echo "$fail_log_csv_name"
-            echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv"
-            echo "Failure found."
+            result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
+            if [[ "$result" == "matched" ]] ; then
+                echo "$fail_log_csv_name"
+                echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv"
+                echo "Failure found."
+            else
+                echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
+                echo "Failure found."
+            fi
             #exit
         else
-            echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv"
+            echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv" #No fail
             echo "Failure not found."
         fi
     done
@@ -167,7 +171,8 @@ while IFS= read -r line
     take=$(echo $take | awk '{printf("%.2f\n", $1) }')
     echo ",$take" >> "$currentDir/$outputDir/RQ2-Result.csv"
 
-    #exit
     #git checkout -- '**/*.java'
     git stash
+
+    exit
 done < $1
