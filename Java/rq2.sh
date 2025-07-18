@@ -44,16 +44,18 @@ while IFS= read -r line
     sha=$(echo $line | cut -d',' -f2)
     module=$(echo $line | cut -d',' -f3)
     testName=$(echo $line | cut -d',' -f4)
-    file_meth_line_to_inject_delay=$(echo $line | cut -d',' -f5)
+    #file_meth_line_to_inject_delay=$(echo $line | cut -d',' -f5)
+    file_meth_line_to_inject_delay=$(awk -v FPAT='([^,]*)|("[^"]+")' '{print $5}' <<< "$line" | sed 's/^"//;s/"$//')
     echo "file_meth_line_to_inject_delay=, $file_meth_line_to_inject_delay"
     if [[ $file_meth_line_to_inject_delay == "" ]]; then
         echo "No solutions found before"
         continue
     fi
-    file_path=$(echo $file_meth_line_to_inject_delay | cut -d':' -f1 | cut -d'$' -f1)
+    class_name=$(echo $file_meth_line_to_inject_delay | cut -d':' -f1 | cut -d'$' -f1 | rev | cut -d'.' -f1 | rev)
     method_name=$(echo $file_meth_line_to_inject_delay | cut -d':' -f2)
     method_descriptor=$(echo $file_meth_line_to_inject_delay | cut -d':' -f3)
     line_number=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f1)
+    echo "$file_meth_line_to_inject_delay"
     code_line=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f2- | sed 's/^(//; s/)$//')
 
     if [[ ! -d ${inputProj}/${slug} ]]; then
