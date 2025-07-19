@@ -36,7 +36,7 @@ fi
 test_specific_stat="$currentDir/$outputDir/Test-Specific-Stat.csv"
 echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
 
-echo "Project-Name,SHA,Module,Test-Name,Total-Executed-Meth,Total-tokens" > "$test_specific_stat"
+echo "Project-Name,SHA,Module,Test-Name,Total-Executed-Meth,Total-tokens" >> "$test_specific_stat"
 while IFS= read -r line
     do
     if [[ ${line} =~ ^\# ]]; then
@@ -437,6 +437,7 @@ while IFS= read -r line
     #    echo "python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv""
 
     #fi
+    exit
 done < $1
 #bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
 

@@ -44,8 +44,17 @@ while IFS= read -r line
     sha=$(echo $line | cut -d',' -f2)
     module=$(echo $line | cut -d',' -f3)
     testName=$(echo $line | cut -d',' -f4)
-    #file_meth_line_to_inject_delay=$(echo $line | cut -d',' -f5)
-    file_meth_line_to_inject_delay=$(awk -v FPAT='([^,]*)|("[^"]+")' '{print $5}' <<< "$line" | sed 's/^"//;s/"$//')
+    fifth_field=$(echo "$line" | awk -v FPAT='([^,]*)|("[^"]*")' '{print $5}')
+    # Check if it starts and ends with a double quote
+    #if [[ "$fifth_field" == \"*\" ]]; then
+    #    file_meth_line_to_inject_delay=$(awk -v FPAT='([^,]*)|("[^"]+")' '{print $5}' <<< "$line" | sed 's/^"//;s/"$//')
+    #else
+        file_meth_line_to_inject_delay=$(echo $line | cut -d',' -f5)
+    #fi
+    #file_meth_line_to_inject_delay=$(awk -v FPAT='([^,]+)|(\"[^\"]+\")' '{print $5}' <<< "$line" | sed 's/^"//;s/"$//')
+    #file_meth_line_to_inject_delay=$(echo "$line" | perl -pe 's/^([^,]*,){4}//; s/,(?:[^,]*,){2}[^,]*$//' | sed 's/^"//;s/"$//')
+
+
     echo "file_meth_line_to_inject_delay=, $file_meth_line_to_inject_delay"
     if [[ $file_meth_line_to_inject_delay == "" ]]; then
         echo "No solutions found before"
@@ -57,6 +66,12 @@ while IFS= read -r line
     line_number=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f1)
     echo "$file_meth_line_to_inject_delay"
     code_line=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f2- | sed 's/^(//; s/)$//')
+
+    echo "$class_name"
+    echo "$method_name"
+    echo "$method_descriptor"
+    echo "line_number=$line_number"
+    echo "code_line=$code_line"
     if [[ ! -d ${inputProj}/${slug} ]]; then
         git clone "https://github.com/$slug" $inputProj/$slug
     fi
@@ -117,11 +132,6 @@ while IFS= read -r line
     #module_with_underscore="${module//\//_}"
     #echo "$slug_with_underscore"
 
-    echo "$class_name"
-    echo "$method_name"
-    echo "$method_descriptor"
-    echo "line_number=$line_number"
-    echo "$code_line"
     cd $currentDir
     python3 run_injection.py "$class_name" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
     #log for baseline
@@ -153,14 +163,15 @@ while IFS= read -r line
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
             result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
+            result=$(echo "$result" | xargs)  # removes leading/trailing whitespace
             echo "$result"
             if [[ "$result" == "MisMatched" ]] ; then
                 echo "$fail_log_csv_name"
                 echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv"
-                echo "Failure found."
-            else
+                echo "MisMatched Failure found."
+            elif [[ "$result" == "Matched" ]] ; then
                 echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
-                echo "Matched Failure found."
+                echo "$result Failure found."
             fi
         else
             echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv" #No fail
