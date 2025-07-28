@@ -227,38 +227,47 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 #print("**** class_path=", class_path)
 
                 if class_path_list:
-                    inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
-                    try:
-                        print("./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx))
-                        result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
-                        out = result_run.stdout.strip()
-                        print("***out****", out)
-                        firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
+                    failure_count = 0
+                    for run_id in range(5):
+                        inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+                        try:
+                            print("./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx))
+                            result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
+                            out = result_run.stdout.strip()
+                            print("***out****", out)
+                            firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
 
-                        #print("*** test_run result, Script output: ",firstLine)
-                        #print(firstLine)
-                        if firstLine == "Failure found.":
-                            print("Failure found.")
-                            #break 
-                            return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
-                            #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
-                    except subprocess.CalledProcessError as e:
-                        print("run_test.sh failed with exit code", e.returncode)
-                        print("--- stdout ---")
-                        print(e.stdout)
-                        print("--- stderr ---")
-                        print(e.stderr)
-                        #if slug == "doanduyhai/Achilles" or "Java-WebSocket":
-                        currentDir_when_exception_occurs = os.getcwd()
-                        before, after = test.rsplit('.', 1)
-                        test_with_hash = f"{before}#{after}"
-                        log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+".txt"
-                        print("log file name=", log_file)
-                        if has_errors_or_failures(log_file):
-                            print("Found Errors: 1 or Failures: 1")
-                            return line, str(retry_count)+"_"+str(idx), "Failure found."
-                        else:
-                            print("No Errors: 1 or Failures: 1")
+                            #print("*** test_run result, Script output: ",firstLine)
+                            #print(firstLine)
+                            if firstLine == "Failure found.":
+                                print("Failure found.")
+                                #break 
+                                return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
+                                #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
+                        except subprocess.CalledProcessError as e:
+                            print("run_test.sh failed with exit code", e.returncode)
+                            print("--- stdout ---")
+                            print(e.stdout)
+                            print("--- stderr ---")
+                            print(e.stderr)
+                            #if slug == "doanduyhai/Achilles" or "Java-WebSocket":
+                            currentDir_when_exception_occurs = os.getcwd()
+                            before, after = test.rsplit('.', 1)
+                            test_with_hash = f"{before}#{after}"
+                            log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+".txt"
+                            print("log file name=", log_file)
+                            if has_errors_or_failures(log_file):
+                                print("Found Errors: 1 or Failures: 1")
+                                failure_count += 1
+                                #return line, str(retry_count)+"_"+str(idx), "Failure found."
+                            else:
+                                print("No Errors: 1 or Failures: 1")
+
+                    if failure_count >= 3:
+                        print(f"Failure found in {failure_count}/5 runs.")
+                        return line, f"{retry_count}_{idx}", "Failure found."
+
+                    print(f"Only {failure_count}/5 runs failed. Not considering as valid failure.")
 
 
                 else:
