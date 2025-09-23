@@ -28,6 +28,6 @@ while read line
         #echo "module name is DOT ***"
         proj_name_only=$(echo $slug_org | cut -d'/' -f2)
         #echo " python3 match_top10_methods.py metadata/embedings/${testName_with_dot}_qwen_embeddings.csv metadata/embedings/${testName_with_dot}_llama_embeddings.csv metadata/embedings/${testName_with_dot}_bigbird_embeddings.csv metadata/embedings/${testName_with_dot}_codebert_embeddings.csv" -o "${testName_with_dot}_out.csv"
-        python3 match_top10_methods.py "metadata/embedings/${testName_with_dot}_qwen_embeddings.csv" "metadata/embedings/${testName_with_dot}_llama_embeddings.csv" "metadata/embedings/${testName_with_dot}_bigbird_embeddings.csv" "metadata/embedings/${testName_with_dot}_codebert_embeddings.csv" -o "${testName_with_dot}_agreement.csv"
+        python3 match_top10_methods.py "metadata/embedings/${testName_with_dot}_qwen_embeddings.csv" "metadata/embedings/${testName_with_dot}_llama_embeddings.csv" "metadata/embedings/${testName_with_dot}_bigbird_embeddings.csv" "metadata/embedings/${testName_with_dot}_codebert_embeddings.csv" -o "results/agreements/${testName_with_dot}_agreement.csv"
     exit
     done < $1
