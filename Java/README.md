@@ -33,3 +33,7 @@ python3 generating_reproducing_script.py traces/apache_incubator-uniffle_common_
 python3 generating_reproducing_script.py traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_method_bodies.csv "tmp"  "traces" "gpt" traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_test_code.csv "logs/tmp_failure.csv" apache/incubator-uniffle a2b9c17b common org.apache.uniffle.common.rpc.GrpcServerTest.testGrpcExecutorPool
 
 pip install torch
+
+# For Requirements
+
+```python -m pip list --not-required --format=freeze > requirements.txt```
