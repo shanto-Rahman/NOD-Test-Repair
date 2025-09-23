@@ -381,13 +381,14 @@ while IFS= read -r line
 
     if [[ $testName == "io.undertow.websockets.jsr.test.JsrWebSocketServer08Test#testErrorHandling" || $testName == "io.undertow.websockets.jsr.test.JsrWebSocketServer13Test#testErrorHandling" ]]; then #These classes extend JsrWebSocketServer07Test.java, and the actual method is JsrWebSocketServer07Test.java
         test_class_full_path="websockets-jsr/src/test/java/io/undertow/websockets/jsr/test/JsrWebSocketServer07Test.java"
-    elif [[ $testName == "uk.co.flax.luwak.matchers.TestPartitionMatcher#testParallelSlowLog" ]]; then
+    elif [[ $testName == "uk.co.flax.luwak.matchers.TestPartitionMatcher#testParallelSlowLog" || $testName == "uk.co.flax.luwak.matchers.TestParallelMatcher#testParallelSlowLog" ]]; then
         test_class_full_path="luwak/src/test/java/uk/co/flax/luwak/matchers/ConcurrentMatcherTestBase.java"
     elif [[ $testName == "com.github.kagkarlsson.scheduler.compatibility.HsqlCompatibilityTest#test_compatibility" ]]; then
         test_class_full_path="src/test/java/com/github/kagkarlsson/scheduler/compatibility/CompatibilityTest.java"
     fi
     python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
     echo "python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir"
+    echo $(pwd)
 
     #exit
     #echo "matched_calls===$matched_calls"
@@ -408,6 +409,7 @@ while IFS= read -r line
 
     echo "Executed methods: $executed_methods"
     echo "Total tokens:      $total_tokens"
+    #exit
 
 
     echo "$slug,$sha,$module,$testName,$executed_methods,$total_tokens" >> $test_specific_stat
