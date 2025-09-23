@@ -3,6 +3,9 @@ Run command:
 bash runAll.sh ../data/talank_with_test_id_idoft_corrected.csv Result/
 bash search_for_failure_reproducing.sh ../data/talank_with_test_id_idoft_corrected.csv "idoft"
 
+To collect the agreement between models, we run the following command.
+ bash run_to_get_top10_methods.sh ../data/all_82_tests.csv Result/ > log
+
 clone the project
 
 Run the test, collect the failure. So collecting the failure, we might need to run flakesync.
