@@ -1,0 +1,32 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+org.apache.dubbo.rpc.protocol.AbstractInvoker,invoke,(Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv']"
+org.apache.dubbo.common.Version,isSupportResponseAttatchment,(Ljava/lang/String;)Z,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.dubbo.common.logger.support.FailsafeLogger,appendContextMessage,(Ljava/lang/String;)Ljava/lang/String;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient,<init>,(Lorg/apache/dubbo/remoting/Client;Z)V,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient$1,<init>,(Lorg/apache/dubbo/remoting/exchange/support/header/HeaderExchangeClient;)V,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,createServer,(Lorg/apache/dubbo/common/URL;)Lorg/apache/dubbo/remoting/exchange/ExchangeServer;,2,"['bigbird_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,getDubboProtocol,()Lorg/apache/dubbo/rpc/protocol/dubbo/DubboProtocol;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,initClient,(Lorg/apache/dubbo/common/URL;)Lorg/apache/dubbo/remoting/exchange/ExchangeClient;,2,"['bigbird_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.dubbo.common.extension.ExtensionLoader,createAdaptiveExtensionClassCode,()Ljava/lang/String;,1,['codebert_embeddings.csv']
+org.apache.dubbo.common.extension.ExtensionLoader,getExtensionLoader,(Ljava/lang/Class;)Lorg/apache/dubbo/common/extension/ExtensionLoader;,1,['codebert_embeddings.csv']
+org.apache.dubbo.common.extension.ExtensionLoader,loadExtensionClasses,()Ljava/util/Map;,1,['codebert_embeddings.csv']
+org.apache.dubbo.config.AbstractInterfaceConfig,loadRegistries,(Z)Ljava/util/List;,1,['bigbird_embeddings.csv']
+org.apache.dubbo.config.DubboShutdownHook,<init>,(Ljava/lang/String;)V,1,['llama_embeddings.csv']
+org.apache.dubbo.config.DubboShutdownHook,getDubboShutdownHook,()Lorg/apache/dubbo/config/DubboShutdownHook;,1,['llama_embeddings.csv']
+org.apache.dubbo.config.ServiceConfig,findConfigedHosts,(Lorg/apache/dubbo/config/ProtocolConfig;Ljava/util/List;Ljava/util/Map;)Ljava/lang/String;,1,['codebert_embeddings.csv']
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler,handleRequest,(Lorg/apache/dubbo/remoting/exchange/ExchangeChannel;Lorg/apache/dubbo/remoting/exchange/Request;)V,1,['bigbird_embeddings.csv']
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeServer,<init>,(Lorg/apache/dubbo/remoting/Server;)V,1,['qwen_embeddings.csv']
+org.apache.dubbo.remoting.transport.AbstractClient,connect,()V,1,['llama_embeddings.csv']
+org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler,received,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,1,['codebert_embeddings.csv']
+org.apache.dubbo.remoting.transport.netty4.NettyClient,doConnect,()V,1,['bigbird_embeddings.csv']
+org.apache.dubbo.rpc.filter.ContextFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,1,['bigbird_embeddings.csv']
+org.apache.dubbo.rpc.filter.GenericImplFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,1,['codebert_embeddings.csv']
+org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec,decodeInvocationArgument,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/rpc/RpcInvocation;[Ljava/lang/Class;ILjava/lang/Object;)Ljava/lang/Object;,1,['qwen_embeddings.csv']
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,export,(Lorg/apache/dubbo/rpc/Invoker;)Lorg/apache/dubbo/rpc/Exporter;,1,['qwen_embeddings.csv']
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,getInvoker,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Invoker;,1,['bigbird_embeddings.csv']
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,optimizeSerialization,(Lorg/apache/dubbo/common/URL;)V,1,['llama_embeddings.csv']
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol$1,invoke,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/String;)V,1,['llama_embeddings.csv']
+org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter,fireReturnCallback,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;Ljava/lang/Object;)V,1,['bigbird_embeddings.csv']
+org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter,fireThrowCallback,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;Ljava/lang/Throwable;)V,1,['llama_embeddings.csv']
+org.apache.dubbo.rpc.proxy.AbstractProxyInvoker,invoke,(Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,1,['codebert_embeddings.csv']
+org.apache.dubbo.rpc.proxy.InvokerInvocationHandler,invoke,(Ljava/lang/Object;Ljava/lang/reflect/Method;[Ljava/lang/Object;)Ljava/lang/Object;,1,['bigbird_embeddings.csv']

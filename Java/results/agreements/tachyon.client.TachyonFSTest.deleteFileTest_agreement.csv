@@ -1,0 +1,34 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+tachyon.Image,load,(Ltachyon/MasterInfo;Ljava/lang/String;)V,2,"['codebert_embeddings.csv', 'llama_embeddings.csv']"
+tachyon.MasterInfo$MasterInfoHeartbeatExecutor,heartbeat,()V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+tachyon.Worker,run,()V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+tachyon.WorkerStorage$CheckpointThread,run,()V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+tachyon.client.BlockOutStream,<init>,(Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;I)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+tachyon.client.BlockOutStream,appendCurrentBuffer,([BII)V,2,"['codebert_embeddings.csv', 'llama_embeddings.csv']"
+tachyon.client.FileOutStream,<init>,(Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;)V,2,"['bigbird_embeddings.csv', 'qwen_embeddings.csv']"
+tachyon.Image,create,(Ltachyon/MasterInfo;Ljava/lang/String;)V,1,['llama_embeddings.csv']
+tachyon.InodeFile,addBlock,(Ltachyon/BlockInfo;)V,1,['qwen_embeddings.csv']
+tachyon.Master,<init>,(Ljava/net/InetSocketAddress;IIII)V,1,['qwen_embeddings.csv']
+tachyon.MasterClient,getMasterAddress,()Ljava/net/InetSocketAddress;,1,['codebert_embeddings.csv']
+tachyon.MasterInfo,_createFile,(ZLjava/lang/String;ZILjava/nio/ByteBuffer;JJ)I,1,['llama_embeddings.csv']
+tachyon.MasterWorkerInfo,generateClientWorkerInfo,()Ltachyon/thrift/ClientWorkerInfo;,1,['qwen_embeddings.csv']
+tachyon.MasterWorkerInfo,toString,()Ljava/lang/String;,1,['qwen_embeddings.csv']
+tachyon.WorkerStorage,initializeWorkerStorage,()V,1,['llama_embeddings.csv']
+tachyon.WorkerStorage,requestSpace,(JJ)Z,1,['codebert_embeddings.csv']
+tachyon.client.FileOutStream,getNextBlock,()V,1,['codebert_embeddings.csv']
+tachyon.client.TachyonFS,requestSpace,(J)Z,1,['llama_embeddings.csv']
+tachyon.conf.UserConf,<init>,()V,1,['bigbird_embeddings.csv']
+tachyon.thrift.Command,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.MasterService$Client,recv_user_createFile,()I,1,['qwen_embeddings.csv']
+tachyon.thrift.MasterService$Client,recv_user_getBlockId,()J,1,['codebert_embeddings.csv']
+tachyon.thrift.MasterService$Client,recv_user_getWorker,()Ltachyon/thrift/NetAddress;,1,['codebert_embeddings.csv']
+tachyon.thrift.MasterService$Client,recv_worker_register,()J,1,['codebert_embeddings.csv']
+tachyon.thrift.MasterService$user_completeFile_args,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.MasterService$user_deleteById_result,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.MasterService$user_getBlockId_args,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.MasterService$user_getClientFileInfoById_args,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.MasterService$user_getWorker_result,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.MasterService$worker_cacheBlock_args,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.MasterService$worker_getPriorityDependencyList_args,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
+tachyon.thrift.WorkerService$Client,recv_asyncCheckpoint,()Z,1,['codebert_embeddings.csv']
+tachyon.thrift.WorkerService$Client,recv_getUserUnderfsTempFolder,()Ljava/lang/String;,1,['codebert_embeddings.csv']

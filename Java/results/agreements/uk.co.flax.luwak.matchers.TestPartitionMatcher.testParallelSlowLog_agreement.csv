@@ -1,0 +1,22 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;)V,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,<init>,(Luk/co/flax/luwak/Monitor;Lorg/apache/lucene/index/LeafReader;)V,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;Lorg/apache/lucene/index/IndexWriter;Luk/co/flax/luwak/QueryIndexConfiguration;)V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'qwen_embeddings.csv']"
+uk.co.flax.luwak.Monitor,update,([Luk/co/flax/luwak/MonitorQuery;)V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv']"
+uk.co.flax.luwak.Monitor$StandardQueryCollector,<init>,(Luk/co/flax/luwak/CandidateMatcher;)V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'qwen_embeddings.csv']"
+uk.co.flax.luwak.matchers.PartitionMatcher,finish,(JI)V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv']"
+uk.co.flax.luwak.CandidateMatcher,finish,(JI)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+uk.co.flax.luwak.Matches,<init>,(Ljava/util/Map;Ljava/util/Set;Ljava/util/List;JJIILuk/co/flax/luwak/SlowLog;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+uk.co.flax.luwak.Monitor,prepareQueryCache,(Z)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+uk.co.flax.luwak.Monitor,update,(Ljava/lang/Iterable;)V,2,"['codebert_embeddings.csv', 'llama_embeddings.csv']"
+uk.co.flax.luwak.matchers.PartitionMatcher$MatcherWorker,call,()Luk/co/flax/luwak/Matches;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+uk.co.flax.luwak.CandidateMatcher,getMatches,()Luk/co/flax/luwak/Matches;,1,['codebert_embeddings.csv']
+uk.co.flax.luwak.Monitor,decomposeQuery,(Luk/co/flax/luwak/MonitorQuery;)Ljava/lang/Iterable;,1,['codebert_embeddings.csv']
+uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/CandidateMatcher;)V,1,['qwen_embeddings.csv']
+uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/DocumentBatch;Luk/co/flax/luwak/MatcherFactory;)Luk/co/flax/luwak/Matches;,1,['qwen_embeddings.csv']
+uk.co.flax.luwak.QueryIndex,commit,(Ljava/util/List;)V,1,['bigbird_embeddings.csv']
+uk.co.flax.luwak.QueryIndex,purgeCache,(Luk/co/flax/luwak/QueryIndex$CachePopulator;)V,1,['bigbird_embeddings.csv']
+uk.co.flax.luwak.QueryIndex,scan,(Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,1,['llama_embeddings.csv']
+uk.co.flax.luwak.SlowLog,addAll,(Ljava/lang/Iterable;)V,1,['llama_embeddings.csv']
+uk.co.flax.luwak.SlowLog,toString,()Ljava/lang/String;,1,['qwen_embeddings.csv']
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery,createWeight,(Lorg/apache/lucene/search/IndexSearcher;Z)Lorg/apache/lucene/search/Weight;,1,['bigbird_embeddings.csv']
