@@ -1,3 +1,8 @@
+Run command:
+
+bash runAll.sh ../data/talank_with_test_id_idoft_corrected.csv Result/
+bash search_for_failure_reproducing.sh ../data/talank_with_test_id_idoft_corrected.csv "idoft"
+
 clone the project
 
 Run the test, collect the failure. So collecting the failure, we might need to run flakesync.
@@ -13,6 +18,8 @@ Collect the code-coverage and methods using jacoco and tree-sitter (Run collect_
 
 tree-sitter-languages==1.10.2
 tree-sitter==0.21.3
+
+
 
 bash runAll.sh ../data/tmp.csv Result/
 bash search_for_failure_reproducing.sh ../data/tmp.csv X
