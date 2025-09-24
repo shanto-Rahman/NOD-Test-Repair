@@ -1,8 +1,10 @@
 Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+com.vmware.admiral.adapter.registry.service.RegistryAdapterService,processPingRequest,(Lcom/vmware/admiral/adapter/registry/service/RegistryAdapterService$RequestContext;)V,3,"['gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.service.common.LogService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.adapter.registry.service.RegistryAdapterService,initProxyClient,(Ljava/util/Map;)V,2,"['bigbird_embeddings.csv', 'llama_embeddings.csv']"
-com.vmware.admiral.adapter.registry.service.RegistryAdapterService,processPingRequest,(Lcom/vmware/admiral/adapter/registry/service/RegistryAdapterService$RequestContext;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+com.vmware.admiral.common.util.ServiceDocumentQuery,createUpdatedSinceTimeRange,(J)Lcom/vmware/xenon/services/common/QueryTask$Query;,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
 com.vmware.admiral.common.util.ServiceDocumentQuery,processQuery,(Lcom/vmware/xenon/services/common/QueryTask;Ljava/util/function/Consumer;)V,2,"['bigbird_embeddings.csv', 'qwen_embeddings.csv']"
+com.vmware.admiral.host.HostInitCommonServiceConfig,startServices,(Lcom/vmware/xenon/common/ServiceHost;)V,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
 com.vmware.admiral.host.HostInitServiceHelper,registerServiceForHelathcheck,(Lcom/vmware/xenon/common/ServiceHost;Ljava/util/Set;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.service.common.LogService,<init>,()V,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.service.common.LogService$LogServiceState,<init>,()V,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
@@ -11,21 +13,26 @@ com.vmware.admiral.service.common.RegistryService,buildDefaultStateInstance,(Lco
 com.vmware.admiral.adapter.common.service.mock.MockTaskFactoryService,<init>,()V,1,['qwen_embeddings.csv']
 com.vmware.admiral.adapter.registry.service.RegistryAdapterService,doPing,(Lcom/vmware/admiral/service/common/RegistryService$ApiVersion;Ljava/lang/String;Lcom/vmware/admiral/adapter/registry/service/RegistryAdapterService$RequestContext;Ljava/util/function/Consumer;)V,1,['llama_embeddings.csv']
 com.vmware.admiral.adapter.registry.service.RegistryAdapterService,sendOperationWithClient,(Lcom/vmware/xenon/common/Operation;Lcom/vmware/admiral/adapter/registry/service/RegistryAdapterService$RequestContext;)V,1,['llama_embeddings.csv']
+com.vmware.admiral.common.util.PropertyUtils,getValue,(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;,1,['gpt2_embeddings.csv']
 com.vmware.admiral.common.util.ServerX509TrustManager,<init>,(Lcom/vmware/xenon/common/ServiceHost;)V,1,['codebert_embeddings.csv']
 com.vmware.admiral.common.util.ServerX509TrustManager,schedulePeriodicCertificatesReload,()V,1,['bigbird_embeddings.csv']
 com.vmware.admiral.common.util.ServerX509TrustManager,verifySubscriptionTargetExists,(Ljava/lang/Runnable;)V,1,['bigbird_embeddings.csv']
 com.vmware.admiral.common.util.ServerX509TrustManager$SslTrustQueryCompletionHandler,<init>,(Lcom/vmware/admiral/common/util/ServerX509TrustManager;)V,1,['codebert_embeddings.csv']
-com.vmware.admiral.common.util.ServiceDocumentQuery,createUpdatedSinceTimeRange,(J)Lcom/vmware/xenon/services/common/QueryTask$Query;,1,['codebert_embeddings.csv']
 com.vmware.admiral.common.util.ServiceDocumentQuery,getNextPageLinks,(Ljava/lang/String;ILjava/util/function/Consumer;)V,1,['bigbird_embeddings.csv']
 com.vmware.admiral.common.util.ServiceDocumentQuery,processQueryResult,(Lcom/vmware/xenon/services/common/QueryTask;Ljava/util/function/Consumer;)V,1,['qwen_embeddings.csv']
 com.vmware.admiral.common.util.ServiceDocumentQuery,queryUpdatedDocumentSince,(JLjava/lang/String;Ljava/util/function/Consumer;)V,1,['codebert_embeddings.csv']
 com.vmware.admiral.common.util.ServiceDocumentQuery,queryUpdatedSince,(JLjava/util/function/Consumer;)V,1,['codebert_embeddings.csv']
 com.vmware.admiral.common.util.SubscriptionManager,handleNotification,(Lcom/vmware/xenon/common/Operation;Ljava/util/function/Consumer;)V,1,['bigbird_embeddings.csv']
-com.vmware.admiral.host.HostInitCommonServiceConfig,startServices,(Lcom/vmware/xenon/common/ServiceHost;)V,1,['codebert_embeddings.csv']
 com.vmware.admiral.host.HostInitCommonServiceConfig,waitCommonInitialBootInitialization,(Lcom/vmware/xenon/common/ServiceHost;)V,1,['llama_embeddings.csv']
 com.vmware.admiral.host.HostInitServiceHelper,populateServicesForHealthCheck,(Lcom/vmware/xenon/common/ServiceHost;Lcom/vmware/xenon/common/Service;Ljava/lang/Class;Ljava/util/Set;Z)V,1,['llama_embeddings.csv']
 com.vmware.admiral.host.HostInitServiceHelper,registerServiceForMigration,(Lcom/vmware/xenon/common/ServiceHost;Ljava/util/Set;)V,1,['llama_embeddings.csv']
 com.vmware.admiral.host.HostInitServiceHelper,startServices,(Lcom/vmware/xenon/common/ServiceHost;[Ljava/lang/Class;)V,1,['llama_embeddings.csv']
 com.vmware.admiral.host.interceptor.OperationInterceptorRegistry,checkForInterceptor,(Lcom/vmware/xenon/common/Service;)Ljava/util/Collection;,1,['llama_embeddings.csv']
+com.vmware.admiral.service.common.CommonInitialBootService,buildUniqueProjectIndexesInstance,()Lcom/vmware/admiral/service/common/UniquePropertiesService$UniquePropertiesState;,1,['gpt2_embeddings.csv']
+com.vmware.admiral.service.common.CommonInitialBootService,buildUniqueProjectNamesInstance,()Lcom/vmware/admiral/service/common/UniquePropertiesService$UniquePropertiesState;,1,['gpt2_embeddings.csv']
+com.vmware.admiral.service.common.NodeHealthCheckService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['gpt2_embeddings.csv']
+com.vmware.admiral.service.common.NodeMigrationService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['gpt2_embeddings.csv']
 com.vmware.admiral.service.common.ResourceNamePrefixService,validateStateOnStart,(Lcom/vmware/admiral/service/common/ResourceNamePrefixService$ResourceNamePrefixState;)V,1,['codebert_embeddings.csv']
 com.vmware.admiral.service.common.SslTrustCertificateService,notifyLastUpdatedSslTrustDocumentService,()V,1,['bigbird_embeddings.csv']
+com.vmware.admiral.service.common.UniquePropertiesService,<init>,()V,1,['gpt2_embeddings.csv']
+com.vmware.admiral.service.common.UniquePropertiesService$UniquePropertiesState,<init>,()V,1,['gpt2_embeddings.csv']

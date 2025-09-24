@@ -1,12 +1,15 @@
 Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+com.vmware.photon.controller.model.resources.SubnetService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,4,"['codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.compute.container.network.ContainerNetworkDescriptionService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,3,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.compute.container.volume.ContainerVolumeService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'qwen_embeddings.csv']"
-com.vmware.photon.controller.model.resources.SubnetService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,3,"['codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.compute.cluster.ClusterService,propagatePublicAddressIfNeeded,(Lcom/vmware/admiral/compute/cluster/ClusterService$ClusterDto;Lcom/vmware/admiral/compute/cluster/ClusterService$ClusterDto;)Lcom/vmware/xenon/common/DeferredResult;,2,"['bigbird_embeddings.csv', 'llama_embeddings.csv']"
+com.vmware.admiral.compute.container.CompositeDescriptionService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
 com.vmware.admiral.compute.container.ContainerDescriptionService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.compute.container.ContainerService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.compute.container.network.ContainerNetworkService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.service.common.LogService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+com.vmware.photon.controller.model.resources.ComputeService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+com.vmware.photon.controller.model.resources.NetworkInterfaceDescriptionService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
 com.vmware.admiral.common.util.ServiceDocumentQuery,createUpdatedSinceTimeRange,(J)Lcom/vmware/xenon/services/common/QueryTask$Query;,1,['codebert_embeddings.csv']
 com.vmware.admiral.compute.ContainerHostService,prepareAdapterRequest,(Lcom/vmware/admiral/adapter/common/ContainerHostOperationType;Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;Lcom/vmware/admiral/service/common/SslTrustCertificateService$SslTrustCertificateState;)Lcom/vmware/admiral/adapter/common/AdapterRequest;,1,['codebert_embeddings.csv']
 com.vmware.admiral.compute.PlacementCapacityUpdateTaskService,updateResourcePool,(Lcom/vmware/admiral/compute/PlacementCapacityUpdateTaskService$PlacementCapacityUpdateTaskState;)V,1,['bigbird_embeddings.csv']
@@ -14,15 +17,18 @@ com.vmware.admiral.compute.cluster.ClusterService,createCluster,(Lcom/vmware/xen
 com.vmware.admiral.compute.cluster.ClusterService,handlePatch,(Lcom/vmware/xenon/common/Operation;)V,1,['bigbird_embeddings.csv']
 com.vmware.admiral.compute.cluster.ClusterService,validateClusterPatch,(Lcom/vmware/xenon/common/Operation;)V,1,['llama_embeddings.csv']
 com.vmware.admiral.compute.cluster.ClusterService,validateCreateClusterPost,(Lcom/vmware/xenon/common/Operation;)V,1,['llama_embeddings.csv']
-com.vmware.admiral.compute.container.CompositeDescriptionService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['codebert_embeddings.csv']
+com.vmware.admiral.compute.container.CompositeComponentService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['gpt2_embeddings.csv']
+com.vmware.admiral.compute.container.ContainerDescriptionService,<init>,()V,1,['gpt2_embeddings.csv']
+com.vmware.admiral.compute.container.ContainerDescriptionService$ContainerDescription,<init>,()V,1,['gpt2_embeddings.csv']
 com.vmware.admiral.compute.container.GroupResourcePlacementService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['codebert_embeddings.csv']
 com.vmware.admiral.compute.container.HostContainerListDataCollection,installSystemContainerToHost,(Ljava/lang/String;Ljava/lang/String;Lcom/vmware/admiral/compute/container/ContainerDescriptionService$ContainerDescription;)V,1,['llama_embeddings.csv']
+com.vmware.admiral.compute.kubernetes.service.AbstractKubernetesObjectService,<init>,(Ljava/lang/Class;)V,1,['gpt2_embeddings.csv']
 com.vmware.admiral.service.common.NodeMigrationService,handlePatch,(Lcom/vmware/xenon/common/Operation;)V,1,['bigbird_embeddings.csv']
 com.vmware.photon.controller.model.resources.ComputeDescriptionService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['qwen_embeddings.csv']
-com.vmware.photon.controller.model.resources.ComputeService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['qwen_embeddings.csv']
+com.vmware.photon.controller.model.resources.ComputeService,<init>,()V,1,['gpt2_embeddings.csv']
+com.vmware.photon.controller.model.resources.ComputeService$ComputeState,<init>,()V,1,['gpt2_embeddings.csv']
 com.vmware.photon.controller.model.resources.ImageService,getDocumentTemplate,()Lcom/vmware/photon/controller/model/resources/ImageService$ImageState;,1,['codebert_embeddings.csv']
 com.vmware.photon.controller.model.resources.LoadBalancerService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['qwen_embeddings.csv']
-com.vmware.photon.controller.model.resources.NetworkInterfaceDescriptionService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,1,['qwen_embeddings.csv']
 com.vmware.photon.controller.model.resources.RouterService,getDocumentTemplate,()Lcom/vmware/photon/controller/model/resources/RouterService$RouterState;,1,['codebert_embeddings.csv']
 com.vmware.photon.controller.model.security.ssl.ServerX509TrustManager,<init>,(Lcom/vmware/xenon/common/ServiceHost;)V,1,['bigbird_embeddings.csv']
 com.vmware.photon.controller.model.security.ssl.SslTrustCertificateServiceUtils,subscribe,(Lcom/vmware/xenon/common/ServiceHost;Ljava/util/function/Consumer;)V,1,['bigbird_embeddings.csv']

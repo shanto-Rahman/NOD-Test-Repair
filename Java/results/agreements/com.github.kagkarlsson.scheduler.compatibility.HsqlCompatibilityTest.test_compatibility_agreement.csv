@@ -1,26 +1,34 @@
 Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+com.github.kagkarlsson.scheduler.Scheduler,stop,()V,3,"['gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.github.kagkarlsson.scheduler.Scheduler,updateHeartbeats,()V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv']"
 com.github.kagkarlsson.scheduler.Scheduler$ExecuteTask,complete,(Lcom/github/kagkarlsson/scheduler/task/CompletionHandler;Lcom/github/kagkarlsson/scheduler/task/Execution;)V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv']"
 com.github.kagkarlsson.scheduler.JdbcTaskRepository,getOldExecutions,(Ljava/time/Instant;)Ljava/util/List;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
 com.github.kagkarlsson.scheduler.JdbcTaskRepository,remove,(Lcom/github/kagkarlsson/scheduler/task/Execution;)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+com.github.kagkarlsson.scheduler.Scheduler,<init>,(Lcom/github/kagkarlsson/scheduler/Clock;Lcom/github/kagkarlsson/scheduler/TaskRepository;Lcom/github/kagkarlsson/scheduler/TaskResolver;ILjava/util/concurrent/ExecutorService;Lcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Waiter;Ljava/time/Duration;ZLcom/github/kagkarlsson/scheduler/StatsRegistry;Ljava/util/List;)V,2,"['bigbird_embeddings.csv', 'gpt2_embeddings.csv']"
 com.github.kagkarlsson.scheduler.Scheduler,aquireExecutorAndPickExecution,(Lcom/github/kagkarlsson/scheduler/task/Execution;)Ljava/util/Optional;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
 com.github.kagkarlsson.scheduler.Scheduler,releaseExecutor,(Lcom/github/kagkarlsson/scheduler/task/Execution;)V,2,"['codebert_embeddings.csv', 'llama_embeddings.csv']"
 com.github.kagkarlsson.scheduler.Scheduler,start,()V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
-com.github.kagkarlsson.scheduler.Scheduler,stop,()V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.github.kagkarlsson.scheduler.Scheduler$RunUntilShutdown,run,()V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.github.kagkarlsson.scheduler.Waiter,doWait,()V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
 com.github.kagkarlsson.scheduler.task.ExecutionComplete,<init>,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete$Result;Ljava/lang/Throwable;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.github.kagkarlsson.scheduler.task.ExecutionOperations,reschedule,(Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete;Ljava/time/Instant;)V,2,"['bigbird_embeddings.csv', 'qwen_embeddings.csv']"
 com.github.kagkarlsson.scheduler.CurrentlyExecuting,<init>,(Lcom/github/kagkarlsson/scheduler/task/Execution;Lcom/github/kagkarlsson/scheduler/Clock;)V,1,['qwen_embeddings.csv']
 com.github.kagkarlsson.scheduler.ExecutorUtils,awaitTermination,(Ljava/util/concurrent/ExecutorService;Ljava/time/Duration;)Z,1,['llama_embeddings.csv']
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,<init>,(Ljavax/sql/DataSource;Ljava/lang/String;Lcom/github/kagkarlsson/scheduler/TaskResolver;Lcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Serializer;)V,1,['gpt2_embeddings.csv']
 com.github.kagkarlsson.scheduler.JdbcTaskRepository,createIfNotExists,(Lcom/github/kagkarlsson/scheduler/task/Execution;)Z,1,['qwen_embeddings.csv']
 com.github.kagkarlsson.scheduler.JdbcTaskRepository,memoize,(Ljava/util/function/Supplier;)Ljava/util/function/Supplier;,1,['bigbird_embeddings.csv']
-com.github.kagkarlsson.scheduler.Scheduler,<init>,(Lcom/github/kagkarlsson/scheduler/Clock;Lcom/github/kagkarlsson/scheduler/TaskRepository;Lcom/github/kagkarlsson/scheduler/TaskResolver;ILjava/util/concurrent/ExecutorService;Lcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Waiter;Ljava/time/Duration;ZLcom/github/kagkarlsson/scheduler/StatsRegistry;Ljava/util/List;)V,1,['bigbird_embeddings.csv']
+com.github.kagkarlsson.scheduler.JdbcTaskRepository$1,<init>,(Ljava/util/function/Supplier;)V,1,['gpt2_embeddings.csv']
+com.github.kagkarlsson.scheduler.JdbcTaskRepository$ExecutionResultSetConsumer,<init>,(Lcom/github/kagkarlsson/scheduler/JdbcTaskRepository;Ljava/util/function/Consumer;)V,1,['gpt2_embeddings.csv']
+com.github.kagkarlsson.scheduler.JdbcTaskRepository$ExecutionResultSetMapper,<init>,(Lcom/github/kagkarlsson/scheduler/JdbcTaskRepository;)V,1,['gpt2_embeddings.csv']
+com.github.kagkarlsson.scheduler.Scheduler,<init>,(Lcom/github/kagkarlsson/scheduler/Clock;Lcom/github/kagkarlsson/scheduler/TaskRepository;Lcom/github/kagkarlsson/scheduler/TaskResolver;ILcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Waiter;Ljava/time/Duration;ZLcom/github/kagkarlsson/scheduler/StatsRegistry;Ljava/util/List;)V,1,['gpt2_embeddings.csv']
 com.github.kagkarlsson.scheduler.Scheduler,detectDeadExecutions,()V,1,['llama_embeddings.csv']
 com.github.kagkarlsson.scheduler.Scheduler,executeDue,()V,1,['llama_embeddings.csv']
 com.github.kagkarlsson.scheduler.Scheduler,executeOnStartup,()V,1,['codebert_embeddings.csv']
+com.github.kagkarlsson.scheduler.Scheduler$Builder,<init>,(Ljavax/sql/DataSource;Ljava/util/List;)V,1,['gpt2_embeddings.csv']
 com.github.kagkarlsson.scheduler.Scheduler$Builder,pollingInterval,(Ljava/time/Duration;)Lcom/github/kagkarlsson/scheduler/Scheduler$Builder;,1,['qwen_embeddings.csv']
+com.github.kagkarlsson.scheduler.Scheduler$ExecuteTask,<init>,(Lcom/github/kagkarlsson/scheduler/Scheduler;Lcom/github/kagkarlsson/scheduler/task/Execution;)V,1,['gpt2_embeddings.csv']
 com.github.kagkarlsson.scheduler.Scheduler$ExecuteTask,run,()V,1,['qwen_embeddings.csv']
+com.github.kagkarlsson.scheduler.Scheduler$RunUntilShutdown,<init>,(Ljava/lang/Runnable;Lcom/github/kagkarlsson/scheduler/Waiter;Lcom/github/kagkarlsson/scheduler/SchedulerState;Lcom/github/kagkarlsson/scheduler/StatsRegistry;)V,1,['gpt2_embeddings.csv']
 com.github.kagkarlsson.scheduler.SchedulerClient$StandardSchedulerClient,notifyListeners,(Lcom/github/kagkarlsson/scheduler/ClientEvent$EventType;Lcom/github/kagkarlsson/scheduler/task/TaskInstanceId;Ljava/time/Instant;)V,1,['codebert_embeddings.csv']
 com.github.kagkarlsson.scheduler.TaskResolver,resolve,(Ljava/lang/String;)Ljava/util/Optional;,1,['llama_embeddings.csv']
 com.github.kagkarlsson.scheduler.Waiter,<init>,(Ljava/time/Duration;Lcom/github/kagkarlsson/scheduler/Clock;)V,1,['qwen_embeddings.csv']
