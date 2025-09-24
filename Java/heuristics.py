@@ -9,20 +9,40 @@ from transformers import BigBirdModel
 from transformers import T5Tokenizer, T5EncoderModel
 from transformers import LlamaTokenizer, LlamaModel
 
+#def qwen_model_define():
+#    model_name = "Qwen/Qwen-7B"
+#    tokenizer  = AutoTokenizer.from_pretrained(
+#        model_name,
+#        trust_remote_code=True,
+#        use_fast=False,
+#        use_auth_token=True
+#    )
+#    model = AutoModelForCausalLM.from_pretrained(
+#        model_name,
+#        trust_remote_code=True,
+#        use_auth_token=True
+#    )
+#    return model_name, tokenizer, model
+
+from transformers import AutoTokenizer, AutoModel
+import torch
+
 def qwen_model_define():
-    model_name = "Qwen/Qwen-7B"
-    tokenizer  = AutoTokenizer.from_pretrained(
+    model_name = "Qwen/Qwen2-7B"
+
+    tok = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
+
+    model = AutoModel.from_pretrained(
         model_name,
-        trust_remote_code=True,
-        use_fast=False,
-        use_auth_token=True
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        trust_remote_code=True,
-        use_auth_token=True
-    )
-    return model_name, tokenizer, model
+        device_map="auto",
+        torch_dtype=torch.bfloat16,   # or torch.float16
+        low_cpu_mem_usage=True,
+    ).eval()
+
+    return model_name, tok, model
+
 
 import torch
 import numpy as np
@@ -61,13 +81,10 @@ def get_qwen_embeddings(code: str,
     # 4) Cast to float32 (avoid bfloat16→NumPy errors) and return
     return emb.cpu().to(torch.float32).numpy()  # → array shape (1, hidden_size)
 
-def llama3_model_define():
+'''def llama3_model_define():
     #model_name = "meta-llama/Llama-3-8b-hf"  # or the exact HF repo ID you have
     model_name = "meta-llama/Meta-Llama-3-8B"
 
-    # 1) load the tokenizer (slow) and model
-    #tokenizer = LlamaTokenizer.from_pretrained(model_name, use_fast=False)
-    #model     = LlamaModel.from_pretrained(model_name)
     # We use trust_remote_code to load Meta’s custom code if needed:
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
@@ -82,7 +99,27 @@ def llama3_model_define():
         use_auth_token=True
     )
 
+    return model_name, tokenizer, model'''
+
+from transformers import AutoTokenizer, AutoModel
+
+def llama3_model_define():
+    model_name = "meta-llama/Meta-Llama-3-8B"
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    model = AutoModel.from_pretrained(
+        model_name,
+        device_map="auto",           # ← Let HF place layers; don’t call .to(device)
+        torch_dtype="bfloat16",      # or torch.float16 if BF16 not available
+        low_cpu_mem_usage=True,
+        trust_remote_code=False,
+    ).eval()
+
     return model_name, tokenizer, model
+
 
 def get_llama3_embeddings(code: str,
                           tokenizer: LlamaTokenizer,
@@ -325,24 +362,37 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, fail_log_df, ll
     
     # Generate embeddings
     if llm == "codebert":
-        test_embedding = get_codebert_embeddings(test_code, tokenizer, model, device) 
+        #test_embedding = get_codebert_embeddings(test_code, tokenizer, model, device) 
+        #method_embeddings = [get_codebert_embeddings(body, tokenizer, model, device) for body in method_bodies]
+        test_embedding   = get_codebert_embeddings(test_code, tokenizer, model, device)
+        log_embedding = get_codebert_embeddings(fail_log, tokenizer, model, device)
         method_embeddings = [get_codebert_embeddings(body, tokenizer, model, device) for body in method_bodies]
     elif llm  == "codet5":
-        test_embedding = get_codet5_embeddings(test_code, tokenizer, model, device)
-        method_embeddings = [get_codet5_embeddings(body, tokenizer, model, device) for body in method_bodies]
+        #test_embedding = get_codet5_embeddings(test_code, tokenizer, model, device)
+        #method_embeddings = [get_codet5_embeddings(body, tokenizer, model, device) for body in method_bodies]
+        test_embedding   = get_llama3_embeddings(test_code, tokenizer, model, device)
+        log_embedding = get_llama3_embeddings(fail_log, tokenizer, model, device)
+        method_embeddings = [get_llama3_embeddings(body, tokenizer, model, device) for body in method_bodies]
     elif llm == "bigbird":
-        test_embedding = get_bigbird_embeddings(test_code, tokenizer, model, device)
+        #test_embedding = get_bigbird_embeddings(test_code, tokenizer, model, device)
+        #method_embeddings = [get_bigbird_embeddings(body, tokenizer, model, device) for body in method_bodies]
+        test_embedding   = get_bigbird_embeddings(test_code, tokenizer, model, device)
+        log_embedding = get_bigbird_embeddings(fail_log, tokenizer, model, device)
         method_embeddings = [get_bigbird_embeddings(body, tokenizer, model, device) for body in method_bodies]
     elif llm == "gpt2":
         test_embedding   = get_gpt2_embeddings(test_code, tokenizer, model, device)
         log_embedding = get_gpt2_embeddings(fail_log, tokenizer, model, device)
         method_embeddings = [get_gpt2_embeddings(body, tokenizer, model, device) for body in method_bodies]
     elif llm == "llama":
+        #test_embedding   = get_llama3_embeddings(test_code, tokenizer, model, device)
+        #method_embeddings = [get_llama3_embeddings(body, tokenizer, model, device) for body in method_bodies]
         test_embedding   = get_llama3_embeddings(test_code, tokenizer, model, device)
+        log_embedding = get_llama3_embeddings(fail_log, tokenizer, model, device)
         method_embeddings = [get_llama3_embeddings(body, tokenizer, model, device) for body in method_bodies]
 
     elif llm == "qwen":
         test_embedding   = get_qwen_embeddings(test_code, tokenizer, model, device)
+        log_embedding = get_qwen_embeddings(fail_log, tokenizer, model, device)
         method_embeddings = [get_qwen_embeddings(body, tokenizer, model, device) for body in method_bodies]
     
     '''# Compute cosine similarity
