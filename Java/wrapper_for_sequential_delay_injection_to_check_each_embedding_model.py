@@ -40,7 +40,8 @@ def find_source_file_with_find(repos_root: str, slug: str, class_path: str) -> O
     return None
 
 # Configuration: path to the CSV data file
-csv_file = 'metadata/embedings/org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2_bigbird_embeddings.csv'  # Update this to the actual CSV filename/path
+#csv_file = 'metadata/embedings/org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2_bigbird_embeddings.csv'  # Update this to the actual CSV filename/path
+csv_file = "metadata/embedings/"
 
 # Variables for the test run command (ensure these are set to real values as needed)
 #slug = "your-project-slug"        # e.g., "org.java-websocket/Java-WebSocket"
@@ -59,6 +60,8 @@ with open(input_csv, newline='') as inf:
         module = row['module']
         test = row['test']
         row_count = 0
+        test_with_dot = test.replace("#", ".")
+        csv_file = csv_file + test_with_dot + "_bigbird_embeddings.csv"
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
             failure_count = 0
@@ -94,6 +97,7 @@ with open(input_csv, newline='') as inf:
                     #for line_no in range(start_line + 1, end_line):
                     for idx, line_no in enumerate(range(start_line + 1, end_line)):
                         # Get the exact code line from original content for verification
+                        print("line_no - 1=", line_no - 1)
                         code_line = original_lines[line_no - 1]
                         print(code_line)
                         print(line_no)
@@ -101,8 +105,6 @@ with open(input_csv, newline='') as inf:
                         inject_sleep_before_line(candidates, line_no, method_name, descriptor, code_line)
                         #exit()
                         try:
-                            test_with_dot = test.replace("#", ".")
-
                             print("./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx)+ "_" + str(run_id))
                             result_run = subprocess.run(["./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx) + "_" + str(run_id)], check=True, text=True, capture_output=True)
                             out = result_run.stdout.strip()
@@ -112,7 +114,8 @@ with open(input_csv, newline='') as inf:
                             #print("*** test_run result, Script output: ",firstLine)
                             #print(firstLine)
                             if firstLine == "Failure found.":
-                                print("Failure found.")
+                                print("***Failure found.")
+                                
                                 #break 
                                 #return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
                                 #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
@@ -135,5 +138,5 @@ with open(input_csv, newline='') as inf:
                                 #return line, str(retry_count)+"_"+str(idx), "Failure found."
                             else:
                                 print("No Errors: 1 or Failures: 1")
-                    exit()
+            exit()
 
