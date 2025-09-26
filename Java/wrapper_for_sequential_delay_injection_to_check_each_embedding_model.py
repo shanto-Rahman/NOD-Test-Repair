@@ -58,11 +58,15 @@ with open(input_csv, newline='') as inf:
         commit = row['commit']
         module = row['module']
         test = row['test']
+        row_count = 0
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
             failure_count = 0
             reader = csv.DictReader(f)
             for row in reader:
+                if row_count > 10:
+                    continue
+                row_count +=1
                 class_name = row['Class']
                 method_name = row['Method']
                 descriptor = row['Descriptor']
@@ -131,5 +135,5 @@ with open(input_csv, newline='') as inf:
                                 #return line, str(retry_count)+"_"+str(idx), "Failure found."
                             else:
                                 print("No Errors: 1 or Failures: 1")
-                        exit()
+                    exit()
 
