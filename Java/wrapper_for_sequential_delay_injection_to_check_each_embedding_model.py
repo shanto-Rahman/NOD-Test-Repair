@@ -59,9 +59,13 @@ retry_count = 0
 run_id = 0
 
 input_csv="../data/all_82_tests.csv"
+output_csv = "results/output_found_failures_bigbird_embedding.csv"
+output_fields = ["slug", "module", "test", "row_id", "line_number", "log_file", "class_name", "method_name"]
+
 with open(input_csv, newline='') as inf:
     reader = csv.DictReader(inf)
     for row in reader:
+        failure_count = 0
         id = row['id']
         slug = row['slug']
         commit = row['commit']
@@ -72,9 +76,9 @@ with open(input_csv, newline='') as inf:
         csv_file = csv_file + test_with_dot + "_bigbird_embeddings.csv"
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
-            failure_count = 0
             reader = csv.DictReader(f)
-            for row in reader:
+            #for row in reader:
+            for row_id, row in enumerate(reader):
                 if row_count > 10:
                     continue
                 row_count +=1
@@ -142,6 +146,22 @@ with open(input_csv, newline='') as inf:
                             if has_errors_or_failures(log_file):
                                 print("Found Errors: 1 or Failures: 1", flush=True)
                                 failure_count += 1
+                                # Save to output CSV
+                                with open(output_csv, "a", newline='') as outf:
+                                    writer = csv.DictWriter(outf, fieldnames=output_fields)
+                                    if outf.tell() == 0:
+                                        writer.writeheader()
+                                    writer.writerow({
+                                        "slug": slug,
+                                        "module": module,
+                                        "test": test,
+                                        "row_id": row_id,
+                                        "line_number": line_no,
+                                        "log_file": log_file,
+                                        "class_name": class_name,
+                                        "method_name": method_name
+                                    })
+                                    break
                             else:
                                 print("No Errors: 1 or Failures: 1", flush=True)
                             #exit()
@@ -155,5 +175,7 @@ with open(input_csv, newline='') as inf:
                             print("--- STDERR ---", flush=True)
                             print(result_run.stderr if 'result_run' in locals() else '', flush=True)
                             exit()
-            exit()
+                if failure_count > 0:
+                    break
+            #exit()
 
