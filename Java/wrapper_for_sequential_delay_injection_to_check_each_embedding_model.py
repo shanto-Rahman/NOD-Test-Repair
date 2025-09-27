@@ -4,11 +4,19 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 from modify_java_file import inject_sleep_before_line
+import re
+#def has_errors_or_failures(path):
+#    with open(path, 'r') as f:
+#        text = f.read()
+#    return 'Errors: 1' in text or 'Failures: 1' in text
 
 def has_errors_or_failures(path):
     with open(path, 'r') as f:
         text = f.read()
-    return 'Errors: 1' in text or 'Failures: 1' in text
+    # Match 'Errors: N' or 'Failures: N' where N > 0
+    errors = re.search(r'Errors:\s*[1-9][0-9]*', text)
+    failures = re.search(r'Failures:\s*[1-9][0-9]*', text)
+    return errors is not None or failures is not None
 
 def find_source_file_with_find(repos_root: str, slug: str, class_path: str) -> Optional[Path]:
     """
@@ -105,38 +113,47 @@ with open(input_csv, newline='') as inf:
                         inject_sleep_before_line(candidates, line_no, method_name, descriptor, code_line)
                         #exit()
                         try:
-                            print("./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx)+ "_" + str(run_id))
-                            result_run = subprocess.run(["./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx) + "_" + str(run_id)], check=True, text=True, capture_output=True)
+                            print("About to run run_test.sh", flush=True)
+                            result_run = subprocess.run([
+                                "./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx) + "_" + str(run_id)
+                            ], text=True, capture_output=True, timeout=700)
+                            #print("Finished run_test.sh", flush=True)
+                            #print("--- STDOUT ---", flush=True)
+                            #print(result_run.stdout, flush=True)
+                            #print("--- STDERR ---", flush=True)
+                            #print(result_run.stderr, flush=True)
+                            #print("HI I AM HERE", flush=True)
                             out = result_run.stdout.strip()
-                            print("***out****", out)
-                            firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
-
-                            #print("*** test_run result, Script output: ",firstLine)
-                            #print(firstLine)
-                            if firstLine == "Failure found.":
-                                print("***Failure found.")
-                                
-                                #break 
-                                #return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
-                                #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
-                        except subprocess.CalledProcessError as e:
-                            print("run_test.sh failed with exit code", e.returncode)
-                            print("--- stdout ---")
-                            print(e.stdout)
-                            print("--- stderr ---")
-                            print(e.stderr)
-                            #if slug == "doanduyhai/Achilles" or "Java-WebSocket":
+                            #print("***out****", out, flush=True)
+                            #if out:
+                            #    firstLine = out.splitlines()[0]
+                            #else:
+                            #    firstLine = ""
+                            #if firstLine == "Failure found.":
+                            #    print("***Failure found.", flush=True)
+                            #else:
+                            #    print("***Output:", out, flush=True)
+                            # Also check the log file for Maven errors/failures
                             currentDir_when_exception_occurs = os.getcwd()
                             before, after = test_with_dot.rsplit('.', 1)
                             test_with_hash = f"{before}#{after}"
-                            print(test_with_hash)
                             log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
-                            print("log file name=", log_file)
+                            print("Checking log file:", log_file, flush=True)
                             if has_errors_or_failures(log_file):
-                                print("Found Errors: 1 or Failures: 1")
+                                print("Found Errors: 1 or Failures: 1", flush=True)
                                 failure_count += 1
-                                #return line, str(retry_count)+"_"+str(idx), "Failure found."
                             else:
-                                print("No Errors: 1 or Failures: 1")
+                                print("No Errors: 1 or Failures: 1", flush=True)
+                            #exit()
+                        except subprocess.TimeoutExpired:
+                            print("run_test.sh timed out!", flush=True)
+                            exit()
+                        except Exception as e:
+                            print("run_test.sh failed with exception:", e, flush=True)
+                            print("--- STDOUT ---", flush=True)
+                            print(result_run.stdout if 'result_run' in locals() else '', flush=True)
+                            print("--- STDERR ---", flush=True)
+                            print(result_run.stderr if 'result_run' in locals() else '', flush=True)
+                            exit()
             exit()
 
