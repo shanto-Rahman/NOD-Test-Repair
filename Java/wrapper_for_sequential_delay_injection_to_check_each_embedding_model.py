@@ -49,8 +49,6 @@ def find_source_file_with_find(repos_root: str, slug: str, class_path: str) -> O
 
 # Configuration: path to the CSV data file
 #csv_file = 'metadata/embedings/org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2_bigbird_embeddings.csv'  # Update this to the actual CSV filename/path
-csv_file = "metadata/embedings/"
-
 # Variables for the test run command (ensure these are set to real values as needed)
 #slug = "your-project-slug"        # e.g., "org.java-websocket/Java-WebSocket"
 #module = "your-module-path"       # e.g., "" (if root project) or "module-name"
@@ -73,6 +71,7 @@ with open(input_csv, newline='') as inf:
         test = row['test']
         row_count = 0
         test_with_dot = test.replace("#", ".")
+        csv_file = "metadata/embedings/"
         csv_file = csv_file + test_with_dot + "_bigbird_embeddings.csv"
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
