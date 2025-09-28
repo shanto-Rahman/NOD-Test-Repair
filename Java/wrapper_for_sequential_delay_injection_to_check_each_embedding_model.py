@@ -94,7 +94,9 @@ with open(input_csv, newline='') as inf:
                 class_path = class_name.replace('.', os.sep) + ".java"
                 java_file_path = find_source_file_with_find("projects", slug, class_path)
                 print("Resolved:", java_file_path)
-
+                if java_file_path is None or not os.path.exists(java_file_path):
+                    print(f"Java file not found for {class_path}, skipping...", flush=True)
+                    continue
                 
                 print("slug, commit, module, test, class_name, method_name, descriptor, line_range=",slug, commit, module, test, class_name, method_name, descriptor, line_range, start_line, end_line, class_path)
                 #"projects"+slug+module+
