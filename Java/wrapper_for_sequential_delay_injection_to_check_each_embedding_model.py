@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Optional
 from modify_java_file import inject_sleep_before_line
 import re
+import time
+
 #def has_errors_or_failures(path):
 #    with open(path, 'r') as f:
 #        text = f.read()
@@ -59,12 +61,14 @@ run_id = 0
 input_csv="../data/all_82_tests.csv"
 model_name = "qwen"
 output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
-output_fields = ["slug", "module", "test", "row_id", "line_number", "log_file", "class_name", "method_name"]
+output_fields = ["slug", "module", "test", "row_id", "line_number", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
 with open(input_csv, newline='') as inf:
     reader = csv.DictReader(inf)
     for row in reader:
         failure_count = 0
+        iteration_count = 0
+        start_time = time.time()
         id = row['id']
         slug = row['slug']
         commit = row['commit']
@@ -110,6 +114,7 @@ with open(input_csv, newline='') as inf:
                     # Iterate through each line inside the method body (exclude signature and closing brace)
                     #for line_no in range(start_line + 1, end_line):
                     for idx, line_no in enumerate(range(start_line + 1, end_line)):
+                        iteration_count += 1
                         # Get the exact code line from original content for verification
                         print("line_no - 1=", line_no - 1)
                         code_line = original_lines[line_no - 1]
@@ -122,7 +127,7 @@ with open(input_csv, newline='') as inf:
                             print("About to run run_test.sh", flush=True)
                             result_run = subprocess.run([
                                 "./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx) + "_" + str(run_id)
-                            ], text=True, capture_output=True, timeout=700)
+                            ], text=True, capture_output=True, timeout=1400)
                             #print("Finished run_test.sh", flush=True)
                             #print("--- STDOUT ---", flush=True)
                             #print(result_run.stdout, flush=True)
@@ -148,6 +153,7 @@ with open(input_csv, newline='') as inf:
                             if has_errors_or_failures(log_file):
                                 print("Found Errors: 1 or Failures: 1", flush=True)
                                 failure_count += 1
+                                total_time_seconds = time.time() - start_time
                                 # Save to output CSV
                                 with open(output_csv, "a", newline='') as outf:
                                     writer = csv.DictWriter(outf, fieldnames=output_fields)
@@ -161,7 +167,9 @@ with open(input_csv, newline='') as inf:
                                         "line_number": line_no,
                                         "log_file": log_file,
                                         "class_name": class_name,
-                                        "method_name": method_name
+                                        "method_name": method_name,
+                                        "total_time_seconds": round(total_time_seconds, 2),
+                                        "iteration_count": iteration_count
                                     })
                                     break
                             else:
