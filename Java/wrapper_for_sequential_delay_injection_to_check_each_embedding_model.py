@@ -57,7 +57,8 @@ retry_count = 0
 run_id = 0
 
 input_csv="../data/all_82_tests.csv"
-output_csv = "results/output_found_failures_bigbird_embedding.csv"
+model_name = "qwen"
+output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
 output_fields = ["slug", "module", "test", "row_id", "line_number", "log_file", "class_name", "method_name"]
 
 with open(input_csv, newline='') as inf:
@@ -72,7 +73,7 @@ with open(input_csv, newline='') as inf:
         row_count = 0
         test_with_dot = test.replace("#", ".")
         csv_file = "metadata/embedings/"
-        csv_file = csv_file + test_with_dot + "_bigbird_embeddings.csv"
+        csv_file = csv_file + test_with_dot +"_"+model_name+ "_embeddings.csv"
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
             reader = csv.DictReader(f)
