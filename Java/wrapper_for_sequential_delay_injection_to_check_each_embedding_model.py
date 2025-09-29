@@ -178,7 +178,7 @@ with open(input_csv, newline='') as inf:
                                 failure_count += 1
                                 total_time_seconds = time.time() - start_time
                                 # Save to output CSV
-                                save_result(output_csv, slug, module, test, ranked_meth_id, line_number, log_file, class_name, method_name, total_time_seconds, iteration_count)
+                                save_result(output_csv, slug, module, test, ranked_meth_id, line_no, log_file, class_name, method_name, total_time_seconds, iteration_count)
                                 #with open(output_csv, "a", newline='') as outf:
                                 #    writer = csv.DictWriter(outf, fieldnames=output_fields)
                                 #    if outf.tell() == 0:
@@ -213,7 +213,7 @@ with open(input_csv, newline='') as inf:
                     break
                 #else:
             if failure_count == 0:
-                save_result(output_csv, slug, module, test, "no_test_failure", line_number, log_file, class_name, method_name, total_time_seconds, iteration_count)
+                save_result(output_csv, slug, module, test, "no_test_failure", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
 
             #exit()
 
