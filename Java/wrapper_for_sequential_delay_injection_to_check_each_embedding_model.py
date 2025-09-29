@@ -103,6 +103,8 @@ with open(input_csv, newline='') as inf:
                     continue
                 method_count +=1
                 class_name = ranked_meth['Class']
+                if '$' in class_name:
+                    class_name = class_name.split('$', 1)[0]
                 method_name = ranked_meth['Method']
                 descriptor = ranked_meth['Descriptor']
                 line_range = ranked_meth['LineRange']
@@ -112,6 +114,7 @@ with open(input_csv, newline='') as inf:
                 else:
                     start_line = end_line = int(line_range)
                 # Construct file path from class name (package to path)
+                #Java file not found for tachyon/thrift/WorkerService$Client.java
                 class_path = class_name.replace('.', os.sep) + ".java"
                 java_file_path = find_source_file_with_find("projects", slug, class_path)
                 print("Resolved:", java_file_path)
