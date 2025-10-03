@@ -21,7 +21,7 @@ def save_result(output_csv, slug, module, test, row_id, line_number, log_file, c
             "module": module,
             "test": test,
             "method_id": row_id,
-            "line_number": line_no,
+            "line_number": line_number,
             "log_file": log_file,
             "class_name": class_name,
             "method_name": method_name,
@@ -75,6 +75,7 @@ retry_count = 0
 run_id = 0
 
 input_csv="../data/all_82_tests.csv"
+#input_csv="../data/l.csv"
 model_name = "gpt2"
 output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
 output_fields = ["slug", "module", "test", "method_id", "line_number", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
@@ -120,6 +121,7 @@ with open(input_csv, newline='') as inf:
                 print("Resolved:", java_file_path)
                 if java_file_path is None or not os.path.exists(java_file_path):
                     print(f"Java file not found for {class_path}, skipping...", flush=True)
+                    print("Failure_count=", failure_count)
                     continue
                 
                 print("slug, commit, module, test, class_name, method_name, descriptor, line_range=",slug, commit, module, test, class_name, method_name, descriptor, line_range, start_line, end_line, class_path)
@@ -197,6 +199,7 @@ with open(input_csv, newline='') as inf:
                                 #    })
                                 break
                             else:
+                                print("log_file=", log_file)
                                 print("No Errors: 1 or Failures: 1", flush=True)
                             #exit()
                         except subprocess.TimeoutExpired:
@@ -211,10 +214,10 @@ with open(input_csv, newline='') as inf:
                             #exit()
                 if failure_count > 0:
                     break
-                #else:
-            if failure_count == 0:
-                total_time_seconds = time.time() - start_time
-                save_result(output_csv, slug, module, test, "no_test_failure", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
+        if failure_count == 0:
+            total_time_seconds = time.time() - start_time
+            save_result(output_csv, slug, module, test, "no_test_failure", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
+            print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
 
             #exit()
 
