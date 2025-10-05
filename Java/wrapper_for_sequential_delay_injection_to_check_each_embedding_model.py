@@ -82,6 +82,38 @@ model_name = "gpt2"
 output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
 output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
+def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+    inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+    tag = f"{retry_count}_{idx}_{run_id}"
+    try:
+        print("./run_test.sh", slug, module, test, tag)
+        result_run = subprocess.run(
+            ["./run_test.sh", slug, module, test, tag],
+            check=True, text=True, capture_output=True
+        )
+        out = result_run.stdout.strip()
+        print("***out****", out)
+        firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
+        return (firstLine == "Failure found.")
+    except subprocess.CalledProcessError as e:
+        print("run_test.sh failed with exit code", e.returncode)
+        print("--- stdout ---"); print(e.stdout)
+        print("--- stderr ---"); print(e.stderr)
+
+        # Inspect produced log to decide if it was a failure
+        currentDir_when_exception_occurs = os.getcwd()
+        before, after = test.rsplit('.', 1)
+        test_with_hash = f"{before}#{after}"
+        log_file = (currentDir_when_exception_occurs + "/logs-to-reproduce/" +
+                    f"{test_with_hash}-con-after-changedCode-{tag}.txt")
+        print("log file name=", log_file)
+        if has_errors_or_failures(log_file):
+            print("Found Errors: 1 or Failures: 1")
+            return True
+        else:
+            print("No Errors: 1 or Failures: 1")
+            return False
+
 with open(input_csv, newline='') as inf:
     reader = csv.DictReader(inf)
     for test_info in reader: #For each test
@@ -137,9 +169,27 @@ with open(input_csv, newline='') as inf:
                     # Iterate through each line inside the method body (exclude signature and closing brace)
                     #for line_no in range(start_line + 1, end_line):
                     for idx, line_no in enumerate(range(start_line + 1, end_line)):
+                        failure_count = 0
                         iteration_count += 1
+                        first_failed = run_once(0, candidates, line_no, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+
+                        if not first_failed:
+                            print("First run: no failure; skipping additional runs.")
+                            print("Only 0/1 runs failed. Not considering as valid failure.")
+                        else:
+                           # First run failed → run 4 more times (total 5)
+                            failure_count = 1
+                            for run_id in range(1, 5):
+                                if run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+                                    failure_count += 1
+                            if failure_count >=3:
+                                print(f"Failure found in {failure_count}/5 runs.")
+                                return line, f"{retry_count}_{idx}", "Failure found."
+                            else:
+                                print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
+                        
                         # Get the exact code line from original content for verification
-                        print("line_no - 1=", line_no - 1)
+                        '''print("line_no - 1=", line_no - 1)
                         code_line = original_lines[line_no - 1]
                         print(code_line)
                         print(line_no)
@@ -151,25 +201,8 @@ with open(input_csv, newline='') as inf:
                             result_run = subprocess.run([
                                 "./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx) + "_" + str(run_id)
                             ], text=True, capture_output=True, timeout=1400)
-                            #exit()
-                            #print("Finished run_test.sh", flush=True)
-                            #print("--- STDOUT ---", flush=True)
-                            #print(result_run.stdout, flush=True)
-                            #print("--- STDERR ---", flush=True)
-                            #print(result_run.stderr, flush=True)
-                            #print("HI I AM HERE", flush=True)
                             out = result_run.stdout.strip()
                             print(out)
-                            #print("***out****", out, flush=True)
-                            #if out:
-                            #    firstLine = out.splitlines()[0]
-                            #else:
-                            #    firstLine = ""
-                            #if firstLine == "Failure found.":
-                            #    print("***Failure found.", flush=True)
-                            #else:
-                            #    print("***Output:", out, flush=True)
-                            # Also check the log file for Maven errors/failures
                             currentDir_when_exception_occurs = os.getcwd()
                             before, after = test_with_dot.rsplit('.', 1)
                             test_with_hash = f"{before}#{after}"
@@ -183,22 +216,6 @@ with open(input_csv, newline='') as inf:
                                 total_time_seconds = time.time() - start_time
                                 # Save to output CSV
                                 save_result(output_csv, slug, module, test, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
-                                #with open(output_csv, "a", newline='') as outf:
-                                #    writer = csv.DictWriter(outf, fieldnames=output_fields)
-                                #    if outf.tell() == 0:
-                                #        writer.writeheader()
-                                #    writer.writerow({
-                                #        "slug": slug,
-                                #        "module": module,
-                                #        "test": test,
-                                #        "row_id": row_id,
-                                #        "line_number": line_no,
-                                #        "log_file": log_file,
-                                #        "class_name": class_name,
-                                #        "method_name": method_name,
-                                #        "total_time_seconds": round(total_time_seconds, 2),
-                                #        "iteration_count": iteration_count
-                                #    })
                                 break
                             else:
                                 print("log_file=", log_file)
@@ -212,10 +229,10 @@ with open(input_csv, newline='') as inf:
                             print("--- STDOUT ---", flush=True)
                             print(result_run.stdout if 'result_run' in locals() else '', flush=True)
                             print("--- STDERR ---", flush=True)
-                            print(result_run.stderr if 'result_run' in locals() else '', flush=True)
+                            print(result_run.stderr if 'result_run' in locals() else '', flush=True)'''
                             #exit()
-                if failure_count > 0:
-                    break
+                #if failure_count > 0:
+                #    break
         if failure_count == 0:
             total_time_seconds = time.time() - start_time
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
