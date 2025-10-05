@@ -242,12 +242,7 @@ with open(input_csv, newline='') as inf:
                 #    break
         if failure_count == 0:
             total_time_seconds = time.time() - start_time
-            log_file="x.csv"
-            class_name = "jjkk"
-            total_time_seconds = time.time() - start_time   # or 0.0
-            method_name = "pp"
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
             print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
 
-        exit()
 
