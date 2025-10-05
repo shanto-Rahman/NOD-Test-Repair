@@ -197,49 +197,6 @@ with open(input_csv, newline='') as inf:
                             else:
                                 print("Only {failure_count}/5 runs failed. Not considering as valid failure.")
                         
-                        # Get the exact code line from original content for verification
-                        #'''print("line_no - 1=", line_no - 1)
-                        #code_line = original_lines[line_no - 1]
-                        #print(code_line)
-                        #print(line_no)
-                        ## Inject sleep before this line
-                        #inject_sleep_before_line(candidates, line_no, method_name, descriptor, code_line)
-                        ##exit()
-                        #try:
-                        #    print("About to run run_test.sh", flush=True)
-                        #    result_run = subprocess.run([
-                        #        "./run_test.sh", slug, module, test_with_dot, str(retry_count) + "_" + str(idx) + "_" + str(run_id)
-                        #    ], text=True, capture_output=True, timeout=1400)
-                        #    out = result_run.stdout.strip()
-                        #    print(out)
-                        #    currentDir_when_exception_occurs = os.getcwd()
-                        #    before, after = test_with_dot.rsplit('.', 1)
-                        #    print("Checking log file:", log_file, flush=True)
-
-                        #    #exit()
-                        #    if has_errors_or_failures(log_file):
-                        #        print("Found Errors: 1 or Failures: 1", flush=True)
-                        #        failure_count += 1
-                        #        total_time_seconds = time.time() - start_time
-                        #        # Save to output CSV
-                        #        save_result(output_csv, slug, module, test, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
-                        #        break
-                        #    else:
-                        #        print("log_file=", log_file)
-                        #        print("No Errors: 1 or Failures: 1", flush=True)
-                        #    #exit()
-                        #except subprocess.TimeoutExpired:
-                        #    print("run_test.sh timed out!", flush=True)
-                        #    #exit()
-                        #except Exception as e:
-                        #    print("run_test.sh failed with exception:", e, flush=True)
-                        #    print("--- STDOUT ---", flush=True)
-                        #    print(result_run.stdout if 'result_run' in locals() else '', flush=True)
-                        #    print("--- STDERR ---", flush=True)
-                        #    print(result_run.stderr if 'result_run' in locals() else '', flush=True)'''
-                            #exit()
-                #if failure_count > 0:
-                #    break
         if failure_count == 0:
             total_time_seconds = time.time() - start_time
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
