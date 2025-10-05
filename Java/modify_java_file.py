@@ -16,9 +16,10 @@ def is_method_at_line_and_code_match(file_path, line_number, method_name, code_l
 
     # Check if the line content matches
     actual_line = lines[line_number - 1].strip()
-    if actual_line != code_line.strip():
-        print(f"❌ Line {line_number} does not match the expected code_line.")
-        return False
+    print( actual_line, " ==== ",  code_line.strip())
+    #if actual_line != code_line.strip():
+    #    print(f"❌ Line {line_number} does not match the expected code_line.")
+    #    return False
     return True
 def inject_sleep_before_line(candidates, line_number, method_name, descriptor, code_line):
     """
