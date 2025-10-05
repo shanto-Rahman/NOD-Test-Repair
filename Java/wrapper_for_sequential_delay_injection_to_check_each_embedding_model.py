@@ -171,6 +171,8 @@ with open(input_csv, newline='') as inf:
                     for idx, line_no in enumerate(range(start_line + 1, end_line)):
                         failure_count = 0
                         iteration_count += 1
+                        code_line = original_lines[line_no - 1]
+                        print("**** code_line=", code_line)
                         first_failed = run_once(0, candidates, line_no, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
 
                         if not first_failed:
@@ -184,7 +186,9 @@ with open(input_csv, newline='') as inf:
                                     failure_count += 1
                             if failure_count >=3:
                                 print(f"Failure found in {failure_count}/5 runs.")
-                                return line, f"{retry_count}_{idx}", "Failure found."
+                                save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
+                                break
+                                #return line, f"{retry_count}_{idx}", "Failure found."
                             else:
                                 print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
                         
