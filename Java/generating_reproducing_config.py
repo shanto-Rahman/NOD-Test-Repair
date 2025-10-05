@@ -298,8 +298,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         )
         messages.append({"role": "user", "content": feedback}) 
         retry_count += 1
-        continue
-    return "NA", str(retry_count), firstLine 
+        #continue
+    return "NA", str(retry_count), "Failure not found"
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
