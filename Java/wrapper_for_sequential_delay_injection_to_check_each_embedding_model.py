@@ -11,7 +11,7 @@ import time
 #    with open(path, 'r') as f:
 #        text = f.read()
 #    return 'Errors: 1' in text or 'Failures: 1' in text
-def save_result(output_csv, slug, module, test, row_id, line_number, log_file, class_name, method_name, total_time_seconds, iteration_count):
+def save_result(output_csv, slug, module, test, row_id, line_number, actual_line, log_file, class_name, method_name, total_time_seconds, iteration_count):
     with open(output_csv, "a", newline='') as outf:
         writer = csv.DictWriter(outf, fieldnames=output_fields)
         if outf.tell() == 0:
@@ -22,6 +22,7 @@ def save_result(output_csv, slug, module, test, row_id, line_number, log_file, c
             "test": test,
             "method_id": row_id,
             "line_number": line_number,
+            "actual_line": actual_line,
             "log_file": log_file,
             "class_name": class_name,
             "method_name": method_name,
@@ -76,9 +77,10 @@ run_id = 0
 
 input_csv="../data/all_82_tests.csv"
 #input_csv="../data/l.csv"
+#input_csv="l"
 model_name = "gpt2"
 output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
-output_fields = ["slug", "module", "test", "method_id", "line_number", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
+output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
 with open(input_csv, newline='') as inf:
     reader = csv.DictReader(inf)
@@ -180,7 +182,7 @@ with open(input_csv, newline='') as inf:
                                 failure_count += 1
                                 total_time_seconds = time.time() - start_time
                                 # Save to output CSV
-                                save_result(output_csv, slug, module, test, ranked_meth_id, line_no, log_file, class_name, method_name, total_time_seconds, iteration_count)
+                                save_result(output_csv, slug, module, test, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
                                 #with open(output_csv, "a", newline='') as outf:
                                 #    writer = csv.DictWriter(outf, fieldnames=output_fields)
                                 #    if outf.tell() == 0:
@@ -217,7 +219,7 @@ with open(input_csv, newline='') as inf:
         if failure_count == 0:
             total_time_seconds = time.time() - start_time
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
-            print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
+            print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
 
             #exit()
 
