@@ -1,10 +1,19 @@
 Run command:
 
 bash runAll.sh ../data/talank_with_test_id_idoft_corrected.csv Result/
-bash search_for_failure_reproducing.sh ../data/talank_with_test_id_idoft_corrected.csv "idoft"
+
+export OPENAI_API_KEY="YOUR_KEY_HERE"
+bash search_for_failure_reproducing.sh ../data/all_82_tests.csv "idoft"
 
 To collect the agreement between models, we run the following command.
  bash run_to_get_top10_methods.sh ../data/all_82_tests.csv Result/ > log
+
+For collecting location after adding sequential delay, run the following command.
+python3 wrapper_for_sequential_delay_injection_to_check_each_embedding_model.py 
+
+
+For check the nondeterminism in embeddings, we do the following experiment.
+python3 matching_embeddings_to_check_non_determinism.py "llama"
 
 clone the project
 
