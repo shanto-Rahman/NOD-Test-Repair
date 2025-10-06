@@ -42,6 +42,38 @@ def hf_login_once():
     os.environ["HF_ALREADY_LOGGED_IN"] = "1"
 
 
+def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+    inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+    tag = f"{retry_count}_{idx}_{run_id}"
+    try:
+        print("./run_test.sh", slug, module, test, tag)
+        result_run = subprocess.run(
+            ["./run_test.sh", slug, module, test, tag],
+            check=True, text=True, capture_output=True
+        )
+        out = result_run.stdout.strip()
+        print("***out****", out)
+        firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
+        return (firstLine == "Failure found.")
+    except subprocess.CalledProcessError as e:
+        print("run_test.sh failed with exit code", e.returncode)
+        print("--- stdout ---"); print(e.stdout)
+        print("--- stderr ---"); print(e.stderr)
+
+        # Inspect produced log to decide if it was a failure
+        currentDir_when_exception_occurs = os.getcwd()
+        before, after = test.rsplit('.', 1)
+        test_with_hash = f"{before}#{after}"
+        log_file = (currentDir_when_exception_occurs + "/logs-to-reproduce/" +
+                    f"{test_with_hash}-con-after-changedCode-{tag}.txt")
+        print("log file name=", log_file)
+        if has_errors_or_failures(log_file):
+            print("Found Errors: 1 or Failures: 1")
+            return True
+        else:
+            print("No Errors: 1 or Failures: 1")
+            return False
+
 def has_errors_or_failures(path):
     with open(path, 'r') as f:
         text = f.read()
@@ -183,47 +215,21 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
                 if class_path_list:
                     failure_count = 0
-                    for run_id in range(5):
-                        inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
-                        try:
-                            print("./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)+ "_" + str(run_id))
-                            result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx) + "_" + str(run_id)], check=True, text=True, capture_output=True)
-                            out = result_run.stdout.strip()
-                            print("***out****", out)
-                            firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
-
-                            if firstLine == "Failure found.":
-                                print("Failure found.")
+                    first_failed = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                    if not first_failed:
+                        print("First run: no failure; skipping additional runs.")
+                        print("Only 0/1 runs failed. Not considering as valid failure.")
+                    else:
+                       # First run failed → run 4 more times (total 5)
+                        failure_count = 1
+                        for run_id in range(1, 5):
+                            if run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
                                 failure_count += 1
-                                #break 
-                                #return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
-                                #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
-                        except subprocess.CalledProcessError as e:
-                            print("run_test.sh failed with exit code", e.returncode)
-                            print("--- stdout ---")
-                            print(e.stdout)
-                            print("--- stderr ---")
-                            print(e.stderr)
-                            #if slug == "doanduyhai/Achilles" or "Java-WebSocket":
-                            currentDir_when_exception_occurs = os.getcwd()
-                            before, after = test.rsplit('.', 1)
-                            test_with_hash = f"{before}#{after}"
-                            log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
-                            print("log file name=", log_file)
-                            if has_errors_or_failures(log_file):
-                                print("Found Errors: 1 or Failures: 1")
-                                failure_count += 1
-                                return line, str(retry_count)+"_"+str(idx), "Failure found."
-                            else:
-                                print("No Errors: 1 or Failures: 1")
-
-                    if failure_count >= 3:
-                        print(f"Failure found in {failure_count}/5 runs.")
-                        return line, f"{retry_count}_{idx}", "Failure found."
-
-                    print(f"Only {failure_count}/5 runs failed. Not considering as valid failure.")
-
-
+                        if failure_count >=3:
+                            print(f"Failure found in {failure_count}/5 runs.")
+                            return line, f"{retry_count}_{idx}", "Failure found."
+                        else:
+                            print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
                 else:
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
@@ -337,7 +343,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         print(ranked_df)'''
     
     df = pd.read_csv(csv_that_contains_all_methods)
-    depth_filtered_df = df.head(120)
+    #depth_filtered_df = df.head(120) # First 100 methods
+    SAMPLE_SIZE = 10
+    depth_filtered_df = df.sample(n=SAMPLE_SIZE, random_state=42).reset_index(drop=True) #Random 100 methods
     print("len=",len(df))
     print(len(depth_filtered_df))
     #exit()
@@ -349,7 +357,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
     
-    depth_filtered_df.to_csv("metadata/Depth_filtered_df.csv", index=False)
+    depth_filtered_df.to_csv("metadata/barebone/"+test+"Depth_filtered_df.csv", index=False)
     print(failure_log)
     print(test_code)
 
@@ -467,7 +475,4 @@ if __name__ == "__main__":
     line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
-    #print("duration=", duration)
-    #minutes, seconds = divmod(duration, 60)
-
     save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, duration_in_seconds)
