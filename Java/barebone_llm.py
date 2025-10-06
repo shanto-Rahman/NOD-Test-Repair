@@ -243,7 +243,7 @@ def has_errors_or_failures(path):
 #    )
 #    return common_df
 
-def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5, max_tokens=400):
+def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5, max_tokens=1000):
     #tokens_needed = estimate_request_tokens(messages, max_tokens)
     #tpm_throttle(tokens_needed)
     retry_count = 0
@@ -363,6 +363,11 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 meth_code = "No code found" #response_content
         else:
             meth_code = "</Output> not found" #response_content
+            retry_count = 0
+            feedback = (
+                f"Your previous response did not include the </Output> tag. Please enclose your answer between <Output> and </Output> tags.\n")
+            messages.append({"role": "user", "content": feedback})
+            continue
         print("**meth_code=", meth_code)
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** index=", idx, ",Processing line:", line)
@@ -449,10 +454,12 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             f"Do not repeat any of the previous suggestions."
             f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
         )
+        feedback = (
+            f"Your previous suggestion did not reproduce the failure.\n"
         messages.append({"role": "user", "content": feedback})'''
         retry_count += 1
         #continue
-    return "NA", str(retry_count), firstLine 
+    return "NA", str(retry_count), "Failure not found"
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
@@ -747,7 +754,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         print(ranked_df)'''
     
     df = pd.read_csv(csv_that_contains_all_methods)
-    depth_filtered_df = df.head(300)
+    depth_filtered_df = df.head(120)
     print("len=",len(df))
     print(len(depth_filtered_df))
     #exit()
@@ -810,7 +817,7 @@ def initialize_environment(seed_value):
 def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, seconds): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
-    file_path = "results/tdrepro.csv"
+    file_path = "results/barebone-gpt4-result.csv"
     write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
