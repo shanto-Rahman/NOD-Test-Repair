@@ -196,7 +196,9 @@ with open(input_csv, newline='') as inf:
                                 #return line, f"{retry_count}_{idx}", "Failure found."
                             else:
                                 print("Only {failure_count}/5 runs failed. Not considering as valid failure.")
-                        
+                    
+                if failure_count >=3:
+                    break
         if failure_count == 0:
             total_time_seconds = time.time() - start_time
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", log_file, class_name, method_name, total_time_seconds, iteration_count)
