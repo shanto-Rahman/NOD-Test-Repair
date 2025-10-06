@@ -513,7 +513,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         #openai.api_key = "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"
         #openai.api_key = "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"
         #openai.api_key = "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"
-        openai.api_key = "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"
+        openai.api_key = os.environ["OPENAI_API_KEY"] #"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"
     #else:
     #    print('model name not correct')
     #    exit()
