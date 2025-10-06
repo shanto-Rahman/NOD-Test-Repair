@@ -189,6 +189,7 @@ with open(input_csv, newline='') as inf:
                                 test_with_hash = f"{before}#{after}"
                                 print(f"Failure found in {failure_count}/5 runs.")
                                 currentDir_when_exception_occurs = os.getcwd()
+                                os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce/", exist_ok=True)
                                 log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
                                 total_time_seconds = time.time() - start_time
                                 save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
