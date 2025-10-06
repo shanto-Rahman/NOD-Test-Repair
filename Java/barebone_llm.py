@@ -27,8 +27,184 @@ from langchain.memory import ChatMessageHistory
 from helper import get_line_range, find_api_match_with_flakerake
 from modify_java_file import inject_sleep_before_line
 from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
+from typing import Optional, List, Tuple  # and List, Dict, Optional, Any as needed
+import time, threading
 
 #login(token="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")
+
+import re
+# -------- token estimation --------
+try:
+    import tiktoken
+    _enc = tiktoken.get_encoding("o200k_base")
+    def tok_len(s):
+        return len(_enc.encode(str(s) if s is not None else ""))
+except Exception:
+    def tok_len(s):
+        s = str(s) if s is not None else ""
+        return max(1, len(s) // 4)  # rough fallback
+
+def estimate_request_tokens(messages, reply_tokens):
+    # rough per-message overhead
+    overhead_per_msg = 6
+    total = 0
+    for m in messages:
+        total += tok_len(m.get("content", "")) + overhead_per_msg
+    return total + reply_tokens
+
+# -------- simple TPM limiter (per process) --------
+TPM_LIMIT = 20000  # your org limit
+_lock = threading.Lock()
+_window_start = time.time()
+_used_this_min = 0
+#try:
+#    import tiktoken
+#    _enc = tiktoken.get_encoding("o200k_base")
+#    def tok_len(s) -> int:
+#        # Normalize to a string safely
+#        if s is None:
+#            text = ""
+#        elif isinstance(s, (pd.Series, pd.DataFrame)):
+#            # Convert Series/DataFrame to a readable string
+#            text = s.to_string()
+#        else:
+#            text = str(s)
+#        return len(_enc.encode(text))
+#except Exception:
+#    # Fallback rough estimator (~4 chars per token)
+#    def tok_len(s) -> int:
+#        if s is None:
+#            text = ""
+#        elif isinstance(s, (pd.Series, pd.DataFrame)):
+#            text = s.to_string()
+#        else:
+#            text = str(s)
+#try:
+#    import tiktoken
+#    _enc = tiktoken.get_encoding("o200k_base")  # good for 4o-family
+#    def tok_len(s: str) -> int:
+#        return len(_enc.encode(s or ""))
+#except Exception:
+#    # Rough fallback (~4 chars/token)
+#    def tok_len(s: str) -> int:
+#        s = s or ""
+#        return max(1, len(s) // 4)
+
+def tpm_throttle(tokens_needed):
+    """Block until tokens_needed fits into the current 60s window."""
+    global _window_start, _used_this_min
+    with _lock:
+        now = time.time()
+        elapsed = now - _window_start
+        if elapsed >= 60.0:
+            # new window
+            _window_start = now
+            _used_this_min = 0
+        # if this request would overflow the TPM, sleep until next window
+        if _used_this_min + tokens_needed > TPM_LIMIT:
+            sleep_for = 60.0 - elapsed
+            if sleep_for > 0:
+                # release lock while sleeping
+                _lock.release()
+                try:
+                    time.sleep(sleep_for)
+                finally:
+                    _lock.acquire()
+                # start new window
+                _window_start = time.time()
+                _used_this_min = 0
+        _used_this_min += tokens_needed
+
+def minify_java(src: str) -> str:
+    if not src:
+        return ""
+    # remove block comments
+    src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
+    # remove line comments
+    src = re.sub(r"//.*?$", "", src, flags=re.M)
+    # strip blank lines/whitespace
+    lines = [l.strip() for l in src.splitlines() if l.strip()]
+    return "\n".join(lines)
+
+def clip_head_tail(s: str, head=80, tail=40) -> str:
+    lines = s.splitlines()
+    if len(lines) <= head + tail:
+        return s
+    return "\n".join(lines[:head] + ["// ... clipped ..."] + lines[-tail:])
+
+def estimate_fixed_tokens(definition: str, test_code: str, failure_log: str) -> int:
+    # approximate “static” header you include in generate_prompt
+    # Add small overhead for roles/markup.
+    overhead = 40
+    return tok_len(definition) + tok_len(test_code) + tok_len(failure_log) + overhead
+
+def build_method_block(row: pd.Series) -> Tuple[str, int]:
+#def build_method_block(row: pd.Series) -> tuple[str, int]:
+    """
+    Build the string for one method (what your prompt uses), and return (text, token_count).
+    Expects columns: Class, Method, Descriptor, Body (adjust if yours differ).
+    """
+    cls  = row.get("Class", "?")
+    meth = row.get("Method", "?")
+    desc = row.get("Descriptor", "")
+    body = row.get("Body") or row.get("code") or ""
+    body_min = minify_java(body)
+    # If still long, clip head/tail
+    if tok_len(body_min) > 3000:
+        body_min = clip_head_tail(body_min, head=120, tail=60)
+    text = f"### {cls}.{meth} {desc}\n```java\n{body_min}\n```\n"
+    return text, tok_len(text)
+
+def fit_df_to_token_budget(filtered_df: pd.DataFrame,
+                           definition: str,
+                           test_code: str,
+                           failure_log: str,
+                           input_budget: int = 30000,
+                           reserve_for_output: int = 1000,
+                            prefer_score_col: Optional[str] = None
+                            ) -> Tuple[pd.DataFrame, List[str]]:
+                           #prefer_score_col: str | None = None) -> Tuple[pd.DataFrame, list[str]]:
+    """
+    Returns a reduced dataframe and the list of per-method texts to concatenate in your prompt.
+    If prefer_score_col is set (e.g., 'score'), it will sort descending by that column first.
+    """
+    cap = max(1, input_budget - reserve_for_output)
+    used = estimate_fixed_tokens(definition, test_code, failure_log)
+    if used >= cap:
+        # Fixed parts alone exceed budget; you may want to clip failure log or test code upstream.
+        return filtered_df.iloc[0:0], []
+
+    df = filtered_df
+    if prefer_score_col and prefer_score_col in df.columns:
+        df = df.sort_values(prefer_score_col, ascending=False)
+
+    selected_rows = []
+    method_blocks = []
+
+    for _, row in df.iterrows():
+        block, t = build_method_block(row)
+        if used + t <= cap:
+            selected_rows.append(row)
+            method_blocks.append(block)
+            used += t
+        else:
+            # Try a more aggressive clip for this one method
+            body = row.get("Body") or row.get("code") or ""
+            body_min = minify_java(body)
+            body_clipped = clip_head_tail(body_min, head=60, tail=30)
+            block2 = f"### {row.get('Class','?')}.{row.get('Method','?')} {row.get('Descriptor','')}\n```java\n{body_clipped}\n```\n"
+            t2 = tok_len(block2)
+            if used + t2 <= cap:
+                selected_rows.append(row)
+                method_blocks.append(block2)
+                used += t2
+            # else skip this one
+
+    if selected_rows:
+        reduced_df = pd.DataFrame(selected_rows, columns=df.columns)
+    else:
+        reduced_df = df.iloc[0:0]
+    return reduced_df, method_blocks
 
 def hf_login_once():
     if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
@@ -67,7 +243,9 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
     )
     return common_df
 
-def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
+def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5, max_tokens=400):
+    tokens_needed = estimate_request_tokens(messages, max_tokens)
+    tpm_throttle(tokens_needed)
     retry_count = 0
     #print("messages=", messages)
     while retry_count < max_retries:
@@ -77,7 +255,7 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
                 model="gpt-4o",
                 messages=messages,
                 temperature=0.2,
-                max_tokens=1000
+                max_tokens=max_tokens
             )
             time.sleep(sleep_on_success)  # Optional: avoid hammering the API
             return response
@@ -156,8 +334,21 @@ def is_synchronized_signature(body):
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 1
     tried_methods = set()
-
+   
     prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
+    # Instead of trimming messages, fit the df to your input budget:
+    reduced_df, method_blocks = fit_df_to_token_budget(
+        filtered_df=filtered_df,
+        definition=definition,
+        test_code=test_code,
+        failure_log=failure_log,
+        input_budget=30000,       # your org/model budget
+        reserve_for_output=1000,  # leave room for reply
+        prefer_score_col=None     # set to 'score' if you already ranked
+    )
+
+    #prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
+    prompt, definition = generate_prompt(failure_log, reduced_df, test_code)
 
     print("prompt=", prompt)
     messages = [
@@ -510,10 +701,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     elif ml_technique == "deep_seek_coder":
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
-        #openai.api_key = "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"
-        #openai.api_key = "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"
-        #openai.api_key = "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"
-        openai.api_key = os.environ["OPENAI_API_KEY"] #"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"
+        openai.api_key = os.environ["OPENAI_API_KEY"]
     #else:
     #    print('model name not correct')
     #    exit()
