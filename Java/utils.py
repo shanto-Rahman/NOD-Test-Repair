@@ -196,13 +196,16 @@ def mistral_model_define():
     return model_name, tokenizer, auto_model
 
 def qwen_model_define():
-    model_name = "Qwen/Qwen2-7B-Instruct"
+    # model_name = "Qwen/Qwen2-7B-Instruct"
+    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    model_name = "Qwen/Qwen2.5-Coder-14B-Instruct"
 
+    print("Loading the Qwen/Qwen3-235B-A22B-Instruct-2507 model. This may take a while...")
     auto_model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",
         device_map="auto",
-        #trust_remote_code=True
+        trust_remote_code=True,
         use_auth_token=True
     )
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -224,13 +227,35 @@ def deep_seek_coder_model_define():
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     return model_name, tokenizer, auto_model
 
-def llama3_8b_model_define():	
+def llama3_8b_model_define():
+    print("*"*50)
+    print("llama 3 8b has been defined")
+    print("*"*50)
     model_name = "meta-llama/Meta-Llama-3-8B-Instruct"
+
+    auto_model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        torch_dtype=torch.bfloat16
+    ).cuda()
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    return model_name, tokenizer, auto_model
+
+def llama3_3_70b_model_define():
+    print("*"*50)
+    print("llama 3.3 70b has been defined")
+    print("*"*50)
+
+    # username = os.getenv("USER")
+    # os.makedirs(f"/scratch/{username}/offload", exist_ok=True)
+
+    model_name = "meta-llama/Llama-3.3-70B-Instruct"
     auto_model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True
-    ).cuda()
+        device_map="auto"
+        # offload_folder=f"/scratch/{username}/offload"
+    )
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     return model_name, tokenizer, auto_model
 

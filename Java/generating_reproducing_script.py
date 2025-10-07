@@ -6,7 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
 import sys
-from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define
+from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, llama3_3_70b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define
 import pandas as pd
 import os
 import numpy as np
@@ -300,6 +300,242 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         retry_count += 1
         continue
     return "NA", str(retry_count), firstLine 
+
+
+def open_source_llm_score_finder(messages, model_name, tokenizer, model, max_retries=3, initial_wait=2, sleep_on_success=5):
+    retry_count = 0
+
+    while retry_count < max_retries:
+        try:
+            # Convert messages (list of dicts) into a single prompt string
+            if isinstance(messages, list) and isinstance(messages[0], dict):
+                # use the tokenizer's built-in chat template
+                text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            elif isinstance(messages, str):
+                text = messages
+            else:
+                raise ValueError(f"Unsupported messages format: {type(messages)}")
+
+            # Tokenize
+            inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+            # Generate response
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=500,
+                do_sample=True,
+                temperature=0.2,
+                pad_token_id=tokenizer.eos_token_id
+            )
+            
+            prompt_len = inputs["input_ids"].shape[1]
+            # Slicing outputs[:, prompt_len:] ensures you only decode the newly generated tokens.
+            predictions = tokenizer.batch_decode(
+                outputs[:, prompt_len:],
+                skip_special_tokens=True
+            )
+            response_text = predictions[0].strip()
+
+            # time.sleep(sleep_on_success)
+            print("LLM RESPONSE =============================")
+            print(response_text)
+            print("============================================")
+            # flush stdout to ensure timely logging
+            sys.stdout.flush()
+            return response_text
+
+        except RuntimeError as e:
+            if "CUDA" in str(e):
+                torch.cuda.empty_cache()
+                wait_time = initial_wait * (2 ** retry_count)
+                print(f"CUDA OOM. Retrying in {wait_time}s…")
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                raise
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            raise
+
+    return None
+
+
+def open_source_llm_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, model_name, tokenizer, auto_model, retry_count = 0):
+    max_retries = 1
+    tried_methods = set()
+
+    prompt, definition = generate_prompt(failure_log, filtered_df.head(10), test_code)
+    #print("definition=", definition)
+
+    # print("prompt=", prompt)
+    messages = [
+        {"role": "system", "content": definition},
+        {"role": "user",   "content": prompt}
+    ]
+
+    # save the prompt to a text file in /scratch/tbaral/oopsla26/prompts directory
+    Path("/scratch/tbaral/oopsla26/prompts").mkdir(parents=True, exist_ok=True)
+    # exit(0)
+
+    while retry_count < max_retries:
+        #print("messages=", messages)
+        print("Calling qwen for attempt {}...".format(retry_count + 1))
+        with open(f"/scratch/tbaral/oopsla26/prompts/{retry_count}_{slug.replace('/', '_')}_{module.replace('/', '_')}_{test.replace('.', '_')}_prompt.txt", "w") as f:
+            f.write(prompt)
+
+
+        response_content = open_source_llm_score_finder(messages, model_name, tokenizer, auto_model)
+
+        if not response_content: 
+            break
+
+        # save the response to a text file in /scratch/tbaral/oopsla26/responses directory
+        
+
+        messages.append({"role": "assistant", "content": response_content})
+
+        if "</Output>" in response_content:
+            # m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+            matches = re.findall(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+            m= matches[-1] if matches else None  # Get the last match if multiples found
+            if m:
+                meth_code = m
+                print("m=", m)
+            else:
+                meth_code = re.sub(r"<\/?Output>", "", response_content).strip()
+        else:
+            meth_code = re.sub(r"<\/?Output>", "", response_content).strip()
+            # meth_code = "</Output> not found" #response_content
+            print("</Output> not found in the response. Using entire response as meth_code.")
+
+        with open(f"/scratch/tbaral/oopsla26/responses/{retry_count}_{slug.replace('/', '_')}_{module.replace('/', '_')}_{test.replace('.', '_')}_response.txt", "w") as f:
+            f.write(meth_code)
+
+        print("**meth_code=", meth_code)
+        #exit()
+        # Suppose meth_code is your multiline string as shown above
+        for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
+            print("**** index=", idx, ",Processing line:", line)
+            line = line.strip()
+            if not line:
+                continue  # skip empty lines
+            patterns = [
+                    r"^(.*?):(.*?)(?::(.*?))?[:]?(\\d+)\\s+\\((.*)\\)$",  # Case 1: stacktrace w/ code
+                    r"^Class:(.*?):Method:(.*?):Descriptor:(.*?):FileLineNumber:(\\d+)\\s+\\((.*)\\)$",  # Case 2: LLM style
+                    r"^(.*?):(.*?)(?::(.*?))?[:]?(\\d+)$",  # Case 3: no code snippet
+                    r"^Class:\s*(.*?):(.*?)(?::(.*?))?:(\d+)\s+\((.*)\)$",  # Case 4: 'Class:' prefix only
+                    r"^(.*?):(.*?):(.*?):(\d+)\s*\((.*)\)$",  # Original pattern for reference
+                    r"^(.*?):(.*?)(?::(.*?))?[:]?(\\d+)\s+\((.*)\)?$" # Slightly modified to make code line optional
+                ]
+            
+            m = None
+            for pat in patterns:
+                m = re.match(pat, line)
+                if m:
+                    break
+
+            if m:
+                if pat == patterns[0]:  # Case 1: stacktrace w/ code
+                    class_name, method_name, descriptor, line_number, code_line = (
+                        m.group(1), m.group(2), m.group(3) or "", int(m.group(4)), m.group(5)
+                    )
+                elif pat == patterns[1]:  # Case 2: LLM style
+                    class_name, method_name, descriptor, line_number, code_line = (
+                        m.group(1), m.group(2), m.group(3) or "", int(m.group(4)), m.group(5)
+                    )
+                elif pat == patterns[2]:  # Case 3: no code snippet
+                    class_name, method_name, descriptor, line_number, code_line = (
+                        m.group(1), m.group(2), m.group(3) or "", int(m.group(4)), ""
+                    )
+                elif pat == patterns[3]:  # Case 4: 'Class:' prefix only
+                    class_name, method_name, descriptor, line_number, code_line = (
+                        m.group(1), m.group(2), m.group(3) or "", int(m.group(4)), m.group(5)
+                    )
+                elif pat == patterns[4]:  # Original pattern for reference
+                    class_name, method_name, descriptor, line_number, code_line = (
+                        m.group(1), m.group(2), m.group(3) or "", int(m.group(4)), m.group(5)
+                    )
+
+                class_simple_name = class_name.split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
+                class_name = class_simple_name.split('$')[0]
+                print(f"===Class name after split: {class_name}", ",line=", line_number)
+                #print("class_name, slug, module=", class_name, slug, module)
+
+                with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
+                    print("Tried lines")
+                    writer = csv.writer(f)
+                    writer.writerow([slug, module, test, class_name, line_number,code_line])
+                class_path_list = find_class_file(class_name, slug, module)
+                print("**** class_path_list=", class_path_list)
+
+                if class_path_list:
+                    failure_count = 0
+                    for run_id in range(5):
+                        val=inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+                        if not val:
+                            break
+                        try:
+                            print("./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx))
+                            result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
+                            out = result_run.stdout.strip()
+                            print("***out****", out)
+                            firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
+
+                            #print("*** test_run result, Script output: ",firstLine)
+                            #print(firstLine)
+                            if firstLine == "Failure found.":
+                                print("Failure found.")
+                                #break 
+                                return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
+                                #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
+                        except subprocess.CalledProcessError as e:
+                            print("run_test.sh failed with exit code", e.returncode)
+                            print("--- stdout ---")
+                            print(e.stdout)
+                            print("--- stderr ---")
+                            print(e.stderr)
+                            #if slug == "doanduyhai/Achilles" or "Java-WebSocket":
+                            currentDir_when_exception_occurs = os.getcwd()
+                            before, after = test.rsplit('.', 1)
+                            test_with_hash = f"{before}#{after}"
+                            log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+".txt"
+                            print("log file name=", log_file)
+                            if has_errors_or_failures(log_file):
+                                print("Found Errors: 1 or Failures: 1")
+                                failure_count += 1
+                                #return line, str(retry_count)+"_"+str(idx), "Failure found."
+                            else:
+                                print("No Errors: 1 or Failures: 1")
+
+                    if failure_count >= 3:
+                        print(f"Failure found in {failure_count}/5 runs.")
+                        return line, f"{retry_count}_{idx}", "Failure found."
+
+                    print(f"Only {failure_count}/5 runs failed. Not considering as valid failure.")
+
+
+                else:
+                    print(f"[ERROR] Could not locate class source file for: {class_name}")
+            else:
+                print("Line did not match expected format:", line)
+                
+        tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+        feedback = (
+            f"Your previous suggestion did not reproduce the failure.\n"
+            f"Here is what is already tried:\n"
+            f"Method: {method_name}\n"
+            f"Location(s):\n{meth_code}\n\n"
+            f"Please suggest a new location for delay injection in a different method, "
+            f"or a different location within a method that has not already been tried. "
+            f"Do not repeat any of the previous suggestions."
+            f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
+        )
+        messages.append({"role": "user", "content": feedback}) 
+        retry_count += 1
+        continue
+    return "NA", str(retry_count), firstLine 
+
+
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
@@ -532,6 +768,8 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         model_name, tokenizer, auto_model = qwen_model_define()
     elif ml_technique == "llama3_8b":
         model_name, tokenizer, auto_model = llama3_8b_model_define()
+    elif ml_technique == "llama3.3_70b":
+        model_name, tokenizer, auto_model = llama3_3_70b_model_define()
     elif ml_technique == "deep_seek_coder":
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
@@ -621,21 +859,20 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     print(failure_log)
     print(test_code)
 
-    if ml_technique == "qwen":
+    if ml_technique == "qwen" or ml_technique == "llama3_8b" or ml_technique == "llama3_70b":
         with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_qwen(test_code, tokenizer, auto_model, device, ml_technique, code_under_test_meths, lineRange, failure_log)
- 
-            #X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
-            print('***************** All preds=')
-            print(preds)
-    
-    elif ml_technique == "llama3_8b":
-        #model_name, tokenizer, auto_model = llama3_8b_model_define()
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
-
+            line_to_inject_delay, cot_count, test_output = open_source_llm_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path, slug, module, test, depth_filtered_df, model_name, tokenizer, auto_model)
+            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
         del auto_model
         torch.cuda.empty_cache()
+    
+    # elif ml_technique == "llama3_8b":
+    #     #model_name, tokenizer, auto_model = llama3_8b_model_define()
+    #     with torch.no_grad():
+    #         preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
+
+    #     del auto_model
+    #     torch.cuda.empty_cache()
     elif ml_technique == "deep_seek_coder":
         #model_name, tokenizer, auto_model = deep_seek_coder_model_define()
         with torch.no_grad():
