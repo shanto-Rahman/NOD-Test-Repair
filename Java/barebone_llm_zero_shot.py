@@ -408,7 +408,7 @@ def initialize_environment(seed_value):
 def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, seconds): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
-    file_path = "results/barebone-gpt4-result.csv"
+    file_path = "results/barebone-gpt4-result_zero_shot.csv"
     write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
