@@ -154,7 +154,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
    
     prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
 
-    print("prompt=", prompt)
+    #print("prompt=", prompt)
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
@@ -273,7 +273,7 @@ def extract_block(path, test):
     return buf
 
 
-def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test):
+def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test, module_with_underscore_by_replace_slash):
     device, ml_technique, dataset_category, output_layer, where_data_comes = init_setup(technique, data_name_dir)
     
     if ml_technique == "qwen":
@@ -327,9 +327,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
     #csv_that_saved_embedding = "metadata/embedings/"+test+"_"+embed_model_name+"_embeddings.csv"
     slug_with_underscore = slug.replace("/", "_")
-    print("slug, module, test=", slug, module, test)
+    print("slug, module, test=", slug, module_with_underscore_by_replace_slash, test)
     test_with_hash = test.rsplit('.', 1)[0] + '#' + test.rsplit('.', 1)[1]
-    csv_that_contains_all_methods = "traces/" + slug_with_underscore + "_" + module + "_" + test_with_hash + "_executed_method_bodies.csv" 
+    csv_that_contains_all_methods = "traces/" + slug_with_underscore + "_" + module_with_underscore_by_replace_slash + "_" + test_with_hash + "_executed_method_bodies.csv" 
     print("csv_that_contains_all_methods=", csv_that_contains_all_methods)
     #csv_that_contains_all_methods = traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario0_executed_method_bodies.csv 
     '''embedding_required_to_generate =  False
@@ -353,7 +353,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     with open("metadata/meta_data.csv", mode="a", newline="") as f:
         print("I AM from metadata")
         writer = csv.writer(f)
-        writer.writerow([slug, module, test, len(depth_filtered_df)])
+        writer.writerow([slug, module_with_underscore_by_replace_slash, test, len(depth_filtered_df)])
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
     
@@ -445,6 +445,7 @@ if __name__ == "__main__":
     slug = sys.argv[7] 
     sha = sys.argv[8] 
     module = sys.argv[9] 
+    module_with_underscore_by_replace_slash = module.replace('/', '_')
     test = sys.argv[10] 
     data_is_from_which_csv = sys.argv[11] 
     initialize_environment(42)
@@ -472,7 +473,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     #print(type(big_block_fail_log))
-    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
+    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test, module_with_underscore_by_replace_slash)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
     save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, duration_in_seconds)
