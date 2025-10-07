@@ -34,8 +34,10 @@ To match the failure log, run the following command
 ```shell
  bash find_failure_match.sh ../data/all_82_tests.csv "idoft"
  ```
-
-
+To run barebone gpt model to show it's not data-leakaged, run the following command.
+```shell
+bash s.sh ../data/all_82_tests.csv Result/
+```
 clone the project
 
 Run the test, collect the failure. So collecting the failure, we might need to run flakesync.
