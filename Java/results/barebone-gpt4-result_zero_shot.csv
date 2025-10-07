@@ -56,7 +56,7 @@ TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_w
 TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue713Test.testIssue,org.java_websocket.server.WebSocketServer:doBroadcast:(Ljava/lang/Object;Ljava/util/Collection;):872 (client.sendFrame( draftFrames.get( draft ) );),0_1,47.452049255371094
 apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-config/dubbo-config-api,org.apache.dubbo.config.GenericServiceTest#testGenericImplementationWithBeanSerialization,Crush,token_limit
 apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-config/dubbo-config-api,org.apache.dubbo.config.GenericServiceTest#testGenericSerializationJava,Crush,token_limit
-apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-config/dubbo-config-api,org.apache.dubbo.config.GenericServiceTest#testGenericServiceException,Crush
+apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-config/dubbo-config-api,org.apache.dubbo.config.GenericServiceTest#testGenericServiceException,Crush,token_limit
 apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest.testPerm,,10,241.64785599708557
 apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest.testReturnNonSerialized,"org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol:getInvoker:(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Invoker;:220 (String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));)",0_6,241.50619387626648
 apache/dubbo,737f7a7ea67832d7f17517326fb2491d0a086dd7,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.ExplicitCallbackTest.TestCallbackMultiInstans,,10,35.02885055541992
@@ -66,7 +66,7 @@ flaxsearch/luwak,c27ec08c803db6ca6be1b6e8017f45667e603161,luwak,uk.co.flax.luwak
 undertow-io/undertow,ac7204ab8cabb197a1327e5bbdb6e0e2ed1917f1,core,io.undertow.server.handlers.proxy.LoadBalancingProxyTestCase.testLoadSharedWithServerShutdown,io.undertow.server.handlers.proxy.ProxyConnection:getConnection:()Lio/undertow/client/ClientConnection;:21 (return connection;),0_9,444.0886445045471
 undertow-io/undertow,ac7204ab8cabb197a1327e5bbdb6e0e2ed1917f1,core,io.undertow.server.security.DigestAuthentication2069TestCase.testDigestSuccess,,10,234.7359755039215
 mware/admiral,e4b02936cc7d4ff2714e7231db0c4373ba5d48a2,adapter/registry,com.vmware.admiral.adapter.registry.service.RegistryAdapterServiceTest.testV1Ping,,10,318.3526737689972
-vmware/admiral,e4b02936cc7d4ff2714e7231db0c4373ba5d48a2,compute,com.vmware.admiral.compute.cluster.ClusterServiceTest#testPatchSingleHostClusterWithPublicAddress,Crush
+vmware/admiral,e4b02936cc7d4ff2714e7231db0c4373ba5d48a2,compute,com.vmware.admiral.compute.cluster.ClusterServiceTest#testPatchSingleHostClusterWithPublicAddress,Crush,token_limit
 Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c,.,tachyon.WorkerServiceHandlerTest.evictionTest,,10,243.74543023109436
 Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c,.,tachyon.client.TachyonFileTest.isInMemoryTest2,,10,19.750943422317505
 apache/incubator-dubbo,737f7a7e,dubbo-cluster,org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.testSelect_multiInvokers,,10,3155.515365123749
