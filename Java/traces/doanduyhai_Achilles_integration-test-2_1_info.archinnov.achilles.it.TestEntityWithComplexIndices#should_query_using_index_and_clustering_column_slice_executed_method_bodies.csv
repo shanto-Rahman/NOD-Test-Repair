@@ -791,11 +791,11 @@ info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Linfo/archinnov
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",220-223
-info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",220-223
-info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",220-223
@@ -869,11 +869,11 @@ info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinn
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
-info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,1,1,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,3,66.7%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
-info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,3,66.7%,"@Override
+info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,1,1,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
@@ -1124,6 +1124,15 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,injectConsist
                     entityClass.getCanonicalName()));
         }
     }",380-427
+info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,5,7,71.4%,"@Override
+    public void inject(InsertStrategy insertStrategy) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
+                    insertStrategy, entityClass.getCanonicalName()));
+        }
+        if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
+        else this.insertStrategy = staticInsertStrategy.get();
+    }",429-437
 info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/strategy/InsertStrategy;)V,3,6,50.0%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
@@ -1134,15 +1143,6 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo
         else this.insertStrategy = staticInsertStrategy.get();
     }",429-437
 info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,5,7,71.4%,"@Override
-    public void inject(InsertStrategy insertStrategy) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
-                    insertStrategy, entityClass.getCanonicalName()));
-        }
-        if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
-        else this.insertStrategy = staticInsertStrategy.get();
-    }",429-437
-info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,5,7,71.4%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
@@ -1427,11 +1427,11 @@ info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",209-212
-info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",209-212
-info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",209-212
@@ -1525,12 +1525,12 @@ info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/
         keyProperty.inject(userTypeFactory, tupleTypeFactory);
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",256-260
-info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,3,3,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,3,3,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         keyProperty.inject(userTypeFactory, tupleTypeFactory);
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",256-260
-info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,3,3,100.0%,"@Override
+info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,3,3,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         keyProperty.inject(userTypeFactory, tupleTypeFactory);
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
@@ -1609,13 +1609,13 @@ info.archinnov.achilles.internals.metamodel.ComputedProperty$1,<init>,(Linfo/arc
         this.valueCodec = valueCodec;
         this.computedColumnInfo = (ComputedColumnInfo) fieldInfo.columnInfo;
     }",56-65
-info.archinnov.achilles.internals.metamodel.AbstractProperty,<init>,(Lcom/google/common/reflect/TypeToken;Lcom/google/common/reflect/TypeToken;Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;)V,7,7,100.0%,"AbstractProperty(TypeToken<VALUEFROM> valueFromTypeToken, TypeToken<VALUETO> valueToTypeToken, FieldInfo<ENTITY, VALUEFROM> fieldInfo) {
+info.archinnov.achilles.internals.metamodel.AbstractProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;)V,5,5,100.0%,"AbstractProperty(TypeToken<VALUEFROM> valueFromTypeToken, TypeToken<VALUETO> valueToTypeToken, FieldInfo<ENTITY, VALUEFROM> fieldInfo) {
         this.valueFromTypeToken = valueFromTypeToken;
         this.valueToTypeToken = valueToTypeToken;
         this.fieldInfo = fieldInfo;
         this.fieldName = fieldInfo.fieldName;
     }",45-50
-info.archinnov.achilles.internals.metamodel.AbstractProperty,<init>,(Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;)V,5,5,100.0%,"AbstractProperty(TypeToken<VALUEFROM> valueFromTypeToken, TypeToken<VALUETO> valueToTypeToken, FieldInfo<ENTITY, VALUEFROM> fieldInfo) {
+info.archinnov.achilles.internals.metamodel.AbstractProperty,<init>,(Lcom/google/common/reflect/TypeToken;Lcom/google/common/reflect/TypeToken;Linfo/archinnov/achilles/internals/metamodel/columns/FieldInfo;)V,7,7,100.0%,"AbstractProperty(TypeToken<VALUEFROM> valueFromTypeToken, TypeToken<VALUETO> valueToTypeToken, FieldInfo<ENTITY, VALUEFROM> fieldInfo) {
         this.valueFromTypeToken = valueFromTypeToken;
         this.valueToTypeToken = valueToTypeToken;
         this.fieldInfo = fieldInfo;
@@ -1818,14 +1818,14 @@ info.archinnov.achilles.internals.types.ConfigMap,getTyped,(Linfo/archinnov/achi
         }
         return value;
     }",35-43
-info.archinnov.achilles.internals.types.ConfigMap,getTypedOr,(Linfo/archinnov/achilles/configuration/ConfigurationParameters;Ljava/util/function/Supplier;)Ljava/lang/Object;,2,3,66.7%,"public <T> T getTypedOr(ConfigurationParameters key, T defaultValue) {
+info.archinnov.achilles.internals.types.ConfigMap,getTypedOr,(Linfo/archinnov/achilles/configuration/ConfigurationParameters;Ljava/lang/Object;)Ljava/lang/Object;,3,3,100.0%,"public <T> T getTypedOr(ConfigurationParameters key, T defaultValue) {
         if (super.containsKey(key)) {
             return getTyped(key);
         } else {
             return defaultValue;
         }
     }",45-51
-info.archinnov.achilles.internals.types.ConfigMap,getTypedOr,(Linfo/archinnov/achilles/configuration/ConfigurationParameters;Ljava/lang/Object;)Ljava/lang/Object;,3,3,100.0%,"public <T> T getTypedOr(ConfigurationParameters key, T defaultValue) {
+info.archinnov.achilles.internals.types.ConfigMap,getTypedOr,(Linfo/archinnov/achilles/configuration/ConfigurationParameters;Ljava/util/function/Supplier;)Ljava/lang/Object;,2,3,66.7%,"public <T> T getTypedOr(ConfigurationParameters key, T defaultValue) {
         if (super.containsKey(key)) {
             return getTyped(key);
         } else {

@@ -1,8 +1,9 @@
 Class,Method,Descriptor,num_csvs_topk,csvs_having_method
-io.undertow.security.impl.DigestAuthenticationMechanism,sendChallenge,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$ChallengeResult;,3,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+io.undertow.security.impl.DigestAuthenticationMechanism,sendChallenge,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$ChallengeResult;,4,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+io.undertow.security.impl.DigestAuthenticationMechanism,handleDigestHeader,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$AuthenticationMechanismOutcome;,3,"['codebert_embeddings.csv', 'llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+io.undertow.security.impl.DigestAuthenticationMechanism,validateNonceUse,(Lio/undertow/security/impl/DigestAuthenticationMechanism$DigestContext;Ljava/util/Map;Lio/undertow/server/HttpServerExchange;)Z,3,"['llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
 io.undertow.security.impl.DigestAuthenticationMechanism,authenticate,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$AuthenticationMechanismOutcome;,2,"['bigbird_embeddings.csv', 'llama_embeddings.csv']"
-io.undertow.security.impl.DigestAuthenticationMechanism,handleDigestHeader,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$AuthenticationMechanismOutcome;,2,"['codebert_embeddings.csv', 'llama_embeddings.csv']"
-io.undertow.security.impl.DigestAuthenticationMechanism,validateNonceUse,(Lio/undertow/security/impl/DigestAuthenticationMechanism$DigestContext;Ljava/util/Map;Lio/undertow/server/HttpServerExchange;)Z,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+io.undertow.security.impl.DigestAuthenticationMechanism,sendAuthenticationInfoHeader,(Lio/undertow/server/HttpServerExchange;)V,2,"['bigbird_embeddings.csv', 'tf-idf_embeddings.csv']"
 io.undertow.security.impl.DigestAuthenticationMechanism,validateRequest,(Lio/undertow/security/impl/DigestAuthenticationMechanism$DigestContext;[B)Z,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 io.undertow.server.HttpServerExchange,startResponse,()V,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
 io.undertow.server.protocol.http.HttpServerConnection,getSslSession,()Ljavax/net/ssl/SSLSession;,2,"['gpt2_embeddings.csv', 'llama_embeddings.csv']"
@@ -13,7 +14,6 @@ io.undertow.security.handlers.AuthenticationConstraintHandler,isAuthenticationRe
 io.undertow.security.handlers.AuthenticationMechanismsHandler,<init>,(Lio/undertow/server/HttpHandler;Ljava/util/List;)V,1,['gpt2_embeddings.csv']
 io.undertow.security.handlers.NotificationReceiverHandler,handleRequest,(Lio/undertow/server/HttpServerExchange;)V,1,['gpt2_embeddings.csv']
 io.undertow.security.handlers.SecurityInitialHandler,handleRequest,(Lio/undertow/server/HttpServerExchange;)V,1,['gpt2_embeddings.csv']
-io.undertow.security.impl.DigestAuthenticationMechanism,sendAuthenticationInfoHeader,(Lio/undertow/server/HttpServerExchange;)V,1,['bigbird_embeddings.csv']
 io.undertow.security.impl.SimpleNonceManager,<init>,()V,1,['qwen_embeddings.csv']
 io.undertow.security.impl.SimpleNonceManager,<init>,(Ljava/lang/String;)V,1,['qwen_embeddings.csv']
 io.undertow.security.impl.SimpleNonceManager,createNewNonce,(Lio/undertow/security/impl/SimpleNonceManager$NonceHolder;)Lio/undertow/security/impl/SimpleNonceManager$Nonce;,1,['gpt2_embeddings.csv']
@@ -36,8 +36,14 @@ io.undertow.server.protocol.http.HttpReadListener,handleEvent,(Lorg/xnio/channel
 io.undertow.server.protocol.http.HttpReadListener,newRequest,()V,1,['gpt2_embeddings.csv']
 io.undertow.server.protocol.http.HttpRequestParser,<init>,(Lorg/xnio/OptionMap;)V,1,['qwen_embeddings.csv']
 io.undertow.server.protocol.http.HttpRequestParser,httpStrings,()Ljava/util/Map;,1,['llama_embeddings.csv']
+io.undertow.server.protocol.http.HttpResponseConduit,processWrite,(ILjava/nio/ByteBuffer;)I,1,['tf-idf_embeddings.csv']
 io.undertow.server.protocol.http.HttpServerConnection,<init>,(Lorg/xnio/StreamConnection;Lorg/xnio/Pool;Lio/undertow/server/HttpHandler;Lorg/xnio/OptionMap;I)V,1,['gpt2_embeddings.csv']
 io.undertow.server.protocol.http.HttpTransferEncoding,persistentConnection,(Lio/undertow/server/HttpServerExchange;Ljava/lang/String;)Z,1,['llama_embeddings.csv']
 io.undertow.server.protocol.http.HttpTransferEncoding,setupRequest,(Lio/undertow/server/HttpServerExchange;)V,1,['bigbird_embeddings.csv']
+io.undertow.server.protocol.http.ParseState,<init>,()V,1,['tf-idf_embeddings.csv']
+io.undertow.server.protocol.http.ParseState,reset,()V,1,['tf-idf_embeddings.csv']
 io.undertow.util.HeaderMap,fiNextNonEmpty,(J)J,1,['bigbird_embeddings.csv']
+io.undertow.util.HeaderValues,add,(Ljava/lang/String;)Z,1,['tf-idf_embeddings.csv']
+io.undertow.util.HeaderValues,isEmpty,()Z,1,['tf-idf_embeddings.csv']
 io.undertow.util.HeaderValues,offerLast,(Ljava/lang/String;)Z,1,['bigbird_embeddings.csv']
+io.undertow.util.HeaderValues,peekFirst,()Ljava/lang/String;,1,['tf-idf_embeddings.csv']

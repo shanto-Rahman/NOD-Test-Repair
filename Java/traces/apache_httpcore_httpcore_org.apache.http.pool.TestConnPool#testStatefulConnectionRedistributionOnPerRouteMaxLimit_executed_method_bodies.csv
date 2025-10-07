@@ -380,7 +380,7 @@ org.apache.http.pool.AbstractConnPool$1,<init>,(Lorg/apache/http/pool/AbstractCo
         this.maxTotal = maxTotal;
     }",68-86
 org.apache.http.pool.AbstractConnPool$1,createEntry,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,1,1,100.0%,"protected abstract E createEntry(T route, C conn);",90-90
-org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V,2,2,100.0%,"public PoolEntry(final String id, final T route, final C conn,
+org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;)V,12,16,75.0%,"public PoolEntry(final String id, final T route, final C conn,
             final long timeToLive, final TimeUnit tunit) {
         super();
         if (route == null) {
@@ -403,7 +403,7 @@ org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava
         }
         this.expiry = this.validUnit;
     }",54-76
-org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;)V,12,16,75.0%,"public PoolEntry(final String id, final T route, final C conn,
+org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V,2,2,100.0%,"public PoolEntry(final String id, final T route, final C conn,
             final long timeToLive, final TimeUnit tunit) {
         super();
         if (route == null) {

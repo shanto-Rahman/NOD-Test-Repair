@@ -162,6 +162,7 @@ okio,okio.Deadline$1,reached,()Z,1,1,100.0%
 okio,okio.Segment,<init>,()V,2,2,100.0%
 okio,okio.Segment,pop,()Lokio/Segment;,6,6,100.0%
 okio,okio.Segment,push,(Lokio/Segment;)Lokio/Segment;,5,5,100.0%
+okio,okio.Segment,split,(I)Lokio/Segment;,10,16,62.5%
 okio,okio.Segment,compact,()V,6,6,100.0%
 okio,okio.Segment,writeTo,(Lokio/Segment;I)V,6,9,66.7%
 okio,okio.SegmentPool,take,()Lokio/Segment;,9,9,100.0%
@@ -186,7 +187,7 @@ okio,okio.OkBuffer,write,([BII)Lokio/OkBuffer;,10,10,100.0%
 okio,okio.OkBuffer,writeShort,(I)Lokio/OkBuffer;,8,8,100.0%
 okio,okio.OkBuffer,writeInt,(I)Lokio/OkBuffer;,10,10,100.0%
 okio,okio.OkBuffer,writableSegment,(I)Lokio/Segment;,7,8,87.5%
-okio,okio.OkBuffer,write,(Lokio/OkBuffer;J)V,18,26,69.2%
+okio,okio.OkBuffer,write,(Lokio/OkBuffer;J)V,21,26,80.8%
 okio,okio.OkBuffer,read,(Lokio/OkBuffer;J)J,4,4,100.0%
 okio,okio.OkBuffer,flush,()V,1,1,100.0%
 okio,okio.OkBuffer,close,()V,1,1,100.0%

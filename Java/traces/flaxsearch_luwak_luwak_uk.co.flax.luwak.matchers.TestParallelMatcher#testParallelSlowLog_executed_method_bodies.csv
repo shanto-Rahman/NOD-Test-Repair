@@ -343,9 +343,6 @@ uk.co.flax.luwak.Monitor,afterCommit,(Ljava/util/List;)V,3,8,37.5%,"private void
             }
         }
     }",286-297
-uk.co.flax.luwak.Monitor,setSlowLogLimit,(J)V,2,2,100.0%,"public void setSlowLogLimit(long limit) {
-        this.slowLogLimit = limit;
-    }",326-328
 uk.co.flax.luwak.Monitor,close,()V,3,3,100.0%,"@Override
     public void close() throws IOException {
         purgeExecutor.shutdown();
@@ -548,13 +545,13 @@ uk.co.flax.luwak.Indexable,<init>,(Ljava/lang/String;Luk/co/flax/luwak/QueryCach
         this.queryCacheEntry = queryCacheEntry;
         this.document = document;
     }",19-23
-uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V,6,6,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
+uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
         this.id = id;
         this.query = query;
         this.metadata = Collections.unmodifiableMap(new TreeMap<>(metadata));
         checkNullEntries(this.metadata);
     }",49-54
-uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
+uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V,6,6,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
         this.id = id;
         this.query = query;
         this.metadata = Collections.unmodifiableMap(new TreeMap<>(metadata));
@@ -733,7 +730,7 @@ uk.co.flax.luwak.SlowLog,setLimit,(J)V,2,2,100.0%,"public void setLimit(long lim
 uk.co.flax.luwak.SlowLog,getLimit,()J,1,1,100.0%,"public long getLimit() {
         return limit;
     }",42-44
-uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,4,4,100.0%,"public void addQuery(String query, long time) {
+uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,3,4,75.0%,"public void addQuery(String query, long time) {
         if (time < limit)
             return;
         slowQueries.add(new Entry(query, time));

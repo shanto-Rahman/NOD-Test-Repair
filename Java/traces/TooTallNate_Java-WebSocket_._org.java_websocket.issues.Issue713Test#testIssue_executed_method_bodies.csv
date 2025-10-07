@@ -887,11 +887,11 @@ org.java_websocket.client.WebSocketClient,sendHandshake,()V,13,18,72.2%,"private
 		}
 		engine.startHandshake( handshake );
 	}",454-479
-org.java_websocket.client.WebSocketClient,onWebsocketMessage,(Lorg/java_websocket/WebSocket;Ljava/nio/ByteBuffer;)V,2,2,100.0%,"@Override
+org.java_websocket.client.WebSocketClient,onWebsocketMessage,(Lorg/java_websocket/WebSocket;Ljava/lang/String;)V,2,2,100.0%,"@Override
 	public final void onWebsocketMessage( WebSocket conn, String message ) {
 		onMessage( message );
 	}",491-494
-org.java_websocket.client.WebSocketClient,onWebsocketMessage,(Lorg/java_websocket/WebSocket;Ljava/lang/String;)V,2,2,100.0%,"@Override
+org.java_websocket.client.WebSocketClient,onWebsocketMessage,(Lorg/java_websocket/WebSocket;Ljava/nio/ByteBuffer;)V,2,2,100.0%,"@Override
 	public final void onWebsocketMessage( WebSocket conn, String message ) {
 		onMessage( message );
 	}",491-494
@@ -1086,13 +1086,13 @@ org.java_websocket.drafts.Draft,readVersion,(Lorg/java_websocket/handshake/Hands
 org.java_websocket.drafts.Draft,setParseMode,(Lorg/java_websocket/enums/Role;)V,2,2,100.0%,"public void setParseMode( Role role ) {
 		this.role = role;
 	}",276-278
-org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;)V,2,2,100.0%,"public Draft_6455() {
-		this( Collections.<IExtension>emptyList() );
-	}",105-107
 org.java_websocket.drafts.Draft_6455,<init>,()V,2,2,100.0%,"public Draft_6455() {
 		this( Collections.<IExtension>emptyList() );
 	}",105-107
 org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;Ljava/util/List;)V,17,18,94.4%,"public Draft_6455() {
+		this( Collections.<IExtension>emptyList() );
+	}",105-107
+org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;)V,2,2,100.0%,"public Draft_6455() {
 		this( Collections.<IExtension>emptyList() );
 	}",105-107
 org.java_websocket.drafts.Draft_6455,acceptHandshakeAsServer,(Lorg/java_websocket/handshake/ClientHandshake;)Lorg/java_websocket/enums/HandshakeState;,20,26,76.9%,"@Override
@@ -1442,7 +1442,7 @@ org.java_websocket.drafts.Draft_6455,translateFrame,(Ljava/nio/ByteBuffer;)Ljava
 			return frames;
 		}
 	}",487-537
-org.java_websocket.drafts.Draft_6455,createFrames,(Ljava/lang/String;Z)Ljava/util/List;,6,8,75.0%,"@Override
+org.java_websocket.drafts.Draft_6455,createFrames,(Ljava/nio/ByteBuffer;Z)Ljava/util/List;,6,8,75.0%,"@Override
 	public List<Framedata> createFrames( ByteBuffer binary, boolean mask ) {
 		BinaryFrame curframe = new BinaryFrame();
 		curframe.setPayload( binary );
@@ -1454,7 +1454,7 @@ org.java_websocket.drafts.Draft_6455,createFrames,(Ljava/lang/String;Z)Ljava/uti
 		}
 		return Collections.singletonList( ( Framedata ) curframe );
 	}",539-550
-org.java_websocket.drafts.Draft_6455,createFrames,(Ljava/nio/ByteBuffer;Z)Ljava/util/List;,6,8,75.0%,"@Override
+org.java_websocket.drafts.Draft_6455,createFrames,(Ljava/lang/String;Z)Ljava/util/List;,6,8,75.0%,"@Override
 	public List<Framedata> createFrames( ByteBuffer binary, boolean mask ) {
 		BinaryFrame curframe = new BinaryFrame();
 		curframe.setPayload( binary );
@@ -1887,13 +1887,13 @@ org.java_websocket.server.DefaultWebSocketServerFactory,wrapChannel,(Ljava/nio/c
 	public SocketChannel wrapChannel( SocketChannel channel, SelectionKey key ) {
 		return channel;
 	}",46-49
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;)V,2,2,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
 org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;Ljava/util/Collection;)V,20,22,90.9%,"public WebSocketServer()  {
 		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
 	}",118-120
 org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;)V,2,2,100.0%,"public WebSocketServer()  {
-		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
-	}",118-120
-org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;)V,2,2,100.0%,"public WebSocketServer()  {
 		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
 	}",118-120
 org.java_websocket.server.WebSocketServer,start,()V,3,4,75.0%,"public void start() {
@@ -2147,10 +2147,13 @@ org.java_websocket.server.WebSocketServer,onConnect,(Ljava/nio/channels/Selectio
 		//FIXME
 		return true;
 	}",698-701
-org.java_websocket.server.WebSocketServer,broadcast,(Ljava/lang/String;Ljava/util/Collection;)V,3,4,75.0%,"public void broadcast(String text) {
+org.java_websocket.server.WebSocketServer,broadcast,(Ljava/nio/ByteBuffer;Ljava/util/Collection;)V,3,4,75.0%,"public void broadcast(String text) {
 		broadcast( text, connections );
 	}",782-784
-org.java_websocket.server.WebSocketServer,broadcast,([B)V,2,2,100.0%,"public void broadcast(String text) {
+org.java_websocket.server.WebSocketServer,broadcast,([BLjava/util/Collection;)V,3,4,75.0%,"public void broadcast(String text) {
+		broadcast( text, connections );
+	}",782-784
+org.java_websocket.server.WebSocketServer,broadcast,(Ljava/lang/String;Ljava/util/Collection;)V,3,4,75.0%,"public void broadcast(String text) {
 		broadcast( text, connections );
 	}",782-784
 org.java_websocket.server.WebSocketServer,broadcast,(Ljava/nio/ByteBuffer;)V,2,2,100.0%,"public void broadcast(String text) {
@@ -2159,10 +2162,7 @@ org.java_websocket.server.WebSocketServer,broadcast,(Ljava/nio/ByteBuffer;)V,2,2
 org.java_websocket.server.WebSocketServer,broadcast,(Ljava/lang/String;)V,2,2,100.0%,"public void broadcast(String text) {
 		broadcast( text, connections );
 	}",782-784
-org.java_websocket.server.WebSocketServer,broadcast,([BLjava/util/Collection;)V,3,4,75.0%,"public void broadcast(String text) {
-		broadcast( text, connections );
-	}",782-784
-org.java_websocket.server.WebSocketServer,broadcast,(Ljava/nio/ByteBuffer;Ljava/util/Collection;)V,3,4,75.0%,"public void broadcast(String text) {
+org.java_websocket.server.WebSocketServer,broadcast,([B)V,2,2,100.0%,"public void broadcast(String text) {
 		broadcast( text, connections );
 	}",782-784
 org.java_websocket.server.WebSocketServer,doBroadcast,(Ljava/lang/Object;Ljava/util/Collection;)V,23,25,92.0%,"private void doBroadcast(Object data, Collection<WebSocket> clients) {

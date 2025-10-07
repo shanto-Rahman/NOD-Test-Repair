@@ -1,25 +1,30 @@
 Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+ro.isdc.wro.model.group.processor.Injector,processInjectAnnotation,(Ljava/lang/Object;)V,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'tf-idf_embeddings.csv']"
 ro.isdc.wro.model.group.processor.InjectorBuilder,createConfigProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+ro.isdc.wro.model.resource.locator.UrlUriLocator,locate,(Ljava/lang/String;)Ljava/io/InputStream;,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'tf-idf_embeddings.csv']"
 ro.isdc.wro.model.resource.locator.wildcard.WildcardUriLocatorSupport,getWildcardStreamLocator,()Lro/isdc/wro/model/resource/locator/wildcard/WildcardStreamLocator;,4,"['codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+ro.isdc.wro.util.ProxyFactory,create,()Ljava/lang/Object;,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'tf-idf_embeddings.csv']"
 ro.isdc.wro.model.group.processor.Injector,getAllFields,(Ljava/lang/Object;)Ljava/util/Collection;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv']"
-ro.isdc.wro.model.group.processor.Injector,processInjectAnnotation,(Ljava/lang/Object;)V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv']"
 ro.isdc.wro.model.group.processor.InjectorBuilder,createPreProcessorExecutorProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,3,"['codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv']"
 ro.isdc.wro.model.group.processor.InjectorBuilder,initMap,()V,3,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
-ro.isdc.wro.model.resource.locator.UrlUriLocator,locate,(Ljava/lang/String;)Ljava/io/InputStream;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv']"
-ro.isdc.wro.util.ProxyFactory,create,()Ljava/lang/Object;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv']"
+ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,getInputStream,(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/lang/String;)Ljava/io/InputStream;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'tf-idf_embeddings.csv']"
 ro.isdc.wro.model.group.processor.InjectorBuilder,createCallbackRegistryProxy,()Lro/isdc/wro/model/group/processor/InjectorBuilder$InjectorObjectFactory;,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
 ro.isdc.wro.model.group.processor.InjectorBuilder,createReadOnlyContextProxy,()Ljava/lang/Object;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
 ro.isdc.wro.model.group.processor.InjectorBuilder,createResourceBundleProcessorProxy,()Ljava/lang/Object;,2,"['bigbird_embeddings.csv', 'gpt2_embeddings.csv']"
-ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,getInputStream,(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/lang/String;)Ljava/io/InputStream;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,locateExternal,(Ljavax/servlet/http/HttpServletRequest;Ljava/lang/String;)Ljava/io/InputStream;,2,"['bigbird_embeddings.csv', 'tf-idf_embeddings.csv']"
 ro.isdc.wro.model.resource.locator.wildcard.WildcardUriLocatorSupport,newWildcardStreamLocator,()Lro/isdc/wro/model/resource/locator/wildcard/WildcardStreamLocator;,2,"['gpt2_embeddings.csv', 'llama_embeddings.csv']"
 ro.isdc.wro.util.ProxyFactory,<init>,(Lro/isdc/wro/util/ObjectFactory;Ljava/lang/Class;)V,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
 ro.isdc.wro.util.ProxyFactory,getInterfacesSet,()Ljava/util/Set;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
 ro.isdc.wro.util.ProxyFactory$1,<init>,(Lro/isdc/wro/util/ProxyFactory;)V,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
 ro.isdc.wro.config.Context,isContextSet,()Z,1,['gpt2_embeddings.csv']
+ro.isdc.wro.config.Context,set,(Lro/isdc/wro/config/Context;)V,1,['tf-idf_embeddings.csv']
+ro.isdc.wro.config.Context,set,(Lro/isdc/wro/config/Context;Lro/isdc/wro/config/jmx/WroConfiguration;)V,1,['tf-idf_embeddings.csv']
+ro.isdc.wro.config.Context,setConfig,(Lro/isdc/wro/config/jmx/WroConfiguration;)V,1,['tf-idf_embeddings.csv']
+ro.isdc.wro.config.Context,validateContext,()V,1,['tf-idf_embeddings.csv']
 ro.isdc.wro.model.group.processor.Injector,<init>,(Ljava/util/Map;)V,1,['qwen_embeddings.csv']
 ro.isdc.wro.model.group.processor.Injector,inject,(Ljava/lang/Object;)Ljava/lang/Object;,1,['qwen_embeddings.csv']
 ro.isdc.wro.model.group.processor.InjectorBuilder,createLocatorFactoryProxy,()Ljava/lang/Object;,1,['llama_embeddings.csv']
 ro.isdc.wro.model.group.processor.InjectorBuilder,createModelFactoryProxy,()Ljava/lang/Object;,1,['llama_embeddings.csv']
 ro.isdc.wro.model.group.processor.InjectorBuilder,createResourceAuthorizationManagerProxy,()Ljava/lang/Object;,1,['llama_embeddings.csv']
 ro.isdc.wro.model.resource.locator.UrlUriLocator,getConnectionTimeout,()I,1,['qwen_embeddings.csv']
-ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,locateExternal,(Ljavax/servlet/http/HttpServletRequest;Ljava/lang/String;)Ljava/io/InputStream;,1,['bigbird_embeddings.csv']
+ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator,createExternalResourceLocator,()Lro/isdc/wro/model/resource/locator/UriLocator;,1,['tf-idf_embeddings.csv']

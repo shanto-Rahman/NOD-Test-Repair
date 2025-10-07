@@ -673,15 +673,15 @@ info.archinnov.achilles.internals.metamodel.SimpleProperty,buildType,(Ljava/util
         return dataTypeInternal;
 
     }",124-132
+info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,3,66.7%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        // No op
+    }",154-157
 info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,1,1,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
 info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,1,1,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        // No op
-    }",154-157
-info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,3,66.7%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
@@ -929,15 +929,6 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,injectConsist
                     entityClass.getCanonicalName()));
         }
     }",380-427
-info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/strategy/InsertStrategy;)V,3,6,50.0%,"@Override
-    public void inject(InsertStrategy insertStrategy) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
-                    insertStrategy, entityClass.getCanonicalName()));
-        }
-        if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
-        else this.insertStrategy = staticInsertStrategy.get();
-    }",429-437
 info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,5,7,71.4%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
@@ -957,6 +948,15 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Lcom/
         else this.insertStrategy = staticInsertStrategy.get();
     }",429-437
 info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,6,8,75.0%,"@Override
+    public void inject(InsertStrategy insertStrategy) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
+                    insertStrategy, entityClass.getCanonicalName()));
+        }
+        if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
+        else this.insertStrategy = staticInsertStrategy.get();
+    }",429-437
+info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/strategy/InsertStrategy;)V,3,6,50.0%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",

@@ -115,7 +115,7 @@ com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskReposi
 com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,rescheduleInternal,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;Lcom/github/kagkarlsson/scheduler/JdbcTaskRepository$NewData;Ljava/time/Instant;Ljava/time/Instant;I)Z,3,4,75.0%
 com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,pick,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)Ljava/util/Optional;,7,12,58.3%
 com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,getOldExecutions,(Ljava/time/Instant;)Ljava/util/List;,1,1,100.0%
-com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,updateHeartbeat,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)V,5,7,71.4%
+com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,updateHeartbeat,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)V,6,7,85.7%
 com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;)Ljava/util/Optional;,1,1,100.0%
 com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Ljava/lang/String;Ljava/lang/String;)Ljava/util/Optional;,3,4,75.0%
 com/github/kagkarlsson/scheduler,com.github.kagkarlsson.scheduler.JdbcTaskRepository,memoize,(Ljava/util/function/Supplier;)Ljava/util/function/Supplier;,1,1,100.0%

@@ -9,6 +9,7 @@ com.squareup.okhttp.internal.http.HttpURLConnectionImpl,getResponse,()Lcom/squar
 com.squareup.okhttp.mockwebserver.MockWebServer,writeResponse,(Ljava/io/OutputStream;Lcom/squareup/okhttp/mockwebserver/MockResponse;)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
 com.squareup.okhttp.mockwebserver.MockWebServer$3,processConnection,()V,2,"['bigbird_embeddings.csv', 'qwen_embeddings.csv']"
 com.squareup.okhttp.mockwebserver.MockWebServer$3,processOneRequest,(Ljava/net/Socket;Ljava/io/InputStream;Ljava/io/OutputStream;)Z,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+okio.RealBufferedSource,inputStream,()Ljava/io/InputStream;,2,"['bigbird_embeddings.csv', 'tf-idf_embeddings.csv']"
 com.squareup.okhttp.Connection,connect,(IILcom/squareup/okhttp/TunnelRequest;)V,1,['codebert_embeddings.csv']
 com.squareup.okhttp.Connection,newTransport,(Lcom/squareup/okhttp/internal/http/HttpEngine;)Ljava/lang/Object;,1,['qwen_embeddings.csv']
 com.squareup.okhttp.ConnectionPool$1,run,()V,1,['bigbird_embeddings.csv']
@@ -21,10 +22,12 @@ com.squareup.okhttp.internal.Platform,findPlatform,()Lcom/squareup/okhttp/intern
 com.squareup.okhttp.internal.SslContextBuilder,build,()Ljavax/net/ssl/SSLContext;,1,['codebert_embeddings.csv']
 com.squareup.okhttp.internal.SslContextBuilder,localhost,()Ljavax/net/ssl/SSLContext;,1,['gpt2_embeddings.csv']
 com.squareup.okhttp.internal.SslContextBuilder,selfSignedCertificate,(Ljava/security/KeyPair;)Ljava/security/cert/X509Certificate;,1,['codebert_embeddings.csv']
+com.squareup.okhttp.internal.Util,getDefaultPort,(Ljava/lang/String;)I,1,['tf-idf_embeddings.csv']
 com.squareup.okhttp.internal.http.CacheStrategy$Factory,get,()Lcom/squareup/okhttp/internal/http/CacheStrategy;,1,['gpt2_embeddings.csv']
 com.squareup.okhttp.internal.http.CacheStrategy$Factory,getCandidate,()Lcom/squareup/okhttp/internal/http/CacheStrategy;,1,['codebert_embeddings.csv']
 com.squareup.okhttp.internal.http.HttpConnection,writeRequest,(Lcom/squareup/okhttp/Headers;Ljava/lang/String;)V,1,['codebert_embeddings.csv']
 com.squareup.okhttp.internal.http.HttpConnection$AbstractSource,endOfInput,()V,1,['gpt2_embeddings.csv']
+com.squareup.okhttp.internal.http.HttpEngine,getDefaultUserAgent,()Ljava/lang/String;,1,['tf-idf_embeddings.csv']
 com.squareup.okhttp.internal.http.HttpEngine,initContentStream,(Lokio/Source;)V,1,['llama_embeddings.csv']
 com.squareup.okhttp.internal.http.HttpEngine,prepareRawRequestHeaders,()V,1,['bigbird_embeddings.csv']
 com.squareup.okhttp.internal.http.HttpEngine,readResponse,()V,1,['llama_embeddings.csv']
@@ -35,5 +38,11 @@ com.squareup.okhttp.internal.http.HttpURLConnectionImpl,execute,(Z)Z,1,['llama_e
 com.squareup.okhttp.internal.http.HttpURLConnectionImpl,getOutputStream,()Ljava/io/OutputStream;,1,['llama_embeddings.csv']
 com.squareup.okhttp.mockwebserver.MockResponse,setSocketPolicy,(Lcom/squareup/okhttp/mockwebserver/SocketPolicy;)Lcom/squareup/okhttp/mockwebserver/MockResponse;,1,['llama_embeddings.csv']
 com.squareup.okhttp.mockwebserver.MockWebServer,serveConnection,(Ljava/net/Socket;)V,1,['llama_embeddings.csv']
+okio.ByteString,<init>,([B)V,1,['tf-idf_embeddings.csv']
 okio.Okio$2,read,(Lokio/OkBuffer;J)J,1,['gpt2_embeddings.csv']
-okio.RealBufferedSource,inputStream,()Ljava/io/InputStream;,1,['bigbird_embeddings.csv']
+okio.RealBufferedSink,checkNotClosed,()V,1,['tf-idf_embeddings.csv']
+okio.RealBufferedSink,outputStream,()Ljava/io/OutputStream;,1,['tf-idf_embeddings.csv']
+okio.RealBufferedSink$1,checkNotClosed,()V,1,['tf-idf_embeddings.csv']
+okio.RealBufferedSource,checkNotClosed,()V,1,['tf-idf_embeddings.csv']
+okio.RealBufferedSource,close,()V,1,['tf-idf_embeddings.csv']
+okio.RealBufferedSource$1,checkNotClosed,()V,1,['tf-idf_embeddings.csv']

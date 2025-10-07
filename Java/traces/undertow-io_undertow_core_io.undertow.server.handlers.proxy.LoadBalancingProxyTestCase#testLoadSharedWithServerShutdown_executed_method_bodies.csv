@@ -3113,13 +3113,13 @@ io.undertow.util.CopyOnWriteMap,putInternal,(Ljava/lang/Object;Ljava/lang/Object
         this.delegate = delegate;
         return existing;
     }",139-144
-io.undertow.util.HttpString,<init>,([BLjava/lang/String;)V,6,6,100.0%,"public HttpString(final byte[] bytes) {
+io.undertow.util.HttpString,<init>,(Ljava/lang/String;I)V,12,13,92.3%,"public HttpString(final byte[] bytes) {
         this(bytes.clone(), null);
     }",70-72
 io.undertow.util.HttpString,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public HttpString(final byte[] bytes) {
         this(bytes.clone(), null);
     }",70-72
-io.undertow.util.HttpString,<init>,(Ljava/lang/String;I)V,12,13,92.3%,"public HttpString(final byte[] bytes) {
+io.undertow.util.HttpString,<init>,([BLjava/lang/String;)V,6,6,100.0%,"public HttpString(final byte[] bytes) {
         this(bytes.clone(), null);
     }",70-72
 io.undertow.util.HttpString,tryFromString,(Ljava/lang/String;)Lio/undertow/util/HttpString;,7,8,87.5%,"public static HttpString tryFromString(String string) {
@@ -3380,10 +3380,10 @@ io.undertow.util.HeaderValues,clear,()V,2,16,12.5%,"public void clear() {
         }
         this.head = this.size = 0;
     }",59-78
-io.undertow.util.HeaderValues,iterator,(IZ)Ljava/util/ListIterator;,1,1,100.0%,"public Iterator<String> iterator() {
+io.undertow.util.HeaderValues,iterator,()Ljava/util/Iterator;,1,1,100.0%,"public Iterator<String> iterator() {
         return iterator(0, true);
     }",99-101
-io.undertow.util.HeaderValues,iterator,()Ljava/util/Iterator;,1,1,100.0%,"public Iterator<String> iterator() {
+io.undertow.util.HeaderValues,iterator,(IZ)Ljava/util/ListIterator;,1,1,100.0%,"public Iterator<String> iterator() {
         return iterator(0, true);
     }",99-101
 io.undertow.util.HeaderValues,add,(Ljava/lang/String;)Z,2,2,100.0%,"public void add(final String headerValue) {
@@ -3543,7 +3543,7 @@ io.undertow.util.HeaderValues,get,(I)Ljava/lang/String;,6,9,66.7%,"public String
         final String[] a = (String[]) value;
         return a[index(idx)];
     }",416-428
-io.undertow.util.HeaderValues,addAll,(Ljava/util/Collection;)Z,1,1,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
+io.undertow.util.HeaderValues,addAll,(ILjava/util/Collection;)Z,6,6,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
         final int size = this.size;
         if (index < 0 || index > size) throw new IndexOutOfBoundsException();
         final Iterator<? extends String> iterator = c.iterator();
@@ -3551,7 +3551,7 @@ io.undertow.util.HeaderValues,addAll,(Ljava/util/Collection;)Z,1,1,100.0%,"publi
         while (iterator.hasNext()) { result |= offer(index, iterator.next()); }
         return result;
     }",488-495
-io.undertow.util.HeaderValues,addAll,(ILjava/util/Collection;)Z,6,6,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
+io.undertow.util.HeaderValues,addAll,(Ljava/util/Collection;)Z,1,1,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
         final int size = this.size;
         if (index < 0 || index > size) throw new IndexOutOfBoundsException();
         final Iterator<? extends String> iterator = c.iterator();
@@ -3937,7 +3937,7 @@ io.undertow.conduits.ReadDataStreamSourceConduit,<init>,(Lorg/xnio/conduits/Stre
         super(next);
         this.connection = connection;
     }",24-27
-io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;)V,2,2,100.0%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
+io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;Lio/undertow/server/HttpServerExchange;)V,7,9,77.8%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
         super(next);
         this.finishListener = finishListener;
         if (contentLength < 0L) {
@@ -3948,7 +3948,7 @@ io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/S
         state = contentLength;
         this.exchange = exchange;
     }",85-95
-io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;Lio/undertow/server/HttpServerExchange;)V,7,9,77.8%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
+io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;)V,2,2,100.0%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
         super(next);
         this.finishListener = finishListener;
         if (contentLength < 0L) {

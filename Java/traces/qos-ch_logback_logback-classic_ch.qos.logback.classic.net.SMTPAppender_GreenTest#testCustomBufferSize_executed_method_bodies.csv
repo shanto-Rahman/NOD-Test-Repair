@@ -105,10 +105,10 @@ ch.qos.logback.core.spi.AppenderAttachableImpl,appendLoopOnAppenders,(Ljava/lang
       }
     return size;
   }",45-52
-ch.qos.logback.core.spi.ContextAwareBase,<init>,()V,4,4,100.0%,"public ContextAwareBase() {
+ch.qos.logback.core.spi.ContextAwareBase,<init>,(Lch/qos/logback/core/spi/ContextAware;)V,4,4,100.0%,"public ContextAwareBase() {
     declaredOrigin = this;
   }",34-36
-ch.qos.logback.core.spi.ContextAwareBase,<init>,(Lch/qos/logback/core/spi/ContextAware;)V,4,4,100.0%,"public ContextAwareBase() {
+ch.qos.logback.core.spi.ContextAwareBase,<init>,()V,4,4,100.0%,"public ContextAwareBase() {
     declaredOrigin = this;
   }",34-36
 ch.qos.logback.core.spi.ContextAwareBase,setContext,(Lch/qos/logback/core/Context;)V,4,5,80.0%,"public void setContext(Context context) {
@@ -203,14 +203,14 @@ ch.qos.logback.core.spi.FilterAttachableImpl,getFilterChainDecision,(Ljava/lang/
 ch.qos.logback.core.sift.DefaultDiscriminator,getDiscriminatingValue,(Ljava/lang/Object;)Ljava/lang/String;,1,1,100.0%,"public String getDiscriminatingValue(E e) {
     return DEFAULT;
   }",24-26
-ch.qos.logback.core.helpers.CyclicBuffer,<init>,(I)V,4,5,80.0%,"public CyclicBuffer(int maxSize) throws IllegalArgumentException {
+ch.qos.logback.core.helpers.CyclicBuffer,<init>,(Lch/qos/logback/core/helpers/CyclicBuffer;)V,8,8,100.0%,"public CyclicBuffer(int maxSize) throws IllegalArgumentException {
     if (maxSize < 1) {
       throw new IllegalArgumentException(""The maxSize argument ("" + maxSize
           + "") is not a positive integer."");
     }
     init(maxSize);
   }",43-49
-ch.qos.logback.core.helpers.CyclicBuffer,<init>,(Lch/qos/logback/core/helpers/CyclicBuffer;)V,8,8,100.0%,"public CyclicBuffer(int maxSize) throws IllegalArgumentException {
+ch.qos.logback.core.helpers.CyclicBuffer,<init>,(I)V,4,5,80.0%,"public CyclicBuffer(int maxSize) throws IllegalArgumentException {
     if (maxSize < 1) {
       throw new IllegalArgumentException(""The maxSize argument ("" + maxSize
           + "") is not a positive integer."");
@@ -576,7 +576,7 @@ ch.qos.logback.classic.pattern.EnsureExceptionHandling,chainHandlesThrowable,(Lc
 ch.qos.logback.classic.pattern.LoggerConverter,getFullyQualifiedName,(Lch/qos/logback/classic/spi/ILoggingEvent;)Ljava/lang/String;,1,1,100.0%,"protected String getFullyQualifiedName(ILoggingEvent event) {
     return event.getLoggerName();
   }",20-22
-ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Ljava/io/InputStream;)V,2,2,100.0%,"public final void doConfigure(URL url) throws JoranException {
+ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Lorg/xml/sax/InputSource;)V,10,11,90.9%,"public final void doConfigure(URL url) throws JoranException {
     InputStream in = null;
     try {
       informContextOfURLUsedForConfiguration(getContext(), url);
@@ -630,7 +630,7 @@ ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Ljava/io/File;)V,8,16
       }
     }
   }",39-65
-ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Ljava/util/List;)V,5,5,100.0%,"public final void doConfigure(URL url) throws JoranException {
+ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Ljava/io/InputStream;)V,2,2,100.0%,"public final void doConfigure(URL url) throws JoranException {
     InputStream in = null;
     try {
       informContextOfURLUsedForConfiguration(getContext(), url);
@@ -657,7 +657,7 @@ ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Ljava/util/List;)V,5,
       }
     }
   }",39-65
-ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Lorg/xml/sax/InputSource;)V,10,11,90.9%,"public final void doConfigure(URL url) throws JoranException {
+ch.qos.logback.core.joran.GenericConfigurator,doConfigure,(Ljava/util/List;)V,5,5,100.0%,"public final void doConfigure(URL url) throws JoranException {
     InputStream in = null;
     try {
       informContextOfURLUsedForConfiguration(getContext(), url);
@@ -1361,7 +1361,7 @@ ch.qos.logback.core.subst.Tokenizer,addLiteralToken,(Ljava/util/List;Ljava/lang/
       return;
     tokenList.add(new Token(Token.Type.LITERAL, stringBuilder.toString()));
   }",119-123
-ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/StatusListener;)V,4,4,100.0%,"public void add(Status newStatus) {
+ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/Status;)V,9,10,90.0%,"public void add(Status newStatus) {
     // LBCORE-72: fire event before the count check
     fireStatusAddEvent(newStatus);
 
@@ -1379,7 +1379,7 @@ ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/StatusLi
     }
 
   }",57-74
-ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/Status;)V,9,10,90.0%,"public void add(Status newStatus) {
+ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/StatusListener;)V,4,4,100.0%,"public void add(Status newStatus) {
     // LBCORE-72: fire event before the count check
     fireStatusAddEvent(newStatus);
 
@@ -1600,10 +1600,10 @@ ch.qos.logback.core.pattern.parser.Compiler,createConverter,(Lch/qos/logback/cor
       return null;
     }
   }",100-119
-ch.qos.logback.core.pattern.parser.Parser,<init>,(Ljava/lang/String;)V,2,2,100.0%,"Parser(TokenStream ts) throws ScanException {
+ch.qos.logback.core.pattern.parser.Parser,<init>,(Ljava/lang/String;Lch/qos/logback/core/pattern/util/IEscapeUtil;)V,6,8,75.0%,"Parser(TokenStream ts) throws ScanException {
     this.tokenList = ts.tokenize();
   }",61-63
-ch.qos.logback.core.pattern.parser.Parser,<init>,(Ljava/lang/String;Lch/qos/logback/core/pattern/util/IEscapeUtil;)V,6,8,75.0%,"Parser(TokenStream ts) throws ScanException {
+ch.qos.logback.core.pattern.parser.Parser,<init>,(Ljava/lang/String;)V,2,2,100.0%,"Parser(TokenStream ts) throws ScanException {
     this.tokenList = ts.tokenize();
   }",61-63
 ch.qos.logback.core.pattern.parser.Parser,compile,(Lch/qos/logback/core/pattern/parser/Node;Ljava/util/Map;)Lch/qos/logback/core/pattern/Converter;,3,3,100.0%,"public Converter<E> compile(final Node top, Map converterMap) {
@@ -1727,10 +1727,10 @@ ch.qos.logback.core.pattern.parser.Node,getValue,()Ljava/lang/Object;,1,1,100.0%
 ch.qos.logback.core.pattern.parser.Node,setNext,(Lch/qos/logback/core/pattern/parser/Node;)V,2,2,100.0%,"public void setNext(Node next) {
 		this.next = next;
 	}",52-54
-ch.qos.logback.core.pattern.parser.Token,<init>,(I)V,2,2,100.0%,"public Token(int type) {
+ch.qos.logback.core.pattern.parser.Token,<init>,(ILjava/lang/Object;)V,4,4,100.0%,"public Token(int type) {
     this(type, null);
   }",44-46
-ch.qos.logback.core.pattern.parser.Token,<init>,(ILjava/lang/Object;)V,4,4,100.0%,"public Token(int type) {
+ch.qos.logback.core.pattern.parser.Token,<init>,(I)V,2,2,100.0%,"public Token(int type) {
     this(type, null);
   }",44-46
 ch.qos.logback.core.pattern.parser.Token,getType,()I,1,1,100.0%,"public int getType() {
@@ -2025,7 +2025,7 @@ ch.qos.logback.core.joran.util.PropertySetter,introspect,()V,5,9,55.6%,"protecte
       methodDescriptors = new MethodDescriptor[0];
     }
   }",77-87
-ch.qos.logback.core.joran.util.PropertySetter,setProperty,(Ljava/beans/PropertyDescriptor;Ljava/lang/String;Ljava/lang/String;)V,10,17,58.8%,"public void setProperty(String name, String value) {
+ch.qos.logback.core.joran.util.PropertySetter,setProperty,(Ljava/lang/String;Ljava/lang/String;)V,7,11,63.6%,"public void setProperty(String name, String value) {
     if (value == null) {
       return;
     }
@@ -2045,7 +2045,7 @@ ch.qos.logback.core.joran.util.PropertySetter,setProperty,(Ljava/beans/PropertyD
       }
     }
   }",107-126
-ch.qos.logback.core.joran.util.PropertySetter,setProperty,(Ljava/lang/String;Ljava/lang/String;)V,7,11,63.6%,"public void setProperty(String name, String value) {
+ch.qos.logback.core.joran.util.PropertySetter,setProperty,(Ljava/beans/PropertyDescriptor;Ljava/lang/String;Ljava/lang/String;)V,10,17,58.8%,"public void setProperty(String name, String value) {
     if (value == null) {
       return;
     }
@@ -2329,10 +2329,10 @@ ch.qos.logback.core.joran.spi.ElementPath,toString,()Ljava/lang/String;,1,1,100.
   public String toString() {
     return toStableString();
   }",118-121
-ch.qos.logback.core.joran.spi.ElementSelector,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public ElementSelector() {
+ch.qos.logback.core.joran.spi.ElementSelector,<init>,(Ljava/util/List;)V,2,2,100.0%,"public ElementSelector() {
     super();
   }",30-32
-ch.qos.logback.core.joran.spi.ElementSelector,<init>,(Ljava/util/List;)V,2,2,100.0%,"public ElementSelector() {
+ch.qos.logback.core.joran.spi.ElementSelector,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public ElementSelector() {
     super();
   }",30-32
 ch.qos.logback.core.joran.spi.ElementSelector,fullPathMatch,(Lch/qos/logback/core/joran/spi/ElementPath;)Z,7,7,100.0%,"public boolean fullPathMatch(ElementPath path) {
@@ -2443,11 +2443,11 @@ ch.qos.logback.core.joran.spi.Interpreter,getEventPlayer,()Lch/qos/logback/core/
 ch.qos.logback.core.joran.spi.Interpreter,getInterpretationContext,()Lch/qos/logback/core/joran/spi/InterpretationContext;,1,1,100.0%,"public InterpretationContext getInterpretationContext() {
     return interpretationContext;
   }",120-122
-ch.qos.logback.core.joran.spi.Interpreter,startElement,(Lch/qos/logback/core/joran/event/StartEvent;)V,3,3,100.0%,"public void startElement(StartEvent se) {
+ch.qos.logback.core.joran.spi.Interpreter,startElement,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/xml/sax/Attributes;)V,11,13,84.6%,"public void startElement(StartEvent se) {
     setDocumentLocator(se.getLocator());
     startElement(se.namespaceURI, se.localName, se.qName, se.attributes);
   }",127-130
-ch.qos.logback.core.joran.spi.Interpreter,startElement,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/xml/sax/Attributes;)V,11,13,84.6%,"public void startElement(StartEvent se) {
+ch.qos.logback.core.joran.spi.Interpreter,startElement,(Lch/qos/logback/core/joran/event/StartEvent;)V,3,3,100.0%,"public void startElement(StartEvent se) {
     setDocumentLocator(se.getLocator());
     startElement(se.namespaceURI, se.localName, se.qName, se.attributes);
   }",127-130
@@ -3174,13 +3174,13 @@ ch.qos.logback.core.util.ContentTypeUtil,getSubType,(Ljava/lang/String;)Ljava/la
       }
     }
   }",31-46
-ch.qos.logback.core.util.OptionHelper,instantiateByClassName,(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/ClassLoader;)Ljava/lang/Object;,1,1,100.0%,"public static Object instantiateByClassName(String className,
+ch.qos.logback.core.util.OptionHelper,instantiateByClassName,(Ljava/lang/String;Ljava/lang/Class;Lch/qos/logback/core/Context;)Ljava/lang/Object;,2,2,100.0%,"public static Object instantiateByClassName(String className,
                                               Class<?> superClass, Context context) throws IncompatibleClassException,
           DynamicClassLoadingException {
     ClassLoader classLoader = Loader.getClassLoaderOfObject(context);
     return instantiateByClassName(className, superClass, classLoader);
   }",31-36
-ch.qos.logback.core.util.OptionHelper,instantiateByClassName,(Ljava/lang/String;Ljava/lang/Class;Lch/qos/logback/core/Context;)Ljava/lang/Object;,2,2,100.0%,"public static Object instantiateByClassName(String className,
+ch.qos.logback.core.util.OptionHelper,instantiateByClassName,(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/ClassLoader;)Ljava/lang/Object;,1,1,100.0%,"public static Object instantiateByClassName(String className,
                                               Class<?> superClass, Context context) throws IncompatibleClassException,
           DynamicClassLoadingException {
     ClassLoader classLoader = Loader.getClassLoaderOfObject(context);
@@ -3677,10 +3677,10 @@ ch.qos.logback.classic.Level,<init>,(ILjava/lang/String;)V,4,4,100.0%,"private L
 ch.qos.logback.classic.Level,toString,()Ljava/lang/String;,1,1,100.0%,"public String toString() {
     return levelStr;
   }",98-100
-ch.qos.logback.classic.Level,toLevel,(Ljava/lang/String;Lch/qos/logback/classic/Level;)Lch/qos/logback/classic/Level;,5,17,29.4%,"public static Level toLevel(String sArg) {
+ch.qos.logback.classic.Level,toLevel,(Ljava/lang/String;)Lch/qos/logback/classic/Level;,1,1,100.0%,"public static Level toLevel(String sArg) {
     return toLevel(sArg, Level.DEBUG);
   }",148-150
-ch.qos.logback.classic.Level,toLevel,(Ljava/lang/String;)Lch/qos/logback/classic/Level;,1,1,100.0%,"public static Level toLevel(String sArg) {
+ch.qos.logback.classic.Level,toLevel,(Ljava/lang/String;Lch/qos/logback/classic/Level;)Lch/qos/logback/classic/Level;,5,17,29.4%,"public static Level toLevel(String sArg) {
     return toLevel(sArg, Level.DEBUG);
   }",148-150
 ch.qos.logback.classic.PatternLayout,<init>,()V,3,3,100.0%,"public PatternLayout() {
@@ -3718,10 +3718,10 @@ ch.qos.logback.classic.LoggerContext,putProperty,(Ljava/lang/String;Ljava/lang/S
     super.putProperty(key, val);
     updateLoggerContextVO();
   }",89-93
-ch.qos.logback.classic.LoggerContext,getLogger,(Ljava/lang/String;)Lch/qos/logback/classic/Logger;,23,25,92.0%,"public final Logger getLogger(final Class clazz) {
+ch.qos.logback.classic.LoggerContext,getLogger,(Ljava/lang/Class;)Lch/qos/logback/classic/Logger;,1,1,100.0%,"public final Logger getLogger(final Class clazz) {
     return getLogger(clazz.getName());
   }",101-103
-ch.qos.logback.classic.LoggerContext,getLogger,(Ljava/lang/Class;)Lch/qos/logback/classic/Logger;,1,1,100.0%,"public final Logger getLogger(final Class clazz) {
+ch.qos.logback.classic.LoggerContext,getLogger,(Ljava/lang/String;)Lch/qos/logback/classic/Logger;,23,25,92.0%,"public final Logger getLogger(final Class clazz) {
     return getLogger(clazz.getName());
   }",101-103
 ch.qos.logback.classic.LoggerContext,incSize,()V,2,2,100.0%,"private void incSize() {

@@ -320,43 +320,6 @@ org.java_websocket.WebSocketImpl,closeConnection,()V,3,4,75.0%,"public synchroni
 		handshakerequest = null;
 		setReadyState( ReadyState.CLOSED );
 	}",480-516
-org.java_websocket.WebSocketImpl,closeConnection,(IZ)V,2,2,100.0%,"public synchronized void closeConnection( int code, String message, boolean remote ) {
-		if( getReadyState() == ReadyState.CLOSED ) {
-			return;
-		}
-		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the ReadyState manually
-		if( getReadyState() == ReadyState.OPEN ) {
-			if( code == CloseFrame.ABNORMAL_CLOSE ) {
-				setReadyState( ReadyState.CLOSING );
-			}
-		}
-		if( key != null ) {
-			// key.attach( null ); //see issue #114
-			key.cancel();
-		}
-		if( channel != null ) {
-			try {
-				channel.close();
-			} catch ( IOException e ) {
-				if( e.getMessage().equals( ""Broken pipe"" ) ) {
-					log.trace( ""Caught IOException: Broken pipe during closeConnection()"", e );
-				} else {
-					log.error(""Exception during channel.close()"", e);
-					wsl.onWebsocketError( this, e );
-				}
-			}
-		}
-		try {
-			this.wsl.onWebsocketClose( this, code, message, remote );
-		} catch ( RuntimeException e ) {
-
-			wsl.onWebsocketError( this, e );
-		}
-		if( draft != null )
-			draft.reset();
-		handshakerequest = null;
-		setReadyState( ReadyState.CLOSED );
-	}",480-516
 org.java_websocket.WebSocketImpl,closeConnection,(ILjava/lang/String;)V,2,2,100.0%,"public synchronized void closeConnection( int code, String message, boolean remote ) {
 		if( getReadyState() == ReadyState.CLOSED ) {
 			return;
@@ -395,6 +358,43 @@ org.java_websocket.WebSocketImpl,closeConnection,(ILjava/lang/String;)V,2,2,100.
 		setReadyState( ReadyState.CLOSED );
 	}",480-516
 org.java_websocket.WebSocketImpl,closeConnection,(ILjava/lang/String;Z)V,17,24,70.8%,"public synchronized void closeConnection( int code, String message, boolean remote ) {
+		if( getReadyState() == ReadyState.CLOSED ) {
+			return;
+		}
+		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the ReadyState manually
+		if( getReadyState() == ReadyState.OPEN ) {
+			if( code == CloseFrame.ABNORMAL_CLOSE ) {
+				setReadyState( ReadyState.CLOSING );
+			}
+		}
+		if( key != null ) {
+			// key.attach( null ); //see issue #114
+			key.cancel();
+		}
+		if( channel != null ) {
+			try {
+				channel.close();
+			} catch ( IOException e ) {
+				if( e.getMessage().equals( ""Broken pipe"" ) ) {
+					log.trace( ""Caught IOException: Broken pipe during closeConnection()"", e );
+				} else {
+					log.error(""Exception during channel.close()"", e);
+					wsl.onWebsocketError( this, e );
+				}
+			}
+		}
+		try {
+			this.wsl.onWebsocketClose( this, code, message, remote );
+		} catch ( RuntimeException e ) {
+
+			wsl.onWebsocketError( this, e );
+		}
+		if( draft != null )
+			draft.reset();
+		handshakerequest = null;
+		setReadyState( ReadyState.CLOSED );
+	}",480-516
+org.java_websocket.WebSocketImpl,closeConnection,(IZ)V,2,2,100.0%,"public synchronized void closeConnection( int code, String message, boolean remote ) {
 		if( getReadyState() == ReadyState.CLOSED ) {
 			return;
 		}
@@ -500,13 +500,13 @@ org.java_websocket.WebSocketImpl,startHandshake,(Lorg/java_websocket/handshake/C
 		// Send
 		write( draft.createHandshake( this.handshakerequest, role ) );
 	}",653-674
-org.java_websocket.WebSocketImpl,write,(Ljava/nio/ByteBuffer;)V,4,4,100.0%,"private void write( ByteBuffer buf ) {
+org.java_websocket.WebSocketImpl,write,(Ljava/util/List;)V,6,6,100.0%,"private void write( ByteBuffer buf ) {
 		log.trace( ""write({}): {}"", buf.remaining(), buf.remaining() > 1000 ? ""too big to display"" : new String( buf.array() ));
 
 		outQueue.add( buf );
 		wsl.onWriteDemand( this );
 	}",676-681
-org.java_websocket.WebSocketImpl,write,(Ljava/util/List;)V,6,6,100.0%,"private void write( ByteBuffer buf ) {
+org.java_websocket.WebSocketImpl,write,(Ljava/nio/ByteBuffer;)V,4,4,100.0%,"private void write( ByteBuffer buf ) {
 		log.trace( ""write({}): {}"", buf.remaining(), buf.remaining() > 1000 ? ""too big to display"" : new String( buf.array() ));
 
 		outQueue.add( buf );
@@ -935,7 +935,7 @@ org.java_websocket.util.Base64,encode3to4,([BII[BII)[B,18,19,94.7%,"private stat
         encode3to4( threeBytes, 0, numSigBytes, b4, 0, options );
         return b4;
     }",477-480
-org.java_websocket.util.Base64,encodeBytes,([B)Ljava/lang/String;,5,7,71.4%,"public static String encodeBytes( byte[] source ) {
+org.java_websocket.util.Base64,encodeBytes,([BIII)Ljava/lang/String;,2,4,50.0%,"public static String encodeBytes( byte[] source ) {
         // Since we're not going to have the GZIP encoding turned on,
         // we're not going to have an java.io.IOException thrown, so
         // we should not force the user to have to catch it.
@@ -948,7 +948,7 @@ org.java_websocket.util.Base64,encodeBytes,([B)Ljava/lang/String;,5,7,71.4%,"pub
         assert encoded != null;
         return encoded;
     }",565-577
-org.java_websocket.util.Base64,encodeBytes,([BIII)Ljava/lang/String;,2,4,50.0%,"public static String encodeBytes( byte[] source ) {
+org.java_websocket.util.Base64,encodeBytes,([B)Ljava/lang/String;,5,7,71.4%,"public static String encodeBytes( byte[] source ) {
         // Since we're not going to have the GZIP encoding turned on,
         // we're not going to have an java.io.IOException thrown, so
         // we should not force the user to have to catch it.
@@ -1459,13 +1459,13 @@ org.java_websocket.drafts.Draft,setParseMode,(Lorg/java_websocket/enums/Role;)V,
 org.java_websocket.drafts.Draft,getRole,()Lorg/java_websocket/enums/Role;,1,1,100.0%,"public Role getRole() {
 		return role;
 	}",280-282
-org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;Ljava/util/List;)V,17,18,94.4%,"public Draft_6455() {
+org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;)V,2,2,100.0%,"public Draft_6455() {
 		this( Collections.<IExtension>emptyList() );
 	}",105-107
 org.java_websocket.drafts.Draft_6455,<init>,()V,2,2,100.0%,"public Draft_6455() {
 		this( Collections.<IExtension>emptyList() );
 	}",105-107
-org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;)V,2,2,100.0%,"public Draft_6455() {
+org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;Ljava/util/List;)V,17,18,94.4%,"public Draft_6455() {
 		this( Collections.<IExtension>emptyList() );
 	}",105-107
 org.java_websocket.drafts.Draft_6455,acceptHandshakeAsServer,(Lorg/java_websocket/handshake/ClientHandshake;)Lorg/java_websocket/enums/HandshakeState;,20,26,76.9%,"@Override
@@ -2239,10 +2239,10 @@ org.java_websocket.server.DefaultWebSocketServerFactory,close,()V,1,1,100.0%,"@O
 org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;)V,2,2,100.0%,"public WebSocketServer()  {
 		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
 	}",118-120
-org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;)V,2,2,100.0%,"public WebSocketServer()  {
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;Ljava/util/Collection;)V,20,22,90.9%,"public WebSocketServer()  {
 		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
 	}",118-120
-org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;Ljava/util/Collection;)V,20,22,90.9%,"public WebSocketServer()  {
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;)V,2,2,100.0%,"public WebSocketServer()  {
 		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
 	}",118-120
 org.java_websocket.server.WebSocketServer,start,()V,3,4,75.0%,"public void start() {
@@ -2250,7 +2250,7 @@ org.java_websocket.server.WebSocketServer,start,()V,3,4,75.0%,"public void start
 			throw new IllegalStateException( getClass().getName() + "" can only be started once."" );
 		new Thread( this ).start();
 	}",228-232
-org.java_websocket.server.WebSocketServer,stop,(I)V,14,15,93.3%,"public void stop( int timeout ) throws InterruptedException {
+org.java_websocket.server.WebSocketServer,stop,()V,2,2,100.0%,"public void stop( int timeout ) throws InterruptedException {
 		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
 			return;
 		}
@@ -2275,7 +2275,7 @@ org.java_websocket.server.WebSocketServer,stop,(I)V,14,15,93.3%,"public void sto
 			}
 		}
 	}",246-270
-org.java_websocket.server.WebSocketServer,stop,()V,2,2,100.0%,"public void stop( int timeout ) throws InterruptedException {
+org.java_websocket.server.WebSocketServer,stop,(I)V,14,15,93.3%,"public void stop( int timeout ) throws InterruptedException {
 		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
 			return;
 		}

@@ -1117,10 +1117,10 @@ io.yawp.driver.appengine.pipes.flow.CacheHelper,getSinkGroupUri,(Lio/yawp/reposi
         }
         return sinkGroupId.getUri();
     }",33-39
-io.yawp.driver.appengine.pipes.flow.Work,<init>,()V,2,2,100.0%,"public Work() {
+io.yawp.driver.appengine.pipes.flow.Work,<init>,(Ljava/lang/String;Lio/yawp/driver/appengine/pipes/flow/Payload;)V,5,5,100.0%,"public Work() {
         this(null, null);
     }",34-36
-io.yawp.driver.appengine.pipes.flow.Work,<init>,(Ljava/lang/String;Lio/yawp/driver/appengine/pipes/flow/Payload;)V,5,5,100.0%,"public Work() {
+io.yawp.driver.appengine.pipes.flow.Work,<init>,()V,2,2,100.0%,"public Work() {
         this(null, null);
     }",34-36
 io.yawp.driver.appengine.pipes.flow.Work,execute,(Ljava/lang/Object;Lio/yawp/repository/pipes/SinkMarker;)V,9,10,90.0%,"public <T, S> void execute(Object sink, SinkMarker sinkMarker) {
@@ -1847,10 +1847,10 @@ io.yawp.repository.IdRef,<init>,(Lio/yawp/repository/Repository;Ljava/lang/Class
 io.yawp.repository.IdRef,setParentId,(Lio/yawp/repository/IdRef;)V,2,2,100.0%,"public void setParentId(IdRef<?> parentId) {
         this.parentId = parentId;
     }",48-50
-io.yawp.repository.IdRef,fetch,(Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"public T fetch() {
+io.yawp.repository.IdRef,fetch,()Ljava/lang/Object;,1,1,100.0%,"public T fetch() {
         return fetch(clazz);
     }",52-54
-io.yawp.repository.IdRef,fetch,()Ljava/lang/Object;,1,1,100.0%,"public T fetch() {
+io.yawp.repository.IdRef,fetch,(Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"public T fetch() {
         return fetch(clazz);
     }",52-54
 io.yawp.repository.IdRef,asLong,()Ljava/lang/Long;,1,1,100.0%,"public Long asLong() {
@@ -1877,7 +1877,7 @@ io.yawp.repository.IdRef,createChildId,(Ljava/lang/Class;Ljava/lang/Long;)Lio/ya
 io.yawp.repository.IdRef,create,(Lio/yawp/repository/Repository;Ljava/lang/Class;Ljava/lang/Long;)Lio/yawp/repository/IdRef;,1,1,100.0%,"public static <TT> IdRef<TT> create(Repository r, Class<TT> clazz, Long id) {
         return new IdRef<>(r, clazz, id);
     }",126-128
-io.yawp.repository.IdRef,parse,(Lio/yawp/repository/Repository;Lio/yawp/commons/http/HttpVerb;Ljava/lang/String;)Lio/yawp/repository/IdRef;,16,20,80.0%,"@SuppressWarnings(""unchecked"")
+io.yawp.repository.IdRef,parse,(Lio/yawp/repository/Repository;Ljava/lang/String;)Lio/yawp/repository/IdRef;,1,1,100.0%,"@SuppressWarnings(""unchecked"")
     public static <TT> IdRef<TT> parse(Repository r, HttpVerb verb, String path) {
         if (StringUtils.isBlank(path)) {
             return null;
@@ -1916,7 +1916,7 @@ io.yawp.repository.IdRef,parse,(Lio/yawp/repository/Repository;Lio/yawp/commons/
 
         return lastIdRef;
     }",142-180
-io.yawp.repository.IdRef,parse,(Lio/yawp/repository/Repository;Ljava/lang/String;)Lio/yawp/repository/IdRef;,1,1,100.0%,"@SuppressWarnings(""unchecked"")
+io.yawp.repository.IdRef,parse,(Lio/yawp/repository/Repository;Lio/yawp/commons/http/HttpVerb;Ljava/lang/String;)Lio/yawp/repository/IdRef;,16,20,80.0%,"@SuppressWarnings(""unchecked"")
     public static <TT> IdRef<TT> parse(Repository r, HttpVerb verb, String path) {
         if (StringUtils.isBlank(path)) {
             return null;
@@ -2109,7 +2109,7 @@ io.yawp.repository.Yawp,safeLoadFeatures,(Ljava/lang/String;)V,4,5,80.0%,"@Suppr
         ClassloaderScanner scanner = new ClassloaderScanner(packagePrefix);
         features = scanner.scan();
     }",80-88
-io.yawp.repository.FutureObject,<init>,(Lio/yawp/repository/Repository;Ljava/util/concurrent/Future;)V,5,5,100.0%,"public FutureObject(Repository r, Future<IdRef<?>> futureIdRef, T object) {
+io.yawp.repository.FutureObject,<init>,(Ljava/lang/Object;)V,5,5,100.0%,"public FutureObject(Repository r, Future<IdRef<?>> futureIdRef, T object) {
         this.r = r;
         this.futureIdRef = futureIdRef;
         this.object = object;
@@ -2119,7 +2119,7 @@ io.yawp.repository.FutureObject,<init>,(Lio/yawp/repository/Repository;Ljava/uti
         this.futureIdRef = futureIdRef;
         this.object = object;
     }",23-27
-io.yawp.repository.FutureObject,<init>,(Ljava/lang/Object;)V,5,5,100.0%,"public FutureObject(Repository r, Future<IdRef<?>> futureIdRef, T object) {
+io.yawp.repository.FutureObject,<init>,(Lio/yawp/repository/Repository;Ljava/util/concurrent/Future;)V,5,5,100.0%,"public FutureObject(Repository r, Future<IdRef<?>> futureIdRef, T object) {
         this.r = r;
         this.futureIdRef = futureIdRef;
         this.object = object;
@@ -2259,10 +2259,10 @@ io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,worksQuery,()Lio/yawp/re
 io.yawp.commons.utils.JsonUtils,init,()V,2,2,100.0%,"private static void init() {
         jsonUtils = new GsonJsonUtils();
     }",29-31
-io.yawp.commons.utils.JsonUtils,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/reflect/Type;)Ljava/lang/Object;,1,1,100.0%,"public static Object from(Repository r, String json, Type type) {
+io.yawp.commons.utils.JsonUtils,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"public static Object from(Repository r, String json, Type type) {
         return jsonUtils.from(r, json, type);
     }",33-35
-io.yawp.commons.utils.JsonUtils,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"public static Object from(Repository r, String json, Type type) {
+io.yawp.commons.utils.JsonUtils,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/reflect/Type;)Ljava/lang/Object;,1,1,100.0%,"public static Object from(Repository r, String json, Type type) {
         return jsonUtils.from(r, json, type);
     }",33-35
 io.yawp.commons.utils.JsonUtils,to,(Ljava/lang/Object;)Ljava/lang/String;,1,1,100.0%,"public static String to(Object o) {
@@ -2374,10 +2374,10 @@ io.yawp.commons.utils.ReflectionUtils,clazzForName,(Ljava/lang/String;)Ljava/lan
             throw new RuntimeException(e);
         }
     }",173-179
-io.yawp.commons.utils.ResourceFinder,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public ResourceFinder(URL... urls) {
+io.yawp.commons.utils.ResourceFinder,<init>,(Ljava/lang/String;Ljava/lang/ClassLoader;[Ljava/net/URL;)V,10,19,52.6%,"public ResourceFinder(URL... urls) {
         this(null, Thread.currentThread().getContextClassLoader(), urls);
     }",52-54
-io.yawp.commons.utils.ResourceFinder,<init>,(Ljava/lang/String;Ljava/lang/ClassLoader;[Ljava/net/URL;)V,10,19,52.6%,"public ResourceFinder(URL... urls) {
+io.yawp.commons.utils.ResourceFinder,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public ResourceFinder(URL... urls) {
         this(null, Thread.currentThread().getContextClassLoader(), urls);
     }",52-54
 io.yawp.commons.utils.ResourceFinder,findAllStrings,(Ljava/lang/String;)Ljava/util/List;,9,9,100.0%,"public List<String> findAllStrings(String uri) throws IOException {
@@ -2544,10 +2544,10 @@ io.yawp.repository.models.FieldModel,isIndexNormalizable,()Z,2,3,66.7%,"public b
         }
         return getIndex().normalize() && isString();
     }",50-56
-io.yawp.repository.models.FieldModel,isEnum,()Z,1,1,100.0%,"public boolean isEnum(Object value) {
+io.yawp.repository.models.FieldModel,isEnum,(Ljava/lang/Object;)Z,1,1,100.0%,"public boolean isEnum(Object value) {
         return value != null && value instanceof Enum<?>;
     }",58-60
-io.yawp.repository.models.FieldModel,isEnum,(Ljava/lang/Object;)Z,1,1,100.0%,"public boolean isEnum(Object value) {
+io.yawp.repository.models.FieldModel,isEnum,()Z,1,1,100.0%,"public boolean isEnum(Object value) {
         return value != null && value instanceof Enum<?>;
     }",58-60
 io.yawp.repository.models.FieldModel,isCollection,(Ljava/lang/Object;)Z,1,1,100.0%,"public boolean isCollection(Object value) {
@@ -2718,9 +2718,9 @@ io.yawp.repository.query.condition.WhereOperator,toOperator,(Ljava/lang/String;)
         }
         throw new RuntimeException(""invalid filter operator "" + operator);
     }",112-135
-io.yawp.repository.query.condition.Condition,c,(Ljava/lang/String;Lio/yawp/repository/query/condition/WhereOperator;Ljava/lang/Object;)Lio/yawp/repository/query/condition/BaseCondition;,1,1,100.0%,"public static BaseCondition c(String field, String operator, Object comparison) {
+io.yawp.repository.query.condition.Condition,c,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Lio/yawp/repository/query/condition/BaseCondition;,1,1,100.0%,"public static BaseCondition c(String field, String operator, Object comparison) {
         return c(field, WhereOperator.toOperator(operator), comparison);
     }",7-9
-io.yawp.repository.query.condition.Condition,c,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Lio/yawp/repository/query/condition/BaseCondition;,1,1,100.0%,"public static BaseCondition c(String field, String operator, Object comparison) {
+io.yawp.repository.query.condition.Condition,c,(Ljava/lang/String;Lio/yawp/repository/query/condition/WhereOperator;Ljava/lang/Object;)Lio/yawp/repository/query/condition/BaseCondition;,1,1,100.0%,"public static BaseCondition c(String field, String operator, Object comparison) {
         return c(field, WhereOperator.toOperator(operator), comparison);
     }",7-9

@@ -228,7 +228,7 @@ uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,buildQuery,(Luk/co/flax/luwak/Q
         public Query buildQuery(QueryTermFilter termFilter) throws IOException {
             return presearcher.buildQuery(batchIndexReader, termFilter);
         }",473-476
-uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;Lorg/apache/lucene/index/IndexWriter;Luk/co/flax/luwak/QueryIndexConfiguration;)V,16,16,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
+uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;)V,2,2,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
                    IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
 
         this.queryParser = queryParser;
@@ -253,7 +253,7 @@ uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/fla
 
         this.commitBatchSize = configuration.getQueryUpdateBufferSize();
     }",82-106
-uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;)V,2,2,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
+uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;Lorg/apache/lucene/index/IndexWriter;Luk/co/flax/luwak/QueryIndexConfiguration;)V,16,16,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
                    IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
 
         this.queryParser = queryParser;
@@ -358,12 +358,15 @@ uk.co.flax.luwak.Monitor,afterCommit,(Ljava/util/List;)V,3,8,37.5%,"private void
             }
         }
     }",286-297
+uk.co.flax.luwak.Monitor,setSlowLogLimit,(J)V,2,2,100.0%,"public void setSlowLogLimit(long limit) {
+        this.slowLogLimit = limit;
+    }",326-328
 uk.co.flax.luwak.Monitor,close,()V,3,3,100.0%,"@Override
     public void close() throws IOException {
         purgeExecutor.shutdown();
         queryIndex.closeWhileHandlingException();
     }",330-334
-uk.co.flax.luwak.Monitor,update,([Luk/co/flax/luwak/MonitorQuery;)V,2,2,100.0%,"public void update(Iterable<MonitorQuery> queries) throws IOException, UpdateException {
+uk.co.flax.luwak.Monitor,update,(Ljava/lang/Iterable;)V,12,17,70.6%,"public void update(Iterable<MonitorQuery> queries) throws IOException, UpdateException {
 
         List<QueryError> errors = new ArrayList<>();
         List<Indexable> updates = new ArrayList<>();
@@ -386,7 +389,7 @@ uk.co.flax.luwak.Monitor,update,([Luk/co/flax/luwak/MonitorQuery;)V,2,2,100.0%,"
         if (errors.isEmpty() == false)
             throw new UpdateException(errors);
     }",342-364
-uk.co.flax.luwak.Monitor,update,(Ljava/lang/Iterable;)V,12,17,70.6%,"public void update(Iterable<MonitorQuery> queries) throws IOException, UpdateException {
+uk.co.flax.luwak.Monitor,update,([Luk/co/flax/luwak/MonitorQuery;)V,2,2,100.0%,"public void update(Iterable<MonitorQuery> queries) throws IOException, UpdateException {
 
         List<QueryError> errors = new ArrayList<>();
         List<Indexable> updates = new ArrayList<>();
@@ -557,13 +560,13 @@ uk.co.flax.luwak.Indexable,<init>,(Ljava/lang/String;Luk/co/flax/luwak/QueryCach
         this.queryCacheEntry = queryCacheEntry;
         this.document = document;
     }",19-23
-uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
+uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V,6,6,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
         this.id = id;
         this.query = query;
         this.metadata = Collections.unmodifiableMap(new TreeMap<>(metadata));
         checkNullEntries(this.metadata);
     }",49-54
-uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V,6,6,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
+uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
         this.id = id;
         this.query = query;
         this.metadata = Collections.unmodifiableMap(new TreeMap<>(metadata));
@@ -662,7 +665,7 @@ uk.co.flax.luwak.CandidateMatcher,matchQuery,(Ljava/lang/String;Lorg/apache/luce
         presearcherHits.add(queryId);
         doMatchQuery(queryId, new ForceNoBulkScoringQuery(matchQuery), metadata);
     }",66-69
-uk.co.flax.luwak.CandidateMatcher,addMatch,(Ljava/lang/String;Ljava/lang/String;Luk/co/flax/luwak/QueryMatch;)V,3,3,100.0%,"private void addMatch(String queryId, String docId, T match) {
+uk.co.flax.luwak.CandidateMatcher,addMatch,(Luk/co/flax/luwak/QueryMatch;)V,2,2,100.0%,"private void addMatch(String queryId, String docId, T match) {
         MatchHolder<T> docMatches = matches.computeIfAbsent(docId, k -> new MatchHolder<>());
         docMatches.matches.compute(queryId, (key, oldValue) -> {
             if (oldValue != null) {
@@ -671,7 +674,7 @@ uk.co.flax.luwak.CandidateMatcher,addMatch,(Ljava/lang/String;Ljava/lang/String;
             return match;
         });
     }",81-89
-uk.co.flax.luwak.CandidateMatcher,addMatch,(Luk/co/flax/luwak/QueryMatch;)V,2,2,100.0%,"private void addMatch(String queryId, String docId, T match) {
+uk.co.flax.luwak.CandidateMatcher,addMatch,(Ljava/lang/String;Ljava/lang/String;Luk/co/flax/luwak/QueryMatch;)V,3,3,100.0%,"private void addMatch(String queryId, String docId, T match) {
         MatchHolder<T> docMatches = matches.computeIfAbsent(docId, k -> new MatchHolder<>());
         docMatches.matches.compute(queryId, (key, oldValue) -> {
             if (oldValue != null) {
@@ -742,7 +745,7 @@ uk.co.flax.luwak.SlowLog,setLimit,(J)V,2,2,100.0%,"public void setLimit(long lim
 uk.co.flax.luwak.SlowLog,getLimit,()J,1,1,100.0%,"public long getLimit() {
         return limit;
     }",42-44
-uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,3,4,75.0%,"public void addQuery(String query, long time) {
+uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,4,4,100.0%,"public void addQuery(String query, long time) {
         if (time < limit)
             return;
         slowQueries.add(new Entry(query, time));

@@ -64,13 +64,13 @@ org.apache.dubbo.common.bytecode.ClassGenerator,setClassName,(Ljava/lang/String;
         mClassName = name;
         return this;
     }",109-112
-org.apache.dubbo.common.bytecode.ClassGenerator,addInterface,(Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,4,4,100.0%,"public ClassGenerator addInterface(String cn) {
+org.apache.dubbo.common.bytecode.ClassGenerator,addInterface,(Ljava/lang/Class;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,1,1,100.0%,"public ClassGenerator addInterface(String cn) {
         if (mInterfaces == null)
             mInterfaces = new HashSet<String>();
         mInterfaces.add(cn);
         return this;
     }",114-119
-org.apache.dubbo.common.bytecode.ClassGenerator,addInterface,(Ljava/lang/Class;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,1,1,100.0%,"public ClassGenerator addInterface(String cn) {
+org.apache.dubbo.common.bytecode.ClassGenerator,addInterface,(Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,4,4,100.0%,"public ClassGenerator addInterface(String cn) {
         if (mInterfaces == null)
             mInterfaces = new HashSet<String>();
         mInterfaces.add(cn);
@@ -86,25 +86,25 @@ org.apache.dubbo.common.bytecode.ClassGenerator,addField,(Ljava/lang/String;)Lor
         mFields.add(code);
         return this;
     }",135-140
-org.apache.dubbo.common.bytecode.ClassGenerator,addMethod,(Ljava/lang/String;ILjava/lang/Class;[Ljava/lang/Class;[Ljava/lang/Class;Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,15,17,88.2%,"public ClassGenerator addMethod(String code) {
-        if (mMethods == null)
-            mMethods = new ArrayList<String>();
-        mMethods.add(code);
-        return this;
-    }",158-163
 org.apache.dubbo.common.bytecode.ClassGenerator,addMethod,(Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,4,4,100.0%,"public ClassGenerator addMethod(String code) {
         if (mMethods == null)
             mMethods = new ArrayList<String>();
         mMethods.add(code);
         return this;
     }",158-163
-org.apache.dubbo.common.bytecode.ClassGenerator,addConstructor,(I[Ljava/lang/Class;[Ljava/lang/Class;Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,11,17,64.7%,"public ClassGenerator addConstructor(String code) {
+org.apache.dubbo.common.bytecode.ClassGenerator,addMethod,(Ljava/lang/String;ILjava/lang/Class;[Ljava/lang/Class;[Ljava/lang/Class;Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,15,17,88.2%,"public ClassGenerator addMethod(String code) {
+        if (mMethods == null)
+            mMethods = new ArrayList<String>();
+        mMethods.add(code);
+        return this;
+    }",158-163
+org.apache.dubbo.common.bytecode.ClassGenerator,addConstructor,(Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,4,4,100.0%,"public ClassGenerator addConstructor(String code) {
         if (mConstructors == null)
             mConstructors = new LinkedList<String>();
         mConstructors.add(code);
         return this;
     }",206-211
-org.apache.dubbo.common.bytecode.ClassGenerator,addConstructor,(Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,4,4,100.0%,"public ClassGenerator addConstructor(String code) {
+org.apache.dubbo.common.bytecode.ClassGenerator,addConstructor,(I[Ljava/lang/Class;[Ljava/lang/Class;Ljava/lang/String;)Lorg/apache/dubbo/common/bytecode/ClassGenerator;,11,17,64.7%,"public ClassGenerator addConstructor(String code) {
         if (mConstructors == null)
             mConstructors = new LinkedList<String>();
         mConstructors.add(code);
@@ -376,13 +376,13 @@ org.apache.dubbo.common.extension.ExtensionLoader,getExtensionLoader,(Ljava/lang
 org.apache.dubbo.common.extension.ExtensionLoader,findClassLoader,()Ljava/lang/ClassLoader;,1,1,100.0%,"private static ClassLoader findClassLoader() {
         return ExtensionLoader.class.getClassLoader();
     }",125-127
-org.apache.dubbo.common.extension.ExtensionLoader,getActivateExtension,(Lorg/apache/dubbo/common/URL;Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;,2,2,100.0%,"public List<T> getActivateExtension(URL url, String key) {
-        return getActivateExtension(url, key, null);
-    }",146-148
 org.apache.dubbo.common.extension.ExtensionLoader,getActivateExtension,(Lorg/apache/dubbo/common/URL;Ljava/lang/String;)Ljava/util/List;,1,1,100.0%,"public List<T> getActivateExtension(URL url, String key) {
         return getActivateExtension(url, key, null);
     }",146-148
 org.apache.dubbo.common.extension.ExtensionLoader,getActivateExtension,(Lorg/apache/dubbo/common/URL;[Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;,22,35,62.9%,"public List<T> getActivateExtension(URL url, String key) {
+        return getActivateExtension(url, key, null);
+    }",146-148
+org.apache.dubbo.common.extension.ExtensionLoader,getActivateExtension,(Lorg/apache/dubbo/common/URL;Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;,2,2,100.0%,"public List<T> getActivateExtension(URL url, String key) {
         return getActivateExtension(url, key, null);
     }",146-148
 org.apache.dubbo.common.extension.ExtensionLoader,isMatchGroup,(Ljava/lang/String;[Ljava/lang/String;)Z,7,7,100.0%,"private boolean isMatchGroup(String group, String[] groups) {
@@ -1129,7 +1129,7 @@ org.apache.dubbo.common.URL,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/la
         this.path = null;
         this.parameters = null;
     }",107-115
-org.apache.dubbo.common.URL,<init>,(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/util/Map;)V,2,2,100.0%,"protected URL() {
+org.apache.dubbo.common.URL,<init>,(Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;)V,2,2,100.0%,"protected URL() {
         this.protocol = null;
         this.username = null;
         this.password = null;
@@ -1138,7 +1138,7 @@ org.apache.dubbo.common.URL,<init>,(Ljava/lang/String;Ljava/lang/String;ILjava/l
         this.path = null;
         this.parameters = null;
     }",107-115
-org.apache.dubbo.common.URL,<init>,(Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;)V,2,2,100.0%,"protected URL() {
+org.apache.dubbo.common.URL,<init>,(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/util/Map;)V,2,2,100.0%,"protected URL() {
         this.protocol = null;
         this.username = null;
         this.password = null;
@@ -1250,13 +1250,6 @@ org.apache.dubbo.common.URL,setPath,(Ljava/lang/String;)Lorg/apache/dubbo/common
 org.apache.dubbo.common.URL,getParameters,()Ljava/util/Map;,1,1,100.0%,"public Map<String, String> getParameters() {
         return parameters;
     }",416-418
-org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;Z)Z,4,4,100.0%,"public String getParameter(String key) {
-        String value = parameters.get(key);
-        if (value == null || value.length() == 0) {
-            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
-        }
-        return value;
-    }",428-434
 org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public String getParameter(String key) {
         String value = parameters.get(key);
         if (value == null || value.length() == 0) {
@@ -1264,7 +1257,7 @@ org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;)Ljava/lang/String;,
         }
         return value;
     }",428-434
-org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public String getParameter(String key) {
+org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;Z)Z,4,4,100.0%,"public String getParameter(String key) {
         String value = parameters.get(key);
         if (value == null || value.length() == 0) {
             value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
@@ -1272,6 +1265,13 @@ org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;Ljava/lang/String;)L
         return value;
     }",428-434
 org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;I)I,8,9,88.9%,"public String getParameter(String key) {
+        String value = parameters.get(key);
+        if (value == null || value.length() == 0) {
+            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+        }
+        return value;
+    }",428-434
+org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public String getParameter(String key) {
         String value = parameters.get(key);
         if (value == null || value.length() == 0) {
             value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
@@ -1298,14 +1298,14 @@ org.apache.dubbo.common.URL,hasParameter,(Ljava/lang/String;)Z,2,2,100.0%,"publi
         String value = getParameter(key);
         return value != null && value.length() > 0;
     }",646-649
-org.apache.dubbo.common.URL,getMethodParameter,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,3,4,75.0%,"public String getMethodParameter(String method, String key) {
+org.apache.dubbo.common.URL,getMethodParameter,(Ljava/lang/String;Ljava/lang/String;I)I,9,10,90.0%,"public String getMethodParameter(String method, String key) {
         String value = parameters.get(method + ""."" + key);
         if (value == null || value.length() == 0) {
             return getParameter(key);
         }
         return value;
     }",659-665
-org.apache.dubbo.common.URL,getMethodParameter,(Ljava/lang/String;Ljava/lang/String;I)I,9,10,90.0%,"public String getMethodParameter(String method, String key) {
+org.apache.dubbo.common.URL,getMethodParameter,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,3,4,75.0%,"public String getMethodParameter(String method, String key) {
         String value = parameters.get(method + ""."" + key);
         if (value == null || value.length() == 0) {
             return getParameter(key);
@@ -1402,10 +1402,10 @@ org.apache.dubbo.common.URL,buildParameters,(Ljava/lang/StringBuilder;Z[Ljava/la
             }
         }
     }",1137-1158
-org.apache.dubbo.common.URL,buildString,(ZZZZ[Ljava/lang/String;)Ljava/lang/String;,20,27,74.1%,"private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
+org.apache.dubbo.common.URL,buildString,(ZZ[Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
         return buildString(appendUser, appendParameter, false, false, parameters);
     }",1160-1162
-org.apache.dubbo.common.URL,buildString,(ZZ[Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
+org.apache.dubbo.common.URL,buildString,(ZZZZ[Ljava/lang/String;)Ljava/lang/String;,20,27,74.1%,"private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
         return buildString(appendUser, appendParameter, false, false, parameters);
     }",1160-1162
 org.apache.dubbo.common.URL,toInetSocketAddress,()Ljava/net/InetSocketAddress;,1,1,100.0%,"public InetSocketAddress toInetSocketAddress() {
@@ -1432,10 +1432,10 @@ org.apache.dubbo.common.URL,getServiceInterface,()Ljava/lang/String;,1,1,100.0%,
 org.apache.dubbo.common.Version,getProtocolVersion,()Ljava/lang/String;,1,1,100.0%,"public static String getProtocolVersion() {
         return DEFAULT_DUBBO_PROTOCOL_VERSION;
     }",57-59
-org.apache.dubbo.common.Version,getVersion,()Ljava/lang/String;,1,1,100.0%,"public static String getVersion() {
+org.apache.dubbo.common.Version,getVersion,(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/String;,9,25,36.0%,"public static String getVersion() {
         return VERSION;
     }",61-63
-org.apache.dubbo.common.Version,getVersion,(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/String;,9,25,36.0%,"public static String getVersion() {
+org.apache.dubbo.common.Version,getVersion,()Ljava/lang/String;,1,1,100.0%,"public static String getVersion() {
         return VERSION;
     }",61-63
 org.apache.dubbo.common.Version,isSupportResponseAttatchment,(Ljava/lang/String;)Z,4,6,66.7%,"public static boolean isSupportResponseAttatchment(String version) {
@@ -1485,13 +1485,13 @@ org.apache.dubbo.common.Version,getDigital,(Ljava/lang/String;)Ljava/lang/String
         }
         return v.substring(0, index);
     }",97-114
-org.apache.dubbo.common.Version,checkDuplicate,(Ljava/lang/Class;Z)V,2,2,100.0%,"public static void checkDuplicate(Class<?> cls, boolean failOnError) {
-        checkDuplicate(cls.getName().replace('.', '/') + "".class"", failOnError);
-    }",169-171
 org.apache.dubbo.common.Version,checkDuplicate,(Ljava/lang/Class;)V,2,2,100.0%,"public static void checkDuplicate(Class<?> cls, boolean failOnError) {
         checkDuplicate(cls.getName().replace('.', '/') + "".class"", failOnError);
     }",169-171
 org.apache.dubbo.common.Version,checkDuplicate,(Ljava/lang/String;Z)V,12,18,66.7%,"public static void checkDuplicate(Class<?> cls, boolean failOnError) {
+        checkDuplicate(cls.getName().replace('.', '/') + "".class"", failOnError);
+    }",169-171
+org.apache.dubbo.common.Version,checkDuplicate,(Ljava/lang/Class;Z)V,2,2,100.0%,"public static void checkDuplicate(Class<?> cls, boolean failOnError) {
         checkDuplicate(cls.getName().replace('.', '/') + "".class"", failOnError);
     }",169-171
 org.apache.dubbo.remoting.exchange.Request,<init>,()V,6,6,100.0%,"public Request() {
@@ -1568,11 +1568,11 @@ org.apache.dubbo.remoting.exchange.Exchangers,bind,(Lorg/apache/dubbo/common/URL
 org.apache.dubbo.remoting.exchange.Exchangers,connect,(Lorg/apache/dubbo/common/URL;Lorg/apache/dubbo/remoting/exchange/ExchangeHandler;)Lorg/apache/dubbo/remoting/exchange/ExchangeClient;,4,6,66.7%,"public static ExchangeClient connect(String url) throws RemotingException {
         return connect(URL.valueOf(url));
     }",73-75
-org.apache.dubbo.remoting.exchange.Exchangers,getExchanger,(Ljava/lang/String;)Lorg/apache/dubbo/remoting/exchange/Exchanger;,1,1,100.0%,"public static Exchanger getExchanger(URL url) {
+org.apache.dubbo.remoting.exchange.Exchangers,getExchanger,(Lorg/apache/dubbo/common/URL;)Lorg/apache/dubbo/remoting/exchange/Exchanger;,2,2,100.0%,"public static Exchanger getExchanger(URL url) {
         String type = url.getParameter(Constants.EXCHANGER_KEY, Constants.DEFAULT_EXCHANGER);
         return getExchanger(type);
     }",112-115
-org.apache.dubbo.remoting.exchange.Exchangers,getExchanger,(Lorg/apache/dubbo/common/URL;)Lorg/apache/dubbo/remoting/exchange/Exchanger;,2,2,100.0%,"public static Exchanger getExchanger(URL url) {
+org.apache.dubbo.remoting.exchange.Exchangers,getExchanger,(Ljava/lang/String;)Lorg/apache/dubbo/remoting/exchange/Exchanger;,1,1,100.0%,"public static Exchanger getExchanger(URL url) {
         String type = url.getParameter(Constants.EXCHANGER_KEY, Constants.DEFAULT_EXCHANGER);
         return getExchanger(type);
     }",112-115
@@ -2347,11 +2347,11 @@ org.apache.dubbo.remoting.exchange.support.DefaultFuture,received,(Lorg/apache/d
             CHANNELS.remove(response.getId());
         }
     }",145-160
-org.apache.dubbo.remoting.exchange.support.DefaultFuture,get,()Ljava/lang/Object;,1,1,100.0%,"@Override
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,get,(I)Ljava/lang/Object;,10,15,66.7%,"@Override
     public Object get() throws RemotingException {
         return get(timeout);
     }",162-165
-org.apache.dubbo.remoting.exchange.support.DefaultFuture,get,(I)Ljava/lang/Object;,10,15,66.7%,"@Override
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,get,()Ljava/lang/Object;,1,1,100.0%,"@Override
     public Object get() throws RemotingException {
         return get(timeout);
     }",162-165
@@ -2828,19 +2828,19 @@ org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readBytes,([
     public void readBytes(byte[] dst) {
         buffer.readBytes(dst);
     }",236-239
-org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readerIndex,(I)V,2,2,100.0%,"@Override
-    public int readerIndex() {
-        return buffer.readerIndex();
-    }",302-305
 org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readerIndex,()I,1,1,100.0%,"@Override
     public int readerIndex() {
         return buffer.readerIndex();
     }",302-305
-org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writeBytes,([BII)V,2,2,100.0%,"@Override
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readerIndex,(I)V,2,2,100.0%,"@Override
+    public int readerIndex() {
+        return buffer.readerIndex();
+    }",302-305
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writeBytes,([B)V,2,2,100.0%,"@Override
     public void writeBytes(byte[] src) {
         buffer.writeBytes(src);
     }",380-383
-org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writeBytes,([B)V,2,2,100.0%,"@Override
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writeBytes,([BII)V,2,2,100.0%,"@Override
     public void writeBytes(byte[] src) {
         buffer.writeBytes(src);
     }",380-383
@@ -3301,10 +3301,10 @@ org.apache.dubbo.rpc.StaticContext,getContext,(Ljava/lang/String;)Lorg/apache/du
         }
         return appContext;
     }",44-53
-org.apache.dubbo.rpc.StaticContext,getKey,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,2,2,100.0%,"public static String getKey(URL url, String methodName, String suffix) {
+org.apache.dubbo.rpc.StaticContext,getKey,(Lorg/apache/dubbo/common/URL;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"public static String getKey(URL url, String methodName, String suffix) {
         return getKey(url.getServiceKey(), methodName, suffix);
     }",59-61
-org.apache.dubbo.rpc.StaticContext,getKey,(Lorg/apache/dubbo/common/URL;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"public static String getKey(URL url, String methodName, String suffix) {
+org.apache.dubbo.rpc.StaticContext,getKey,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,2,2,100.0%,"public static String getKey(URL url, String methodName, String suffix) {
         return getKey(url.getServiceKey(), methodName, suffix);
     }",59-61
 org.apache.dubbo.rpc.AbstractPostProcessFilter,postProcessResult,(Lorg/apache/dubbo/rpc/Result;Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,5,40.0%,"@Override
@@ -3353,14 +3353,14 @@ org.apache.dubbo.rpc.RpcContext,setLocalAddress,(Ljava/lang/String;I)Lorg/apache
         this.localAddress = InetSocketAddress.createUnresolved(host, port);
         return this;
     }",300-306
-org.apache.dubbo.rpc.RpcContext,setRemoteAddress,(Ljava/net/InetSocketAddress;)Lorg/apache/dubbo/rpc/RpcContext;,2,2,100.0%,"public RpcContext setRemoteAddress(String host, int port) {
+org.apache.dubbo.rpc.RpcContext,setRemoteAddress,(Ljava/lang/String;I)Lorg/apache/dubbo/rpc/RpcContext;,3,4,75.0%,"public RpcContext setRemoteAddress(String host, int port) {
         if (port < 0) {
             port = 0;
         }
         this.remoteAddress = InetSocketAddress.createUnresolved(host, port);
         return this;
     }",352-358
-org.apache.dubbo.rpc.RpcContext,setRemoteAddress,(Ljava/lang/String;I)Lorg/apache/dubbo/rpc/RpcContext;,3,4,75.0%,"public RpcContext setRemoteAddress(String host, int port) {
+org.apache.dubbo.rpc.RpcContext,setRemoteAddress,(Ljava/net/InetSocketAddress;)Lorg/apache/dubbo/rpc/RpcContext;,2,2,100.0%,"public RpcContext setRemoteAddress(String host, int port) {
         if (port < 0) {
             port = 0;
         }
@@ -4382,14 +4382,14 @@ org.apache.dubbo.config.ReferenceConfig,resolveAsyncInterface,(Ljava/lang/Class;
 org.apache.dubbo.config.ReferenceConfig,getInterface,()Ljava/lang/String;,1,1,100.0%,"public String getInterface() {
         return interfaceName;
     }",482-484
-org.apache.dubbo.config.ReferenceConfig,setInterface,(Ljava/lang/String;)V,4,4,100.0%,"public void setInterface(Class<?> interfaceClass) {
+org.apache.dubbo.config.ReferenceConfig,setInterface,(Ljava/lang/Class;)V,4,5,80.0%,"public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException(""The interface class "" + interfaceClass + "" is not a interface!"");
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
     }",486-492
-org.apache.dubbo.config.ReferenceConfig,setInterface,(Ljava/lang/Class;)V,4,5,80.0%,"public void setInterface(Class<?> interfaceClass) {
+org.apache.dubbo.config.ReferenceConfig,setInterface,(Ljava/lang/String;)V,4,4,100.0%,"public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException(""The interface class "" + interfaceClass + "" is not a interface!"");
         }
@@ -5121,10 +5121,10 @@ org.apache.dubbo.config.AbstractConfig,getTagName,(Ljava/lang/Class;)Ljava/lang/
         tag = tag.toLowerCase();
         return tag;
     }",159-169
-org.apache.dubbo.config.AbstractConfig,appendParameters,(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/String;)V,34,49,69.4%,"protected static void appendParameters(Map<String, String> parameters, Object config) {
+org.apache.dubbo.config.AbstractConfig,appendParameters,(Ljava/util/Map;Ljava/lang/Object;)V,2,2,100.0%,"protected static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }",171-173
-org.apache.dubbo.config.AbstractConfig,appendParameters,(Ljava/util/Map;Ljava/lang/Object;)V,2,2,100.0%,"protected static void appendParameters(Map<String, String> parameters, Object config) {
+org.apache.dubbo.config.AbstractConfig,appendParameters,(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/String;)V,34,49,69.4%,"protected static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }",171-173
 org.apache.dubbo.config.AbstractConfig,isPrimitive,(Ljava/lang/Class;)Z,1,1,100.0%,"private static boolean isPrimitive(Class<?> type) {
@@ -5198,17 +5198,17 @@ org.apache.dubbo.config.AbstractMethodConfig,getParameters,()Ljava/util/Map;,1,1
     }",162-164
 org.apache.dubbo.config.ReferenceConfig$1,<init>,(Lorg/apache/dubbo/config/ReferenceConfig;)V,1,1,100.0%,"public ReferenceConfig() {
     }",112-113
+org.apache.dubbo.common.io.Bytes,short2bytes,(S[BI)V,3,3,100.0%,"public static byte[] short2bytes(short v) {
+        byte[] ret = {0, 0};
+        short2bytes(v, ret);
+        return ret;
+    }",70-74
 org.apache.dubbo.common.io.Bytes,short2bytes,(S[B)V,2,2,100.0%,"public static byte[] short2bytes(short v) {
         byte[] ret = {0, 0};
         short2bytes(v, ret);
         return ret;
     }",70-74
 org.apache.dubbo.common.io.Bytes,short2bytes,(S)[B,3,3,100.0%,"public static byte[] short2bytes(short v) {
-        byte[] ret = {0, 0};
-        short2bytes(v, ret);
-        return ret;
-    }",70-74
-org.apache.dubbo.common.io.Bytes,short2bytes,(S[BI)V,3,3,100.0%,"public static byte[] short2bytes(short v) {
         byte[] ret = {0, 0};
         short2bytes(v, ret);
         return ret;
@@ -5852,11 +5852,11 @@ org.apache.dubbo.remoting.transport.AbstractClient,close,()V,10,18,55.6%,"@Overr
 org.apache.dubbo.remoting.transport.CodecSupport,getSerializationById,(Ljava/lang/Byte;)Lorg/apache/dubbo/common/serialize/Serialization;,1,1,100.0%,"public static Serialization getSerializationById(Byte id) {
         return ID_SERIALIZATION_MAP.get(id);
     }",58-60
-org.apache.dubbo.remoting.transport.CodecSupport,getSerialization,(Lorg/apache/dubbo/common/URL;Ljava/lang/Byte;)Lorg/apache/dubbo/common/serialize/Serialization;,5,6,83.3%,"public static Serialization getSerialization(URL url) {
+org.apache.dubbo.remoting.transport.CodecSupport,getSerialization,(Lorg/apache/dubbo/common/URL;)Lorg/apache/dubbo/common/serialize/Serialization;,2,2,100.0%,"public static Serialization getSerialization(URL url) {
         return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }",62-65
-org.apache.dubbo.remoting.transport.CodecSupport,getSerialization,(Lorg/apache/dubbo/common/URL;)Lorg/apache/dubbo/common/serialize/Serialization;,2,2,100.0%,"public static Serialization getSerialization(URL url) {
+org.apache.dubbo.remoting.transport.CodecSupport,getSerialization,(Lorg/apache/dubbo/common/URL;Ljava/lang/Byte;)Lorg/apache/dubbo/common/serialize/Serialization;,5,6,83.3%,"public static Serialization getSerialization(URL url) {
         return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }",62-65
@@ -6414,11 +6414,11 @@ org.apache.dubbo.common.threadlocal.InternalThreadLocal,initialize,(Lorg/apache/
         addToVariablesToRemove(threadLocalMap, this);
         return v;
     }",128-139
-org.apache.dubbo.common.threadlocal.InternalThreadLocal,remove,()V,2,2,100.0%,"@SuppressWarnings(""unchecked"")
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,remove,(Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;)V,7,10,70.0%,"@SuppressWarnings(""unchecked"")
     public final void remove() {
         remove(InternalThreadLocalMap.getIfSet());
     }",158-161
-org.apache.dubbo.common.threadlocal.InternalThreadLocal,remove,(Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;)V,7,10,70.0%,"@SuppressWarnings(""unchecked"")
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,remove,()V,2,2,100.0%,"@SuppressWarnings(""unchecked"")
     public final void remove() {
         remove(InternalThreadLocalMap.getIfSet());
     }",158-161
@@ -6537,11 +6537,11 @@ org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,removeCh
             ch.removeAttribute(CHANNEL_KEY);
         }
     }",70-74
-org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,send,(Ljava/lang/Object;Z)V,4,10,40.0%,"@Override
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,send,(Ljava/lang/Object;)V,2,2,100.0%,"@Override
     public void send(Object message) throws RemotingException {
         send(message, false);
     }",76-79
-org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,send,(Ljava/lang/Object;)V,2,2,100.0%,"@Override
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,send,(Ljava/lang/Object;Z)V,4,10,40.0%,"@Override
     public void send(Object message) throws RemotingException {
         send(message, false);
     }",76-79
@@ -6549,7 +6549,7 @@ org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,request,
     public ResponseFuture request(Object request) throws RemotingException {
         return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
     }",99-102
-org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,close,(I)V,7,13,53.8%,"@Override
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,close,()V,3,5,60.0%,"@Override
     public void close() {
         try {
             channel.close();
@@ -6557,7 +6557,7 @@ org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,close,(I
             logger.warn(e.getMessage(), e);
         }
     }",129-136
-org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,close,()V,3,5,60.0%,"@Override
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeChannel,close,(I)V,7,13,53.8%,"@Override
     public void close() {
         try {
             channel.close();
@@ -6898,7 +6898,7 @@ org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport,<init>,(Ljava/l
 org.apache.dubbo.common.utils.ClassHelper,getCallerClassLoader,(Ljava/lang/Class;)Ljava/lang/ClassLoader;,1,1,100.0%,"public static ClassLoader getCallerClassLoader(Class<?> caller) {
         return caller.getClassLoader();
     }",81-83
-org.apache.dubbo.common.utils.ClassHelper,getClassLoader,()Ljava/lang/ClassLoader;,1,1,100.0%,"public static ClassLoader getClassLoader(Class<?> cls) {
+org.apache.dubbo.common.utils.ClassHelper,getClassLoader,(Ljava/lang/Class;)Ljava/lang/ClassLoader;,5,7,71.4%,"public static ClassLoader getClassLoader(Class<?> cls) {
         ClassLoader cl = null;
         try {
             cl = Thread.currentThread().getContextClassLoader();
@@ -6911,7 +6911,7 @@ org.apache.dubbo.common.utils.ClassHelper,getClassLoader,()Ljava/lang/ClassLoade
         }
         return cl;
     }",91-103
-org.apache.dubbo.common.utils.ClassHelper,getClassLoader,(Ljava/lang/Class;)Ljava/lang/ClassLoader;,5,7,71.4%,"public static ClassLoader getClassLoader(Class<?> cls) {
+org.apache.dubbo.common.utils.ClassHelper,getClassLoader,()Ljava/lang/ClassLoader;,1,1,100.0%,"public static ClassLoader getClassLoader(Class<?> cls) {
         ClassLoader cl = null;
         try {
             cl = Thread.currentThread().getContextClassLoader();
@@ -7260,6 +7260,32 @@ org.apache.dubbo.common.utils.ReflectUtils,getName,(Ljava/lang/Class;)Ljava/lang
         }
         return c.getName();
     }",218-230
+org.apache.dubbo.common.utils.ReflectUtils,getDesc,([Ljava/lang/Class;)Ljava/lang/String;,5,6,83.3%,"public static String getDesc(Class<?> c) {
+        StringBuilder ret = new StringBuilder();
+
+        while (c.isArray()) {
+            ret.append('[');
+            c = c.getComponentType();
+        }
+
+        if (c.isPrimitive()) {
+            String t = c.getName();
+            if (""void"".equals(t)) ret.append(JVM_VOID);
+            else if (""boolean"".equals(t)) ret.append(JVM_BOOLEAN);
+            else if (""byte"".equals(t)) ret.append(JVM_BYTE);
+            else if (""char"".equals(t)) ret.append(JVM_CHAR);
+            else if (""double"".equals(t)) ret.append(JVM_DOUBLE);
+            else if (""float"".equals(t)) ret.append(JVM_FLOAT);
+            else if (""int"".equals(t)) ret.append(JVM_INT);
+            else if (""long"".equals(t)) ret.append(JVM_LONG);
+            else if (""short"".equals(t)) ret.append(JVM_SHORT);
+        } else {
+            ret.append('L');
+            ret.append(c.getName().replace('.', '/'));
+            ret.append(';');
+        }
+        return ret.toString();
+    }",323-348
 org.apache.dubbo.common.utils.ReflectUtils,getDesc,(Ljava/lang/Class;)Ljava/lang/String;,18,20,90.0%,"public static String getDesc(Class<?> c) {
         StringBuilder ret = new StringBuilder();
 
@@ -7287,32 +7313,6 @@ org.apache.dubbo.common.utils.ReflectUtils,getDesc,(Ljava/lang/Class;)Ljava/lang
         return ret.toString();
     }",323-348
 org.apache.dubbo.common.utils.ReflectUtils,getDesc,(Ljava/lang/reflect/Method;)Ljava/lang/String;,6,6,100.0%,"public static String getDesc(Class<?> c) {
-        StringBuilder ret = new StringBuilder();
-
-        while (c.isArray()) {
-            ret.append('[');
-            c = c.getComponentType();
-        }
-
-        if (c.isPrimitive()) {
-            String t = c.getName();
-            if (""void"".equals(t)) ret.append(JVM_VOID);
-            else if (""boolean"".equals(t)) ret.append(JVM_BOOLEAN);
-            else if (""byte"".equals(t)) ret.append(JVM_BYTE);
-            else if (""char"".equals(t)) ret.append(JVM_CHAR);
-            else if (""double"".equals(t)) ret.append(JVM_DOUBLE);
-            else if (""float"".equals(t)) ret.append(JVM_FLOAT);
-            else if (""int"".equals(t)) ret.append(JVM_INT);
-            else if (""long"".equals(t)) ret.append(JVM_LONG);
-            else if (""short"".equals(t)) ret.append(JVM_SHORT);
-        } else {
-            ret.append('L');
-            ret.append(c.getName().replace('.', '/'));
-            ret.append(';');
-        }
-        return ret.toString();
-    }",323-348
-org.apache.dubbo.common.utils.ReflectUtils,getDesc,([Ljava/lang/Class;)Ljava/lang/String;,5,6,83.3%,"public static String getDesc(Class<?> c) {
         StringBuilder ret = new StringBuilder();
 
         while (c.isArray()) {
@@ -7628,13 +7628,13 @@ org.apache.dubbo.common.timer.HashedWheelTimer$Worker,waitForNextTick,()J,10,15,
                 }
             }
         }",513-539
-org.apache.dubbo.common.timer.HashedWheelTimer,<init>,(Ljava/util/concurrent/ThreadFactory;JLjava/util/concurrent/TimeUnit;I)V,2,2,100.0%,"public HashedWheelTimer() {
+org.apache.dubbo.common.timer.HashedWheelTimer,<init>,(Ljava/util/concurrent/ThreadFactory;JLjava/util/concurrent/TimeUnit;)V,2,2,100.0%,"public HashedWheelTimer() {
         this(Executors.defaultThreadFactory());
     }",124-126
 org.apache.dubbo.common.timer.HashedWheelTimer,<init>,(Ljava/util/concurrent/ThreadFactory;JLjava/util/concurrent/TimeUnit;IJ)V,18,26,69.2%,"public HashedWheelTimer() {
         this(Executors.defaultThreadFactory());
     }",124-126
-org.apache.dubbo.common.timer.HashedWheelTimer,<init>,(Ljava/util/concurrent/ThreadFactory;JLjava/util/concurrent/TimeUnit;)V,2,2,100.0%,"public HashedWheelTimer() {
+org.apache.dubbo.common.timer.HashedWheelTimer,<init>,(Ljava/util/concurrent/ThreadFactory;JLjava/util/concurrent/TimeUnit;I)V,2,2,100.0%,"public HashedWheelTimer() {
         this(Executors.defaultThreadFactory());
     }",124-126
 org.apache.dubbo.common.timer.HashedWheelTimer,createWheel,(I)[Lorg/apache/dubbo/common/timer/HashedWheelTimer$HashedWheelBucket;,7,9,77.8%,"private static HashedWheelBucket[] createWheel(int ticksPerWheel) {
@@ -8655,7 +8655,7 @@ org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation,<init>,(Lorg/apache/
         this.inputStream = is;
         this.serializationType = id;
     }",56-64
-org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation,decode,()V,4,9,44.4%,"@Override
+org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation,decode,(Lorg/apache/dubbo/remoting/Channel;Ljava/io/InputStream;)Ljava/lang/Object;,27,36,75.0%,"@Override
     public void decode() throws Exception {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
@@ -8671,7 +8671,7 @@ org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation,decode,()V,4,9,44.4%
             }
         }
     }",66-81
-org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation,decode,(Lorg/apache/dubbo/remoting/Channel;Ljava/io/InputStream;)Ljava/lang/Object;,27,36,75.0%,"@Override
+org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation,decode,()V,4,9,44.4%,"@Override
     public void decode() throws Exception {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
@@ -9254,16 +9254,16 @@ org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler,getExecutor
         }
         return cexecutor;
     }",112-118
-org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,<init>,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/ChannelHandler;Lorg/apache/dubbo/remoting/transport/dispatcher/ChannelEventRunnable$ChannelState;Ljava/lang/Object;)V,2,2,100.0%,"public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
-        this(channel, handler, state, null);
-    }",33-35
-org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,<init>,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/ChannelHandler;Lorg/apache/dubbo/remoting/transport/dispatcher/ChannelEventRunnable$ChannelState;Ljava/lang/Object;Ljava/lang/Throwable;)V,7,7,100.0%,"public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
+org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,<init>,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/ChannelHandler;Lorg/apache/dubbo/remoting/transport/dispatcher/ChannelEventRunnable$ChannelState;Ljava/lang/Throwable;)V,2,2,100.0%,"public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
         this(channel, handler, state, null);
     }",33-35
 org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,<init>,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/ChannelHandler;Lorg/apache/dubbo/remoting/transport/dispatcher/ChannelEventRunnable$ChannelState;)V,2,2,100.0%,"public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
         this(channel, handler, state, null);
     }",33-35
-org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,<init>,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/ChannelHandler;Lorg/apache/dubbo/remoting/transport/dispatcher/ChannelEventRunnable$ChannelState;Ljava/lang/Throwable;)V,2,2,100.0%,"public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
+org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,<init>,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/ChannelHandler;Lorg/apache/dubbo/remoting/transport/dispatcher/ChannelEventRunnable$ChannelState;Ljava/lang/Object;Ljava/lang/Throwable;)V,7,7,100.0%,"public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
+        this(channel, handler, state, null);
+    }",33-35
+org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,<init>,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/ChannelHandler;Lorg/apache/dubbo/remoting/transport/dispatcher/ChannelEventRunnable$ChannelState;Ljava/lang/Object;)V,2,2,100.0%,"public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
         this(channel, handler, state, null);
     }",33-35
 org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,run,()V,7,28,25.0%,"@Override

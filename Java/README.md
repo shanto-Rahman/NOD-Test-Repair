@@ -30,6 +30,12 @@ To analyze the results, for example how many on average gpt calls happened, how 
 python3 analyze_result.py results/tdrepro.csv 
 ```
 
+To match the failure log, run the following command
+```shell
+ bash find_failure_match.sh ../data/all_82_tests.csv "idoft"
+ ```
+
+
 clone the project
 
 Run the test, collect the failure. So collecting the failure, we might need to run flakesync.

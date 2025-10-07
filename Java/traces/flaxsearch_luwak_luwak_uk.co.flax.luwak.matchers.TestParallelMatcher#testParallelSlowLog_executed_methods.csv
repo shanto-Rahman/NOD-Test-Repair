@@ -38,7 +38,6 @@ uk/co/flax/luwak,uk.co.flax.luwak.Monitor,prepareQueryCache,(Z)V,7,10,70.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,commit,(Ljava/util/List;)V,4,4,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,beforeCommit,(Ljava/util/List;)V,3,8,37.5%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,afterCommit,(Ljava/util/List;)V,3,8,37.5%
-uk/co/flax/luwak,uk.co.flax.luwak.Monitor,setSlowLogLimit,(J)V,2,2,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,close,()V,3,3,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,update,(Ljava/lang/Iterable;)V,12,17,70.6%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,decomposeQuery,(Luk/co/flax/luwak/MonitorQuery;)Ljava/lang/Iterable;,11,11,100.0%
@@ -96,7 +95,7 @@ uk/co/flax/luwak,uk.co.flax.luwak.SlowLog$Entry,<init>,(Ljava/lang/String;J)V,4,
 uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,<init>,()V,2,2,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,setLimit,(J)V,2,2,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,getLimit,()J,1,1,100.0%
-uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,4,4,100.0%
+uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,3,4,75.0%
 uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,addAll,(Ljava/lang/Iterable;)V,5,5,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,iterator,()Ljava/util/Iterator;,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.SlowLog,toString,()Ljava/lang/String;,5,5,100.0%

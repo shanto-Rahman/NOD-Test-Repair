@@ -7,11 +7,15 @@ com.squareup.okhttp.internal.spdy.SpdyStream$SpdyDataSink,<init>,(Lcom/squareup/
 com.squareup.okhttp.internal.spdy.SpdyStream$SpdyDataSource,<init>,(Lcom/squareup/okhttp/internal/spdy/SpdyStream;J)V,3,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
 com.squareup.okhttp.Protocol,<init>,(Ljava/lang/String;ILjava/lang/String;Z)V,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
 com.squareup.okhttp.internal.spdy.Spdy3$Writer,ping,(ZII)V,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
+com.squareup.okhttp.internal.spdy.SpdyConnection$Builder,build,()Lcom/squareup/okhttp/internal/spdy/SpdyConnection;,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
 com.squareup.okhttp.internal.spdy.SpdyStream$SpdyDataSink,write,(Lokio/OkBuffer;J)V,2,"['bigbird_embeddings.csv', 'llama_embeddings.csv']"
 okio.InflaterSource,refill,()Z,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+okio.RealBufferedSource,checkNotClosed,()V,2,"['gpt2_embeddings.csv', 'tf-idf_embeddings.csv']"
 okio.Segment,writeTo,(Lokio/Segment;I)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
 com.squareup.okhttp.internal.spdy.Http20Draft09,<init>,()V,1,['qwen_embeddings.csv']
+com.squareup.okhttp.internal.spdy.NameValueBlockReader,close,()V,1,['tf-idf_embeddings.csv']
 com.squareup.okhttp.internal.spdy.NameValueBlockReader,readNameValueBlock,(I)Ljava/util/List;,1,['codebert_embeddings.csv']
+com.squareup.okhttp.internal.spdy.NameValueBlockReader$1,close,()V,1,['tf-idf_embeddings.csv']
 com.squareup.okhttp.internal.spdy.Spdy3,getProtocol,()Lcom/squareup/okhttp/Protocol;,1,['qwen_embeddings.csv']
 com.squareup.okhttp.internal.spdy.Spdy3$Writer,sendDataFrame,(IILokio/OkBuffer;I)V,1,['gpt2_embeddings.csv']
 com.squareup.okhttp.internal.spdy.Spdy3$Writer,synStream,(ZZIIIILjava/util/List;)V,1,['gpt2_embeddings.csv']
@@ -19,14 +23,18 @@ com.squareup.okhttp.internal.spdy.SpdyConnection,ping,()Lcom/squareup/okhttp/int
 com.squareup.okhttp.internal.spdy.SpdyConnection,removeStream,(I)Lcom/squareup/okhttp/internal/spdy/SpdyStream;,1,['llama_embeddings.csv']
 com.squareup.okhttp.internal.spdy.SpdyConnection$Builder,<init>,(Ljava/lang/String;ZLokio/BufferedSource;Lokio/BufferedSink;)V,1,['qwen_embeddings.csv']
 com.squareup.okhttp.internal.spdy.SpdyConnection$Builder,<init>,(ZLjava/net/Socket;)V,1,['qwen_embeddings.csv']
-com.squareup.okhttp.internal.spdy.SpdyConnection$Builder,build,()Lcom/squareup/okhttp/internal/spdy/SpdyConnection;,1,['llama_embeddings.csv']
 com.squareup.okhttp.internal.spdy.SpdyConnection$Reader,goAway,(ILcom/squareup/okhttp/internal/spdy/ErrorCode;Lokio/ByteString;)V,1,['llama_embeddings.csv']
 com.squareup.okhttp.internal.spdy.SpdyConnection$Reader,ping,(ZII)V,1,['codebert_embeddings.csv']
 com.squareup.okhttp.internal.spdy.SpdyStream,cancelStreamIfNecessary,()V,1,['bigbird_embeddings.csv']
 com.squareup.okhttp.internal.spdy.SpdyStream,receiveRstStream,(Lcom/squareup/okhttp/internal/spdy/ErrorCode;)V,1,['llama_embeddings.csv']
+okio.ByteString,<init>,([B)V,1,['tf-idf_embeddings.csv']
 okio.DeflaterSink,write,(Lokio/OkBuffer;J)V,1,['gpt2_embeddings.csv']
 okio.InflaterSource,releaseInflatedBytes,()V,1,['gpt2_embeddings.csv']
+okio.OkBuffer,close,()V,1,['tf-idf_embeddings.csv']
+okio.OkBuffer,flush,()V,1,['tf-idf_embeddings.csv']
 okio.OkBuffer,writableSegment,(I)Lokio/Segment;,1,['codebert_embeddings.csv']
+okio.Okio,source,(Ljava/io/InputStream;)Lokio/Source;,1,['tf-idf_embeddings.csv']
+okio.Okio$1,close,()V,1,['tf-idf_embeddings.csv']
 okio.Okio$1,write,(Lokio/OkBuffer;J)V,1,['bigbird_embeddings.csv']
 okio.Okio$2,read,(Lokio/OkBuffer;J)J,1,['gpt2_embeddings.csv']
-okio.RealBufferedSource,checkNotClosed,()V,1,['gpt2_embeddings.csv']
+okio.RealBufferedSink,checkNotClosed,()V,1,['tf-idf_embeddings.csv']

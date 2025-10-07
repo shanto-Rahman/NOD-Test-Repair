@@ -567,7 +567,7 @@ com.vmware.photon.controller.model.tasks.helpers.ResourcePoolQueryHelper,setAddi
 com.vmware.photon.controller.model.tasks.helpers.ResourcePoolQueryHelper,setExpandComputes,(Z)V,2,2,100.0%,"public void setExpandComputes(boolean expandComputes) {
         this.expandComputes = expandComputes;
     }",179-181
-com.vmware.photon.controller.model.tasks.helpers.ResourcePoolQueryHelper,query,()Lcom/vmware/xenon/common/DeferredResult;,6,6,100.0%,"public DeferredResult<QueryResult> query() {
+com.vmware.photon.controller.model.tasks.helpers.ResourcePoolQueryHelper,query,(Ljava/util/function/Consumer;)V,2,2,100.0%,"public DeferredResult<QueryResult> query() {
 
         this.result = new QueryResult();
 
@@ -578,7 +578,7 @@ com.vmware.photon.controller.model.tasks.helpers.ResourcePoolQueryHelper,query,(
                 .thenCompose(this::handleMissingComputes)
                 .handle((ignore, exc) -> exc != null ? QueryResult.forError(exc) : this.result);
     }",186-196
-com.vmware.photon.controller.model.tasks.helpers.ResourcePoolQueryHelper,query,(Ljava/util/function/Consumer;)V,2,2,100.0%,"public DeferredResult<QueryResult> query() {
+com.vmware.photon.controller.model.tasks.helpers.ResourcePoolQueryHelper,query,()Lcom/vmware/xenon/common/DeferredResult;,6,6,100.0%,"public DeferredResult<QueryResult> query() {
 
         this.result = new QueryResult();
 
@@ -744,11 +744,11 @@ com.vmware.photon.controller.model.util.StartServicesHelper$ServiceMetadata,serv
                     serviceClass,
                     key -> new ServiceMetadata(false /* isFactory */, serviceClass, null));
         }",206-211
-com.vmware.photon.controller.model.util.StartServicesHelper$ServiceMetadata,factoryService,(Ljava/lang/Class;)Lcom/vmware/photon/controller/model/util/StartServicesHelper$ServiceMetadata;,1,1,100.0%,"public static ServiceMetadata factoryService(Class<? extends Service> serviceClass) {
+com.vmware.photon.controller.model.util.StartServicesHelper$ServiceMetadata,factoryService,(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/vmware/photon/controller/model/util/StartServicesHelper$ServiceMetadata;,1,1,100.0%,"public static ServiceMetadata factoryService(Class<? extends Service> serviceClass) {
 
             return factoryService(serviceClass, null /* factoryCreator */);
         }",231-234
-com.vmware.photon.controller.model.util.StartServicesHelper$ServiceMetadata,factoryService,(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/vmware/photon/controller/model/util/StartServicesHelper$ServiceMetadata;,1,1,100.0%,"public static ServiceMetadata factoryService(Class<? extends Service> serviceClass) {
+com.vmware.photon.controller.model.util.StartServicesHelper$ServiceMetadata,factoryService,(Ljava/lang/Class;)Lcom/vmware/photon/controller/model/util/StartServicesHelper$ServiceMetadata;,1,1,100.0%,"public static ServiceMetadata factoryService(Class<? extends Service> serviceClass) {
 
             return factoryService(serviceClass, null /* factoryCreator */);
         }",231-234
@@ -5001,11 +5001,11 @@ com.vmware.admiral.compute.cluster.ClusterUtils,computeToClusterStatus,(Lcom/vmw
             return ClusterStatus.WARNING;
         }
     }",68-81
-com.vmware.admiral.compute.cluster.ClusterUtils,getHostsWithinPlacementZone,(Ljava/lang/String;Ljava/lang/String;Lcom/vmware/xenon/common/ServiceHost;)Lcom/vmware/xenon/common/DeferredResult;,1,1,100.0%,"public static DeferredResult<List<ComputeState>> getHostsWithinPlacementZone(
+com.vmware.admiral.compute.cluster.ClusterUtils,getHostsWithinPlacementZone,(Ljava/lang/String;Ljava/lang/String;Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/ServiceHost;)Lcom/vmware/xenon/common/DeferredResult;,9,28,32.1%,"public static DeferredResult<List<ComputeState>> getHostsWithinPlacementZone(
             String resourcePoolLink, String projectLink, ServiceHost host) {
         return getHostsWithinPlacementZone(resourcePoolLink, projectLink, null, host);
     }",83-86
-com.vmware.admiral.compute.cluster.ClusterUtils,getHostsWithinPlacementZone,(Ljava/lang/String;Ljava/lang/String;Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/ServiceHost;)Lcom/vmware/xenon/common/DeferredResult;,9,28,32.1%,"public static DeferredResult<List<ComputeState>> getHostsWithinPlacementZone(
+com.vmware.admiral.compute.cluster.ClusterUtils,getHostsWithinPlacementZone,(Ljava/lang/String;Ljava/lang/String;Lcom/vmware/xenon/common/ServiceHost;)Lcom/vmware/xenon/common/DeferredResult;,1,1,100.0%,"public static DeferredResult<List<ComputeState>> getHostsWithinPlacementZone(
             String resourcePoolLink, String projectLink, ServiceHost host) {
         return getHostsWithinPlacementZone(resourcePoolLink, projectLink, null, host);
     }",83-86
@@ -5960,7 +5960,7 @@ com.vmware.admiral.service.common.AbstractTaskStatefulService,validateNewState,(
 
         return validateStateOnStart(state, startPost);
     }",279-303
-com.vmware.admiral.service.common.AbstractTaskStatefulService,validateStateOnStart,(Lcom/vmware/admiral/service/common/TaskServiceDocument;Lcom/vmware/xenon/common/Operation;)Z,3,3,100.0%,"protected boolean validateStateOnStart(T state, Operation startPost)
+com.vmware.admiral.service.common.AbstractTaskStatefulService,validateStateOnStart,(Lcom/vmware/admiral/service/common/TaskServiceDocument;)V,1,1,100.0%,"protected boolean validateStateOnStart(T state, Operation startPost)
             throws IllegalArgumentException {
         // validate based on annotations
         Utils.validateState(getStateDescription(), state);
@@ -5969,7 +5969,7 @@ com.vmware.admiral.service.common.AbstractTaskStatefulService,validateStateOnSta
         validateStateOnStart(state);
         return false;
     }",305-313
-com.vmware.admiral.service.common.AbstractTaskStatefulService,validateStateOnStart,(Lcom/vmware/admiral/service/common/TaskServiceDocument;)V,1,1,100.0%,"protected boolean validateStateOnStart(T state, Operation startPost)
+com.vmware.admiral.service.common.AbstractTaskStatefulService,validateStateOnStart,(Lcom/vmware/admiral/service/common/TaskServiceDocument;Lcom/vmware/xenon/common/Operation;)Z,3,3,100.0%,"protected boolean validateStateOnStart(T state, Operation startPost)
             throws IllegalArgumentException {
         // validate based on annotations
         Utils.validateState(getStateDescription(), state);
@@ -6198,13 +6198,13 @@ com.vmware.admiral.service.common.AbstractTaskStatefulService,autoMergeState,(Lc
     }",630-633
 com.vmware.admiral.service.common.AbstractTaskStatefulService,customStateValidationAndMerge,(Lcom/vmware/xenon/common/Operation;Lcom/vmware/admiral/service/common/TaskServiceDocument;Lcom/vmware/admiral/service/common/TaskServiceDocument;)V,1,1,100.0%,"protected void customStateValidationAndMerge(Operation patch, T patchBody, T currentState) {
     }",641-642
+com.vmware.admiral.service.common.AbstractTaskStatefulService,proceedTo,(Ljava/lang/Enum;)V,2,2,100.0%,"protected void proceedTo(E subStage, Consumer<T> patchBodyConfigurator) {
+        proceedTo(TaskStage.STARTED, subStage, patchBodyConfigurator);
+    }",742-744
 com.vmware.admiral.service.common.AbstractTaskStatefulService,proceedTo,(Ljava/lang/Enum;Ljava/util/function/Consumer;)V,2,2,100.0%,"protected void proceedTo(E subStage, Consumer<T> patchBodyConfigurator) {
         proceedTo(TaskStage.STARTED, subStage, patchBodyConfigurator);
     }",742-744
 com.vmware.admiral.service.common.AbstractTaskStatefulService,proceedTo,(Lcom/vmware/xenon/common/TaskState$TaskStage;Ljava/lang/Enum;Ljava/util/function/Consumer;)V,12,14,85.7%,"protected void proceedTo(E subStage, Consumer<T> patchBodyConfigurator) {
-        proceedTo(TaskStage.STARTED, subStage, patchBodyConfigurator);
-    }",742-744
-com.vmware.admiral.service.common.AbstractTaskStatefulService,proceedTo,(Ljava/lang/Enum;)V,2,2,100.0%,"protected void proceedTo(E subStage, Consumer<T> patchBodyConfigurator) {
         proceedTo(TaskStage.STARTED, subStage, patchBodyConfigurator);
     }",742-744
 com.vmware.admiral.service.common.AbstractTaskStatefulService,complete,(Ljava/lang/Enum;)V,2,2,100.0%,"protected void complete(E subStage, Consumer<T> patchBodyConfigurator) {
@@ -6854,10 +6854,10 @@ com.vmware.admiral.service.common.SslTrustCertificateService$SslTrustCertificate
         super.toggleOption(ServiceOption.OWNER_SELECTION, true);
         super.toggleOption(ServiceOption.IDEMPOTENT_POST, true);
     }",136-142
-com.vmware.admiral.service.common.ServiceTaskCallback$ServiceTaskCallbackResponse,<init>,()V,2,2,100.0%,"protected ServiceTaskCallback() {
+com.vmware.admiral.service.common.ServiceTaskCallback$ServiceTaskCallbackResponse,<init>,(Lcom/vmware/xenon/common/TaskState$TaskStage;Ljava/lang/Object;Lcom/vmware/xenon/common/ServiceErrorResponse;)V,6,6,100.0%,"protected ServiceTaskCallback() {
         // GSON serialization constructor
     }",39-41
-com.vmware.admiral.service.common.ServiceTaskCallback$ServiceTaskCallbackResponse,<init>,(Lcom/vmware/xenon/common/TaskState$TaskStage;Ljava/lang/Object;Lcom/vmware/xenon/common/ServiceErrorResponse;)V,6,6,100.0%,"protected ServiceTaskCallback() {
+com.vmware.admiral.service.common.ServiceTaskCallback$ServiceTaskCallbackResponse,<init>,()V,2,2,100.0%,"protected ServiceTaskCallback() {
         // GSON serialization constructor
     }",39-41
 com.vmware.admiral.service.common.ResourceNamePrefixService$ResourceNamePrefixState,getMaxNumber,()J,1,1,100.0%,"public long getMaxNumber() {
@@ -6870,12 +6870,18 @@ com.vmware.admiral.service.common.ResourceNamePrefixService$ResourceNamePrefixSt
         super.toggleOption(ServiceOption.OWNER_SELECTION, true);
         super.toggleOption(ServiceOption.IDEMPOTENT_POST, true);
     }",127-133
-com.vmware.admiral.service.common.ServiceTaskCallback,<init>,()V,2,2,100.0%,"protected ServiceTaskCallback() {
-        // GSON serialization constructor
-    }",39-41
 com.vmware.admiral.service.common.ServiceTaskCallback,<init>,(Ljava/lang/String;Lcom/vmware/xenon/common/TaskState$TaskStage;Ljava/lang/Enum;Lcom/vmware/xenon/common/TaskState$TaskStage;Ljava/lang/Enum;)V,10,10,100.0%,"protected ServiceTaskCallback() {
         // GSON serialization constructor
     }",39-41
+com.vmware.admiral.service.common.ServiceTaskCallback,<init>,()V,2,2,100.0%,"protected ServiceTaskCallback() {
+        // GSON serialization constructor
+    }",39-41
+com.vmware.admiral.service.common.ServiceTaskCallback,create,(Ljava/lang/String;)Lcom/vmware/admiral/service/common/ServiceTaskCallback;,1,1,100.0%,"public static ServiceTaskCallback create(String serviceSelfLink,
+            TaskStage taskStageComplete,
+            Enum<?> subStageComplete, TaskStage taskStageFailed, Enum<?> subStageFailed) {
+        return new ServiceTaskCallback(serviceSelfLink, taskStageComplete, subStageComplete,
+                taskStageFailed, subStageFailed);
+    }",43-48
 com.vmware.admiral.service.common.ServiceTaskCallback,create,(Ljava/lang/String;Ljava/lang/Enum;Ljava/lang/Enum;)Lcom/vmware/admiral/service/common/ServiceTaskCallback;,1,1,100.0%,"public static ServiceTaskCallback create(String serviceSelfLink,
             TaskStage taskStageComplete,
             Enum<?> subStageComplete, TaskStage taskStageFailed, Enum<?> subStageFailed) {
@@ -6883,12 +6889,6 @@ com.vmware.admiral.service.common.ServiceTaskCallback,create,(Ljava/lang/String;
                 taskStageFailed, subStageFailed);
     }",43-48
 com.vmware.admiral.service.common.ServiceTaskCallback,create,(Ljava/lang/String;Lcom/vmware/xenon/common/TaskState$TaskStage;Ljava/lang/Enum;Lcom/vmware/xenon/common/TaskState$TaskStage;Ljava/lang/Enum;)Lcom/vmware/admiral/service/common/ServiceTaskCallback;,1,1,100.0%,"public static ServiceTaskCallback create(String serviceSelfLink,
-            TaskStage taskStageComplete,
-            Enum<?> subStageComplete, TaskStage taskStageFailed, Enum<?> subStageFailed) {
-        return new ServiceTaskCallback(serviceSelfLink, taskStageComplete, subStageComplete,
-                taskStageFailed, subStageFailed);
-    }",43-48
-com.vmware.admiral.service.common.ServiceTaskCallback,create,(Ljava/lang/String;)Lcom/vmware/admiral/service/common/ServiceTaskCallback;,1,1,100.0%,"public static ServiceTaskCallback create(String serviceSelfLink,
             TaskStage taskStageComplete,
             Enum<?> subStageComplete, TaskStage taskStageFailed, Enum<?> subStageFailed) {
         return new ServiceTaskCallback(serviceSelfLink, taskStageComplete, subStageComplete,
@@ -7377,7 +7377,7 @@ com.vmware.admiral.compute.EpzComputeEnumerationTaskService,queryComputes,(Lcom/
                     }
                 }));
     }",258-287
-com.vmware.admiral.compute.EpzComputeEnumerationTaskService,updateComputes,(Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;Z)V,4,4,100.0%,"private void updateComputes(EpzComputeEnumerationTaskState state, boolean assign) {
+com.vmware.admiral.compute.EpzComputeEnumerationTaskService,updateComputes,(Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;Lcom/vmware/xenon/common/ServiceDocumentQueryResult;ZLcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState$SubStage;)V,19,19,100.0%,"private void updateComputes(EpzComputeEnumerationTaskState state, boolean assign) {
         sendRequest(Operation
                 .createGet(getHost(), state.nextPageLink)
                 .setCompletion((o, e) -> {
@@ -7390,7 +7390,7 @@ com.vmware.admiral.compute.EpzComputeEnumerationTaskService,updateComputes,(Lcom
                             : EpzComputeEnumerationTaskState.SubStage.QUERY_COMPUTES_TO_ASSIGN);
                 }));
     }",289-301
-com.vmware.admiral.compute.EpzComputeEnumerationTaskService,updateComputes,(Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;Lcom/vmware/xenon/common/ServiceDocumentQueryResult;ZLcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState$SubStage;)V,19,19,100.0%,"private void updateComputes(EpzComputeEnumerationTaskState state, boolean assign) {
+com.vmware.admiral.compute.EpzComputeEnumerationTaskService,updateComputes,(Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;Z)V,4,4,100.0%,"private void updateComputes(EpzComputeEnumerationTaskState state, boolean assign) {
         sendRequest(Operation
                 .createGet(getHost(), state.nextPageLink)
                 .setCompletion((o, e) -> {
@@ -8005,10 +8005,10 @@ com.vmware.admiral.compute.EpzComputeEnumerationTaskService$EpzComputeEnumeratio
 
         this.setLogLevel(DEFAULT_LOG_LEVEL);
     }",108-119
-com.vmware.admiral.compute.ResourceType,<init>,(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Z)V,5,5,100.0%,"ResourceType(String name, String contentType) {
+com.vmware.admiral.compute.ResourceType,<init>,(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"ResourceType(String name, String contentType) {
         this(name, contentType, false);
     }",46-48
-com.vmware.admiral.compute.ResourceType,<init>,(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"ResourceType(String name, String contentType) {
+com.vmware.admiral.compute.ResourceType,<init>,(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Z)V,5,5,100.0%,"ResourceType(String name, String contentType) {
         this(name, contentType, false);
     }",46-48
 com.vmware.admiral.compute.ResourceType,getName,()Ljava/lang/String;,2,3,66.7%,"public String getName() {
@@ -8957,10 +8957,10 @@ com.vmware.photon.controller.model.PhotonModelMetricServices,startServices,(Lcom
         host.startFactory(ResourceMetricsService.class, ResourceMetricsService::createFactory);
         setFactoryToAvailable(host, ResourceMetricsService.FACTORY_LINK);
     }",36-39
-com.vmware.photon.controller.model.PhotonModelMetricServices,setFactoryToAvailable,(Lcom/vmware/xenon/common/ServiceHost;Ljava/lang/String;Lcom/vmware/xenon/common/Operation$CompletionHandler;)V,9,9,100.0%,"public static void setFactoryToAvailable(ServiceHost host, String factoryPath) {
+com.vmware.photon.controller.model.PhotonModelMetricServices,setFactoryToAvailable,(Lcom/vmware/xenon/common/ServiceHost;Ljava/lang/String;)V,2,2,100.0%,"public static void setFactoryToAvailable(ServiceHost host, String factoryPath) {
         setFactoryToAvailable(host, factoryPath, null);
     }",42-44
-com.vmware.photon.controller.model.PhotonModelMetricServices,setFactoryToAvailable,(Lcom/vmware/xenon/common/ServiceHost;Ljava/lang/String;)V,2,2,100.0%,"public static void setFactoryToAvailable(ServiceHost host, String factoryPath) {
+com.vmware.photon.controller.model.PhotonModelMetricServices,setFactoryToAvailable,(Lcom/vmware/xenon/common/ServiceHost;Ljava/lang/String;Lcom/vmware/xenon/common/Operation$CompletionHandler;)V,9,9,100.0%,"public static void setFactoryToAvailable(ServiceHost host, String factoryPath) {
         setFactoryToAvailable(host, factoryPath, null);
     }",42-44
 com.vmware.admiral.log.EventLogService$EventLogState,<init>,()V,1,1,100.0%,"public EventLogService() {
@@ -9253,11 +9253,11 @@ com.vmware.admiral.common.util.PropertyUtils,findField,(Ljava/lang/Class;Ljava/l
         }
         return null;
     }",253-263
-com.vmware.admiral.common.util.OperationUtil,createForcedPost,(Ljava/net/URI;)Lcom/vmware/xenon/common/Operation;,2,2,100.0%,"public static Operation createForcedPost(URI uri) {
+com.vmware.admiral.common.util.OperationUtil,createForcedPost,(Lcom/vmware/xenon/common/Service;Ljava/lang/String;)Lcom/vmware/xenon/common/Operation;,1,1,100.0%,"public static Operation createForcedPost(URI uri) {
         return Operation.createPost(uri)
                 .addPragmaDirective(Operation.PRAGMA_DIRECTIVE_FORCE_INDEX_UPDATE);
     }",43-46
-com.vmware.admiral.common.util.OperationUtil,createForcedPost,(Lcom/vmware/xenon/common/Service;Ljava/lang/String;)Lcom/vmware/xenon/common/Operation;,1,1,100.0%,"public static Operation createForcedPost(URI uri) {
+com.vmware.admiral.common.util.OperationUtil,createForcedPost,(Ljava/net/URI;)Lcom/vmware/xenon/common/Operation;,2,2,100.0%,"public static Operation createForcedPost(URI uri) {
         return Operation.createPost(uri)
                 .addPragmaDirective(Operation.PRAGMA_DIRECTIVE_FORCE_INDEX_UPDATE);
     }",43-46
@@ -9540,12 +9540,12 @@ com.vmware.admiral.common.util.AssertUtil,assertTrue,(ZLjava/lang/String;)V,2,3,
             throw new IllegalArgumentException(errMsg);
         }
     }",76-80
-com.vmware.admiral.common.util.QueryUtil,buildQuery,(Ljava/lang/Class;Z[Lcom/vmware/xenon/services/common/QueryTask$Query;)Lcom/vmware/xenon/services/common/QueryTask;,2,2,100.0%,"public static QueryTask buildQuery(Class<? extends ServiceDocument> stateClass,
+com.vmware.admiral.common.util.QueryUtil,buildQuery,(Ljava/lang/String;Z[Lcom/vmware/xenon/services/common/QueryTask$Query;)Lcom/vmware/xenon/services/common/QueryTask;,11,11,100.0%,"public static QueryTask buildQuery(Class<? extends ServiceDocument> stateClass,
             boolean direct, QueryTask.Query... clauses) {
         String kind = Utils.buildKind(stateClass);
         return buildQuery(kind, direct, clauses);
     }",66-70
-com.vmware.admiral.common.util.QueryUtil,buildQuery,(Ljava/lang/String;Z[Lcom/vmware/xenon/services/common/QueryTask$Query;)Lcom/vmware/xenon/services/common/QueryTask;,11,11,100.0%,"public static QueryTask buildQuery(Class<? extends ServiceDocument> stateClass,
+com.vmware.admiral.common.util.QueryUtil,buildQuery,(Ljava/lang/Class;Z[Lcom/vmware/xenon/services/common/QueryTask$Query;)Lcom/vmware/xenon/services/common/QueryTask;,2,2,100.0%,"public static QueryTask buildQuery(Class<? extends ServiceDocument> stateClass,
             boolean direct, QueryTask.Query... clauses) {
         String kind = Utils.buildKind(stateClass);
         return buildQuery(kind, direct, clauses);
@@ -9745,9 +9745,9 @@ com.vmware.admiral.common.util.ServiceUtils,addServiceRequestRoute,(Lcom/vmware/
         }
         serviceDocument.documentDescription.serviceRequestRoutes.get(route.action).add(route);
     }",60-84
-com.vmware.admiral.compute.content.Binding,<init>,()V,2,2,100.0%,"public ComponentBinding() {
-        }",31-32
 com.vmware.admiral.compute.content.Binding,<init>,(Ljava/util/List;Ljava/lang/String;Lcom/vmware/admiral/compute/content/Binding$BindingPlaceholder;)V,5,5,100.0%,"public ComponentBinding() {
+        }",31-32
+com.vmware.admiral.compute.content.Binding,<init>,()V,2,2,100.0%,"public ComponentBinding() {
         }",31-32
 com.vmware.admiral.compute.content.CompositeDescriptionContentService,getDocumentTemplate,()Lcom/vmware/xenon/common/ServiceDocument;,4,4,100.0%,"@Override
     public ServiceDocument getDocumentTemplate() {
@@ -9762,13 +9762,13 @@ com.vmware.admiral.compute.content.CompositeDescriptionContentService,getDocumen
                 null);
         return d;
     }",398-410
-com.vmware.admiral.compute.content.Binding$ComponentBinding,<init>,()V,2,2,100.0%,"public ComponentBinding() {
-        }",31-32
 com.vmware.admiral.compute.content.Binding$ComponentBinding,<init>,(Ljava/lang/String;Ljava/util/List;)V,4,4,100.0%,"public ComponentBinding() {
         }",31-32
-com.vmware.admiral.compute.content.Binding$BindingPlaceholder,<init>,()V,2,2,100.0%,"public ComponentBinding() {
+com.vmware.admiral.compute.content.Binding$ComponentBinding,<init>,()V,2,2,100.0%,"public ComponentBinding() {
         }",31-32
 com.vmware.admiral.compute.content.Binding$BindingPlaceholder,<init>,(Ljava/lang/String;Ljava/lang/String;)V,4,4,100.0%,"public ComponentBinding() {
+        }",31-32
+com.vmware.admiral.compute.content.Binding$BindingPlaceholder,<init>,()V,2,2,100.0%,"public ComponentBinding() {
         }",31-32
 com.vmware.admiral.host.HostInitComputeServicesConfig,startServices,(Lcom/vmware/xenon/common/ServiceHost;Z)V,9,9,100.0%,"public static void startServices(ServiceHost host, boolean startMockContainerHostService) {
 

@@ -473,10 +473,10 @@ ch.qos.logback.core.status.OnPrintStreamStatusListenerBase,addStatusEvent,(Lch/q
       return;
     print(status);
   }",47-51
-ch.qos.logback.core.status.StatusBase,<init>,(ILjava/lang/String;Ljava/lang/Object;)V,2,2,100.0%,"StatusBase(int level, String msg, Object origin) {
+ch.qos.logback.core.status.StatusBase,<init>,(ILjava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;)V,7,7,100.0%,"StatusBase(int level, String msg, Object origin) {
     this(level, msg, origin, null);
   }",31-33
-ch.qos.logback.core.status.StatusBase,<init>,(ILjava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;)V,7,7,100.0%,"StatusBase(int level, String msg, Object origin) {
+ch.qos.logback.core.status.StatusBase,<init>,(ILjava/lang/String;Ljava/lang/Object;)V,2,2,100.0%,"StatusBase(int level, String msg, Object origin) {
     this(level, msg, origin, null);
   }",31-33
 ch.qos.logback.core.status.StatusBase,getLevel,()I,1,1,100.0%,"public int getLevel() {

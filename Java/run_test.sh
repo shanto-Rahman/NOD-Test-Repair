@@ -5,6 +5,7 @@ if [[ $1 == "" || $2 == "" ]]; then
     exit
 fi
 
+rm -rf ~/.m2/repository/info/archinnov/*
 currentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 inputProj=$currentDir"/projects"

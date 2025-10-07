@@ -1,18 +1,25 @@
 Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+tachyon.WorkerStorage$CheckpointThread,run,()V,3,"['llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+tachyon.client.FileOutStream,<init>,(Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;)V,3,"['codebert_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
 tachyon.InodeFile,addBlock,(Ltachyon/BlockInfo;)V,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
-tachyon.WorkerStorage$CheckpointThread,run,()V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
-tachyon.client.FileOutStream,<init>,(Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;)V,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
+tachyon.client.OutStream,<init>,(Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;)V,2,"['qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+tachyon.conf.CommonConf,<init>,()V,2,"['bigbird_embeddings.csv', 'tf-idf_embeddings.csv']"
 tachyon.conf.MasterConf,<init>,()V,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+tachyon.CommonUtils,parametersToString,([Ljava/lang/Object;)Ljava/lang/String;,1,['tf-idf_embeddings.csv']
 tachyon.HeartbeatThread,run,()V,1,['codebert_embeddings.csv']
 tachyon.Image,create,(Ltachyon/MasterInfo;Ljava/lang/String;)V,1,['llama_embeddings.csv']
 tachyon.Image,load,(Ltachyon/MasterInfo;Ljava/lang/String;)V,1,['llama_embeddings.csv']
+tachyon.InodeFile,getBlockIds,()Ljava/util/List;,1,['tf-idf_embeddings.csv']
 tachyon.Master,<init>,(Ljava/net/InetSocketAddress;IIII)V,1,['qwen_embeddings.csv']
 tachyon.Master,setup,()V,1,['codebert_embeddings.csv']
 tachyon.MasterClient,user_createFile,(Ljava/lang/String;J)I,1,['llama_embeddings.csv']
 tachyon.MasterInfo,_createFile,(ZLjava/lang/String;ZILjava/nio/ByteBuffer;JJ)I,1,['llama_embeddings.csv']
+tachyon.MasterInfo,createImageInodeWriter,(Ltachyon/Inode;Ljava/io/DataOutputStream;)V,1,['tf-idf_embeddings.csv']
 tachyon.MasterInfo,registerWorker,(Ltachyon/thrift/NetAddress;JJLjava/util/List;)J,1,['codebert_embeddings.csv']
 tachyon.MasterInfo$MasterInfoHeartbeatExecutor,heartbeat,()V,1,['llama_embeddings.csv']
 tachyon.MasterWorkerInfo,toString,()Ljava/lang/String;,1,['qwen_embeddings.csv']
+tachyon.PrefixList,inList,(Ljava/lang/String;)Z,1,['tf-idf_embeddings.csv']
+tachyon.UnderFileSystemSingleLocal,exists,(Ljava/lang/String;)Z,1,['tf-idf_embeddings.csv']
 tachyon.Worker,<init>,(Ljava/net/InetSocketAddress;Ljava/net/InetSocketAddress;IIIILjava/lang/String;J)V,1,['codebert_embeddings.csv']
 tachyon.Worker,run,()V,1,['qwen_embeddings.csv']
 tachyon.WorkerServiceHandler,asyncCheckpoint,(I)Z,1,['llama_embeddings.csv']
@@ -21,8 +28,7 @@ tachyon.WorkerStorage,freeBlock,(J)J,1,['codebert_embeddings.csv']
 tachyon.WorkerStorage,initializeWorkerStorage,()V,1,['llama_embeddings.csv']
 tachyon.client.BlockOutStream,<init>,(Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;I)V,1,['llama_embeddings.csv']
 tachyon.client.BlockOutStream,appendCurrentBuffer,([BII)V,1,['llama_embeddings.csv']
-tachyon.client.OutStream,<init>,(Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;)V,1,['qwen_embeddings.csv']
-tachyon.conf.CommonConf,<init>,()V,1,['bigbird_embeddings.csv']
+tachyon.client.FileOutStream,close,()V,1,['tf-idf_embeddings.csv']
 tachyon.thrift.Command,write,(Lorg/apache/thrift/protocol/TProtocol;)V,1,['bigbird_embeddings.csv']
 tachyon.thrift.MasterService$Client,recv_user_createFile,()I,1,['qwen_embeddings.csv']
 tachyon.thrift.MasterService$Client,recv_user_getClientFileInfoByPath,()Ltachyon/thrift/ClientFileInfo;,1,['codebert_embeddings.csv']

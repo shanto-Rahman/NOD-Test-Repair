@@ -4,12 +4,16 @@ org.java_websocket.AbstractWebSocket,restartConnectionLostTimer,()V,3,"['bigbird
 org.java_websocket.drafts.Draft_6455,acceptHandshakeAsClient,(Lorg/java_websocket/handshake/ClientHandshake;Lorg/java_websocket/handshake/ServerHandshake;)Lorg/java_websocket/enums/HandshakeState;,3,"['codebert_embeddings.csv', 'gpt2_embeddings.csv', 'qwen_embeddings.csv']"
 org.java_websocket.WebSocketImpl,eot,()V,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
 org.java_websocket.client.WebSocketClient,connect,()V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+org.java_websocket.client.WebSocketClient,reset,()V,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.java_websocket.drafts.Draft,translateHandshakeHttp,(Ljava/nio/ByteBuffer;Lorg/java_websocket/enums/Role;)Lorg/java_websocket/handshake/HandshakeBuilder;,2,"['codebert_embeddings.csv', 'tf-idf_embeddings.csv']"
 org.java_websocket.drafts.Draft_6455,copyInstance,()Lorg/java_websocket/drafts/Draft;,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
 org.java_websocket.drafts.Draft_6455,postProcessHandshakeRequestAsClient,(Lorg/java_websocket/handshake/ClientHandshakeBuilder;)Lorg/java_websocket/handshake/ClientHandshakeBuilder;,2,"['bigbird_embeddings.csv', 'gpt2_embeddings.csv']"
 org.java_websocket.drafts.Draft_6455,postProcessHandshakeResponseAsServer,(Lorg/java_websocket/handshake/ClientHandshake;Lorg/java_websocket/handshake/ServerHandshakeBuilder;)Lorg/java_websocket/handshake/HandshakeBuilder;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
 org.java_websocket.drafts.Draft_6455,processFrame,(Lorg/java_websocket/WebSocketImpl;Lorg/java_websocket/framing/Framedata;)V,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
 org.java_websocket.extensions.DefaultExtension,isFrameValid,(Lorg/java_websocket/framing/Framedata;)V,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
 org.java_websocket.framing.ControlFrame,isValid,()V,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
+org.java_websocket.server.WebSocketServer,stop,()V,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.java_websocket.server.WebSocketServer,stop,(I)V,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
 org.java_websocket.AbstractWebSocket,setConnectionLostTimeout,(I)V,1,['llama_embeddings.csv']
 org.java_websocket.AbstractWebSocket,setTcpNoDelay,(Z)V,1,['gpt2_embeddings.csv']
 org.java_websocket.SocketChannelIOHelper,batch,(Lorg/java_websocket/WebSocketImpl;Ljava/nio/channels/ByteChannel;)Z,1,['bigbird_embeddings.csv']
@@ -17,20 +21,22 @@ org.java_websocket.WebSocketImpl,closeConnection,()V,1,['bigbird_embeddings.csv'
 org.java_websocket.WebSocketImpl,closeConnection,(ILjava/lang/String;Z)V,1,['bigbird_embeddings.csv']
 org.java_websocket.WebSocketImpl,closeConnection,(IZ)V,1,['bigbird_embeddings.csv']
 org.java_websocket.WebSocketImpl,startHandshake,(Lorg/java_websocket/handshake/ClientHandshakeBuilder;)V,1,['codebert_embeddings.csv']
+org.java_websocket.client.WebSocketClient,closeBlocking,()V,1,['tf-idf_embeddings.csv']
 org.java_websocket.client.WebSocketClient,connectBlocking,()Z,1,['llama_embeddings.csv']
 org.java_websocket.client.WebSocketClient,handleIOException,(Ljava/io/IOException;)V,1,['llama_embeddings.csv']
 org.java_websocket.client.WebSocketClient,reconnectBlocking,()Z,1,['llama_embeddings.csv']
-org.java_websocket.client.WebSocketClient,reset,()V,1,['llama_embeddings.csv']
 org.java_websocket.client.WebSocketClient,run,()V,1,['llama_embeddings.csv']
-org.java_websocket.drafts.Draft,translateHandshakeHttp,(Ljava/nio/ByteBuffer;Lorg/java_websocket/enums/Role;)Lorg/java_websocket/handshake/HandshakeBuilder;,1,['codebert_embeddings.csv']
 org.java_websocket.drafts.Draft_6455,createByteBufferFromFramedata,(Lorg/java_websocket/framing/Framedata;)Ljava/nio/ByteBuffer;,1,['codebert_embeddings.csv']
 org.java_websocket.drafts.Draft_6455,fromOpcode,(Lorg/java_websocket/enums/Opcode;)B,1,['gpt2_embeddings.csv']
 org.java_websocket.drafts.Draft_6455,getCloseHandshakeType,()Lorg/java_websocket/enums/CloseHandshakeType;,1,['qwen_embeddings.csv']
 org.java_websocket.framing.CloseFrame,getPayloadData,()Ljava/nio/ByteBuffer;,1,['gpt2_embeddings.csv']
 org.java_websocket.framing.CloseFrame,isValid,()V,1,['bigbird_embeddings.csv']
 org.java_websocket.framing.CloseFrame,setPayload,(Ljava/nio/ByteBuffer;)V,1,['bigbird_embeddings.csv']
+org.java_websocket.framing.FramedataImpl1,<init>,(Lorg/java_websocket/enums/Opcode;)V,1,['tf-idf_embeddings.csv']
+org.java_websocket.server.DefaultWebSocketServerFactory,close,()V,1,['tf-idf_embeddings.csv']
 org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;)V,1,['qwen_embeddings.csv']
-org.java_websocket.server.WebSocketServer,stop,()V,1,['llama_embeddings.csv']
-org.java_websocket.server.WebSocketServer,stop,(I)V,1,['llama_embeddings.csv']
 org.java_websocket.server.WebSocketServer$WebSocketWorker,<init>,(Lorg/java_websocket/server/WebSocketServer;)V,1,['qwen_embeddings.csv']
 org.java_websocket.server.WebSocketServer$WebSocketWorker$1,<init>,(Lorg/java_websocket/server/WebSocketServer$WebSocketWorker;Lorg/java_websocket/server/WebSocketServer;)V,1,['qwen_embeddings.csv']
+org.java_websocket.util.Base64,encodeBytes,([B)Ljava/lang/String;,1,['tf-idf_embeddings.csv']
+org.java_websocket.util.Base64,encodeBytes,([BIII)Ljava/lang/String;,1,['tf-idf_embeddings.csv']
+org.java_websocket.util.Base64,encodeBytesToBytes,([BIII)[B,1,['tf-idf_embeddings.csv']

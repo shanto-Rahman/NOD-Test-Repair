@@ -1,5 +1,5 @@
 Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange
-com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/Socket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
+com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/ServerSocket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
     if (closeable != null) {
       try {
         closeable.close();
@@ -9,7 +9,7 @@ com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/Socket;)V,4,7,57.1%,"p
       }
     }
   }",94-103
-com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/ServerSocket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
+com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/Socket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
     if (closeable != null) {
       try {
         closeable.close();
@@ -1146,12 +1146,12 @@ okio.RealBufferedSource,checkNotClosed,()V,2,3,66.7%,"private void checkNotClose
           throw new IOException(""closed"");
         }
       }",188-193
-okio.RealBufferedSink,<init>,(Lokio/Sink;Lokio/OkBuffer;)V,5,5,100.0%,"public RealBufferedSink(Sink sink, OkBuffer buffer) {
+okio.RealBufferedSink,<init>,(Lokio/Sink;)V,2,2,100.0%,"public RealBufferedSink(Sink sink, OkBuffer buffer) {
     if (sink == null) throw new IllegalArgumentException(""sink == null"");
     this.buffer = buffer;
     this.sink = sink;
   }",26-30
-okio.RealBufferedSink,<init>,(Lokio/Sink;)V,2,2,100.0%,"public RealBufferedSink(Sink sink, OkBuffer buffer) {
+okio.RealBufferedSink,<init>,(Lokio/Sink;Lokio/OkBuffer;)V,5,5,100.0%,"public RealBufferedSink(Sink sink, OkBuffer buffer) {
     if (sink == null) throw new IllegalArgumentException(""sink == null"");
     this.buffer = buffer;
     this.sink = sink;
@@ -1207,10 +1207,10 @@ okio.RealBufferedSink,checkNotClosed,()V,2,3,66.7%,"private void checkNotClosed(
           throw new IOException(""closed"");
         }
       }",125-130
-okio.Okio,buffer,(Lokio/Sink;)Lokio/BufferedSink;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
+okio.Okio,buffer,(Lokio/Source;)Lokio/BufferedSource;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
     return new RealBufferedSource(source);
   }",28-30
-okio.Okio,buffer,(Lokio/Source;)Lokio/BufferedSource;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
+okio.Okio,buffer,(Lokio/Sink;)Lokio/BufferedSink;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
     return new RealBufferedSource(source);
   }",28-30
 okio.Okio,sink,(Ljava/io/OutputStream;)Lokio/Sink;,1,1,100.0%,"public static Sink sink(final OutputStream out) {
@@ -1391,6 +1391,30 @@ okio.Segment,push,(Lokio/Segment;)Lokio/Segment;,5,5,100.0%,"public Segment push
     next = segment;
     return segment;
   }",65-71
+okio.Segment,split,(I)Lokio/Segment;,10,16,62.5%,"public Segment split(int byteCount) {
+    int aSize = byteCount;
+    int bSize = (limit - pos) - byteCount;
+    if (aSize <= 0 || bSize <= 0) throw new IllegalArgumentException();
+
+    // Which side of the split is larger? We want to copy as few bytes as possible.
+    if (aSize < bSize) {
+      // Create a segment of size 'aSize' before this segment.
+      Segment before = SegmentPool.INSTANCE.take();
+      System.arraycopy(data, pos, before.data, before.pos, aSize);
+      pos += aSize;
+      before.limit += aSize;
+      prev.push(before);
+      return before;
+    } else {
+      // Create a new segment of size 'bSize' after this segment.
+      Segment after = SegmentPool.INSTANCE.take();
+      System.arraycopy(data, pos + aSize, after.data, after.pos, bSize);
+      limit -= bSize;
+      after.limit += bSize;
+      push(after);
+      return this;
+    }
+  }",81-104
 okio.Segment,compact,()V,6,6,100.0%,"public void compact() {
     if (prev == this) throw new IllegalStateException();
     if ((prev.limit - prev.pos) + (limit - pos) > SIZE) return; // Cannot compact.
@@ -1451,7 +1475,7 @@ okio.OkBuffer,write,([BII)Lokio/OkBuffer;,10,10,100.0%,"@Override public void wr
 okio.OkBuffer,write,(Lokio/ByteString;)Lokio/OkBuffer;,1,1,100.0%,"@Override public void write(int b) {
         writeByte((byte) b);
       }",63-65
-okio.OkBuffer,write,(Lokio/OkBuffer;J)V,18,26,69.2%,"@Override public void write(int b) {
+okio.OkBuffer,write,(Lokio/OkBuffer;J)V,21,26,80.8%,"@Override public void write(int b) {
         writeByte((byte) b);
       }",63-65
 okio.OkBuffer,flush,()V,1,1,100.0%,"@Override public void flush() {

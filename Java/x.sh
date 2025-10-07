@@ -12,11 +12,11 @@
 
 
 #bash runAll.sh ../data/talank_with_test_id_idoft_corrected.csv results/
-#bash search_for_failure_reproducing.sh ../data/talank_with_test_id_idoft_corrected.csv idoft
+bash search_for_failure_reproducing.sh ../data/talank_with_test_id_idoft_corrected.csv idoft
 
 
-bash runAll.sh ../Results/uniq_flakerake_not_found_in_idoft.csv results/
-bash search_for_failure_reproducing.sh ../Results/uniq_flakerake_not_found_in_idoft.csv flakerake
+#bash runAll.sh ../Results/uniq_flakerake_not_found_in_idoft.csv results/
+#bash search_for_failure_reproducing.sh ../Results/uniq_flakerake_not_found_in_idoft.csv flakerake
 
-RQ2
- bash rq2.sh results/gpt.csv results idoft
+#RQ2
+# bash rq2.sh results/gpt.csv results idoft

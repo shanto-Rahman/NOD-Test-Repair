@@ -987,15 +987,15 @@ info.archinnov.achilles.internals.metamodel.ListProperty,containsUDTProperty,()Z
     public boolean containsUDTProperty() {
         return valueProperty.containsUDTProperty();
     }",210-213
+info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",220-223
 info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",220-223
 info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,2,2,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",220-223
-info.archinnov.achilles.internals.metamodel.ListProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",220-223
@@ -1072,15 +1072,15 @@ info.archinnov.achilles.internals.metamodel.SetProperty,containsUDTProperty,()Z,
     public boolean containsUDTProperty() {
         return valueProperty.containsUDTProperty();
     }",199-202
+info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",209-212
 info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",209-212
 info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,2,2,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",209-212
-info.archinnov.achilles.internals.metamodel.SetProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,2,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",209-212
@@ -1134,15 +1134,15 @@ info.archinnov.achilles.internals.metamodel.SimpleProperty,containsUDTProperty,(
     public boolean containsUDTProperty() {
         return false;
     }",144-147
+info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,3,66.7%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        // No op
+    }",154-157
 info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,1,1,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
 info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,1,1,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        // No op
-    }",154-157
-info.archinnov.achilles.internals.metamodel.SimpleProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,2,3,66.7%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }",154-157
@@ -1233,17 +1233,17 @@ info.archinnov.achilles.internals.metamodel.MapProperty,containsUDTProperty,()Z,
     public boolean containsUDTProperty() {
         return keyProperty.containsUDTProperty() || valueProperty.containsUDTProperty();
     }",246-249
+info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,3,3,100.0%,"@Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        keyProperty.inject(userTypeFactory, tupleTypeFactory);
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
+    }",256-260
 info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,3,3,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         keyProperty.inject(userTypeFactory, tupleTypeFactory);
         valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }",256-260
 info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Linfo/archinnov/achilles/internals/factory/UserTypeFactory;Linfo/archinnov/achilles/internals/factory/TupleTypeFactory;)V,3,3,100.0%,"@Override
-    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
-        keyProperty.inject(userTypeFactory, tupleTypeFactory);
-        valueProperty.inject(userTypeFactory, tupleTypeFactory);
-    }",256-260
-info.archinnov.achilles.internals.metamodel.MapProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,3,3,100.0%,"@Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         keyProperty.inject(userTypeFactory, tupleTypeFactory);
         valueProperty.inject(userTypeFactory, tupleTypeFactory);

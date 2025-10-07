@@ -929,16 +929,7 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,injectConsist
                     entityClass.getCanonicalName()));
         }
     }",380-427
-info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,6,8,75.0%,"@Override
-    public void inject(InsertStrategy insertStrategy) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
-                    insertStrategy, entityClass.getCanonicalName()));
-        }
-        if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
-        else this.insertStrategy = staticInsertStrategy.get();
-    }",429-437
-info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/strategy/InsertStrategy;)V,3,6,50.0%,"@Override
+info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,5,7,71.4%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
@@ -956,7 +947,16 @@ info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo
         if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
         else this.insertStrategy = staticInsertStrategy.get();
     }",429-437
-info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Lcom/fasterxml/jackson/databind/ObjectMapper;)V,5,7,71.4%,"@Override
+info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/factory/BeanFactory;)V,6,8,75.0%,"@Override
+    public void inject(InsertStrategy insertStrategy) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
+                    insertStrategy, entityClass.getCanonicalName()));
+        }
+        if (!staticInsertStrategy.isPresent()) this.insertStrategy = insertStrategy;
+        else this.insertStrategy = staticInsertStrategy.get();
+    }",429-437
+info.archinnov.achilles.internals.metamodel.AbstractEntityProperty,inject,(Linfo/archinnov/achilles/type/strategy/InsertStrategy;)V,3,6,50.0%,"@Override
     public void inject(InsertStrategy insertStrategy) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format(""Injecting insert strategy %s into entity meta of %s"",
@@ -2130,11 +2130,11 @@ info.archinnov.achilles.internals.statements.StatementWrapper,tracingInternal,(L
 info.archinnov.achilles.internals.statements.OperationType,<init>,(Ljava/lang/String;IZ)V,3,3,100.0%,"OperationType(boolean isUpsert) {
         this.isUpsert = isUpsert;
     }",29-31
-info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/PreparedStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,2,2,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
+info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/BoundStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,8,8,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
                                  Object[] boundValues, Object[] encodedBoundValues) {
         this(operationType, meta, ps.bind(encodedBoundValues), boundValues, encodedBoundValues);
     }",48-51
-info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/BoundStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,8,8,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
+info.archinnov.achilles.internals.statements.BoundStatementWrapper,<init>,(Linfo/archinnov/achilles/internals/statements/OperationType;Linfo/archinnov/achilles/internals/metamodel/AbstractEntityProperty;Lcom/datastax/driver/core/PreparedStatement;[Ljava/lang/Object;[Ljava/lang/Object;)V,2,2,100.0%,"public BoundStatementWrapper(OperationType operationType, AbstractEntityProperty<?> meta, PreparedStatement ps,
                                  Object[] boundValues, Object[] encodedBoundValues) {
         this(operationType, meta, ps.bind(encodedBoundValues), boundValues, encodedBoundValues);
     }",48-51

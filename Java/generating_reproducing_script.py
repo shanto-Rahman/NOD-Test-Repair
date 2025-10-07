@@ -28,7 +28,14 @@ from helper import get_line_range, find_api_match_with_flakerake
 from modify_java_file import inject_sleep_before_line
 from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
 
-login(token="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")
+#login(token="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")
+def hf_login_once():
+    if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
+        return
+    token = os.environ["HUGGINGFACE_HUB_TOKEN"]
+    login(token=token, add_to_git_credential=True)  # runs once, caches
+    os.environ["HF_ALREADY_LOGGED_IN"] = "1"
+
 
 def has_errors_or_failures(path):
     with open(path, 'r') as f:
@@ -145,6 +152,38 @@ def is_synchronized_signature(body):
     return False
 
 
+def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+    inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+    tag = f"{retry_count}_{idx}_{run_id}"
+    try:
+        print("./run_test.sh", slug, module, test, tag)
+        result_run = subprocess.run(
+            ["./run_test.sh", slug, module, test, tag],
+            check=True, text=True, capture_output=True
+        )
+        out = result_run.stdout.strip()
+        print("***out****", out)
+        firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
+        return (firstLine == "Failure found.")
+    except subprocess.CalledProcessError as e:
+        print("run_test.sh failed with exit code", e.returncode)
+        print("--- stdout ---"); print(e.stdout)
+        print("--- stderr ---"); print(e.stderr)
+
+        # Inspect produced log to decide if it was a failure
+        currentDir_when_exception_occurs = os.getcwd()
+        before, after = test.rsplit('.', 1)
+        test_with_hash = f"{before}#{after}"
+        log_file = (currentDir_when_exception_occurs + "/logs-to-reproduce/" +
+                    f"{test_with_hash}-con-after-changedCode-{tag}.txt")
+        print("log file name=", log_file)
+        if has_errors_or_failures(log_file):
+            print("Found Errors: 1 or Failures: 1")
+            return True
+        else:
+            print("No Errors: 1 or Failures: 1")
+            return False
+
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 5
     tried_methods = set()
@@ -167,7 +206,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         for _, row in cluster_df.iterrows()
         )'''
 
-    prompt, definition = generate_prompt(failure_log, filtered_df.head(10), test_code)
+    prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
     #print("definition=", definition)
 
     print("prompt=", prompt)
@@ -197,7 +236,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         else:
             meth_code = "</Output> not found" #response_content
         print("**meth_code=", meth_code)
-        #exit()
         # Suppose meth_code is your multiline string as shown above
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** index=", idx, ",Processing line:", line)
@@ -228,48 +266,21 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
                 if class_path_list:
                     failure_count = 0
-                    for run_id in range(5):
-                        inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
-                        try:
-                            print("./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx))
-                            result_run = subprocess.run(["./run_test.sh", slug, module, test, str(retry_count) + "_" + str(idx)], check=True, text=True, capture_output=True)
-                            out = result_run.stdout.strip()
-                            print("***out****", out)
-                            firstLine = out.splitlines()[0] #"Failure not found." or "Failure found."
-
-                            #print("*** test_run result, Script output: ",firstLine)
-                            #print(firstLine)
-                            if firstLine == "Failure found.":
-                                print("Failure found.")
-                                #break 
-                                return line, str(retry_count)+"_"+str(idx), firstLine # retry_count = cot count
-                                #prompt = prompt + "Your prior suggestion to get the test failure is not correct. Please suggest  a change in the method so that test is failing due to timing-related issues—most commonly asynchronous waits."
-                        except subprocess.CalledProcessError as e:
-                            print("run_test.sh failed with exit code", e.returncode)
-                            print("--- stdout ---")
-                            print(e.stdout)
-                            print("--- stderr ---")
-                            print(e.stderr)
-                            #if slug == "doanduyhai/Achilles" or "Java-WebSocket":
-                            currentDir_when_exception_occurs = os.getcwd()
-                            before, after = test.rsplit('.', 1)
-                            test_with_hash = f"{before}#{after}"
-                            log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+".txt"
-                            print("log file name=", log_file)
-                            if has_errors_or_failures(log_file):
-                                print("Found Errors: 1 or Failures: 1")
+                    first_failed = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                    if not first_failed:
+                        print("First run: no failure; skipping additional runs.")
+                        print("Only 0/1 runs failed. Not considering as valid failure.")
+                    else:
+                       # First run failed → run 4 more times (total 5)
+                        failure_count = 1
+                        for run_id in range(1, 5):
+                            if run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
                                 failure_count += 1
-                                #return line, str(retry_count)+"_"+str(idx), "Failure found."
-                            else:
-                                print("No Errors: 1 or Failures: 1")
-
-                    if failure_count >= 3:
-                        print(f"Failure found in {failure_count}/5 runs.")
-                        return line, f"{retry_count}_{idx}", "Failure found."
-
-                    print(f"Only {failure_count}/5 runs failed. Not considering as valid failure.")
-
-
+                        if failure_count >=3:
+                            print(f"Failure found in {failure_count}/5 runs.")
+                            return line, f"{retry_count}_{idx}", "Failure found."
+                        else:
+                            print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
                 else:
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
@@ -525,10 +536,13 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
         #openai.api_key = "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"
-        openai.api_key = "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"
-    else:
-        print('model name not correct')
-        exit()
+        #openai.api_key = "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"
+        #openai.api_key = "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"
+        #openai.api_key = "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"
+        openai.api_key = os.environ["OPENAI_API_KEY"]
+    #else:
+    #    print('model name not correct')
+    #    exit()
     execution_time = time.time()
     print("Start time of the experiment", execution_time)
     #no_splits = 10 # For FlakiCat=4, IDOFT=10
@@ -564,31 +578,19 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     df_with_cluster = clustering_methods(method_df)
     print("***************")
     df_with_cluster.to_csv("M.csv", index=False)
-    print(df_with_cluster)
-
-    #exit()
-    #ranked_df = rank_methods_by_similarity(test_df, df_with_cluster)
-    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codebert")
-    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "bigbird")
-    #ranked_df_codet5 = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "codet5")
-    ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, failure_log_df, "gpt2")
-    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "llama")
-    #ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, "qwen")
-
-    ## Now scan GPT-2’s top list first for common entries:
-    #ranked_df = top_n_common_scan_second_first(
-    #    ranked_df_codet5,
-    #    ranked_df_gpt2,
-    #    key_col="Body",
-    #    n=20
-    #)
+    #print(df_with_cluster)
+    embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
+    csv_that_saved_embedding = "metadata/embedings/"+test+"_"+embed_model_name+"_embeddings.csv"
+    embedding_required_to_generate =  False
+    if embedding_required_to_generate:
+        ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, failure_log_df, embed_model_name)
+        print(ranked_df)
+        ranked_df.to_csv(csv_that_saved_embedding, index=False)
+    else:
+        print("loading embedding", csv_that_saved_embedding)
+        ranked_df = pd.read_csv(csv_that_saved_embedding)
+        print(ranked_df)
     
-    #print(common_top10)
-
-    ranked_df.to_csv("metadata/embedings/"+test+"_codebert_embeddings.csv", index=False)
-    #print(ranked_df.head(2))
-    #print("ranked_df columns=", ranked_df.columns)
-    # Compute line span from LineRange column (e.g., "38-43" → 6 lines)
     ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
         lambda x: int(x.split("-")[1]) - int(x.split("-")[0]) + 1 if "-" in x else 0
     )
@@ -597,13 +599,16 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
     ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)
     #ranked_df["SimilarityFloat"] = ranked_df["similarity"].astype(float)
-    ranked_df["SimilarityFloat"] = ranked_df["combined_sim"].astype(float)
-    threshold = ranked_df["SimilarityFloat"].quantile(0.90)
-    print("threshold=", threshold) 
+    #ranked_df["SimilarityFloat"] = ranked_df["combined_sim"].astype(float)
+    #threshold = ranked_df["SimilarityFloat"].quantile(0.90)
+    #print("threshold=", threshold) 
     # Filter by LineSpan < 30, then get top 20
-    depth_filtered_df = ranked_df[ #(ranked_df["LineSpan"] <= 30) & 
-                                  (ranked_df["HasBody"]) &  (ranked_df["CoverageFloat"] >= 90.0) & (ranked_df["SimilarityFloat"] > threshold) & 
-                                  (~ranked_df["IsSynchronized"])] #.head(30)
+    #depth_filtered_df = ranked_df[ #(ranked_df["LineSpan"] <= 30) & 
+    #                              (ranked_df["HasBody"]) &  (ranked_df["CoverageFloat"] >= 90.0) & (ranked_df["SimilarityFloat"] > threshold) & 
+    #                              (~ranked_df["IsSynchronized"])] #.head(30)
+    depth_filtered_df = ranked_df.head(10) #Collecting 10 methods from the top
+    print(len(depth_filtered_df))
+    #exit()
 
     with open("metadata/meta_data.csv", mode="a", newline="") as f:
         print("I AM from metadata")
@@ -628,6 +633,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         #model_name, tokenizer, auto_model = llama3_8b_model_define()
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
+
+        del auto_model
+        torch.cuda.empty_cache()
     elif ml_technique == "deep_seek_coder":
         #model_name, tokenizer, auto_model = deep_seek_coder_model_define()
         with torch.no_grad():
@@ -636,12 +644,17 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
             line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     else:
-        print('no model name found')
+        print('no model name found=',ml_technique)
+        line_to_inject_delay = "Embedding-Only"
+        cot_count = "Embedding-Only"
+        test_output = "Embedding-Only"
 
-    if ml_technique != "gpt":
-        print("delete model")
-        del auto_model
-        torch.cuda.empty_cache()
+    #if ml_technique != "gpt" or ml_technique != " embeddingOnly":
+    #    print(ml_technique)
+    #    print("delete model")
+    #    del auto_model
+    #    torch.cuda.empty_cache()
+    #    exit()
 
     return line_to_inject_delay, cot_count, test_output 
     #return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
@@ -655,7 +668,7 @@ def initialize_environment(seed_value):
 def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, seconds): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
-    file_path = "results/gpt.csv"
+    file_path = "results/tdrepro.csv"
     write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)

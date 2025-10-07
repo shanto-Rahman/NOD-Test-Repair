@@ -78,7 +78,7 @@ run_id = 0
 input_csv="../data/all_82_tests.csv"
 #input_csv="../data/l.csv"
 #input_csv="l"
-model_name = "gpt2"
+model_name = "tf-idf"#"gpt2"
 output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
 output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 

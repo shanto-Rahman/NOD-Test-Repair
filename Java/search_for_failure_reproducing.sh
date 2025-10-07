@@ -1,4 +1,5 @@
 #!/bin/bash
+#rm -rf ~/.m2/repository/info/archinnov/*
 if [[ $1 == "" || $2 == "" ]]; then
     echo "arg1 - full path to the test file (eg. tmp.csv)"
     echo "arg2 - relative path to the output file (eg. Result/output.csv)"
@@ -56,6 +57,9 @@ while read line
         #python3 generating_reproducing_script.py traces/${filename}_executed_with_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
         #python3 generating_reproducing_script.py traces/${filename}_executed_with_static_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
         echo "python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot" "$2"
-        python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
+        #exit
+        #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "embeddingOnly" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
+        python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
+        #python3 barebone_llm.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
 
     done < $1

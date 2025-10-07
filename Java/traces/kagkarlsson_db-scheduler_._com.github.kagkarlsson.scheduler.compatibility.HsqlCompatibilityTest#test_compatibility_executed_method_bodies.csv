@@ -92,10 +92,10 @@ com.github.kagkarlsson.scheduler.task.Task,getName,()Ljava/lang/String;,1,1,100.
 com.github.kagkarlsson.scheduler.task.Task,instance,(Ljava/lang/String;)Lcom/github/kagkarlsson/scheduler/task/TaskInstance;,1,1,100.0%,"public TaskInstance<T> instance(String id) {
 		return new TaskInstance<>(this.name, id);
 	}",39-41
-com.github.kagkarlsson.scheduler.task.Execution,<init>,(Ljava/time/Instant;Lcom/github/kagkarlsson/scheduler/task/TaskInstance;)V,2,2,100.0%,"public Execution(Instant executionTime, TaskInstance taskInstance) {
+com.github.kagkarlsson.scheduler.task.Execution,<init>,(Ljava/time/Instant;Lcom/github/kagkarlsson/scheduler/task/TaskInstance;ZLjava/lang/String;Ljava/time/Instant;Ljava/time/Instant;ILjava/time/Instant;J)V,11,11,100.0%,"public Execution(Instant executionTime, TaskInstance taskInstance) {
 		this(executionTime, taskInstance, false, null, null, null, 0, null, 1L);
 	}",33-35
-com.github.kagkarlsson.scheduler.task.Execution,<init>,(Ljava/time/Instant;Lcom/github/kagkarlsson/scheduler/task/TaskInstance;ZLjava/lang/String;Ljava/time/Instant;Ljava/time/Instant;ILjava/time/Instant;J)V,11,11,100.0%,"public Execution(Instant executionTime, TaskInstance taskInstance) {
+com.github.kagkarlsson.scheduler.task.Execution,<init>,(Ljava/time/Instant;Lcom/github/kagkarlsson/scheduler/task/TaskInstance;)V,2,2,100.0%,"public Execution(Instant executionTime, TaskInstance taskInstance) {
 		this(executionTime, taskInstance, false, null, null, null, 0, null, 1L);
 	}",33-35
 com.github.kagkarlsson.scheduler.task.Execution,isPicked,()Z,1,1,100.0%,"public boolean isPicked() {
@@ -125,10 +125,10 @@ com.github.kagkarlsson.scheduler.task.CompletionHandler$OnCompleteReschedule,com
 com.github.kagkarlsson.scheduler.task.CompletionHandler$OnCompleteReschedule,<init>,(Lcom/github/kagkarlsson/scheduler/task/schedule/Schedule;)V,3,3,100.0%,"public OnCompleteReschedule(Schedule schedule) {
 			this.schedule = schedule;
 		}",42-44
-com.github.kagkarlsson.scheduler.task.helper.OneTimeTask,<init>,(Ljava/lang/String;Ljava/lang/Class;Lcom/github/kagkarlsson/scheduler/task/FailureHandler;Lcom/github/kagkarlsson/scheduler/task/DeadExecutionHandler;)V,2,2,100.0%,"public OneTimeTask(String name, Class<T> dataClass) {
+com.github.kagkarlsson.scheduler.task.helper.OneTimeTask,<init>,(Ljava/lang/String;Ljava/lang/Class;)V,2,2,100.0%,"public OneTimeTask(String name, Class<T> dataClass) {
         this(name, dataClass, new OnFailureRetryLater<>(Duration.ofMinutes(5)), new ReviveDeadExecution<>());
     }",27-29
-com.github.kagkarlsson.scheduler.task.helper.OneTimeTask,<init>,(Ljava/lang/String;Ljava/lang/Class;)V,2,2,100.0%,"public OneTimeTask(String name, Class<T> dataClass) {
+com.github.kagkarlsson.scheduler.task.helper.OneTimeTask,<init>,(Ljava/lang/String;Ljava/lang/Class;Lcom/github/kagkarlsson/scheduler/task/FailureHandler;Lcom/github/kagkarlsson/scheduler/task/DeadExecutionHandler;)V,2,2,100.0%,"public OneTimeTask(String name, Class<T> dataClass) {
         this(name, dataClass, new OnFailureRetryLater<>(Duration.ofMinutes(5)), new ReviveDeadExecution<>());
     }",27-29
 com.github.kagkarlsson.scheduler.task.helper.OneTimeTask,execute,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;Lcom/github/kagkarlsson/scheduler/task/ExecutionContext;)Lcom/github/kagkarlsson/scheduler/task/CompletionHandler;,2,2,100.0%,"@Override
@@ -215,11 +215,11 @@ com.github.kagkarlsson.scheduler.JdbcTaskRepository$ExecutionResultSetConsumer,m
 			this.delegate.map(resultSet);
 			return this.executions;
 		}",322-326
-com.github.kagkarlsson.scheduler.Scheduler,<init>,(Lcom/github/kagkarlsson/scheduler/Clock;Lcom/github/kagkarlsson/scheduler/TaskRepository;Lcom/github/kagkarlsson/scheduler/TaskResolver;ILcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Waiter;Ljava/time/Duration;ZLcom/github/kagkarlsson/scheduler/StatsRegistry;Ljava/util/List;)V,2,2,100.0%,"Scheduler(Clock clock, TaskRepository taskRepository, TaskResolver taskResolver, int maxThreads, SchedulerName schedulerName,
+com.github.kagkarlsson.scheduler.Scheduler,<init>,(Lcom/github/kagkarlsson/scheduler/Clock;Lcom/github/kagkarlsson/scheduler/TaskRepository;Lcom/github/kagkarlsson/scheduler/TaskResolver;ILjava/util/concurrent/ExecutorService;Lcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Waiter;Ljava/time/Duration;ZLcom/github/kagkarlsson/scheduler/StatsRegistry;Ljava/util/List;)V,21,21,100.0%,"Scheduler(Clock clock, TaskRepository taskRepository, TaskResolver taskResolver, int maxThreads, SchedulerName schedulerName,
 			  Waiter executeDueWaiter, Duration updateHeartbeatWaiter, boolean enableImmediateExecution, StatsRegistry statsRegistry, List<OnStartup> onStartup) {
 		this(clock, taskRepository, taskResolver, maxThreads, defaultExecutorService(maxThreads), schedulerName, executeDueWaiter, updateHeartbeatWaiter, enableImmediateExecution, statsRegistry, onStartup);
 	}",60-63
-com.github.kagkarlsson.scheduler.Scheduler,<init>,(Lcom/github/kagkarlsson/scheduler/Clock;Lcom/github/kagkarlsson/scheduler/TaskRepository;Lcom/github/kagkarlsson/scheduler/TaskResolver;ILjava/util/concurrent/ExecutorService;Lcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Waiter;Ljava/time/Duration;ZLcom/github/kagkarlsson/scheduler/StatsRegistry;Ljava/util/List;)V,21,21,100.0%,"Scheduler(Clock clock, TaskRepository taskRepository, TaskResolver taskResolver, int maxThreads, SchedulerName schedulerName,
+com.github.kagkarlsson.scheduler.Scheduler,<init>,(Lcom/github/kagkarlsson/scheduler/Clock;Lcom/github/kagkarlsson/scheduler/TaskRepository;Lcom/github/kagkarlsson/scheduler/TaskResolver;ILcom/github/kagkarlsson/scheduler/SchedulerName;Lcom/github/kagkarlsson/scheduler/Waiter;Ljava/time/Duration;ZLcom/github/kagkarlsson/scheduler/StatsRegistry;Ljava/util/List;)V,2,2,100.0%,"Scheduler(Clock clock, TaskRepository taskRepository, TaskResolver taskResolver, int maxThreads, SchedulerName schedulerName,
 			  Waiter executeDueWaiter, Duration updateHeartbeatWaiter, boolean enableImmediateExecution, StatsRegistry statsRegistry, List<OnStartup> onStartup) {
 		this(clock, taskRepository, taskResolver, maxThreads, defaultExecutorService(maxThreads), schedulerName, executeDueWaiter, updateHeartbeatWaiter, enableImmediateExecution, statsRegistry, onStartup);
 	}",60-63
@@ -658,7 +658,7 @@ com.github.kagkarlsson.scheduler.JdbcTaskRepository,getOldExecutions,(Ljava/time
 				new ExecutionResultSetMapper()
 		);
 	}",241-251
-com.github.kagkarlsson.scheduler.JdbcTaskRepository,updateHeartbeat,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)V,5,7,71.4%,"@Override
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,updateHeartbeat,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)V,6,7,85.7%,"@Override
 	public void updateHeartbeat(Execution e, Instant newHeartbeat) {
 
 		final int updated = jdbcRunner.execute(
@@ -682,10 +682,10 @@ com.github.kagkarlsson.scheduler.JdbcTaskRepository,updateHeartbeat,(Lcom/github
 			LOG.debug(""Updated heartbeat for execution: "" + e);
 		}
 	}",253-276
-com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;)Ljava/util/Optional;,1,1,100.0%,"public Optional<Execution> getExecution(TaskInstance taskInstance) {
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Ljava/lang/String;Ljava/lang/String;)Ljava/util/Optional;,3,4,75.0%,"public Optional<Execution> getExecution(TaskInstance taskInstance) {
 		return getExecution(taskInstance.getTaskName(), taskInstance.getId());
 	}",291-293
-com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Ljava/lang/String;Ljava/lang/String;)Ljava/util/Optional;,3,4,75.0%,"public Optional<Execution> getExecution(TaskInstance taskInstance) {
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;)Ljava/util/Optional;,1,1,100.0%,"public Optional<Execution> getExecution(TaskInstance taskInstance) {
 		return getExecution(taskInstance.getTaskName(), taskInstance.getId());
 	}",291-293
 com.github.kagkarlsson.scheduler.JdbcTaskRepository,memoize,(Ljava/util/function/Supplier;)Ljava/util/function/Supplier;,1,1,100.0%,"private static <T> Supplier<T> memoize(Supplier<T> original) {

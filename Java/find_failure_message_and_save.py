@@ -16,10 +16,12 @@ def main():
     else:
         output_csv = f"logs/{id_arg}_{module_with_dot}_{testName}_stacktrace.csv"
 
-    #print("output_csv=", output_csv)
+    print("output_csv=", output_csv)
+    print("fail_log_filename=", fail_log_filename)
     # Load the CSV
     try:
         df = pd.read_csv(fail_log_filename)
+        #print("df=", df)
     except Exception as e:
         print(f"[ERROR] Failed to load CSV: {e}")
         sys.exit(1)

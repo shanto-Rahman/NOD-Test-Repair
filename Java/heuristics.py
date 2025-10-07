@@ -9,6 +9,52 @@ from transformers import BigBirdModel
 from transformers import T5Tokenizer, T5EncoderModel
 from transformers import LlamaTokenizer, LlamaModel
 
+from typing import List, Optional
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from scipy.sparse import csr_matrix
+
+# --- global store so the getter matches your signature ---
+TFIDF_VECTORIZER: Optional[TfidfVectorizer] = None
+
+def init_tfidf_vectorizer(corpus: List[str],
+                          ngram_range=(1,2),
+                          max_features: Optional[int]=None,
+                          lowercase: bool=False,
+                          token_pattern: str=r"(?u)\b\w+\b") -> TfidfVectorizer:
+    """
+    Fit a TF-IDF vectorizer on the given corpus and keep it available globally.
+    Call this ONCE before using get_tf_idf_embeddings().
+    """
+    global TFIDF_VECTORIZER
+    vec = TfidfVectorizer(
+        ngram_range=ngram_range,
+        max_features=max_features,
+        lowercase=lowercase,        # keep case for code by default
+        token_pattern=token_pattern # preserves identifiers_like_this
+    )
+    vec.fit(corpus)
+    TFIDF_VECTORIZER = vec
+    return vec
+
+def get_tf_idf_embeddings(text: str,
+                          tokenizer=None,
+                          model=None,
+                          device=None,
+                          *,
+                          dense: bool=True):
+    """
+    Return the TF-IDF vector for `text` using the globally inited vectorizer.
+    Signature mirrors your other get_*_embeddings; tokenizer/model/device are ignored.
+    """
+    if TFIDF_VECTORIZER is None:
+        raise RuntimeError("TFIDF_VECTORIZER is not initialized. Call init_tfidf_vectorizer(corpus) first.")
+    vec = TFIDF_VECTORIZER.transform([text])   # shape [1, D] (sparse)
+    if dense:
+        return vec.toarray().astype(np.float32)  # numpy array [1, D]
+    return vec                                    # sparse csr_matrix [1, D]
+
+
 #def qwen_model_define():
 #    model_name = "Qwen/Qwen-7B"
 #    tokenizer  = AutoTokenizer.from_pretrained(
@@ -351,10 +397,11 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, fail_log_df, ll
         model_name, tokenizer, model = qwen_model_define()
 
     # Generate embeddings
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
-    model.eval()
-    
+    if llm != "tf-idf":
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = model.to(device)
+        model.eval()
+        
     # Get code snippets
     test_code = test_df.iloc[0]['test_code']
     method_bodies = method_df['Body'].tolist()
@@ -394,6 +441,17 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, fail_log_df, ll
         test_embedding   = get_qwen_embeddings(test_code, tokenizer, model, device)
         log_embedding = get_qwen_embeddings(fail_log, tokenizer, model, device)
         method_embeddings = [get_qwen_embeddings(body, tokenizer, model, device) for body in method_bodies]
+
+    elif llm == "tf-idf":
+        corpus = [test_code, fail_log] + method_bodies
+        init_tfidf_vectorizer(corpus)  # fit once
+        
+        # Now you can call with the same signature pattern as others:
+        test_embedding   = get_tf_idf_embeddings(test_code, tokenizer=None, model=None, device=None)
+        log_embedding    = get_tf_idf_embeddings(fail_log,  tokenizer=None, model=None, device=None)
+        method_embeddings = [get_tf_idf_embeddings(b, None, None, None) for b in method_bodies]
+
+
     
     '''# Compute cosine similarity
     similarities = [cosine_similarity(test_embedding, method_embedding).item() for method_embedding in method_embeddings]
