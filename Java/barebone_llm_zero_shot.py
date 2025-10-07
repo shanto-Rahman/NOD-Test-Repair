@@ -87,8 +87,8 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
     while retry_count < max_retries:
         try:
             response = openai.ChatCompletion.create(
-                #model="gpt-4o-mini",
-                model="gpt-4o",
+                model="gpt-4o-mini",
+                #model="gpt-4o",
                 messages=messages,
                 temperature=0.2,
                 max_tokens=max_tokens
@@ -342,11 +342,11 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         ranked_df = pd.read_csv(csv_that_saved_embedding)
         print(ranked_df)'''
     
-    df = pd.read_csv(csv_that_contains_all_methods)
+    depth_filtered_df = pd.read_csv(csv_that_contains_all_methods)
     #depth_filtered_df = df.head(120) # First 100 methods
-    SAMPLE_SIZE = 10
-    depth_filtered_df = df.sample(n=SAMPLE_SIZE, random_state=42).reset_index(drop=True) #Random 100 methods
-    print("len=",len(df))
+    #SAMPLE_SIZE = 500
+    #depth_filtered_df = df.head(500) #sample(n=SAMPLE_SIZE, random_state=42).reset_index(drop=True) #Random 100 methods
+    #print("len=",len(df))
     print(len(depth_filtered_df))
     #exit()
 
