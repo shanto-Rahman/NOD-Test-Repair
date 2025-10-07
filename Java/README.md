@@ -32,12 +32,18 @@ python3 analyze_result.py results/tdrepro.csv
 
 To match the failure log, run the following command
 ```shell
- bash find_failure_match.sh ../data/all_82_tests.csv "idoft"
+ bash find_failure_match.sh results/tdrepro.csv "idoft"
  ```
 To run barebone gpt model to show it's not data-leakaged, run the following command.
 ```shell
 bash s.sh ../data/all_82_tests.csv Result/
 ```
+
+For running each test 100 times to get the failure, run the following command.
+```
+ bash rq2.sh results/tdrepro.csv result/ "idoft"
+```
+
 clone the project
 
 Run the test, collect the failure. So collecting the failure, we might need to run flakesync.
