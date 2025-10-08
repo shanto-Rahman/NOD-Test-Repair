@@ -44,6 +44,13 @@ For running each test 100 times to get the failure, run the following command.
  bash rq2.sh results/tdrepro.csv result/ "idoft"
 ```
 
+To run the script for parsing the ranking methods by sequentially injecting delay before each line, run the following command.
+
+```
+cd results
+python3 embedding_parse.py output_found_failures_gpt2_embedding.csv 
+```
+
 clone the project
 
 Run the test, collect the failure. So collecting the failure, we might need to run flakesync.
