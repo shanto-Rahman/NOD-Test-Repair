@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #bash re-run_baseline.sh ../data/talank_with_test_id_idoft.csv results
 if [[ $1 == "" || $2 == "" || $3 == "" ]]; then
-    echo "arg1 - full path to the test file (eg. tmp.csv)"
-    echo "arg2 - relative path to the output file (eg. results)"
-    echo "arg3- test-type(idoft/flakerake)"
+    echo "arg1 - full path to the test file (eg. tmp.csv)" #tdrepro.csv
+    echo "arg2 - relative path to the output file (eg. results)" #result
+    echo "arg3- test-type(idoft/flakerake)" #"idoft"
     exit
 fi
 
@@ -88,33 +88,33 @@ while IFS= read -r line
     rootProj=$(echo "$slug" | cut -d/ -f 1)
     subProj=$(echo "$slug" | cut -d/ -f 2)
     
-    	JMVNOPTIONS=""
-    if [[ "$slug" == "doanduyhai/Achilles" ]]; then
-        sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml
-        sed -i '/<plugin>/,/<\/plugin>/ {
-         /<groupId>org.apache.felix<\/groupId>/ {
-           N
-           /<artifactId>maven-bundle-plugin<\/artifactId>/ {
-             a\
-             <version>${felix.version}</version>
-           }
-         }
-       }' pom.xml
+    JMVNOPTIONS=""
+    #if [[ "$slug" == "doanduyhai/Achilles" ]]; then
+    #    sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml
+    #    sed -i '/<plugin>/,/<\/plugin>/ {
+    #     /<groupId>org.apache.felix<\/groupId>/ {
+    #       N
+    #       /<artifactId>maven-bundle-plugin<\/artifactId>/ {
+    #         a\
+    #         <version>${felix.version}</version>
+    #       }
+    #     }
+    #   }' pom.xml
 
-    elif [[ $slug == "apache/dubbo" ]]; then
-        JMVNOPTIONS="-pl dubbo-dependencies-bom"
+    #elif [[ $slug == "apache/dubbo" ]]; then
+    #    JMVNOPTIONS="-pl dubbo-dependencies-bom"
 
-    elif [[ $slug == "apache/httpcore" ]]; then
-       sed -i '/<build>/,/<\/build>/ {
-       /<plugins>/a\
-         <plugin>\n\
-           <groupId>org.apache.maven.plugins</groupId>\n\
-           <artifactId>maven-surefire-plugin</artifactId>\n\
-           <version>2.22.1</version>\n\
-         </plugin>
-     }' pom.xml
+    #elif [[ $slug == "apache/httpcore" ]]; then
+    #   sed -i '/<build>/,/<\/build>/ {
+    #   /<plugins>/a\
+    #     <plugin>\n\
+    #       <groupId>org.apache.maven.plugins</groupId>\n\
+    #       <artifactId>maven-surefire-plugin</artifactId>\n\
+    #       <version>2.22.1</version>\n\
+    #     </plugin>
+    # }' pom.xml
  
-    fi  
+    #fi  
     echo -n "${slug},${sha},${module},${testName}," >> "$currentDir/$outputDir/RQ2-Result.csv"
     
     if [[ $module != "." ]]; then
@@ -144,14 +144,14 @@ while IFS= read -r line
 
     module_with_dot=${module//\//.}
     proj_name_only=$(echo $slug | cut -d'/' -f2)
-    python3 find_failure_message_and_save.py "ID" "$slug" "$sha" "$module" "$testName_with_hash" "$log_search_csv" "$module_with_dot" "$proj_name_only"
-    #id_arg, slug, sha, module_org, testName= ID  fa3909c391195178ccf5a92d4ac342a30ae247c8 . org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario0
+    #python3 find_failure_message_and_save.py "RQ2" "$slug" "$sha" "$module" "$testName_with_hash" "$log_search_csv" "$module_with_dot" "$proj_name_only"
+    ##id_arg, slug, sha, module_org, testName= ID  fa3909c391195178ccf5a92d4ac342a30ae247c8 . org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario0
 
-    if [[ $module == "." ]]; then
-        fail_log_csv_name="$currentDir/logs/ID_${proj_name_only}_${testName_with_hash}_stacktrace.csv"
-    else
-        fail_log_csv_name="$currentDir/logs/ID_${module_with_dot}_${testName_with_hash}_stacktrace.csv"
-    fi
+    #if [[ $module == "." ]]; then
+    #    fail_log_csv_name="$currentDir/logs/RQ2_${proj_name_only}_${testName_with_hash}_stacktrace.csv"
+    #else
+    #    fail_log_csv_name="$currentDir/logs/RQ2_${module_with_dot}_${testName_with_hash}_stacktrace.csv"
+    #fi
     cd -
     mvn clean install -pl $module -am -DskipTests
     start=$(date +%s.%N)
@@ -162,17 +162,17 @@ while IFS= read -r line
 
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
-            result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
-            result=$(echo "$result" | xargs)  # removes leading/trailing whitespace
-            echo "$result"
-            if [[ "$result" == "MisMatched" ]] ; then
-                echo "$fail_log_csv_name"
-                echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv"
-                echo "MisMatched Failure found."
-            elif [[ "$result" == "Matched" ]] ; then
-                echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
-                echo "$result Failure found."
-            fi
+            #result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
+            #result=$(echo "$result" | xargs)  # removes leading/trailing whitespace
+            #echo "$result"
+            #if [[ "$result" == "MisMatched" ]] ; then
+            #    echo "$fail_log_csv_name"
+            #    echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv"
+            #    echo "MisMatched Failure found."
+            #elif [[ "$result" == "Matched" ]] ; then
+            echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
+            echo "$result Failure found."
+            #fi
         else
             echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv" #No fail
             echo "Failure not found."
@@ -182,8 +182,6 @@ while IFS= read -r line
     take=$(echo "scale=2; ${end} - ${start}" | bc)
     take=$(echo $take | awk '{printf("%.2f\n", $1) }')
     echo ",$take" >> "$currentDir/$outputDir/RQ2-Result.csv"
-
-    #git checkout -- '**/*.java'
-    git stash
-
+    git checkout -- '**/*.java'
+    #git stash
 done < $1

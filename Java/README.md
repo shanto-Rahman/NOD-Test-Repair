@@ -36,7 +36,7 @@ To match the failure log, run the following command
  ```
 To run barebone gpt model to show it's not data-leakaged, run the following command.
 ```shell
-bash s.sh ../data/all_82_tests.csv Result/
+bash s.sh ../data/all_82_tests.csv "idoft"
 ```
 
 For running each test 100 times to get the failure, run the following command.
