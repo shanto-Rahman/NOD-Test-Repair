@@ -18,8 +18,15 @@ id=$4
 #JMVNOPTIONS="-Dcassandra.start_native_transport=false \
 #             -Dsigar.sigar_enabled=false"
 JMVNOPTIONS=""
+if [[ $slug == "apache/dubbo" ]]; then
+    JMVNOPTIONS="-pl dubbo-dependencies-bom"
+fi
 cd $inputProj/$slug
-mvn clean install -pl $module  -am -DskipTests
+if [[ $slug == "javadelight/delight-nashorn-sandbox" ]]; then
+    mvn -Dmaven.javadoc.skip=true clean install -pl $module  -am -DskipTests
+else
+    mvn clean install -pl $module  -am -DskipTests
+fi
 timeout 10m mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName -Dcheckstyle.skip=true >  "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt" 2>/dev/null
 bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$currentDir/logs-to-reproduce/$testName-con-after-changedCode-$id.txt")
 if [[ $bugCount -gt 0  ]]; then
