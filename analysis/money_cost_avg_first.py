@@ -57,13 +57,13 @@ rerun_costs = []
 
 for N in N_vals:
     # TDRepro
-    exp_runs_td = N / td_failure_rate if td_failure_rate > 0 else float('inf')
+    exp_runs_td = N / td_failure_rate
     exp_time_td = average_time_td_find + exp_runs_td * td_time_per_run
     exp_money_td = td_prompt_cost + exp_time_td * machine_cost_per_second
     td_costs.append(exp_money_td)
 
     # Rerun
-    exp_runs_rerun = N / rerun_failure_rate if rerun_failure_rate > 0 else float('inf')
+    exp_runs_rerun = N / rerun_failure_rate
     exp_time_rerun = exp_runs_rerun * rerun_time_per_run
     exp_money_rerun = exp_time_rerun * machine_cost_per_second
     rerun_costs.append(exp_money_rerun)
