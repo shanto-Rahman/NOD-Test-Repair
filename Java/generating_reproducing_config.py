@@ -27,6 +27,7 @@ from langchain.memory import ChatMessageHistory
 from helper import get_line_range, find_api_match_with_flakerake
 from modify_java_file import inject_sleep_before_line
 from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
+from token_processing import count_prompt_tokens
 
 #login(token="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")
 def hf_login_once():
@@ -184,6 +185,15 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
             print("No Errors: 1 or Failures: 1")
             return False
 
+def append_token_row(csv_path, slug, module, test, token_count):
+    p = Path(csv_path)
+    is_new = not p.exists()
+    with p.open("a", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if is_new:
+            w.writerow(["slug", "module", "test", "token_count"])
+        w.writerow([slug, module, test, token_count])
+
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 5
     tried_methods = set()
@@ -214,6 +224,12 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
     ]
+    prompt_tokens = count_prompt_tokens(messages, model="gpt-4o")
+    #print()
+    # save token count
+    #if token_csv_path is None:
+    token_csv_path = str(Path("results") / "prompt_token_counts.csv")
+    append_token_row(token_csv_path, slug, module, test, prompt_tokens)
     while retry_count < max_retries:
         #print("messages=", messages)
         response = gpt_score_finder(messages)
