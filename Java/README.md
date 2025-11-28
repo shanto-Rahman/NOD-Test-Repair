@@ -85,3 +85,11 @@ pip install torch
 # For Requirements
 
 ```python -m pip list --not-required --format=freeze > requirements.txt```
+
+# For Fixing TD Tests
+currently, we have the script to create prompt to find the fix. Run the following command:
+```bash
+bash search_for_patch.sh ../data/<test.csv> "idoft"
+```
+
+the `<test.csv>` has the header: `#ID,slug,sha,module,test`. We already have data in the required format in any of our data files, for example: `data/talank_with_test_id_idoft.csv`. Just mae sure the header line is approproate.

@@ -61,10 +61,3 @@ For getting the flaky-test category, run the following command:
 ```
 python3 llama3_8b_categorization.py data/extracted_tests.csv  "llama" "category_prediction" "NA"
 ```
-
-
-TALANK TODO:
-1. create a copy of the /home/tbaral/research/llm_flaky_tests/NOD-Test-Repair/Java/generating_reproducing_config.py 
-create generate_path.py
-2. This will generate a new prompt to find the patch with all the information we used for finding the reproduction script, plus the reproduction script to actually find the patch
-3. run the script search_for_patch.sh
