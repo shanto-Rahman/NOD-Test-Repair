@@ -28,6 +28,17 @@ from helper import get_line_range, find_api_match_with_flakerake
 from modify_java_file import inject_sleep_before_line
 from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
 from token_processing import count_prompt_tokens
+#import google.generativeai as genai
+#import os
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key=os.environ["GEMINI_API_KEY"],
+    http_options=types.HttpOptions(api_version="v1"),
+)
+#for m in client.models.list():
+#    print(m.name)
 
 #login(token="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")
 def hf_login_once():
@@ -36,6 +47,51 @@ def hf_login_once():
     token = os.environ["HUGGINGFACE_HUB_TOKEN"]
     login(token=token, add_to_git_credential=True)  # runs once, caches
     os.environ["HF_ALREADY_LOGGED_IN"] = "1"
+
+def extract_gemini_text(response):
+    if response is None:
+        print("DEBUG: response is None")
+        return ""
+
+    # Print raw structure so we see what's inside
+    print("DEBUG: raw response object:", repr(response))
+    candidates = getattr(response, "candidates", None)
+    print("DEBUG: candidates:", candidates)
+
+    # Try the usual path: first candidate → first part → text
+    try:
+        if candidates:
+            first_cand = candidates[0]
+            print("DEBUG: first candidate:", first_cand)
+            content = getattr(first_cand, "content", None)
+            print("DEBUG: content:", content)
+            parts = getattr(content, "parts", None) if content else None
+            print("DEBUG: parts:", parts)
+
+            if parts:
+                first_part = parts[0]
+                print("DEBUG: first_part:", first_part)
+
+                # object-style: part.text
+                if hasattr(first_part, "text"):
+                    print("DEBUG: first_part.text:", first_part.text)
+                    return (first_part.text or "").strip()
+
+                # dict-style: {"text": "..."}
+                if isinstance(first_part, dict) and "text" in first_part:
+                    print("DEBUG: first_part['text']:", first_part["text"])
+                    return (first_part["text"] or "").strip()
+
+        # Fallback: try response.text if SDK exposes it
+        t = getattr(response, "text", None)
+        print("DEBUG: fallback response.text:", t)
+        if isinstance(t, str):
+            return t.strip()
+
+    except Exception as e:
+        print("DEBUG: Error while extracting text:", e)
+
+    return ""
 
 
 def has_errors_or_failures(path):
@@ -66,6 +122,62 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
         .reset_index()            # turn the index back into a column
     )
     return common_df
+
+def gemini_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=10):
+    retry_count = 0
+    #response = client.models.generate_content(
+    #model="gemini-2.5-flash",   # ✅ use one of the listed models
+    #contents="USER: Hello Gemini!",
+    #config=types.GenerateContentConfig(
+    #    temperature=0.2,
+    #    max_output_tokens=50,
+    #    ),
+    #)
+
+    #print(response.text)
+    #exit()
+
+    #converted_messages = [
+    #    {"role": m["role"], "parts": [m["content"]]}
+    #    for m in messages
+    #]
+    prompt = "\n".join(
+              f"{m.get('role', 'user').upper()}: {m.get('content', '')}"
+              for m in messages
+          )
+    print("prompt=",prompt)
+    print("END of Prompt***")
+    while retry_count < max_retries:
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt, #converted_messages,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    max_output_tokens=7000,
+                ),
+            )
+            response_content = extract_gemini_text(response)
+            print("RESPONSE ========")
+            print(response_content)
+            time.sleep(sleep_on_success)
+            return response_content
+
+        except Exception as e:
+            # Gemini doesn't differentiate APIError subclasses the same way as OpenAI
+            err_msg = str(e)
+            if "500" in err_msg or "503" in err_msg or "unavailable" in err_msg.lower():
+                wait_time = initial_wait * (2 ** retry_count)
+                print(f"Server error. Retrying in {wait_time} seconds.")
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                print(f"API error: {err_msg}")
+                raise
+
+    print("Max retries reached. Returning None.")
+    return None
+
 
 def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
     retry_count = 0
@@ -194,44 +306,119 @@ def append_token_row(csv_path, slug, module, test, token_count):
             w.writerow(["slug", "module", "test", "token_count"])
         w.writerow([slug, module, test, token_count])
 
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
+
+def gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 5
     tried_methods = set()
 
-    #call a method to check if any api call happened which is the same as api found by flakerake paper
-    #../data/flakerake-timing-related-apis.txt
-    #find_api_match_with_flakerake(filtered_df, "../data/flakerake-timing-related-apis.txt") 
-    #exit()
-    #print("filtered_df=", filtered_df.head(2))
-    #print("filtered_df columns=", filtered_df.columns)
-
-    '''all_clusters = sorted(filtered_df["Cluster"].unique())
-    for cluster_id in {1..1}:
-        print(f"\nTrying Cluster {cluster_id}")
-        cluster_df = filtered_df[filtered_df["Cluster"] == cluster_id].head(10)
-
-        #Making code_under_test_meths with the Class
-        code_under_test_meths = "\n\n".join(
-        f"// Class: {row['Class']}, Method: {row['Method']}\n{row['Body']}"
-        for _, row in cluster_df.iterrows()
-        )'''
-
     prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
-    #print("definition=", definition)
-
     print("prompt=", prompt)
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
     ]
     prompt_tokens = count_prompt_tokens(messages, model="gpt-4o")
-    #print()
-    # save token count
-    #if token_csv_path is None:
     token_csv_path = str(Path("results") / "prompt_token_counts.csv")
     append_token_row(token_csv_path, slug, module, test, prompt_tokens)
     while retry_count < max_retries:
-        #print("messages=", messages)
+        response_content = gemini_score_finder(messages)
+        if not response_content: 
+            break
+
+        #response_content = response['choices'][0]['message']['content']
+
+        print("RESPONSE CONTENT =============================")
+        print(response_content)
+        messages.append({"role": "assistant", "content": response_content})
+
+        if "</Output>" in response_content:
+            m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+            if m:
+                meth_code = m.group(1)
+            else:
+                meth_code = "No code found" #response_content
+        else:
+            meth_code = "</Output> not found" #response_content
+        print("**meth_code=", meth_code)
+        # Suppose meth_code is your multiline string as shown above
+        for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
+            print("**** index=", idx, ",Processing line:", line)
+            line = line.strip()
+            if not line:
+                continue  # skip empty lines
+            # Example: split into parts
+            # Format: Class:Method:Descriptor:LineNumber (ActualCodeLine)
+            m = re.match(r"^(.*?):(.*?):(.*?):(\d+)\s+\((.*)\)$", line)
+            if m:
+                class_name = m.group(1)
+                method_name = m.group(2)
+                descriptor = m.group(3)
+                line_number = int(m.group(4))
+                code_line = m.group(5)
+                #print(f"Class: {class_name}, Method: {method_name}, Descriptor: {descriptor}, Line: {line_number}, Code: {code_line}")
+                class_simple_name = class_name.split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
+                class_name = class_simple_name.split('$')[0]
+                print(f"===Class name after split: {class_name}", ",line=", line_number)
+                #print("class_name, slug, module=", class_name, slug, module)
+
+                with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
+                    print("Tried lines")
+                    writer = csv.writer(f)
+                    writer.writerow([slug, module, test, class_name, line_number,code_line])
+                class_path_list = find_class_file(class_name, slug, module)
+                #print("**** class_path=", class_path)
+
+                if class_path_list:
+                    failure_count = 0
+                    first_failed = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                    if not first_failed:
+                        print("First run: no failure; skipping additional runs.")
+                        print("Only 0/1 runs failed. Not considering as valid failure.")
+                    else:
+                       # First run failed → run 4 more times (total 5)
+                        failure_count = 1
+                        for run_id in range(1, 5):
+                            if run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+                                failure_count += 1
+                        if failure_count >=3:
+                            print(f"Failure found in {failure_count}/5 runs.")
+                            return line, f"{retry_count}_{idx}", "Failure found."
+                        else:
+                            print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
+                else:
+                    print(f"[ERROR] Could not locate class source file for: {class_name}")
+            else:
+                print("Line did not match expected format:", line)
+        tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+        feedback = (
+            f"Your previous suggestion did not reproduce the failure.\n"
+            f"Here is what is already tried:\n"
+            f"Method: {method_name}\n"
+            f"Location(s):\n{meth_code}\n\n"
+            f"Please suggest a new location for delay injection in a different method, "
+            f"or a different location within a method that has not already been tried. "
+            f"Do not repeat any of the previous suggestions."
+            f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
+        )
+        messages.append({"role": "user", "content": feedback}) 
+        retry_count += 1
+        #continue
+    return "NA", str(retry_count), "Failure not found"
+
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
+    max_retries = 5
+    tried_methods = set()
+
+    prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
+    print("prompt=", prompt)
+    messages = [
+        {"role": "system", "content": definition},
+        {"role": "user",   "content": prompt}
+    ]
+    prompt_tokens = count_prompt_tokens(messages, model="gpt-4o")
+    token_csv_path = str(Path("results") / "prompt_token_counts.csv")
+    append_token_row(token_csv_path, slug, module, test, prompt_tokens)
+    while retry_count < max_retries:
         response = gpt_score_finder(messages)
 
         if not response: 
@@ -553,6 +740,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     elif ml_technique == "gpt":
         #openai.api_key = "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"
         openai.api_key = os.environ["OPENAI_API_KEY"]
+    elif ml_technique == "gemini":
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        #gemini_api_key="AIzaSyDmFFCseLDxPkgXnGsbSSjomfG2LkiQcIU"
     #else:
     #    print('model name not correct')
     #    exit()
@@ -655,6 +845,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
             line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
+            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
+    elif ml_technique == "gemini":
+            line_to_inject_delay, cot_count, test_output = gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     else:
         print('no model name found=',ml_technique)
