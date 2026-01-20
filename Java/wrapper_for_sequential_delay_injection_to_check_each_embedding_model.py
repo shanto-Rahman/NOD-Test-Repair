@@ -6,6 +6,7 @@ from typing import Optional
 from modify_java_file import inject_sleep_before_line
 import re
 import time
+import sys
 
 #def has_errors_or_failures(path):
 #    with open(path, 'r') as f:
@@ -78,8 +79,9 @@ run_id = 0
 input_csv="../data/all_82_tests.csv"
 #input_csv="../data/l.csv"
 #input_csv="l"
-model_name = "tf-idf"#"gpt2"
-output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
+model_name = "gpt2" #"llama" #"tf-idf"#"gpt2"
+cosine_weight = sys.argv[2]
+output_csv = "results/output_found_failures_"+model_name+"_"+cosine_weight+"_embedding.csv"
 output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
 def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
@@ -127,7 +129,7 @@ with open(input_csv, newline='') as inf:
         test = test_info['test']
         method_count = 0
         test_with_dot = test.replace("#", ".")
-        csv_file = "metadata/embedings/"
+        csv_file = sys.argv[1] #"metadata/embedings/"
         csv_file = csv_file + test_with_dot +"_"+model_name+ "_embeddings.csv"
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list

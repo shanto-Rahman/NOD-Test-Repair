@@ -17,7 +17,7 @@ To collect the agreement between models, we run the following command.
 
 For collecting location after adding sequential delay, run the following command.
 ```shell
-python3 wrapper_for_sequential_delay_injection_to_check_each_embedding_model.py 
+python3 wrapper_for_sequential_delay_injection_to_check_each_embedding_model.py "metadata/embedings/" "30_70"
 ```
 
 For check the nondeterminism in embeddings, we do the following experiment.
