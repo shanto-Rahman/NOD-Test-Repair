@@ -76,21 +76,22 @@ def find_source_file_with_find(repos_root: str, slug: str, class_path: str) -> O
 retry_count = 0
 run_id = 0
 
-input_csv="../data/all_82_tests.csv"
+input_csv=sys.argv[3] #"../data/all_82_tests.csv"
 #input_csv="../data/l.csv"
 #input_csv="l"
 model_name = "gpt2" #"llama" #"tf-idf"#"gpt2"
-cosine_weight = sys.argv[2]
+cosine_weight = sys.argv[2] #70_30
 output_csv = "results/output_found_failures_"+model_name+"_"+cosine_weight+"_embedding.csv"
 output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
 def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
     inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+    #exit()
     tag = f"{retry_count}_{idx}_{run_id}"
     try:
-        print("./run_test.sh", slug, module, test, tag)
+        print("./run_test.sh", slug, module, test, tag, cosine_weight)
         result_run = subprocess.run(
-            ["./run_test.sh", slug, module, test, tag],
+            ["./run_test.sh", slug, module, test, tag, cosine_weight],
             check=True, text=True, capture_output=True
         )
         out = result_run.stdout.strip()
@@ -106,7 +107,7 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
         currentDir_when_exception_occurs = os.getcwd()
         before, after = test.rsplit('.', 1)
         test_with_hash = f"{before}#{after}"
-        log_file = (currentDir_when_exception_occurs + "/logs-to-reproduce/" +
+        log_file = (currentDir_when_exception_occurs + "/logs-to-reproduce/" +cosine_weight+"/"+
                     f"{test_with_hash}-con-after-changedCode-{tag}.txt")
         print("log file name=", log_file)
         if has_errors_or_failures(log_file):
@@ -191,20 +192,20 @@ with open(input_csv, newline='') as inf:
                                 test_with_hash = f"{before}#{after}"
                                 print(f"Failure found in {failure_count}/5 runs.")
                                 currentDir_when_exception_occurs = os.getcwd()
-                                os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce/", exist_ok=True)
-                                log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
+                                os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce/"+cosine_weight+"/", exist_ok=True)
+                                log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+cosine_weight+"/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
                                 total_time_seconds = time.time() - start_time
                                 save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
                                 break
                                 #return line, f"{retry_count}_{idx}", "Failure found."
                             else:
                                 print("Only {failure_count}/5 runs failed. Not considering as valid failure.")
-                    
                 if failure_count >=3:
                     break
         if failure_count == 0:
             total_time_seconds = time.time() - start_time
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
             print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
-
+        
+        #exit()        
 
