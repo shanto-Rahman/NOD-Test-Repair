@@ -30,13 +30,13 @@ from heuristics import rank_methods_by_similarity, clustering_methods, rank_meth
 from token_processing import count_prompt_tokens
 #import google.generativeai as genai
 #import os
-from google import genai
-from google.genai import types
+#from google import genai
+#from google.genai import types
 
-client = genai.Client(
-    api_key=os.environ["GEMINI_API_KEY"],
-    http_options=types.HttpOptions(api_version="v1"),
-)
+#client = genai.Client(
+#    api_key=os.environ["GEMINI_API_KEY"],
+#    http_options=types.HttpOptions(api_version="v1"),
+#)
 #for m in client.models.list():
 #    print(m.name)
 
@@ -150,11 +150,12 @@ def gemini_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_succes
     while retry_count < max_retries:
         try:
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                #model="gemini-2.5-flash",
+                model="gemini-2.5-pro",
                 contents=prompt, #converted_messages,
                 config=types.GenerateContentConfig(
                     temperature=0.2,
-                    max_output_tokens=7000,
+                    max_output_tokens=7300,
                 ),
             )
             response_content = extract_gemini_text(response)
@@ -784,7 +785,8 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #print(df_with_cluster)
     embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
     csv_that_saved_embedding = "metadata/embedings/"+test+"_"+embed_model_name+"_embeddings.csv"
-    embedding_required_to_generate =  False
+    #csv_that_saved_embedding = "metadata/embedings_ablation_0_100/"+test+"_"+embed_model_name+"_embeddings.csv"
+    embedding_required_to_generate =  True #False
     if embedding_required_to_generate:
         ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, failure_log_df, embed_model_name)
         print(ranked_df)
@@ -793,7 +795,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         print("loading embedding", csv_that_saved_embedding)
         ranked_df = pd.read_csv(csv_that_saved_embedding)
         print(ranked_df)
-    
+   
     ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
         lambda x: int(x.split("-")[1]) - int(x.split("-")[0]) + 1 if "-" in x else 0
     )
