@@ -176,6 +176,8 @@ with open(input_csv, newline='') as inf:
                         iteration_count += 1
                         code_line = original_lines[line_no - 1]
                         print("**** code_line=", code_line)
+                        currentDir_when_exception_occurs = os.getcwd()
+                        os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce/"+cosine_weight+"/", exist_ok=True)
                         first_failed = run_once(0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx)
 
                         if not first_failed:
@@ -191,8 +193,7 @@ with open(input_csv, newline='') as inf:
                                 before, after = test_with_dot.rsplit('.', 1)
                                 test_with_hash = f"{before}#{after}"
                                 print(f"Failure found in {failure_count}/5 runs.")
-                                currentDir_when_exception_occurs = os.getcwd()
-                                os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce/"+cosine_weight+"/", exist_ok=True)
+                                # currentDir_when_exception_occurs = os.getcwd()
                                 log_file = currentDir_when_exception_occurs+"/logs-to-reproduce/"+cosine_weight+"/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
                                 total_time_seconds = time.time() - start_time
                                 save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
