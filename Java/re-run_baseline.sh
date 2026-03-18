@@ -92,8 +92,12 @@ while IFS= read -r line
     
     if [[ $slug == "Accenture/mercury" ]]; then
         mvn install -pl $module -am -Dmaven.test.skip=true
+    elif [[ $slug == "apache/hbase" ]]; then
+        JMVNOPTIONS="-Dhbase.master.port=0 -Dhbase.regionserver.port=0 -Dhbase.master.info.port=-1 -Dhbase.regionserver.info.port=-1"
+        sed -i '/<plugins>/a\      <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-surefire-plugin</artifactId> <version>2.22.2</version> </plugin>' contrib/stargate/core/pom.xml
+        mvn install -pl $module -am -DskipTests > /dev/null
     else
-        mvn install -pl $module -am -DskipTests
+        mvn install -pl $module -am -DskipTests > /dev/null
     fi
     slug_with_underscore="${slug//\//_}"
     module_with_underscore="${module//\//_}"
