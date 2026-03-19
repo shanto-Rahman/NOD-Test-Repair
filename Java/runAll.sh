@@ -338,11 +338,21 @@ while IFS= read -r line
     for mod in $(find . -name target -type d -prune); do
       base_module=$(dirname "$mod")
 
-      # Skip integration-test-2_1 if module is integration-test-2_2
-      #if [[ "$module" == "integration-test-2_2" && "$base_module" == "./integration-test-2_1" ]]; then
-      #  continue
-      #fi
-      # Skip all integration-test-* modules except the one matching $module
+       echo "mod=$mod"
+       echo "class dir=$mod/classes"
+       echo "source dir=$base_module/src/main/java"
+       if [ -d "$mod/classes" ]; then
+           echo "classes exists"
+       else
+           echo "classes missing"
+       fi
+       
+       if [ -d "$base_module/src/main/java" ]; then
+           echo "sources exists"
+       else
+           echo "sources missing"
+       fi
+
       if [[ "$slug" == "doanduyhai/Achilles" && "$base_module" == ./integration-test-* && "$base_module" != ./$module ]]; then
         continue
       fi
@@ -353,29 +363,31 @@ while IFS= read -r line
       if [ -d "$base_module/src/main/java" ]; then
         SOURCEFILES+="--sourcefiles $base_module/src/main/java "
       fi
-      #if [ -d "$mod/classes" ]; then
-      #  CLASSFILES+="--classfiles $mod/classes "
-      #fi
-      #if [ -d "$(dirname "$mod")/src/main/java" ]; then
-      #  SOURCEFILES+="--sourcefiles $(dirname "$mod")/src/main/java "
-      #fi
     done
-    
-    java -jar jacococli.jar report $module/target/jacoco.exec \
-      $CLASSFILES \
-      $SOURCEFILES \
-      --xml $module/target/coverage.xml
-    echo "java -jar jacococli.jar report $module/target/jacoco.exec \
-      $CLASSFILES \
-      $SOURCEFILES \
-      --xml $module/target/coverage.xml"
-    #executed_methods_count_and_total_token_count=$(
+    if [[ $slug == "zxing/zxing" ]]; then
+      java -jar jacococli.jar report core/target/jacoco.exec \
+        --classfiles core/build \
+         --classfiles core/target/test-classes \
+          --sourcefiles core/src \
+            --sourcefiles core/test/src \
+              --xml core/target/coverage.xml
+    else
+      java -jar jacococli.jar report $module/target/jacoco.exec \
+        $CLASSFILES \
+        $SOURCEFILES \
+        --xml $module/target/coverage.xml
+      echo "java -jar jacococli.jar report $module/target/jacoco.exec \
+        $CLASSFILES \
+        $SOURCEFILES \
+        --xml $module/target/coverage.xml"
+      #executed_methods_count_and_total_token_count=$(
+    fi
+    echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug" 
     #)
     #executed_methods=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f2 | cut -d':' -f1 | tr -d ' ')
     #total_tokens_desc=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f3 | tr -d ' ')
 
-    echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     test_class_full_path=$(find $module -name "${testClass}.java")
     echo "test_class_full_path=$test_class_full_path"
 
