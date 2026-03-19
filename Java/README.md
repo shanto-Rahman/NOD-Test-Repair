@@ -2,6 +2,8 @@ Run command:
 
 ```shell
 bash runAll.sh ../data/talank_with_test_id_idoft_corrected.csv Result/
+
+bash runAll.sh ../data/new_70_tests.csv Result/
 ```
 
 ```shell
