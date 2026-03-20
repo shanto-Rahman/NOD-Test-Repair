@@ -9,6 +9,7 @@ bash runAll.sh ../data/new_70_tests.csv Result/
 ```shell
 export OPENAI_API_KEY="YOUR_KEY_HERE"
 bash search_for_failure_reproducing.sh ../data/all_82_tests.csv "idoft"
+bash search_for_failure_reproducing.sh ../data/new_70_tests.csv "flakerake_new"
 ```
 
 To collect the agreement between models, we run the following command.
