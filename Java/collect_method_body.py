@@ -101,14 +101,21 @@ for class_name in class_to_methods:
     rel_path = class_name.replace(".", "/").split("$")[0] + ".java"
     found = False
     for module in modules + [main_module]:
-        src_root = Path(module) / "src/main/java"
-        full_path = src_root / rel_path
-        if full_path.exists():
-            with open(full_path, "rb") as f:
-                code = f.read()
-            extract_methods(code, class_name)
-            found = True
-            break
+
+        if slug == "zxing_zxing":
+            candidate_roots = [Path(module) / "src"]
+        else:
+            candidate_roots = [Path(module) / "src/main/java"]
+
+        for src_root in candidate_roots:
+            #src_root = Path(module) / "src/main/java"
+            full_path = src_root / rel_path
+            if full_path.exists():
+                with open(full_path, "rb") as f:
+                    code = f.read()
+                extract_methods(code, class_name)
+                found = True
+                break
     if not found:
         #print(f"[WARN] Source not found for: {class_name}")
         print(f"[WARN] Source not found for: {class_name}", file=sys.stderr)
