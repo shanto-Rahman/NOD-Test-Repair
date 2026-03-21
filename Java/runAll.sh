@@ -81,6 +81,11 @@ while IFS= read -r line
          }
        }' pom.xml
 
+    elif [[ "$slug" == "spring-projects/spring-boot" ]]; then
+        git stash 
+        sed -i 's~http://repo.string.io~https://repo.spring.io~g' pom.xml
+
+
     elif [[ $slug == "apache/dubbo" ]]; then
         JMVNOPTIONS="-pl dubbo-dependencies-bom"
 
