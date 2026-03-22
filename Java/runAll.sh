@@ -202,9 +202,12 @@ while IFS= read -r line
         test_class_full_path="luwak/src/test/java/uk/co/flax/luwak/matchers/ConcurrentMatcherTestBase.java"
     elif [[ $testName == "com.github.kagkarlsson.scheduler.compatibility.HsqlCompatibilityTest#test_compatibility" ]]; then
         test_class_full_path="src/test/java/com/github/kagkarlsson/scheduler/compatibility/CompatibilityTest.java"
+    elif [[ $testName == "com.google.zxing.pdf417.decoder.ec.ErrorCorrectionTestCase#testTooManyErrors" ]]; then
+        test_class_full_path="core/test/src/com/google/zxing/pdf417/decoder/ec/ErrorCorrectionTestCase.java"
     fi
-    python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
+    
     echo "python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir"
+    python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
     echo $(pwd)
 
     #exit
