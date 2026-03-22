@@ -37,9 +37,11 @@ To match the failure log, run the following command
 ```shell
  bash find_failure_match.sh results/tdrepro.csv "idoft"
  ```
-To run barebone gpt model to show it's not data-leakaged, run the following command.
+To run barebone gpt model to show it's not data-leakaged, run the following command (Paper Table-4 left).
+
 ```shell
 bash s.sh ../data/all_82_tests.csv "idoft"
+bash s.sh ../data/new_70_tests.csv flakerake_new
 ```
 
 For running each test 100 times to get the failure, run the following command.
