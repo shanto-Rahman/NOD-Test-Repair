@@ -30,7 +30,10 @@ while read line
         proj_name_only=$(echo $slug_org | cut -d'/' -f2)
         #echo "$proj_name_only; ${proj_name_only}-${testName}-FlakeDelay-Run-1-*.txt"
         log_search_csv=""
-        if [[ $2 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
+
+        if [[ $2 == "flakerake_new" ]]; then 
+            log_search_csv="../Results/failure_log_new_tests.csv"
+        elif [[ $2 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
             log_search_csv="../Results/unique_failures_10K_reruns_flakerake_775.csv"
         elif [[ $2 == "idoft" ]]; then #../Results/unique_failures_10K_reruns_181_unique_only.csv
             log_search_csv="../Results/unique_failures_10K_reruns_181_unique_only.csv"
