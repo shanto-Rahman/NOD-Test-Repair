@@ -220,16 +220,66 @@ def find_class_file(class_name, slug, module):
     # Convert class name to relative path
     rel_path = class_name.replace('.', '/') + '.java'
     print("class_name=", class_name)
+
+    if slug == "zxing/zxing":
+        print("zxing ....")
+        candidate_roots = [
+            Path(f"projects/{slug}/{module}/src"),
+        ]
+        search_patterns = [
+            f"**/src/{rel_path}",
+        ]
+    else:
+        candidate_roots = [
+            Path(f"projects/{slug}/{module}/src/main/java"),
+        ]
+        search_patterns = [
+            f"**/src/main/java/{rel_path}",
+        ]
+
     # Step 1: Check in the given module
-    main_path = Path(f"projects/{slug}/{module}/src/main/java/{rel_path}")
-    if main_path.exists():
-        return str(main_path)
+    for root in candidate_roots:
+        main_path = root / rel_path
+        if main_path.exists():
+            return [str(main_path)]
 
     # Step 2: Search all modules under projects/<slug>/
     base_dir = Path(f"projects/{slug}")
-    #candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
-    candidates = list(base_dir.glob(f"**/src/main/java/**/{rel_path}"))
+    candidates = []
+    for pattern in search_patterns:
+        candidates.extend(base_dir.glob(pattern))
+
+    # ---- fallback for unqualified class names like "State" ----
+    #if not candidates and "." not in class_name:
+    #    candidates = list(base_dir.glob(f"**/{class_name}.java"))
+    # Fallback for unqualified class names like "State"
+    if not candidates and "." not in class_name:
+        local_candidates = list(Path(f"projects/{slug}/{module}").glob(f"**/{class_name}.java"))
+        if local_candidates:
+            candidates = local_candidates
+        else:
+            candidates = list(base_dir.glob(f"**/{class_name}.java"))
+
     print("All candidates before filtering:", candidates)
+
+    if candidates:
+        return [str(candidates[0])]
+ 
+    return []
+    ## Step 1: Check in the given module
+    #main_path = Path(f"projects/{slug}/{module}/src/main/java/{rel_path}")
+    #if main_path.exists():
+    #    return str(main_path)
+
+    ## Step 2: Search all modules under projects/<slug>/
+    #base_dir = Path(f"projects/{slug}")
+    ##candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
+    #candidates = list(base_dir.glob(f"**/src/main/java/**/{rel_path}"))
+    #print("All candidates before filtering:", candidates)
+
+
+
+
 
     # Step 3: Filter out matches from the given module itself
 
@@ -250,7 +300,6 @@ def find_class_file(class_name, slug, module):
     #print(f"[WARN] Class {class_name} not found in any module.")
     #exit()
     
-    return candidates
 
 # Filter out methods with empty or trivial bodies
 def is_non_empty_body(body):
@@ -356,7 +405,7 @@ def gemini_output_calculate(test_code, ml_technique, code_under_test_meths, line
                 descriptor = m.group(3)
                 line_number = int(m.group(4))
                 code_line = m.group(5)
-                #print(f"Class: {class_name}, Method: {method_name}, Descriptor: {descriptor}, Line: {line_number}, Code: {code_line}")
+                print(f"Class: {class_name}, Method: {method_name}, Descriptor: {descriptor}, Line: {line_number}, Code: {code_line}")
                 class_simple_name = class_name.split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
                 class_name = class_simple_name.split('$')[0]
                 print(f"===Class name after split: {class_name}", ",line=", line_number)
