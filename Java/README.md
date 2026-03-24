@@ -12,6 +12,12 @@ bash search_for_failure_reproducing.sh ../data/all_82_tests.csv "idoft"
 bash search_for_failure_reproducing.sh ../data/new_70_tests.csv "flakerake_new"
 ```
 
+To post check log similarity (between detected and reproduced)
+
+```shell
+bash check_logs.sh ../data/new_70_tests.csv 
+```
+
 To collect the agreement between models, we run the following command.
 
 ```shell
@@ -42,6 +48,12 @@ To run barebone gpt model to show it's not data-leakaged, run the following comm
 ```shell
 bash s.sh ../data/all_82_tests.csv "idoft"
 bash s.sh ../data/new_70_tests.csv flakerake_new
+```
+
+
+To run barebone gpt model to show the ranked methods are good, run the following command (Paper Table-4 right).
+```shell
+python3 wrapper_for_sequential_delay_injection_to_check_each_embedding_model.py "metadata/embedings/" "100_0" ../data/new_70_tests.csv
 ```
 
 For running each test 100 times to get the failure, run the following command.
