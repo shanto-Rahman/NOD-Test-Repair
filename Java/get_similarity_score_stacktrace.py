@@ -7,6 +7,8 @@ import os
 from sentence_transformers import SentenceTransformer, util, SimilarityFunction
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 import sys
+import pandas as pd
+
 
 
 def extract_failure_traces(log_path):
@@ -108,9 +110,24 @@ def semantic_similarity_score(failure1, failure2):
     # if any of the inputs are None, return None
     if failure1 is None or failure2 is None:
         return None
+    
+    if pd.isna(failure1) or pd.isna(failure2):
+        return 0.0
+
+    if not isinstance(failure1, str) or not isinstance(failure2, str):
+        return 0.0
+
+    failure1 = failure1.strip()
+    failure2 = failure2.strip()
+
+    if not failure1 or not failure2:
+        return 0.0
 
     model = SentenceTransformer('sentence-transformers/stsb-roberta-large')
     model.similarity_fn_name = SimilarityFunction.COSINE
+
+    print(failure1)
+    print(failure2)
 
     # Use raw strings
     failure1 = failure1.lower()
