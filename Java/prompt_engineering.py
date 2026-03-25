@@ -30,7 +30,28 @@ def format_code_under_test(df):
         code_blocks.append(block)
     return "\n".join(code_blocks)
 
+def fit_methods_within_budget(df, max_chars=180000):
+    selected_rows = []
+    current_chars = 0
+
+    for _, row in df.iterrows():
+        method_text = str(row.get("Body", ""))  # adjust column name if needed
+        method_len = len(method_text)
+
+        if current_chars + method_len > max_chars:
+            break
+
+        selected_rows.append(row)
+        current_chars += method_len
+
+    return df.loc[[r.name for r in selected_rows]]
+
+
 def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df):
+    print("methods before trim:", len(code_under_test_meths_ranked_df))
+    # trim methods to fit within context budget
+    code_under_test_meths_ranked_df = fit_methods_within_budget(code_under_test_meths_ranked_df)
+    print("methods after trim:", len(code_under_test_meths_ranked_df))
     code_under_test_str = format_code_under_test(code_under_test_meths_ranked_df)
     failure_log_str = str(failure_log_df.iloc[0]) if hasattr(failure_log_df, "iloc") else str(failure_log_df)
     test_code_str = str(test_meth_code_df.iloc[0]) if hasattr(test_meth_code_df, "iloc") else str(test_meth_code_df)
