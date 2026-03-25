@@ -29,11 +29,15 @@ while read line
         proj_name_only=$(echo $slug_org | cut -d'/' -f2)
         #echo "$proj_name_only; ${proj_name_only}-${testName}-FlakeDelay-Run-1-*.txt"
         log_search_csv=""
-        if [[ $2 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
+
+        if [[ $2 == "flakerake_new" ]]; then 
+            log_search_csv="../Results/failure_log_new_tests.csv"
+        elif [[ $2 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
             log_search_csv="../Results/unique_failures_10K_reruns_flakerake_775.csv"
         elif [[ $2 == "idoft" ]]; then #../Results/unique_failures_10K_reruns_181_unique_only.csv
             log_search_csv="../Results/unique_failures_10K_reruns_181_unique_only.csv"
         fi
+
         echo "python3 find_failure_message_and_save.py "$id" "$slug_org" "$sha" "$module_org" "$testName" "$log_search_csv" "$module_with_dot" "$proj_name_only""
         python3 find_failure_message_and_save.py "$id" "$slug_org" "$sha" "$module_org" "$testName" "$log_search_csv" "$module_with_dot" "$proj_name_only" # It outputs $id_$module_with_dot_$testName_stacktrace.txt
         if [[ $module_org == "." ]]; then
@@ -55,11 +59,11 @@ while read line
         ##python3 generating_reproducing_script.py traces/${filename}_executed_with_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
         #python3 generating_reproducing_script.py traces/${filename}_executed_with_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
         #python3 generating_reproducing_script.py traces/${filename}_executed_with_static_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
-        echo "python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot" "$2"
+        #echo "python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot" "$2"
         #exit
         #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "embeddingOnly" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         python3 barebone_llm_zero_shot.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
-        #exit
+        exit
 
     done < $1

@@ -117,22 +117,74 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
 import os
 from pathlib import Path
 
+
 def find_class_file(class_name, slug, module):
     # Convert class name to relative path
     rel_path = class_name.replace('.', '/') + '.java'
     print("class_name=", class_name)
+
+    if slug == "zxing/zxing":
+        print("zxing ....")
+        candidate_roots = [
+            Path(f"projects/{slug}/{module}/src"),
+        ]
+        search_patterns = [
+            f"**/src/{rel_path}",
+        ]
+    else:
+        candidate_roots = [
+            Path(f"projects/{slug}/{module}/src/main/java"),
+        ]
+        search_patterns = [
+            f"**/src/main/java/{rel_path}",
+        ]
+
     # Step 1: Check in the given module
-    main_path = Path(f"projects/{slug}/{module}/src/main/java/{rel_path}")
-    if main_path.exists():
-        return str(main_path)
+    for root in candidate_roots:
+        main_path = root / rel_path
+        if main_path.exists():
+            return [str(main_path)]
 
     # Step 2: Search all modules under projects/<slug>/
     base_dir = Path(f"projects/{slug}")
-    #candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
-    candidates = list(base_dir.glob(f"**/src/main/java/**/{rel_path}"))
+    candidates = []
+    for pattern in search_patterns:
+        candidates.extend(base_dir.glob(pattern))
+
+    # ---- fallback for unqualified class names like "State" ----
+    #if not candidates and "." not in class_name:
+    #    candidates = list(base_dir.glob(f"**/{class_name}.java"))
+    # Fallback for unqualified class names like "State"
+    if not candidates and "." not in class_name:
+        local_candidates = list(Path(f"projects/{slug}/{module}").glob(f"**/{class_name}.java"))
+        if local_candidates:
+            candidates = local_candidates
+        else:
+            candidates = list(base_dir.glob(f"**/{class_name}.java"))
+
     print("All candidates before filtering:", candidates)
 
-    return candidates
+    if candidates:
+        return [str(candidates[0])]
+ 
+    return []
+
+#def find_class_file(class_name, slug, module):
+#    # Convert class name to relative path
+#    rel_path = class_name.replace('.', '/') + '.java'
+#    print("class_name=", class_name)
+#    # Step 1: Check in the given module
+#    main_path = Path(f"projects/{slug}/{module}/src/main/java/{rel_path}")
+#    if main_path.exists():
+#        return str(main_path)
+#
+#    # Step 2: Search all modules under projects/<slug>/
+#    base_dir = Path(f"projects/{slug}")
+#    #candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
+#    candidates = list(base_dir.glob(f"**/src/main/java/**/{rel_path}"))
+#    print("All candidates before filtering:", candidates)
+#
+#    return candidates
 
 # Filter out methods with empty or trivial bodies
 def is_non_empty_body(body):
@@ -357,6 +409,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
     
+    os.makedirs("metadata/barebone", exist_ok=True)
     depth_filtered_df.to_csv("metadata/barebone/"+test+"Depth_filtered_df.csv", index=False)
     print(failure_log)
     print(test_code)
