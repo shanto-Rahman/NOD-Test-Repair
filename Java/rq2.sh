@@ -136,7 +136,10 @@ while IFS= read -r line
     python3 run_injection.py "$class_name" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
     #log for baseline
     log_search_csv=""
-    if [[ $3 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
+
+    if [[ $3 == "flakerake_new" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
+        log_search_csv="../Results/failure_log_new_tests.csv"
+    elif [[ $3 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
         log_search_csv="../Results/unique_failures_10K_reruns_flakerake_775.csv"
     elif [[ $3 == "idoft" ]]; then #../Results/unique_failures_10K_reruns_181_unique_only.csv
         log_search_csv="../Results/unique_failures_10K_reruns_181_unique_only.csv"
@@ -162,17 +165,18 @@ while IFS= read -r line
 
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
-            #result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
+            result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
             #result=$(echo "$result" | xargs)  # removes leading/trailing whitespace
             #echo "$result"
-            #if [[ "$result" == "MisMatched" ]] ; then
-            #    echo "$fail_log_csv_name"
-            #    echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv"
-            #    echo "MisMatched Failure found."
-            #elif [[ "$result" == "Matched" ]] ; then
-            echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
-            echo "$result Failure found."
-            #fi
+            echo "Comparing "$fail_log_csv_name" and "$logs/$testName-$i.txt""
+            if [[ "$result" == *MisMatched* ]] ; then
+                echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv"
+                echo "MisMatched Failure found."
+            #elif [[ "$result" == *Matched* ]] ; then
+            else
+               echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
+               echo "$result Matched Failure found."
+            fi
         else
             echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv" #No fail
             echo "Failure not found."
