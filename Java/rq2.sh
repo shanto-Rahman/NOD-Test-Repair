@@ -82,39 +82,13 @@ while IFS= read -r line
     echo "test=$testName"
     testName_with_hash=$(echo "$testName" | sed 's/\(.*\)\./\1#/') 
     #testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
-    echo "testName=, $testName_with_hash"
+    echo "testName= $testName_with_hash"
     testClass="$(echo $testName | rev | cut -d'.' -f2 | rev)"
     
     rootProj=$(echo "$slug" | cut -d/ -f 1)
     subProj=$(echo "$slug" | cut -d/ -f 2)
     
     JMVNOPTIONS=""
-    #if [[ "$slug" == "doanduyhai/Achilles" ]]; then
-    #    sed -i 's~http://repo1.maven.org/maven2~https://repo1.maven.org/maven2~g' pom.xml
-    #    sed -i '/<plugin>/,/<\/plugin>/ {
-    #     /<groupId>org.apache.felix<\/groupId>/ {
-    #       N
-    #       /<artifactId>maven-bundle-plugin<\/artifactId>/ {
-    #         a\
-    #         <version>${felix.version}</version>
-    #       }
-    #     }
-    #   }' pom.xml
-
-    #elif [[ $slug == "apache/dubbo" ]]; then
-    #    JMVNOPTIONS="-pl dubbo-dependencies-bom"
-
-    #elif [[ $slug == "apache/httpcore" ]]; then
-    #   sed -i '/<build>/,/<\/build>/ {
-    #   /<plugins>/a\
-    #     <plugin>\n\
-    #       <groupId>org.apache.maven.plugins</groupId>\n\
-    #       <artifactId>maven-surefire-plugin</artifactId>\n\
-    #       <version>2.22.1</version>\n\
-    #     </plugin>
-    # }' pom.xml
- 
-    #fi  
     echo -n "${slug},${sha},${module},${testName}," >> "$currentDir/$outputDir/RQ2-Result.csv"
     
     if [[ $module != "." ]]; then
@@ -123,11 +97,11 @@ while IFS= read -r line
         projName=$(sed 's;/;.;g' <<< $subProj-$testName)
     fi
     
-    if [[ $slug == "Accenture/mercury" ]]; then
-        mvn install -pl $module -am -Dmaven.test.skip=true
-    else
-        mvn install -pl $module -am -DskipTests
-    fi
+    #if [[ $slug == "Accenture/mercury" ]]; then
+    #    mvn install -pl $module -am -Dmaven.test.skip=true
+    #else
+    #    mvn install -pl $module -am -DskipTests
+    #fi
     #slug_with_underscore="${slug//\//_}"
     #module_with_underscore="${module//\//_}"
     #echo "$slug_with_underscore"
@@ -136,10 +110,7 @@ while IFS= read -r line
     python3 run_injection.py "$class_name" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
     #log for baseline
     log_search_csv=""
-
-    if [[ $3 == "flakerake_new" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
-        log_search_csv="../Results/failure_log_new_tests.csv"
-    elif [[ $3 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
+    if [[ $3 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
         log_search_csv="../Results/unique_failures_10K_reruns_flakerake_775.csv"
     elif [[ $3 == "idoft" ]]; then #../Results/unique_failures_10K_reruns_181_unique_only.csv
         log_search_csv="../Results/unique_failures_10K_reruns_181_unique_only.csv"
@@ -149,26 +120,26 @@ while IFS= read -r line
     proj_name_only=$(echo $slug | cut -d'/' -f2)
     #python3 find_failure_message_and_save.py "RQ2" "$slug" "$sha" "$module" "$testName_with_hash" "$log_search_csv" "$module_with_dot" "$proj_name_only"
     ##id_arg, slug, sha, module_org, testName= ID  fa3909c391195178ccf5a92d4ac342a30ae247c8 . org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario0
-
-    #if [[ $module == "." ]]; then
-    #    fail_log_csv_name="$currentDir/logs/RQ2_${proj_name_only}_${testName_with_hash}_stacktrace.csv"
-    #else
-    #    fail_log_csv_name="$currentDir/logs/RQ2_${module_with_dot}_${testName_with_hash}_stacktrace.csv"
-    #fi
+    if [[ ${module_with_dot} == "." ]]; then
+        fail_log_csv_name="${proj_name_only}_${testName_with_hash}_stacktrace.csv"
+    else
+        fail_log_csv_name="${module_with_dot}_${testName_with_hash}_stacktrace.csv"
+    fi
+    echo "fail_log_csv_name=$fail_log_csv_name"
+    org_fail_csv=$(find $currentDir/logs -name "*$fail_log_csv_name")
     cd -
     mvn clean install -pl $module -am -DskipTests
     start=$(date +%s.%N)
     for i in {1..100}; do
         echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash"
         mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName_with_hash >  "$logs/$testName-$i.txt"
-        #exit
 
         bugCount=$(grep -ic -E 'Errors: 1|Failures: 1' "$logs/$testName-$i.txt")
         if [[ $bugCount -gt 0  ]]; then
-            result=$(python3 "$currentDir/log_similarity_init.py" "$fail_log_csv_name" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
+            result=$(python3 "$currentDir/log_similarity_init.py" "$org_fail_csv" "$logs/$testName-$i.txt"  "$testName") #python3 get_similarity_score_stacktrace
             #result=$(echo "$result" | xargs)  # removes leading/trailing whitespace
             #echo "$result"
-            echo "Comparing "$fail_log_csv_name" and "$logs/$testName-$i.txt""
+	    echo "Comparing "$org_fail_csv" and "$logs/$testName-$i.txt""
             if [[ "$result" == *MisMatched* ]] ; then
                 echo -n "2;" >> "$currentDir/$outputDir/RQ2-Result.csv"
                 echo "MisMatched Failure found."
@@ -176,7 +147,7 @@ while IFS= read -r line
             else
                echo -n "1;" >> "$currentDir/$outputDir/RQ2-Result.csv" #Mismatched
                echo "$result Matched Failure found."
-            fi
+	    fi
         else
             echo -n "0;" >> "$currentDir/$outputDir/RQ2-Result.csv" #No fail
             echo "Failure not found."
