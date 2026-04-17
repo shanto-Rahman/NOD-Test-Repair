@@ -1,0 +1,19 @@
+test_code
+"@Test
+	public void test_compatibility() {
+		scheduler.start();
+
+		scheduler.schedule(oneTime.instance(""id1""), Instant.now());
+		scheduler.schedule(oneTime.instance(""id1""), Instant.now()); //duplicate
+		scheduler.schedule(recurring.instance(""id1""), Instant.now());
+		scheduler.schedule(recurring.instance(""id2""), Instant.now());
+		scheduler.schedule(recurring.instance(""id3""), Instant.now());
+		scheduler.schedule(recurring.instance(""id4""), Instant.now());
+
+		sleep(Duration.ofSeconds(10));
+
+		scheduler.stop();
+		assertThat(statsRegistry.unexpectedErrors.get(), is(0));
+		assertThat(delayingHandlerRecurring.timesExecuted, greaterThan(10));
+		assertThat(delayingHandlerOneTime.timesExecuted, is(1));
+	}"

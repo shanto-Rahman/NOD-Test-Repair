@@ -1,0 +1,147 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-core:jar:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 158, column 13
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ ch.qos.logback:logback-parent:2.0.0-SNAPSHOT, /home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/qos-ch/logback/pom.xml, line 369, column 13
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-classic:jar:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 361, column 13
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-access:jar:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 156, column 13
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-site:jar:2.0.0-SNAPSHOT
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter. @ line 52, column 24
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-examples:jar:2.0.0-SNAPSHOT
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter.
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for ch.qos.logback:logback-parent:pom:2.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 369, column 13
+[WARNING] Reporting configuration should be done in <reporting> section, not in maven-site-plugin <configuration> as reportPlugins parameter. @ line 311, column 24
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -------------------< ch.qos.logback:logback-classic >-------------------
+[INFO] Building Logback Classic Module 2.0.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:generateStubs (default) @ logback-classic ---
+[INFO] Generated 9 Java stubs
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ logback-classic ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ logback-classic ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:compile (default) @ logback-classic ---
+[INFO] Compiled 15 Groovy classes
+[INFO] 
+[INFO] --- maven-bundle-plugin:2.1.0:manifest (bundle-manifest) @ logback-classic ---
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:generateTestStubs (default) @ logback-classic ---
+[INFO] Generated 4 Java stubs
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ logback-classic ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 11 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ logback-classic ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- gmaven-plugin:1.4:testCompile (default) @ logback-classic ---
+[INFO] Compiled 23 Groovy classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.14.1:test (default-test) @ logback-classic ---
+[INFO] Surefire report directory: /home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/qos-ch/logback/logback-classic/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running ch.qos.logback.classic.net.SMTPAppender_GreenTest
+17:20:03,086 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
+17:21:55,839 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.classic.net.SMTPAppender]
+17:22:22,289 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [EMAIL]
+18:30:54,606 |-ERROR in ch.qos.logback.core.joran.spi.Interpreter@14:42 - no applicable action for [outputPatternAsPresentationHeader], current ElementPath  is [[configuration][appender][layout][outputPatternAsPresentationHeader]]
+18:34:02,580 |-INFO in ch.qos.logback.classic.joran.action.RootLoggerAction - Setting level of ROOT logger to DEBUG
+18:35:40,061 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [EMAIL] to Logger[ROOT]
+18:36:05,484 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
+18:36:34,313 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@1ed4004b - Registering current configuration as safe fallback point
+18:37:04,349 |-INFO in ch.qos.logback.classic.net.SMTPAppender[EMAIL] - SMTPAppender [EMAIL] is tracking [1] buffers
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 5,034.928 sec <<< FAILURE!
+testCustomEvaluator(ch.qos.logback.classic.net.SMTPAppender_GreenTest)  Time elapsed: 5,026.869 sec  <<< FAILURE!
+java.lang.AssertionError: expected:<1> but was:<0>
+	at org.junit.Assert.fail(Assert.java:93)
+	at org.junit.Assert.failNotEquals(Assert.java:647)
+	at org.junit.Assert.assertEquals(Assert.java:128)
+	at org.junit.Assert.assertEquals(Assert.java:472)
+	at org.junit.Assert.assertEquals(Assert.java:456)
+	at ch.qos.logback.classic.net.SMTPAppender_GreenTest.verifyAndExtractMimeMultipart(SMTPAppender_GreenTest.java:134)
+	at ch.qos.logback.classic.net.SMTPAppender_GreenTest.testCustomEvaluator(SMTPAppender_GreenTest.java:276)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:45)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:42)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:20)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:28)
+	at org.junit.internal.runners.statements.RunAfters.evaluate(RunAfters.java:30)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:263)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:68)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:47)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:231)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:60)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:229)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:50)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:222)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:300)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:254)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:149)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:124)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray2(ReflectionUtils.java:208)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:159)
+	at org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:87)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:153)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:95)
+
+Found AGENT PRINT****
+ Total # Conflicting items are = 0
+[]
+
+Results :
+
+Failed tests: 
+  SMTPAppender_GreenTest.testCustomEvaluator:276->verifyAndExtractMimeMultipart:134 expected:<1> but was:<0>
+
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:23 h
+[INFO] Finished at: 2025-05-04T18:37:59-05:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.14.1:test (default-test) on project logback-classic: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/sr53282/f-test-repair/NOD-Test-Repair/Java/FlakeSync_Artifact_Full/scripts/projects-For-Delta/qos-ch/logback/logback-classic/target/surefire-reports for the individual test results.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

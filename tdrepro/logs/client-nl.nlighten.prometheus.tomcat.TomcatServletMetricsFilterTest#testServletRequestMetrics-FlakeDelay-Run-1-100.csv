@@ -1,0 +1,23 @@
+Failure
+"[INFO] Running nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 10.361 s <<< FAILURE! - in nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest
+[ERROR] testServletRequestMetrics(nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest)  Time elapsed: 0.015 s  <<< FAILURE!
+java.lang.AssertionError: 
+Expected: is a value greater than <0.0>
+     but: <0.0> was equal to <0.0>
+	at nl.nlighten.prometheus.tomcat.TomcatServletMetricsFilterTest.testServletRequestMetrics(TomcatServletMetricsFilterTest.java:30)
+Found AGENT PRINT****
+ Total # Conflicting items are = 0
+[]
+[INFO] Results:
+[ERROR] Failures: 
+[ERROR]   TomcatServletMetricsFilterTest.testServletRequestMetrics:30 
+Expected: is a value greater than <0.0>
+     but: <0.0> was equal to <0.0>
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  16.039 s
+[INFO] Finished at: 2025-05-04T13:43:13-05:00
+[INFO] ------------------------------------------------------------------------"

@@ -1,0 +1,32 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+delight.nashornsandbox.internal.NashornSandboxImpl,executeSandboxedOperation,(Ldelight/nashornsandbox/internal/ScriptEngineOperation;)Ljava/lang/Object;,5,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+delight.nashornsandbox.internal.JsSanitizer,getBeautifHandler,(Ljavax/script/ScriptEngine;)Ljdk/nashorn/api/scripting/ScriptObjectMirror;,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+delight.nashornsandbox.internal.JsSanitizer,secureJs,(Ljava/lang/String;)Ljava/lang/String;,4,"['codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+delight.nashornsandbox.internal.ThreadMonitor,<init>,(JJ)V,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+delight.nashornsandbox.internal.JsSanitizer,getPreamble,()Ljava/lang/String;,3,"['bigbird_embeddings.csv', 'gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+delight.nashornsandbox.NashornSandboxes,create,()Ldelight/nashornsandbox/NashornSandbox;,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+delight.nashornsandbox.internal.EvaluateOperation,executeScriptEngineOperation,(Ljavax/script/ScriptEngine;)Ljava/lang/Object;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+delight.nashornsandbox.internal.JsEvaluator,<init>,(Ljavax/script/ScriptEngine;JJLdelight/nashornsandbox/internal/ScriptEngineOperation;)V,2,"['gpt2_embeddings.csv', 'llama_embeddings.csv']"
+delight.nashornsandbox.internal.JsSanitizer,checkBraces,(Ljava/lang/String;)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+delight.nashornsandbox.internal.JsSanitizer,checkJs,(Ljava/lang/String;)V,2,"['gpt2_embeddings.csv', 'tf-idf_embeddings.csv']"
+delight.nashornsandbox.internal.JsSanitizer,getBeautifyJs,()Ljava/lang/String;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+delight.nashornsandbox.internal.NashornSandboxImpl,<init>,()V,2,"['qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+delight.nashornsandbox.internal.NashornSandboxImpl,<init>,([Ljava/lang/String;)V,2,"['qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+delight.nashornsandbox.internal.NashornSandboxImpl,getSanitizer,()Ldelight/nashornsandbox/internal/JsSanitizer;,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+delight.nashornsandbox.internal.NashornSandboxImpl,produceSecureBindings,()V,2,"['bigbird_embeddings.csv', 'llama_embeddings.csv']"
+delight.nashornsandbox.internal.NashornSandboxImpl,setExecutor,(Ljava/util/concurrent/ExecutorService;)V,2,"['gpt2_embeddings.csv', 'tf-idf_embeddings.csv']"
+delight.nashornsandbox.internal.RemoveComments,perform,(Ljava/lang/String;)Ljava/lang/String;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+delight.nashornsandbox.internal.ThreadMonitor,getCheckInterval,(J)J,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+delight.nashornsandbox.internal.ThreadMonitor,run,()V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+delight.nashornsandbox.internal.JsEvaluator,isMemoryLimitExceeded,()Z,1,['gpt2_embeddings.csv']
+delight.nashornsandbox.internal.JsEvaluator,run,()V,1,['bigbird_embeddings.csv']
+delight.nashornsandbox.internal.JsSanitizer,assertScriptEngine,()V,1,['llama_embeddings.csv']
+delight.nashornsandbox.internal.JsSanitizer,injectInterruptionCalls,(Ljava/lang/String;)Ljava/lang/String;,1,['codebert_embeddings.csv']
+delight.nashornsandbox.internal.JsSanitizer,newSecuredJsCache,(I)Ldelight/nashornsandbox/SecuredJsCache;,1,['codebert_embeddings.csv']
+delight.nashornsandbox.internal.LinkedHashMapSecuredJsCache,<init>,(Ljava/util/LinkedHashMap;Z)V,1,['gpt2_embeddings.csv']
+delight.nashornsandbox.internal.NashornSandboxImpl,assertScriptEngine,()V,1,['llama_embeddings.csv']
+delight.nashornsandbox.internal.NashornSandboxImpl,checkExecutorPresence,()V,1,['tf-idf_embeddings.csv']
+delight.nashornsandbox.internal.NashornSandboxImpl,eval,(Ljava/lang/String;)Ljava/lang/Object;,1,['tf-idf_embeddings.csv']
+delight.nashornsandbox.internal.NashornSandboxImpl,eval,(Ljava/lang/String;Ljavax/script/ScriptContext;Ljavax/script/Bindings;)Ljava/lang/Object;,1,['tf-idf_embeddings.csv']
+delight.nashornsandbox.internal.NashornSandboxImpl,resetEngineBindings,()V,1,['gpt2_embeddings.csv']
+delight.nashornsandbox.internal.SandboxClassFilter,add,(Ljava/lang/Class;)V,1,['gpt2_embeddings.csv']

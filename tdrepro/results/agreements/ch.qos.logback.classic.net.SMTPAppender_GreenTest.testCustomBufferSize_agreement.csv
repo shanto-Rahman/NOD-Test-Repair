@@ -1,0 +1,46 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+ch.qos.logback.core.joran.action.AppenderAction,begin,(Lch/qos/logback/core/joran/spi/InterpretationContext;Ljava/lang/String;Lorg/xml/sax/Attributes;)V,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+ch.qos.logback.classic.spi.LoggingEvent,prepareForDeferredProcessing,()V,3,"['llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+ch.qos.logback.core.net.SMTPAppenderBase,buildSessionFromProperties,()Ljavax/mail/Session;,3,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+ch.qos.logback.classic.Logger,createChildByName,(Ljava/lang/String;)Lch/qos/logback/classic/Logger;,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
+ch.qos.logback.classic.util.DefaultNestedComponentRules,addDefaultNestedComponentRegistryRules,(Lch/qos/logback/core/joran/spi/DefaultNestedComponentRegistry;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+ch.qos.logback.core.joran.action.AppenderRefAction,begin,(Lch/qos/logback/core/joran/spi/InterpretationContext;Ljava/lang/String;Lorg/xml/sax/Attributes;)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+ch.qos.logback.core.joran.action.NestedBasicPropertyIA,body,(Lch/qos/logback/core/joran/spi/InterpretationContext;Ljava/lang/String;)V,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
+ch.qos.logback.core.joran.action.NestedBasicPropertyIA,isApplicable,(Lch/qos/logback/core/joran/spi/ElementPath;Lorg/xml/sax/Attributes;Lch/qos/logback/core/joran/spi/InterpretationContext;)Z,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
+ch.qos.logback.core.joran.action.NestedComplexPropertyIA,end,(Lch/qos/logback/core/joran/spi/InterpretationContext;Ljava/lang/String;)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+ch.qos.logback.core.net.SMTPAppenderBase,checkEntryConditions,()Z,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+ch.qos.logback.core.net.SMTPAppenderBase,sendBuffer,(Lch/qos/logback/core/helpers/CyclicBuffer;Ljava/lang/Object;)V,2,"['bigbird_embeddings.csv', 'llama_embeddings.csv']"
+ch.qos.logback.classic.Logger,<init>,(Ljava/lang/String;Lch/qos/logback/classic/Logger;Lch/qos/logback/classic/LoggerContext;)V,1,['qwen_embeddings.csv']
+ch.qos.logback.classic.Logger,debug,(Ljava/lang/String;)V,1,['tf-idf_embeddings.csv']
+ch.qos.logback.classic.Logger,error,(Ljava/lang/String;)V,1,['tf-idf_embeddings.csv']
+ch.qos.logback.classic.Logger,filterAndLog_0_Or3Plus,(Ljava/lang/String;Lorg/slf4j/Marker;Lch/qos/logback/classic/Level;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Throwable;)V,1,['qwen_embeddings.csv']
+ch.qos.logback.classic.LoggerContext,<init>,()V,1,['qwen_embeddings.csv']
+ch.qos.logback.classic.joran.JoranConfigurator,addInstanceRules,(Lch/qos/logback/core/joran/spi/RuleStore;)V,1,['bigbird_embeddings.csv']
+ch.qos.logback.classic.joran.action.ConfigurationAction,begin,(Lch/qos/logback/core/joran/spi/InterpretationContext;Ljava/lang/String;Lorg/xml/sax/Attributes;)V,1,['codebert_embeddings.csv']
+ch.qos.logback.classic.joran.action.RootLoggerAction,begin,(Lch/qos/logback/core/joran/spi/InterpretationContext;Ljava/lang/String;Lorg/xml/sax/Attributes;)V,1,['qwen_embeddings.csv']
+ch.qos.logback.classic.pattern.ThrowableProxyConverter,convert,(Lch/qos/logback/classic/spi/ILoggingEvent;)Ljava/lang/String;,1,['bigbird_embeddings.csv']
+ch.qos.logback.classic.spi.LoggerContextVO,<init>,(Lch/qos/logback/classic/LoggerContext;)V,1,['gpt2_embeddings.csv']
+ch.qos.logback.classic.spi.LoggingEvent,getMDCPropertyMap,()Ljava/util/Map;,1,['codebert_embeddings.csv']
+ch.qos.logback.core.joran.action.IADataForComplexProperty,<init>,(Lch/qos/logback/core/joran/util/PropertySetter;Lch/qos/logback/core/util/AggregationType;Ljava/lang/String;)V,1,['gpt2_embeddings.csv']
+ch.qos.logback.core.joran.action.NestedComplexPropertyIA,begin,(Lch/qos/logback/core/joran/spi/InterpretationContext;Ljava/lang/String;Lorg/xml/sax/Attributes;)V,1,['bigbird_embeddings.csv']
+ch.qos.logback.core.joran.action.NestedComplexPropertyIA,isApplicable,(Lch/qos/logback/core/joran/spi/ElementPath;Lorg/xml/sax/Attributes;Lch/qos/logback/core/joran/spi/InterpretationContext;)Z,1,['codebert_embeddings.csv']
+ch.qos.logback.core.joran.event.SaxEventRecorder,buildSaxParser,()Ljavax/xml/parsers/SAXParser;,1,['gpt2_embeddings.csv']
+ch.qos.logback.core.joran.spi.Interpreter,callBodyAction,(Ljava/util/List;Ljava/lang/String;)V,1,['tf-idf_embeddings.csv']
+ch.qos.logback.core.joran.spi.Interpreter,callEndAction,(Ljava/util/List;Ljava/lang/String;)V,1,['tf-idf_embeddings.csv']
+ch.qos.logback.core.joran.spi.Interpreter,characters,(Lch/qos/logback/core/joran/event/BodyEvent;)V,1,['tf-idf_embeddings.csv']
+ch.qos.logback.core.joran.util.PropertySetter,computeRawAggregationType,(Ljava/lang/reflect/Method;)Lch/qos/logback/core/util/AggregationType;,1,['gpt2_embeddings.csv']
+ch.qos.logback.core.joran.util.PropertySetter,findSetterMethod,(Ljava/lang/String;)Ljava/lang/reflect/Method;,1,['gpt2_embeddings.csv']
+ch.qos.logback.core.joran.util.PropertySetter,introspect,()V,1,['gpt2_embeddings.csv']
+ch.qos.logback.core.joran.util.PropertySetter,isSanityCheckSuccessful,(Ljava/lang/String;Ljava/lang/reflect/Method;[Ljava/lang/Class;Ljava/lang/Object;)Z,1,['codebert_embeddings.csv']
+ch.qos.logback.core.net.SMTPAppenderBase,append,(Ljava/lang/Object;)V,1,['bigbird_embeddings.csv']
+ch.qos.logback.core.net.SMTPAppenderBase,parseAddress,(Ljava/lang/Object;)Ljava/util/List;,1,['llama_embeddings.csv']
+ch.qos.logback.core.net.SMTPAppenderBase,start,()V,1,['llama_embeddings.csv']
+ch.qos.logback.core.net.ssl.SSLNestedComponentRegistryRules,addDefaultNestedComponentRegistryRules,(Lch/qos/logback/core/joran/spi/DefaultNestedComponentRegistry;)V,1,['qwen_embeddings.csv']
+ch.qos.logback.core.pattern.PatternLayoutBase,setPostCompileProcessor,(Lch/qos/logback/core/pattern/PostCompileProcessor;)V,1,['gpt2_embeddings.csv']
+ch.qos.logback.core.pattern.parser.Compiler,compile,()Lch/qos/logback/core/pattern/Converter;,1,['bigbird_embeddings.csv']
+ch.qos.logback.core.pattern.parser.TokenStream,handleFormatModifierState,(CLjava/util/List;Ljava/lang/StringBuffer;)V,1,['gpt2_embeddings.csv']
+ch.qos.logback.core.spi.ContextAwareBase,addStatus,(Lch/qos/logback/core/status/Status;)V,1,['llama_embeddings.csv']
+ch.qos.logback.core.spi.ContextAwareImpl,addError,(Ljava/lang/String;)V,1,['tf-idf_embeddings.csv']
+ch.qos.logback.core.spi.ContextAwareImpl,addStatus,(Lch/qos/logback/core/status/Status;)V,1,['llama_embeddings.csv']
+ch.qos.logback.core.spi.FilterAttachableImpl,getFilterChainDecision,(Ljava/lang/Object;)Lch/qos/logback/core/spi/FilterReply;,1,['qwen_embeddings.csv']
+ch.qos.logback.core.status.InfoStatus,<init>,(Ljava/lang/String;Ljava/lang/Object;)V,1,['tf-idf_embeddings.csv']

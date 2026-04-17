@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# docker_runner.sh <input-csv> <output-dir> <iterations>
+
+# Use realpath to ensure Docker volume mounts don't resolve to "volume names"
+#docker_runner.sh ../data/new_70_tests.csv hbase_Result 1
+INPUT_CSV=$(realpath "$1")
+
+#if [[ -z "$INPUT_CSV" || -z "$OUTPUT_DIR" || -z "$ITERATIONS" ]]; then
+#    echo "Usage: $0 <input-csv> <output-dir> <iterations>"
+#    exit 1
+#fi
+
+#LOGS_DIR="$(pwd)/rerun-logs"
+#mkdir -p "$OUTPUT_DIR"
+#mkdir -p "$LOGS_DIR"
+#
+# Collect all CSV rows into an array
+declare -a IDS
+while IFS=',' read -r id slug commit module test_name; do
+    [[ "$id" =~ ^# ]] && continue
+    IDS+=("$id,$slug,$commit,$module,$test_name")
+done < <(grep ',apache/hbase,' "$INPUT_CSV")
+
+echo "Starting ${#IDS[@]} tests in parallel..."
+
+# Loop through every single collected ID
+for entry in "${IDS[@]}"; do
+    IFS=',' read -r id slug commit module test_name <<< "$entry"
+    if [[ $id -ne 202 ]]; then
+        continue
+    fi
+    echo "Launching container for: $test_name (ID: $id)"
+
+    # Execute Docker in the background
+    docker run -d \
+        --name "hbase_run_${id}" \
+        hbase:shanto \
+        bash -c "
+             set -euxo pipefail
+            . \$HOME/.profile
+            cd /NOD-Test-Repair/Java
+            conda activate tdrepro
+            export OPENAI_API_KEY=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
+            bash search_for_failure_reproducing.sh ../data/new_70_tests.csv flakerake_new $id
+        "
+done
+
+# Wait for all background processes to finish
+wait
+
+for entry in "${IDS[@]}"; do
+    IFS=',' read -r id slug commit module test_name <<< "$entry"
+    if [[ $id -ne 202 ]]; then
+        continue
+    fi
+    docker cp hbase_run_${id}:/NOD-Test-Repair/Java/results/tdrepro.csv docker_results/${id}.csv
+    docker cp -r hbase_run_${id}:/NOD-Test-Repair/Java/logs-to-reproduce docker_logs/${id}
+done
+echo "All containers finished."

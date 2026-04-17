@@ -1,0 +1,19 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+org.apache.http.pool.AbstractConnPool,<init>,(II)V,6,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.AbstractConnPool$1,<init>,(Lorg/apache/http/pool/AbstractConnPool;Ljava/lang/Object;Ljava/lang/Object;)V,6,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.AbstractConnPool$2,<init>,(Lorg/apache/http/pool/AbstractConnPool;Ljava/util/concurrent/locks/Lock;Ljava/lang/Object;Ljava/lang/Object;)V,6,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.AbstractConnPool,getPool,(Ljava/lang/Object;)Lorg/apache/http/pool/RouteSpecificPool;,5,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.AbstractConnPool,lease,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/concurrent/Future;,5,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V,5,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;)V,5,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.AbstractConnPool,getPoolEntryBlocking,(Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;Lorg/apache/http/pool/PoolEntryFuture;)Lorg/apache/http/pool/PoolEntry;,4,"['codebert_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.PoolEntryFuture,get,(JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;,4,"['codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+org.apache.http.pool.PoolEntryFuture,await,(Ljava/util/Date;)Z,3,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.http.pool.AbstractConnPool$2,getPoolEntry,(JLjava/util/concurrent/TimeUnit;)Lorg/apache/http/pool/PoolEntry;,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.http.pool.PoolEntryFuture,<init>,(Ljava/util/concurrent/locks/Lock;)V,2,"['gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+org.apache.http.pool.RouteSpecificPool,<init>,(Ljava/lang/Object;)V,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+org.apache.http.pool.AbstractConnPool,getMaxPerRoute,(Ljava/lang/Object;)I,1,['gpt2_embeddings.csv']
+org.apache.http.pool.PoolEntryFuture,isDone,()Z,1,['tf-idf_embeddings.csv']
+org.apache.http.pool.RouteSpecificPool,getFree,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,1,['bigbird_embeddings.csv']
+org.apache.http.pool.RouteSpecificPool,getLastUsed,()Lorg/apache/http/pool/PoolEntry;,1,['gpt2_embeddings.csv']
+org.apache.http.pool.RouteSpecificPool,queue,(Lorg/apache/http/pool/PoolEntryFuture;)V,1,['gpt2_embeddings.csv']

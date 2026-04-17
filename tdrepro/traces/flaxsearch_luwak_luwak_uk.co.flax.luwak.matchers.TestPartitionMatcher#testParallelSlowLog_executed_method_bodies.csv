@@ -1,0 +1,956 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery$1,<init>,(Luk/co/flax/luwak/util/ForceNoBulkScoringQuery;Lorg/apache/lucene/search/Query;Lorg/apache/lucene/search/Weight;)V,1,1,100.0%,"public ForceNoBulkScoringQuery(Query inner) {
+        this.inner = inner;
+    }",35-37
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery$1,getValueForNormalization,()F,1,1,100.0%,"@Override
+            public float getValueForNormalization() throws IOException {
+                return innerWeight.getValueForNormalization();
+            }",80-83
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery$1,normalize,(FF)V,2,2,100.0%,"@Override
+            public void normalize(float v, float v1) {
+                innerWeight.normalize(v, v1);
+            }",85-88
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery$1,scorer,(Lorg/apache/lucene/index/LeafReaderContext;)Lorg/apache/lucene/search/Scorer;,1,1,100.0%,"@Override
+            public Scorer scorer(LeafReaderContext leafReaderContext) throws IOException {
+                return innerWeight.scorer(leafReaderContext);
+            }",90-93
+uk.co.flax.luwak.util.CollectionUtils,partition,(Ljava/util/List;I)Ljava/util/List;,12,12,100.0%,"public static <T> List<List<T>> partition(List<T> items, int slices) {
+        double size = items.size() / (double) slices;
+        double accum = 0;
+        int start = 0;
+        List<List<T>> list = new ArrayList<>(slices);
+        for (int i = 0; i < slices; i++) {
+            int end = (int) Math.floor(accum + size);
+            if (i == slices - 1)
+                end = items.size();
+            list.add(items.subList(start, end));
+            accum += size;
+            start = (int) Math.floor(accum);
+        }
+        return list;
+    }",32-46
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery,<init>,(Lorg/apache/lucene/search/Query;)V,3,3,100.0%,"public ForceNoBulkScoringQuery(Query inner) {
+        this.inner = inner;
+    }",35-37
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery,rewrite,(Lorg/apache/lucene/index/IndexReader;)Lorg/apache/lucene/search/Query;,3,4,75.0%,"@Override
+    public Query rewrite(IndexReader reader) throws IOException {
+        Query rewritten = inner.rewrite(reader);
+        if (rewritten != inner)
+            return new ForceNoBulkScoringQuery(rewritten);
+        return super.rewrite(reader);
+    }",39-45
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery,createWeight,(Lorg/apache/lucene/search/IndexSearcher;Z)Lorg/apache/lucene/search/Weight;,2,2,100.0%,"@Override
+    public Weight createWeight(IndexSearcher searcher, boolean needsScores) throws IOException {
+
+        final Weight innerWeight = inner.createWeight(searcher, needsScores);
+
+        return new Weight(ForceNoBulkScoringQuery.this) {
+            @Override
+            public void extractTerms(Set<Term> set) {
+                innerWeight.extractTerms(set);
+            }
+
+            @Override
+            public Explanation explain(LeafReaderContext leafReaderContext, int i) throws IOException {
+                return innerWeight.explain(leafReaderContext, i);
+            }
+
+            @Override
+            public float getValueForNormalization() throws IOException {
+                return innerWeight.getValueForNormalization();
+            }
+
+            @Override
+            public void normalize(float v, float v1) {
+                innerWeight.normalize(v, v1);
+            }
+
+            @Override
+            public Scorer scorer(LeafReaderContext leafReaderContext) throws IOException {
+                return innerWeight.scorer(leafReaderContext);
+            }
+        };
+    }",64-95
+uk.co.flax.luwak.InputDocument,builder,(Ljava/lang/String;)Luk/co/flax/luwak/InputDocument$Builder;,1,1,100.0%,"public static Builder builder(String id) {
+        return new Builder(id);
+    }",53-55
+uk.co.flax.luwak.InputDocument,<init>,(Ljava/lang/String;Lorg/apache/lucene/document/Document;Lorg/apache/lucene/analysis/miscellaneous/PerFieldAnalyzerWrapper;)V,5,5,100.0%,"protected InputDocument(String id, Document luceneDocument, PerFieldAnalyzerWrapper analyzers) {
+        this.id = id;
+        this.luceneDocument = luceneDocument;
+        this.analyzers = analyzers;
+    }",62-66
+uk.co.flax.luwak.InputDocument,getId,()Ljava/lang/String;,1,1,100.0%,"public String getId() {
+        return id;
+    }",72-74
+uk.co.flax.luwak.InputDocument,getDocument,()Lorg/apache/lucene/document/Document;,1,1,100.0%,"public Document getDocument() {
+        return luceneDocument;
+    }",79-81
+uk.co.flax.luwak.InputDocument,getAnalyzers,()Lorg/apache/lucene/analysis/miscellaneous/PerFieldAnalyzerWrapper;,1,1,100.0%,"public PerFieldAnalyzerWrapper getAnalyzers() {
+        return analyzers;
+    }",86-88
+uk.co.flax.luwak.DocumentBatch,of,(Luk/co/flax/luwak/InputDocument;)Luk/co/flax/luwak/DocumentBatch;,1,1,100.0%,"public static DocumentBatch of(InputDocument doc) {
+        return new DocumentBatch.Builder().add(doc).build();
+    }",61-63
+uk.co.flax.luwak.DocumentBatch,<init>,(Ljava/util/Collection;Lorg/apache/lucene/search/similarities/Similarity;)V,5,5,100.0%,"protected DocumentBatch(Collection<InputDocument> documents, Similarity similarity) {
+        this.similarity = similarity;
+        this.documents.addAll(documents);
+    }",136-139
+uk.co.flax.luwak.DocumentBatch,getSearcher,()Lorg/apache/lucene/search/IndexSearcher;,4,4,100.0%,"public IndexSearcher getSearcher() throws IOException {
+        IndexSearcher searcher = new IndexSearcher(getIndexReader());
+        searcher.setSimilarity(similarity);
+        searcher.setQueryCache(null);
+        return searcher;
+    }",158-163
+uk.co.flax.luwak.DocumentBatch,iterator,()Ljava/util/Iterator;,1,1,100.0%,"@Override
+    public Iterator<InputDocument> iterator() {
+        return documents.iterator();
+    }",165-168
+uk.co.flax.luwak.DocumentBatch,getBatchSize,()I,1,1,100.0%,"public int getBatchSize() {
+        return documents.size();
+    }",173-175
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,<init>,(Ljava/util/Collection;Lorg/apache/lucene/search/similarities/Similarity;)V,12,12,100.0%,"protected DocumentBatch(Collection<InputDocument> documents, Similarity similarity) {
+        this.similarity = similarity;
+        this.documents.addAll(documents);
+    }",136-139
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%,public abstract LeafReader getIndexReader() throws IOException;,145-145
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,resolveDocId,(I)Ljava/lang/String;,2,2,100.0%,public abstract String resolveDocId(int docId);,152-152
+uk.co.flax.luwak.QueryIndex,<init>,(Lorg/apache/lucene/index/IndexWriter;)V,9,9,100.0%,"QueryIndex(IndexWriter indexWriter) throws IOException {
+        this.writer = indexWriter;
+        this.manager = new SearcherManager(writer, true, true, new TermsHashBuilder());
+    }",35-38
+uk.co.flax.luwak.QueryIndex,commit,(Ljava/util/List;)V,20,21,95.2%,"void commit(List<Indexable> updates) throws IOException {
+        synchronized (commitLock) {
+            purgeLock.readLock().lock();
+            try {
+                if (updates != null) {
+                    Set<String> ids = new HashSet<>();
+                    for (Indexable update : updates) {
+                        ids.add(update.id);
+                    }
+                    for (String id : ids) {
+                        writer.deleteDocuments(new Term(Monitor.FIELDS.del, id));
+                    }
+                    for (Indexable update : updates) {
+                        this.queries.put(update.queryCacheEntry.hash, update.queryCacheEntry);
+                        writer.addDocument(update.document);
+                        if (purgeCache != null)
+                            purgeCache.put(update.queryCacheEntry.hash, update.queryCacheEntry);
+                    }
+                }
+                writer.commit();
+                manager.maybeRefresh();
+            } finally {
+                purgeLock.readLock().unlock();
+            }
+        }
+    }",55-80
+uk.co.flax.luwak.QueryIndex,scan,(Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,1,1,100.0%,"long scan(QueryCollector matcher) throws IOException {
+        return search(new MatchAllDocsQuery(), matcher);
+    }",86-88
+uk.co.flax.luwak.QueryIndex,search,(Luk/co/flax/luwak/QueryIndex$QueryBuilder;Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,13,13,100.0%,"long search(final Query query, QueryCollector matcher) throws IOException {
+        QueryBuilder builder = termFilter -> query;
+        return search(builder, matcher);
+    }",90-93
+uk.co.flax.luwak.QueryIndex,search,(Lorg/apache/lucene/search/Query;Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,2,2,100.0%,"long search(final Query query, QueryCollector matcher) throws IOException {
+        QueryBuilder builder = termFilter -> query;
+        return search(builder, matcher);
+    }",90-93
+uk.co.flax.luwak.QueryIndex,purgeCache,(Luk/co/flax/luwak/QueryIndex$CachePopulator;)V,11,11,100.0%,"synchronized void purgeCache(CachePopulator populator) throws IOException {
+
+        /*
+            Note on implementation
+
+            The purge works by scanning the query index and creating a new query cache populated
+            for each query in the index.  When the scan is complete, the old query cache is swapped
+            for the new, allowing it to be garbage-collected.
+
+            In order to not drop cached queries that have been added while a purge is ongoing,
+            we use a ReadWriteLock to guard the creation and removal of an update log.  Commits take
+            the read lock.  If the update log has been created, then a purge is ongoing, and queries
+            are added to the update log within the read lock guard.
+
+            The purge takes the write lock when creating the update log, and then when swapping out
+            the old query cache.  Within the second write lock guard, the contents of the update log
+            are added to the new query cache, and the update log itself is removed.
+         */
+
+        final ConcurrentMap<BytesRef, QueryCacheEntry> newCache = new ConcurrentHashMap<>();
+
+        purgeLock.writeLock().lock();
+        try {
+            purgeCache = new ConcurrentHashMap<>();
+        }
+        finally {
+            purgeLock.writeLock().unlock();
+        }
+        
+        populator.populateCacheWithIndex(newCache);
+
+        purgeLock.writeLock().lock();
+        try {
+            newCache.putAll(purgeCache);
+            purgeCache = null;
+            queries = newCache;
+        }
+        finally {
+            purgeLock.writeLock().unlock();
+        }
+    }",134-174
+uk.co.flax.luwak.QueryIndex,closeWhileHandlingException,()V,2,2,100.0%,"void closeWhileHandlingException() throws IOException {
+        IOUtils.closeWhileHandlingException(manager, writer, writer.getDirectory());
+    }",181-183
+uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,<init>,(Luk/co/flax/luwak/Monitor;Lorg/apache/lucene/index/LeafReader;)V,3,3,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
+                   IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
+
+        this.queryParser = queryParser;
+        this.presearcher = presearcher;
+        this.decomposer = configuration.getQueryDecomposer();
+        
+        this.queryIndex = new QueryIndex(indexWriter);
+
+        this.storeQueries = configuration.storeQueries();
+        prepareQueryCache(this.storeQueries);
+
+        long purgeFrequency = configuration.getPurgeFrequency();
+        this.purgeExecutor = Executors.newSingleThreadScheduledExecutor();
+        this.purgeExecutor.scheduleAtFixedRate(() -> {
+            try {
+                purgeCache();
+            }
+            catch (Throwable e) {
+                afterPurgeError(e);
+            }
+        }, purgeFrequency, purgeFrequency, configuration.getPurgeFrequencyUnits());
+
+        this.commitBatchSize = configuration.getQueryUpdateBufferSize();
+    }",82-106
+uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,buildQuery,(Luk/co/flax/luwak/QueryTermFilter;)Lorg/apache/lucene/search/Query;,1,1,100.0%,"@Override
+        public Query buildQuery(QueryTermFilter termFilter) throws IOException {
+            return presearcher.buildQuery(batchIndexReader, termFilter);
+        }",473-476
+uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;)V,2,2,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
+                   IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
+
+        this.queryParser = queryParser;
+        this.presearcher = presearcher;
+        this.decomposer = configuration.getQueryDecomposer();
+        
+        this.queryIndex = new QueryIndex(indexWriter);
+
+        this.storeQueries = configuration.storeQueries();
+        prepareQueryCache(this.storeQueries);
+
+        long purgeFrequency = configuration.getPurgeFrequency();
+        this.purgeExecutor = Executors.newSingleThreadScheduledExecutor();
+        this.purgeExecutor.scheduleAtFixedRate(() -> {
+            try {
+                purgeCache();
+            }
+            catch (Throwable e) {
+                afterPurgeError(e);
+            }
+        }, purgeFrequency, purgeFrequency, configuration.getPurgeFrequencyUnits());
+
+        this.commitBatchSize = configuration.getQueryUpdateBufferSize();
+    }",82-106
+uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;Lorg/apache/lucene/index/IndexWriter;Luk/co/flax/luwak/QueryIndexConfiguration;)V,16,16,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
+                   IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
+
+        this.queryParser = queryParser;
+        this.presearcher = presearcher;
+        this.decomposer = configuration.getQueryDecomposer();
+        
+        this.queryIndex = new QueryIndex(indexWriter);
+
+        this.storeQueries = configuration.storeQueries();
+        prepareQueryCache(this.storeQueries);
+
+        long purgeFrequency = configuration.getPurgeFrequency();
+        this.purgeExecutor = Executors.newSingleThreadScheduledExecutor();
+        this.purgeExecutor.scheduleAtFixedRate(() -> {
+            try {
+                purgeCache();
+            }
+            catch (Throwable e) {
+                afterPurgeError(e);
+            }
+        }, purgeFrequency, purgeFrequency, configuration.getPurgeFrequencyUnits());
+
+        this.commitBatchSize = configuration.getQueryUpdateBufferSize();
+    }",82-106
+uk.co.flax.luwak.Monitor,defaultIndexWriter,(Lorg/apache/lucene/store/Directory;)Lorg/apache/lucene/index/IndexWriter;,6,6,100.0%,"static IndexWriter defaultIndexWriter(Directory directory) throws IOException {
+
+        IndexWriterConfig iwc = new IndexWriterConfig(new KeywordAnalyzer());
+        TieredMergePolicy mergePolicy = new TieredMergePolicy();
+        mergePolicy.setSegmentsPerTier(4);
+        iwc.setMergePolicy(mergePolicy);
+        iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+
+        return new IndexWriter(directory, iwc);
+
+    }",164-174
+uk.co.flax.luwak.Monitor,prepareQueryCache,(Z)V,7,10,70.0%,"private void prepareQueryCache(boolean storeQueries) throws IOException {
+
+        if (storeQueries == false) {
+            // we're not storing the queries, so ensure that the queryindex is empty
+            // before we add any.
+            clear();
+            return;
+        }
+
+        // load any queries that have already been added to the queryindex
+        final List<Exception> parseErrors = new LinkedList<>();
+        final Set<BytesRef> seenHashes = new HashSet<>();
+        final Set<String> seenIds = new HashSet<>();
+
+        queryIndex.purgeCache(newCache -> queryIndex.scan((id, query, dataValues) -> {
+            if (seenIds.contains(id)) {
+                return;
+            }
+            seenIds.add(id);
+
+            BytesRef serializedMQ = dataValues.mq.get(dataValues.doc);
+            MonitorQuery mq = MonitorQuery.deserialize(serializedMQ);
+
+            BytesRef hash = mq.hash();
+            if (seenHashes.contains(hash)) {
+                return;
+            }
+            seenHashes.add(hash);
+
+            try {
+                for (QueryCacheEntry ce : decomposeQuery(mq)) {
+                    newCache.put(ce.hash, ce);
+                }
+            } catch (Exception e) {
+                parseErrors.add(e);
+            }
+        }));
+        if (parseErrors.size() != 0)
+            throw new IOException(""Error populating cache - some queries couldn't be parsed:"" + parseErrors);
+    }",214-253
+uk.co.flax.luwak.Monitor,commit,(Ljava/util/List;)V,4,4,100.0%,"private void commit(List<Indexable> updates) throws IOException {
+        beforeCommit(updates);
+        queryIndex.commit(updates);
+        afterCommit(updates);
+    }",255-259
+uk.co.flax.luwak.Monitor,beforeCommit,(Ljava/util/List;)V,3,8,37.5%,"private void beforeCommit(List<Indexable> updates) {
+        if (updates == null) {
+            for (QueryIndexUpdateListener listener : listeners) {
+                listener.beforeDelete();
+            }
+        }
+        else {
+            for (QueryIndexUpdateListener listener : listeners) {
+                listener.beforeUpdate(updates);
+            }
+        }
+    }",273-284
+uk.co.flax.luwak.Monitor,afterCommit,(Ljava/util/List;)V,3,8,37.5%,"private void afterCommit(List<Indexable> updates) {
+        if (updates == null) {
+            for (QueryIndexUpdateListener listener : listeners) {
+                listener.afterDelete();
+            }
+        }
+        else {
+            for (QueryIndexUpdateListener listener : listeners) {
+                listener.afterUpdate(updates);
+            }
+        }
+    }",286-297
+uk.co.flax.luwak.Monitor,setSlowLogLimit,(J)V,2,2,100.0%,"public void setSlowLogLimit(long limit) {
+        this.slowLogLimit = limit;
+    }",326-328
+uk.co.flax.luwak.Monitor,close,()V,3,3,100.0%,"@Override
+    public void close() throws IOException {
+        purgeExecutor.shutdown();
+        queryIndex.closeWhileHandlingException();
+    }",330-334
+uk.co.flax.luwak.Monitor,update,(Ljava/lang/Iterable;)V,12,17,70.6%,"public void update(Iterable<MonitorQuery> queries) throws IOException, UpdateException {
+
+        List<QueryError> errors = new ArrayList<>();
+        List<Indexable> updates = new ArrayList<>();
+
+        for (MonitorQuery query : queries) {
+            try {
+                for (QueryCacheEntry queryCacheEntry : decomposeQuery(query)) {
+                    updates.add(new Indexable(query.getId(), queryCacheEntry, buildIndexableQuery(query.getId(), query, queryCacheEntry)));
+                }
+            } catch (Exception e) {
+                errors.add(new QueryError(query, e));
+            }
+            if (updates.size() > commitBatchSize) {
+                commit(updates);
+                updates.clear();
+            }
+        }
+        commit(updates);
+
+        if (errors.isEmpty() == false)
+            throw new UpdateException(errors);
+    }",342-364
+uk.co.flax.luwak.Monitor,update,([Luk/co/flax/luwak/MonitorQuery;)V,2,2,100.0%,"public void update(Iterable<MonitorQuery> queries) throws IOException, UpdateException {
+
+        List<QueryError> errors = new ArrayList<>();
+        List<Indexable> updates = new ArrayList<>();
+
+        for (MonitorQuery query : queries) {
+            try {
+                for (QueryCacheEntry queryCacheEntry : decomposeQuery(query)) {
+                    updates.add(new Indexable(query.getId(), queryCacheEntry, buildIndexableQuery(query.getId(), query, queryCacheEntry)));
+                }
+            } catch (Exception e) {
+                errors.add(new QueryError(query, e));
+            }
+            if (updates.size() > commitBatchSize) {
+                commit(updates);
+                updates.clear();
+            }
+        }
+        commit(updates);
+
+        if (errors.isEmpty() == false)
+            throw new UpdateException(errors);
+    }",342-364
+uk.co.flax.luwak.Monitor,decomposeQuery,(Luk/co/flax/luwak/MonitorQuery;)Ljava/lang/Iterable;,11,11,100.0%,"private Iterable<QueryCacheEntry> decomposeQuery(MonitorQuery query) throws Exception {
+
+        Query q = queryParser.parse(query.getQuery(), query.getMetadata());
+
+        BytesRef rootHash = query.hash();
+
+        int upto = 0;
+        List<QueryCacheEntry> cacheEntries = new LinkedList<>();
+        for (Query subquery : decomposer.decompose(q)) {
+            BytesRefBuilder subHash = new BytesRefBuilder();
+            subHash.append(rootHash);
+            subHash.append(new BytesRef(""_"" + upto++));
+            cacheEntries.add(new QueryCacheEntry(subHash.toBytesRef(), subquery, query.getMetadata()));
+        }
+
+        return cacheEntries;
+    }",366-382
+uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
+        CandidateMatcher<T> matcher = factory.createMatcher(docs);
+        matcher.setSlowLogLimit(slowLogLimit);
+        match(matcher);
+        return matcher.getMatches();
+    }",445-450
+uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/DocumentBatch;Luk/co/flax/luwak/MatcherFactory;)Luk/co/flax/luwak/Matches;,4,4,100.0%,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
+        CandidateMatcher<T> matcher = factory.createMatcher(docs);
+        matcher.setSlowLogLimit(slowLogLimit);
+        match(matcher);
+        return matcher.getMatches();
+    }",445-450
+uk.co.flax.luwak.Monitor,buildIndexableQuery,(Ljava/lang/String;Luk/co/flax/luwak/MonitorQuery;Luk/co/flax/luwak/QueryCacheEntry;)Lorg/apache/lucene/document/Document;,8,8,100.0%,"protected Document buildIndexableQuery(String id, MonitorQuery mq, QueryCacheEntry query) {
+        Document doc = presearcher.indexQuery(query.matchQuery, mq.getMetadata());
+        doc.add(new StringField(FIELDS.id, id, Field.Store.NO));
+        doc.add(new StringField(FIELDS.del, id, Field.Store.NO));
+        doc.add(new SortedDocValuesField(FIELDS.id, new BytesRef(id)));
+        doc.add(new BinaryDocValuesField(FIELDS.hash, query.hash));
+        if (storeQueries)
+            doc.add(new BinaryDocValuesField(FIELDS.mq, MonitorQuery.serialize(mq)));
+        return doc;
+    }",535-544
+uk.co.flax.luwak.QueryTermFilter,<init>,(Lorg/apache/lucene/index/IndexReader;)V,13,13,100.0%,"public QueryTermFilter(IndexReader reader) throws IOException {
+        Fields mf = MultiFields.getFields(reader);
+        for (String field : mf) {
+            BytesRefHash terms = new BytesRefHash();
+            Terms t = mf.terms(field);
+            if (t != null) {
+                TermsEnum te = t.iterator();
+                BytesRef term;
+                while ((term = te.next()) != null) {
+                    terms.add(term);
+                }
+            }
+            termsHash.put(field, terms);
+        }
+
+    }",44-59
+uk.co.flax.luwak.QueryCacheEntry,<init>,(Lorg/apache/lucene/util/BytesRef;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,5,5,100.0%,"public QueryCacheEntry(BytesRef hash, Query matchQuery, Map<String, String> metadata) {
+        this.hash = hash;
+        this.matchQuery = matchQuery;
+        this.metadata = metadata;
+    }",37-41
+uk.co.flax.luwak.Matches,<init>,(Ljava/util/Map;Ljava/util/Set;Ljava/util/List;JJIILuk/co/flax/luwak/SlowLog;)V,10,10,100.0%,"Matches(Map<String, DocumentMatches<T>> matches, Set<String> presearcherHits, List<MatchError> errors,
+                   long queryBuildTime, long searchTime, int queriesRun, int batchSize, SlowLog slowlog) {
+        this.matches = Collections.unmodifiableMap(matches);
+        this.errors = Collections.unmodifiableList(errors);
+        this.presearcherHits = Collections.unmodifiableSet(presearcherHits);
+        this.queryBuildTime = queryBuildTime;
+        this.searchTime = searchTime;
+        this.queriesRun = queriesRun;
+        this.batchSize = batchSize;
+        this.slowlog = slowlog;
+    }",39-49
+uk.co.flax.luwak.Matches,iterator,()Ljava/util/Iterator;,1,1,100.0%,"@Override
+    public Iterator<DocumentMatches<T>> iterator() {
+        return matches.values().iterator();
+    }",51-54
+uk.co.flax.luwak.Matches,getMatchCount,(Ljava/lang/String;)I,3,4,75.0%,"public int getMatchCount(String docId) {
+        DocumentMatches<T> docMatches = matches.get(docId);
+        if (docMatches == null)
+            return 0;
+        return docMatches.getMatches().size();
+    }",94-99
+uk.co.flax.luwak.Matches,getSlowLog,()Luk/co/flax/luwak/SlowLog;,1,1,100.0%,"public SlowLog getSlowLog() {
+        return slowlog;
+    }",144-146
+uk.co.flax.luwak.InputDocument$Builder,<init>,(Ljava/lang/String;)V,6,6,100.0%,"protected InputDocument(String id, Document luceneDocument, PerFieldAnalyzerWrapper analyzers) {
+        this.id = id;
+        this.luceneDocument = luceneDocument;
+        this.analyzers = analyzers;
+    }",62-66
+uk.co.flax.luwak.InputDocument$Builder,build,()Luk/co/flax/luwak/InputDocument;,3,3,100.0%,"public InputDocument build() {
+            doc.add(new StringField(ID_FIELD, id, Field.Store.YES));
+            PerFieldAnalyzerWrapper analyzerWrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer, analyzers);
+            return new InputDocument(id, doc, analyzerWrapper);
+        }",166-170
+uk.co.flax.luwak.Monitor$StandardQueryCollector,<init>,(Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
+                   IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
+
+        this.queryParser = queryParser;
+        this.presearcher = presearcher;
+        this.decomposer = configuration.getQueryDecomposer();
+        
+        this.queryIndex = new QueryIndex(indexWriter);
+
+        this.storeQueries = configuration.storeQueries();
+        prepareQueryCache(this.storeQueries);
+
+        long purgeFrequency = configuration.getPurgeFrequency();
+        this.purgeExecutor = Executors.newSingleThreadScheduledExecutor();
+        this.purgeExecutor.scheduleAtFixedRate(() -> {
+            try {
+                purgeCache();
+            }
+            catch (Throwable e) {
+                afterPurgeError(e);
+            }
+        }, purgeFrequency, purgeFrequency, configuration.getPurgeFrequencyUnits());
+
+        this.commitBatchSize = configuration.getQueryUpdateBufferSize();
+    }",82-106
+uk.co.flax.luwak.Monitor$StandardQueryCollector,matchQuery,(Ljava/lang/String;Luk/co/flax/luwak/QueryCacheEntry;Luk/co/flax/luwak/QueryIndex$DataValues;)V,5,8,62.5%,"@Override
+        public void matchQuery(String id, QueryCacheEntry query, QueryIndex.DataValues dataValues) throws IOException {
+            if (query == null)
+                return;
+            try {
+                queryCount++;
+                matcher.matchQuery(id, query.matchQuery, query.metadata);
+            }
+            catch (Exception e) {
+                matcher.reportError(new MatchError(id, e));
+            }
+        }",556-567
+uk.co.flax.luwak.QueryIndex$TermsHashBuilder,<init>,(Luk/co/flax/luwak/QueryIndex;)V,1,1,100.0%,"QueryIndex(IndexWriter indexWriter) throws IOException {
+        this.writer = indexWriter;
+        this.manager = new SearcherManager(writer, true, true, new TermsHashBuilder());
+    }",35-38
+uk.co.flax.luwak.QueryIndex$TermsHashBuilder,newSearcher,(Lorg/apache/lucene/index/IndexReader;Lorg/apache/lucene/index/IndexReader;)Lorg/apache/lucene/search/IndexSearcher;,5,5,100.0%,"@Override
+        public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
+            IndexSearcher searcher = super.newSearcher(reader, previousReader);
+            searcher.setQueryCache(null);
+            termFilters.put(reader, new QueryTermFilter(reader));
+            reader.addReaderClosedListener(termFilters::remove);
+            return searcher;
+        }",45-52
+uk.co.flax.luwak.Indexable,<init>,(Ljava/lang/String;Luk/co/flax/luwak/QueryCacheEntry;Lorg/apache/lucene/document/Document;)V,5,5,100.0%,"public Indexable(String id, QueryCacheEntry queryCacheEntry, Document document) {
+        this.id = id;
+        this.queryCacheEntry = queryCacheEntry;
+        this.document = document;
+    }",19-23
+uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V,6,6,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
+        this.id = id;
+        this.query = query;
+        this.metadata = Collections.unmodifiableMap(new TreeMap<>(metadata));
+        checkNullEntries(this.metadata);
+    }",49-54
+uk.co.flax.luwak.MonitorQuery,<init>,(Ljava/lang/String;Ljava/lang/String;)V,2,2,100.0%,"public MonitorQuery(String id, String query, Map<String, String> metadata) {
+        this.id = id;
+        this.query = query;
+        this.metadata = Collections.unmodifiableMap(new TreeMap<>(metadata));
+        checkNullEntries(this.metadata);
+    }",49-54
+uk.co.flax.luwak.MonitorQuery,checkNullEntries,(Ljava/util/Map;)V,2,5,40.0%,"private static void checkNullEntries(Map<String, String> metadata) {
+        for (Map.Entry<String, String> entry : metadata.entrySet()) {
+            if (entry.getValue() == null)
+                throw new IllegalArgumentException(""Null value for key "" + entry.getKey() + "" in metadata map"");
+        }
+    }",65-70
+uk.co.flax.luwak.MonitorQuery,serialize,(Luk/co/flax/luwak/MonitorQuery;)Lorg/apache/lucene/util/BytesRef;,7,12,58.3%,"public static BytesRef serialize(MonitorQuery mq) {
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try (OutputStreamDataOutput data = new OutputStreamDataOutput(os)) {
+
+            data.writeString(mq.getId());
+            data.writeString(mq.getQuery());
+            data.writeInt(mq.getMetadata().size());
+            for (Map.Entry<String, String> entry : mq.getMetadata().entrySet()) {
+                data.writeString(entry.getKey());
+                data.writeString(entry.getValue());
+            }
+            return new BytesRef(os.toByteArray());
+
+        } catch (IOException e) {
+            throw new RuntimeException(e); // shouldn't happen, we're writing to a bytearray!
+        }
+
+    }",101-119
+uk.co.flax.luwak.MonitorQuery,getId,()Ljava/lang/String;,1,1,100.0%,"public String getId() {
+        return id;
+    }",124-126
+uk.co.flax.luwak.MonitorQuery,getQuery,()Ljava/lang/String;,1,1,100.0%,"public String getQuery() {
+        return query;
+    }",131-133
+uk.co.flax.luwak.MonitorQuery,getMetadata,()Ljava/util/Map;,1,1,100.0%,"public Map<String, String> getMetadata() {
+        return metadata;
+    }",138-140
+uk.co.flax.luwak.MonitorQuery,hash,()Lorg/apache/lucene/util/BytesRef;,4,9,44.4%,"public BytesRef hash() {
+        try {
+            MessageDigest md5 = MessageDigest.getInstance(""MD5"");
+            md5.update(query.getBytes(StandardCharsets.UTF_8));
+            for (Map.Entry<String, String> entry : metadata.entrySet()) {
+                md5.update(entry.getKey().getBytes(StandardCharsets.UTF_8));
+                md5.update(entry.getValue().getBytes(StandardCharsets.UTF_8));
+            }
+            return new BytesRef(md5.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(""Can't use MD5 hash on this system"", e);
+        }
+    }",162-174
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,<init>,(Ljava/util/Map;Luk/co/flax/luwak/QueryIndex$QueryCollector;)V,5,5,100.0%,"QueryIndex(IndexWriter indexWriter) throws IOException {
+        this.writer = indexWriter;
+        this.manager = new SearcherManager(writer, true, true, new TermsHashBuilder());
+    }",35-38
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,needsScores,()Z,1,1,100.0%,"default boolean needsScores() {
+            return false;
+        }",209-211
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,setScorer,(Lorg/apache/lucene/search/Scorer;)V,2,2,100.0%,"@Override
+        public void setScorer(Scorer scorer) throws IOException {
+            this.dataValues.scorer = scorer;
+        }",241-244
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,collect,(I)V,6,6,100.0%,"@Override
+        public void collect(int doc) throws IOException {
+            BytesRef hash = dataValues.hash.get(doc);
+            BytesRef id = dataValues.id.get(doc);
+            QueryCacheEntry query = queries.get(hash);
+            dataValues.doc = doc;
+            matcher.matchQuery(id.utf8ToString(), query, dataValues);
+        }",246-253
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,doSetNextReader,(Lorg/apache/lucene/index/LeafReaderContext;)V,4,4,100.0%,"@Override
+        public void doSetNextReader(LeafReaderContext context) throws IOException {
+            this.dataValues.hash = context.reader().getBinaryDocValues(Monitor.FIELDS.hash);
+            this.dataValues.id = context.reader().getSortedDocValues(Monitor.FIELDS.id);
+            this.dataValues.mq = context.reader().getBinaryDocValues(Monitor.FIELDS.mq);
+        }",255-260
+uk.co.flax.luwak.QueryMatch,<init>,(Ljava/lang/String;Ljava/lang/String;)V,4,4,100.0%,"public QueryMatch(String queryId, String docId) {
+        this.queryId = Objects.requireNonNull(queryId);
+        this.docId = Objects.requireNonNull(docId);
+    }",41-44
+uk.co.flax.luwak.QueryMatch,getQueryId,()Ljava/lang/String;,1,1,100.0%,"public String getQueryId() {
+        return queryId;
+    }",49-51
+uk.co.flax.luwak.QueryMatch,getDocId,()Ljava/lang/String;,1,1,100.0%,"public String getDocId() {
+        return docId;
+    }",56-58
+uk.co.flax.luwak.QueryIndex$DataValues,<init>,()V,1,1,100.0%,"QueryIndex(IndexWriter indexWriter) throws IOException {
+        this.writer = indexWriter;
+        this.manager = new SearcherManager(writer, true, true, new TermsHashBuilder());
+    }",35-38
+uk.co.flax.luwak.CandidateMatcher,<init>,(Luk/co/flax/luwak/DocumentBatch;)V,10,10,100.0%,"public CandidateMatcher(DocumentBatch docs) {
+        this.docs = docs;
+    }",53-55
+uk.co.flax.luwak.CandidateMatcher,matchQuery,(Ljava/lang/String;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,3,3,100.0%,"public final void matchQuery(String queryId, Query matchQuery, Map<String, String> metadata) throws IOException {
+        presearcherHits.add(queryId);
+        doMatchQuery(queryId, new ForceNoBulkScoringQuery(matchQuery), metadata);
+    }",66-69
+uk.co.flax.luwak.CandidateMatcher,addMatch,(Luk/co/flax/luwak/QueryMatch;)V,2,2,100.0%,"private void addMatch(String queryId, String docId, T match) {
+        MatchHolder<T> docMatches = matches.computeIfAbsent(docId, k -> new MatchHolder<>());
+        docMatches.matches.compute(queryId, (key, oldValue) -> {
+            if (oldValue != null) {
+                return resolve(match, oldValue);
+            }
+            return match;
+        });
+    }",81-89
+uk.co.flax.luwak.CandidateMatcher,addMatch,(Ljava/lang/String;Ljava/lang/String;Luk/co/flax/luwak/QueryMatch;)V,3,3,100.0%,"private void addMatch(String queryId, String docId, T match) {
+        MatchHolder<T> docMatches = matches.computeIfAbsent(docId, k -> new MatchHolder<>());
+        docMatches.matches.compute(queryId, (key, oldValue) -> {
+            if (oldValue != null) {
+                return resolve(match, oldValue);
+            }
+            return match;
+        });
+    }",81-89
+uk.co.flax.luwak.CandidateMatcher,finish,(JI)V,4,4,100.0%,"public void finish(long buildTime, int queryCount) {
+        this.queryBuildTime = buildTime;
+        this.queriesRun = queryCount;
+        this.searchTime = TimeUnit.MILLISECONDS.convert(System.nanoTime() - searchTime, TimeUnit.NANOSECONDS);
+    }",121-125
+uk.co.flax.luwak.CandidateMatcher,setSlowLogLimit,(J)V,2,2,100.0%,"public void setSlowLogLimit(long t) {
+        this.slowlog.setLimit(t);
+    }",130-132
+uk.co.flax.luwak.CandidateMatcher,getMatches,()Luk/co/flax/luwak/Matches;,9,9,100.0%,"public Matches<T> getMatches() {
+        Map<String, DocumentMatches<T>> results = new HashMap<>();
+        for (InputDocument doc : docs) {
+            String id = doc.getId();
+            MatchHolder<T> matchHolder = matches.get(id);
+            if (matchHolder != null)
+                results.put(id, new DocumentMatches<>(id, matchHolder.matches.values()));
+            else
+                results.put(id, DocumentMatches.noMatches(id));
+        }
+        return new Matches<>(results, presearcherHits, errors, queryBuildTime, searchTime, queriesRun, docs.getBatchSize(), slowlog);
+    }",150-161
+uk.co.flax.luwak.CandidateMatcher,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%,"public LeafReader getIndexReader() throws IOException {
+        return docs.getIndexReader();
+    }",168-170
+uk.co.flax.luwak.QueryDecomposer,decompose,(Lorg/apache/lucene/search/Query;)Ljava/util/Collection;,4,13,30.8%,"public Collection<Query> decompose(Query q) {
+
+        if (q instanceof BooleanQuery)
+            return decomposeBoolean((BooleanQuery) q);
+
+        if (q instanceof DisjunctionMaxQuery) {
+            List<Query> subqueries = new ArrayList<>();
+            for (Query subq : ((DisjunctionMaxQuery) q).getDisjuncts()) {
+                for (Query decomposed : decompose(subq)) {
+                    subqueries.add(decomposed);
+                }
+            }
+            return subqueries;
+        }
+
+        if (q instanceof BoostQuery) {
+            return decomposeBoostQuery((BoostQuery) q);
+        }
+
+        return listOf(q);
+    }",37-57
+uk.co.flax.luwak.QueryDecomposer,listOf,(Lorg/apache/lucene/search/Query;)Ljava/util/Collection;,3,3,100.0%,"private static Collection<Query> listOf(Query q) {
+        List<Query> qs = new ArrayList<>(1);
+        qs.add(q);
+        return qs;
+    }",59-63
+uk.co.flax.luwak.QueryIndex$QueryCollector,needsScores,()Z,1,1,100.0%,"default boolean needsScores() {
+            return false;
+        }",209-211
+uk.co.flax.luwak.SlowLog$Entry,<init>,(Ljava/lang/String;J)V,4,4,100.0%,"public Entry(String queryId, long time) {
+            this.queryId = queryId;
+            this.time = time;
+        }",88-91
+uk.co.flax.luwak.SlowLog,setLimit,(J)V,2,2,100.0%,"public void setLimit(long limit) {
+        this.limit = limit;
+    }",35-37
+uk.co.flax.luwak.SlowLog,getLimit,()J,1,1,100.0%,"public long getLimit() {
+        return limit;
+    }",42-44
+uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,4,4,100.0%,"public void addQuery(String query, long time) {
+        if (time < limit)
+            return;
+        slowQueries.add(new Entry(query, time));
+    }",54-58
+uk.co.flax.luwak.SlowLog,addAll,(Ljava/lang/Iterable;)V,5,5,100.0%,"public void addAll(Iterable<SlowLog.Entry> queries) {
+        for (SlowLog.Entry query : queries) {
+            if (query.time > limit)
+                slowQueries.add(query);
+        }
+    }",65-70
+uk.co.flax.luwak.SlowLog,iterator,()Ljava/util/Iterator;,1,1,100.0%,"@Override
+    public Iterator<Entry> iterator() {
+        return slowQueries.iterator();
+    }",72-75
+uk.co.flax.luwak.SlowLog,<init>,()V,2,2,100.0%,"public Entry(String queryId, long time) {
+            this.queryId = queryId;
+            this.time = time;
+        }",88-91
+uk.co.flax.luwak.SlowLog,toString,()Ljava/lang/String;,5,5,100.0%,"@Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(""Limit: "").append(limit).append(""\n"");
+        for (Entry entry : slowQueries) {
+            sb.append(""\t"").append(entry.queryId).append("" ["").append(entry.time).append(""ns]\n"");
+        }
+        return sb.toString();
+    }",94-101
+uk.co.flax.luwak.DocumentMatches,noMatches,(Ljava/lang/String;)Luk/co/flax/luwak/DocumentMatches;,1,1,100.0%,"public static <T extends QueryMatch> DocumentMatches<T> noMatches(String docId) {
+        return new DocumentMatches<>(docId, Collections.<T>emptyList());
+    }",37-39
+uk.co.flax.luwak.DocumentMatches,<init>,(Ljava/lang/String;Ljava/util/Collection;)V,4,4,100.0%,"public DocumentMatches(String docId, Collection<T> matches) {
+        this.docId = docId;
+        this.matches = matches;
+    }",46-49
+uk.co.flax.luwak.DocumentMatches,iterator,()Ljava/util/Iterator;,1,1,100.0%,"@Override
+    public Iterator<T> iterator() {
+        return matches.iterator();
+    }",51-54
+uk.co.flax.luwak.DocumentMatches,getMatches,()Ljava/util/Collection;,1,1,100.0%,"public Collection<T> getMatches() {
+        return matches;
+    }",66-68
+uk.co.flax.luwak.QueryIndexConfiguration,getQueryDecomposer,()Luk/co/flax/luwak/QueryDecomposer;,1,1,100.0%,"public QueryDecomposer getQueryDecomposer() {
+        return queryDecomposer;
+    }",45-47
+uk.co.flax.luwak.QueryIndexConfiguration,getPurgeFrequency,()J,1,1,100.0%,"public long getPurgeFrequency() {
+        return purgeFrequency;
+    }",64-66
+uk.co.flax.luwak.QueryIndexConfiguration,getPurgeFrequencyUnits,()Ljava/util/concurrent/TimeUnit;,1,1,100.0%,"public TimeUnit getPurgeFrequencyUnits() {
+        return purgeFrequencyUnits;
+    }",71-73
+uk.co.flax.luwak.QueryIndexConfiguration,getQueryUpdateBufferSize,()I,1,1,100.0%,"public int getQueryUpdateBufferSize() {
+        return queryUpdateBufferSize;
+    }",88-90
+uk.co.flax.luwak.QueryIndexConfiguration,storeQueries,()Z,1,1,100.0%,"public QueryIndexConfiguration storeQueries(boolean storeQueries) {
+        this.storeQueries = storeQueries;
+        return this;
+    }",101-104
+uk.co.flax.luwak.DocumentBatch$Builder,add,(Luk/co/flax/luwak/InputDocument;)Luk/co/flax/luwak/DocumentBatch$Builder;,2,2,100.0%,"public Builder add(InputDocument doc) {
+            documents.add(doc);
+            return this;
+        }",95-98
+uk.co.flax.luwak.DocumentBatch$Builder,build,()Luk/co/flax/luwak/DocumentBatch;,3,5,60.0%,"public DocumentBatch build() {
+            if (documents.size() == 0)
+                throw new IllegalStateException(""Cannot build DocumentBatch with zero documents"");
+            if (documents.size() == 1)
+                return new SingletonDocumentBatch(documents, similarity);
+            return new MultiDocumentBatch(documents, similarity);
+        }",121-127
+uk.co.flax.luwak.DocumentBatch$Builder,<init>,()V,3,3,100.0%,"protected DocumentBatch(Collection<InputDocument> documents, Similarity similarity) {
+        this.similarity = similarity;
+        this.documents.addAll(documents);
+    }",136-139
+uk.co.flax.luwak.CandidateMatcher$MatchHolder,<init>,()V,2,2,100.0%,"public CandidateMatcher(DocumentBatch docs) {
+        this.docs = docs;
+    }",53-55
+uk.co.flax.luwak.matchers.PartitionMatcher,<init>,(Luk/co/flax/luwak/DocumentBatch;Ljava/util/concurrent/ExecutorService;Luk/co/flax/luwak/MatcherFactory;I)V,7,7,100.0%,"private MatchTask(String queryId, Query matchQuery, Map<String, String> metadata) {
+            this.queryId = queryId;
+            this.matchQuery = matchQuery;
+            this.metadata = metadata;
+        }",64-68
+uk.co.flax.luwak.matchers.PartitionMatcher,doMatchQuery,(Ljava/lang/String;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,2,2,100.0%,"@Override
+    protected void doMatchQuery(String queryId, Query matchQuery, Map<String, String> metadata) throws IOException {
+        tasks.add(new MatchTask(queryId, matchQuery, metadata));
+    }",81-84
+uk.co.flax.luwak.matchers.PartitionMatcher,finish,(JI)V,18,20,90.0%,"@Override
+    public void finish(long buildTime, int queryCount) {
+
+        List<Callable<Matches<T>>> workers = new ArrayList<>(threads);
+        for (List<MatchTask> taskset : CollectionUtils.partition(tasks, threads)) {
+            CandidateMatcher<T> matcher = matcherFactory.createMatcher(docs);
+            matcher.setSlowLogLimit(this.slowlog.getLimit());
+            workers.add(new MatcherWorker(taskset, matcher));
+        }
+
+        try {
+            for (Future<Matches<T>> future : executor.invokeAll(workers)) {
+                Matches<T> matches = future.get();
+                for (DocumentMatches<T> docMatches : matches) {
+                    for (T match : docMatches) {
+                        addMatch(match);
+                    }
+                }
+                this.slowlog.addAll(matches.getSlowLog());
+            }
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(""Interrupted during match"", e);
+        }
+
+        super.finish(buildTime, queryCount);
+    }",91-117
+uk.co.flax.luwak.matchers.PartitionMatcher,factory,(Ljava/util/concurrent/ExecutorService;Luk/co/flax/luwak/MatcherFactory;I)Luk/co/flax/luwak/matchers/PartitionMatcher$PartitionMatcherFactory;,1,1,100.0%,"public static <T extends QueryMatch> PartitionMatcherFactory<T> factory(ExecutorService executor,
+                                                                           MatcherFactory<T> matcherFactory, int threads) {
+        return new PartitionMatcherFactory<>(executor, matcherFactory, threads);
+    }",169-172
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector,<init>,(Luk/co/flax/luwak/matchers/CollectingMatcher;Ljava/lang/String;)V,4,4,100.0%,"public CollectingMatcher(DocumentBatch docs) {
+        super(docs);
+    }",40-42
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector,getLeafCollector,(Lorg/apache/lucene/index/LeafReaderContext;)Lorg/apache/lucene/search/LeafCollector;,1,1,100.0%,"@Override
+        public LeafCollector getLeafCollector(LeafReaderContext leafReaderContext) throws IOException {
+            return new MatchLeafCollector();
+        }",83-86
+uk.co.flax.luwak.matchers.PartitionMatcher$MatcherWorker,<init>,(Luk/co/flax/luwak/matchers/PartitionMatcher;Ljava/util/List;Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%,"private MatchTask(String queryId, Query matchQuery, Map<String, String> metadata) {
+            this.queryId = queryId;
+            this.matchQuery = matchQuery;
+            this.metadata = metadata;
+        }",64-68
+uk.co.flax.luwak.matchers.PartitionMatcher$MatcherWorker,call,()Luk/co/flax/luwak/Matches;,5,7,71.4%,"@Override
+        public Matches<T> call() {
+            for (MatchTask task : tasks) {
+                try {
+                    matcher.matchQuery(task.queryId, task.matchQuery, task.metadata);
+                } catch (IOException e) {
+                    PartitionMatcher.this.reportError(new MatchError(task.queryId, e));
+                }
+            }
+            return matcher.getMatches();
+        }",129-139
+uk.co.flax.luwak.matchers.PartitionMatcher$MatchTask,<init>,(Ljava/lang/String;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,5,5,100.0%,"private MatchTask(String queryId, Query matchQuery, Map<String, String> metadata) {
+            this.queryId = queryId;
+            this.matchQuery = matchQuery;
+            this.metadata = metadata;
+        }",64-68
+uk.co.flax.luwak.matchers.SimpleMatcher,<init>,(Luk/co/flax/luwak/DocumentBatch;)V,2,2,100.0%,"public SimpleMatcher(DocumentBatch docs) {
+        super(docs);
+    }",28-30
+uk.co.flax.luwak.matchers.SimpleMatcher,doMatch,(Ljava/lang/String;Ljava/lang/String;Lorg/apache/lucene/search/Scorer;)Luk/co/flax/luwak/QueryMatch;,1,1,100.0%,"@Override
+    protected QueryMatch doMatch(String queryId, String docId, Scorer scorer) throws IOException {
+        return new QueryMatch(queryId, docId);
+    }",37-40
+uk.co.flax.luwak.matchers.SimpleMatcher,buildMatchCollector,(Ljava/lang/String;)Luk/co/flax/luwak/matchers/CollectingMatcher$MatchCollector;,1,1,100.0%,"@Override
+    protected MatchCollector buildMatchCollector(String queryId) {
+        return new SimpleMatchCollector(queryId);
+    }",43-46
+uk.co.flax.luwak.matchers.SimpleMatcher$SimpleMatchCollector,<init>,(Luk/co/flax/luwak/matchers/SimpleMatcher;Ljava/lang/String;)V,3,3,100.0%,"public SimpleMatcher(DocumentBatch docs) {
+        super(docs);
+    }",28-30
+uk.co.flax.luwak.matchers.SimpleMatcher$SimpleMatchCollector,needsScores,()Z,1,1,100.0%,"@Override
+        public boolean needsScores() {
+            return false;
+        }",57-60
+uk.co.flax.luwak.matchers.PartitionMatcher$PartitionMatcherFactory,<init>,(Ljava/util/concurrent/ExecutorService;Luk/co/flax/luwak/MatcherFactory;I)V,5,5,100.0%,"private MatchTask(String queryId, Query matchQuery, Map<String, String> metadata) {
+            this.queryId = queryId;
+            this.matchQuery = matchQuery;
+            this.metadata = metadata;
+        }",64-68
+uk.co.flax.luwak.matchers.PartitionMatcher$PartitionMatcherFactory,createMatcher,(Luk/co/flax/luwak/DocumentBatch;)Luk/co/flax/luwak/matchers/PartitionMatcher;,1,1,100.0%,"@Override
+        public PartitionMatcher<T> createMatcher(DocumentBatch docs) {
+            return new PartitionMatcher<>(docs, executor, matcherFactory, threads);
+        }",155-158
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector$MatchLeafCollector,<init>,(Luk/co/flax/luwak/matchers/CollectingMatcher$MatchCollector;)V,1,1,100.0%,"public CollectingMatcher(DocumentBatch docs) {
+        super(docs);
+    }",40-42
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector$MatchLeafCollector,setScorer,(Lorg/apache/lucene/search/Scorer;)V,2,2,100.0%,"@Override
+            public void setScorer(Scorer scorer) throws IOException {
+                MatchCollector.this.scorer = scorer;
+            }",95-98
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector$MatchLeafCollector,collect,(I)V,4,4,100.0%,"@Override
+            public void collect(int doc) throws IOException {
+                match = doMatch(queryId, docs.resolveDocId(doc), scorer);
+                if (match != null)
+                    addMatch(match);
+            }",100-105
+uk.co.flax.luwak.matchers.CollectingMatcher,<init>,(Luk/co/flax/luwak/DocumentBatch;)V,2,2,100.0%,"public CollectingMatcher(DocumentBatch docs) {
+        super(docs);
+    }",40-42
+uk.co.flax.luwak.matchers.CollectingMatcher,doMatchQuery,(Ljava/lang/String;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,7,7,100.0%,"@Override
+    protected void doMatchQuery(final String queryId, Query matchQuery, Map<String, String> metadata) throws IOException {
+
+        MatchCollector coll = buildMatchCollector(queryId);
+
+        long t = System.nanoTime();
+        IndexSearcher searcher = docs.getSearcher();
+        searcher.search(matchQuery, coll);
+        t = System.nanoTime() - t;
+        this.slowlog.addQuery(queryId, t);
+
+    }",44-55
+uk.co.flax.luwak.presearcher.MatchAllPresearcher,<init>,()V,2,2,100.0%,"public MatchAllPresearcher() {
+        super();
+    }",34-36
+uk.co.flax.luwak.presearcher.MatchAllPresearcher,buildQuery,(Lorg/apache/lucene/index/LeafReader;Luk/co/flax/luwak/QueryTermFilter;)Lorg/apache/lucene/search/Query;,1,1,100.0%,"@Override
+    public Query buildQuery(LeafReader reader, QueryTermFilter queryTermFilter) {
+        return new MatchAllDocsQuery();
+    }",38-41
+uk.co.flax.luwak.presearcher.MatchAllPresearcher,indexQuery,(Lorg/apache/lucene/search/Query;Ljava/util/Map;)Lorg/apache/lucene/document/Document;,1,1,100.0%,"@Override
+    public Document indexQuery(Query query, Map<String, String> metadata) {
+        return new Document();
+    }",43-46

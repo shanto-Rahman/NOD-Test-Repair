@@ -1,0 +1,50 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+info.archinnov.achilles.embedded.CassandraEmbeddedServer,<init>,(Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,3,"['gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+info.archinnov.achilles.embedded.ServerStarter,start,(Linfo/archinnov/achilles/embedded/CassandraConfig;)V,3,"['llama_embeddings.csv', 'qwen_embeddings.csv', 'tf-idf_embeddings.csv']"
+info.archinnov.achilles.internal.consistency.ConsistencyConverter,getCQLLevel,(Linfo/archinnov/achilles/type/ConsistencyLevel;)Lcom/datastax/driver/core/ConsistencyLevel;,3,"['gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+info.archinnov.achilles.embedded.AchillesInitializer,initialize,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,2,"['bigbird_embeddings.csv', 'llama_embeddings.csv']"
+info.archinnov.achilles.embedded.AchillesInitializer,initializeFromParameters,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+info.archinnov.achilles.embedded.CassandraEmbeddedServer,truncateTable,(Ljava/lang/String;Ljava/lang/String;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+info.archinnov.achilles.embedded.ServerStarter,startServer,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;)V,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper,tracing,(Lcom/datastax/driver/core/ResultSet;)V,2,"['llama_embeddings.csv', 'qwen_embeddings.csv']"
+info.archinnov.achilles.configuration.ArgumentExtractor,initDefaultReadConsistencyLevel,(Linfo/archinnov/achilles/internal/utils/ConfigMap;)Linfo/archinnov/achilles/type/ConsistencyLevel;,1,['qwen_embeddings.csv']
+info.archinnov.achilles.embedded.AchillesInitializer,createCluster,(Ljava/lang/String;ILinfo/archinnov/achilles/type/TypedMap;)Lcom/datastax/driver/core/Cluster;,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.embedded.AchillesInitializer,createKeyspaceIfNeeded,(Lcom/datastax/driver/core/Cluster;Ljava/lang/String;Ljava/lang/Boolean;)V,1,['llama_embeddings.csv']
+info.archinnov.achilles.embedded.CassandraConfig,cqlRandomPort,()I,1,['qwen_embeddings.csv']
+info.archinnov.achilles.embedded.CassandraConfig,write,()V,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.embedded.ServerStarter,cleanCassandraDataFiles,(Linfo/archinnov/achilles/type/TypedMap;)V,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.embedded.ServerStarter,isAlreadyRunning,()Z,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.embedded.StateRepository,addNewManagerToKeyspace,(Ljava/lang/String;Linfo/archinnov/achilles/persistence/PersistenceManager;)V,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.internal.context.AbstractFlushContext,executeBatch,(Lcom/datastax/driver/core/BatchStatement$Type;Ljava/util/List;)V,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.context.DaoContextFactory,create,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internal/metadata/parsing/context/ParsingResult;Linfo/archinnov/achilles/internal/context/ConfigurationContext;)Linfo/archinnov/achilles/internal/context/DaoContext;,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.context.DaoContextFactory,displayPreparedStatementsStats,(Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.internal.context.ImmediateFlushContext,flush,()V,1,['qwen_embeddings.csv']
+info.archinnov.achilles.internal.metadata.holder.EntityMetaBuilder,build,()Linfo/archinnov/achilles/internal/metadata/holder/EntityMeta;,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.internal.metadata.holder.PropertyMeta,encodeToComponents,(Ljava/lang/Object;)Ljava/util/List;,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.internal.metadata.holder.PropertyMeta,isClustered,()Z,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.internal.metadata.parsing.EmbeddedIdParser,buildComponentMetas,(Ljava/lang/Class;Ljava/util/Map;Ljava/util/List;)Linfo/archinnov/achilles/internal/metadata/holder/EmbeddedIdProperties;,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.metadata.parsing.EmbeddedIdParser,buildPartitionAndClusteringKeys,(Ljava/lang/Class;Ljava/util/Map;Linfo/archinnov/achilles/internal/metadata/holder/EmbeddedIdPropertiesBuilder;Linfo/archinnov/achilles/internal/metadata/holder/EmbeddedIdPropertiesBuilder;Linfo/archinnov/achilles/internal/metadata/holder/EmbeddedIdPropertiesBuilder;)Z,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.internal.metadata.parsing.EmbeddedIdParser,parseEmbeddedId,(Ljava/lang/Class;)Linfo/archinnov/achilles/internal/metadata/holder/EmbeddedIdProperties;,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.internal.metadata.parsing.EntityParser,parseEntity,(Linfo/archinnov/achilles/internal/metadata/parsing/context/EntityParsingContext;)Linfo/archinnov/achilles/internal/metadata/holder/EntityMeta;,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.internal.metadata.parsing.PropertyParser,parseEmbeddedId,(Linfo/archinnov/achilles/internal/metadata/parsing/context/PropertyParsingContext;)Linfo/archinnov/achilles/internal/metadata/holder/PropertyMeta;,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.metadata.parsing.PropertyParser,parseSimpleProperty,(Linfo/archinnov/achilles/internal/metadata/parsing/context/PropertyParsingContext;)Linfo/archinnov/achilles/internal/metadata/holder/PropertyMeta;,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext,setCustomConsistencyLevels,(Z)V,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.internal.metadata.transcoding.CompoundTranscoder,encodeToComponents,(Linfo/archinnov/achilles/internal/metadata/holder/PropertyMeta;Ljava/lang/Object;)Ljava/util/List;,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.internal.persistence.operations.EntityValidator,validatePrimaryKey,(Linfo/archinnov/achilles/internal/metadata/holder/PropertyMeta;Ljava/lang/Object;)V,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.internal.proxy.ProxyClassFactory,createProxyClass,(Ljava/lang/Class;Linfo/archinnov/achilles/internal/context/ConfigurationContext;)Ljava/lang/Class;,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.internal.reflection.ReflectionInvoker,setValueToField,(Ljava/lang/Object;Ljava/lang/reflect/Field;Ljava/lang/Object;)V,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.statement.prepared.PreparedStatementBinder,bindForInsert,(Linfo/archinnov/achilles/internal/context/facade/PersistentStateHolder;Lcom/datastax/driver/core/PreparedStatement;Ljava/util/List;)Linfo/archinnov/achilles/internal/statement/wrapper/BoundStatementWrapper;,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.statement.prepared.PreparedStatementBinder,bindStatementWithOnlyPKInWhereClause,(Linfo/archinnov/achilles/internal/context/facade/PersistentStateHolder;Lcom/datastax/driver/core/PreparedStatement;Linfo/archinnov/achilles/type/ConsistencyLevel;)Linfo/archinnov/achilles/internal/statement/wrapper/BoundStatementWrapper;,1,['codebert_embeddings.csv']
+info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator,prepareClusteredCounterQueryMap,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internal/metadata/holder/EntityMeta;)Ljava/util/Map;,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator,prepareSimpleCounterQueryMap,(Lcom/datastax/driver/core/Session;)Ljava/util/Map;,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.internal.table.TableCreator,addClusteringOrder,(Linfo/archinnov/achilles/internal/metadata/holder/PropertyMeta;Linfo/archinnov/achilles/schemabuilder/Create$Options;)V,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.internal.table.TableCreator,createTable,(Lcom/datastax/driver/core/Session;Linfo/archinnov/achilles/internal/metadata/holder/EntityMeta;)V,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.internal.table.TableCreator,createTableForCounter,(Lcom/datastax/driver/core/Session;Z)V,1,['qwen_embeddings.csv']
+info.archinnov.achilles.internal.table.TableCreator,fetchTableMetaData,(Lcom/datastax/driver/core/KeyspaceMetadata;Ljava/lang/String;)Ljava/util/Map;,1,['llama_embeddings.csv']
+info.archinnov.achilles.internal.table.TableNameNormalizer,normalizerAndValidateColumnFamilyName,(Ljava/lang/String;)Ljava/lang/String;,1,['codebert_embeddings.csv']
+info.archinnov.achilles.json.DefaultObjectMapperFactory,<init>,()V,1,['codebert_embeddings.csv']
+info.archinnov.achilles.persistence.PersistenceManagerFactory,warmUpProxies,()V,1,['tf-idf_embeddings.csv']
+info.archinnov.achilles.schemabuilder.Create,buildInternal,()Ljava/lang/String;,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.schemabuilder.Create,validateColumnsDeclaration,()V,1,['bigbird_embeddings.csv']
+info.archinnov.achilles.schemabuilder.Create$Options,buildOptions,()Ljava/lang/String;,1,['gpt2_embeddings.csv']
+info.archinnov.achilles.schemabuilder.TableOptions,buildCommonOptions,()Ljava/util/List;,1,['bigbird_embeddings.csv']

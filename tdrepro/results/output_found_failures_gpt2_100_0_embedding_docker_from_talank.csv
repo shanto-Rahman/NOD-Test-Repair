@@ -1,0 +1,117 @@
+slug,module,test,method_id,line_number,actual_line,log_file,class_name,method_name,total_time_seconds,iteration_count
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable,5,173,"        throw new IOException(""Failed create of: "" + this.homedir.toString());
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin#testDeleteTable-con-after-changedCode-0_9_4.txt,org.apache.hadoop.hbase.regionserver.Store,<init>,5943.59,66
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testCreateTable,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin#testCreateTable-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,85.48,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestStatusResource.testGetClusterStatusXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestStatusResource#testGetClusterStatusXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.87,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestStatusResource.testGetClusterStatusPB,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestStatusResource#testGetClusterStatusPB-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.67,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster.testDFSMiniCluster,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.Test00MiniCluster#testDFSMiniCluster-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,87.54,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster.testZooKeeperMiniCluster,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.Test00MiniCluster#testZooKeeperMiniCluster-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,86.1,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster.testHBaseMiniCluster,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.Test00MiniCluster#testHBaseMiniCluster-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,86.79,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.Test00MiniCluster.testStargateServlet,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.Test00MiniCluster#testStargateServlet-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,86.83,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable.testGetTableDescriptor,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testGetTableDescriptor-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,84.52,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable.testGet,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testGet-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,87.65,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable.testPut,5,173,"        throw new IOException(""Failed create of: "" + this.homedir.toString());
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testPut-con-after-changedCode-0_9_4.txt,org.apache.hadoop.hbase.regionserver.Store,<init>,4270.18,73
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable.testDelete,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testDelete-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,84.33,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.client.TestRemoteTable.testScanner,6,173,"        throw new IOException(""Failed create of: "" + this.homedir.toString());
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.client.TestRemoteTable#testScanner-con-after-changedCode-0_9_4.txt,org.apache.hadoop.hbase.regionserver.Store,<init>,4572.75,79
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource.testTableListText,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestTableResource#testTableListText-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.08,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource.testTableListJSON,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestTableResource#testTableListJSON-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.15,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource.testTableListXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestTableResource#testTableListXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.01,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestTableResource.testTableListPB,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestTableResource#testTableListPB-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.48,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testNoFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testNoFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,92.38,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testPrefixFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testPrefixFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.59,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testPageFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testPageFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.57,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testInclusiveStopFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testInclusiveStopFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.26,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testQualifierFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testQualifierFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.71,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testRowFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testRowFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.8,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testValueFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testValueFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,92.75,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testSkipFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testSkipFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.41,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testFilterList,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testFilterList-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.55,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannersWithFilters.testFirstKeyOnlyFilter,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannersWithFilters#testFirstKeyOnlyFilter-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.53,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.util.TestHTableTokenBucket.testTokenBucketConfig,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.util.TestHTableTokenBucket#testTokenBucketConfig-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,87.84,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.util.TestHTableTokenBucket.testTokenBucket,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.util.TestHTableTokenBucket#testTokenBucket-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.31,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator.testGetPlainUser,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetPlainUser-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,86.29,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator.testGetAdminUser,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetAdminUser-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,85.69,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator.testGetUserUnknown,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetUserUnknown-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,87.65,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator.testGetDisabledUser,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestZooKeeperAuthenticator#testGetDisabledUser-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,86.13,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource.testGetStargateVersionText,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionText-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.34,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource.testGetStargateVersionXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.92,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource.testGetStargateVersionJSON,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionJSON-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.97,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource.testGetStargateVersionPB,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStargateVersionPB-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.34,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource.testGetStorageClusterVersionText,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStorageClusterVersionText-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.1,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource.testGetStorageClusterVersionXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStorageClusterVersionXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.57,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestVersionResource.testGetStorageClusterVersionJSON,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestVersionResource#testGetStorageClusterVersionJSON-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.92,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testDelete,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testDelete-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,91.7,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testSingleCellGetPutXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetPutXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.46,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testSingleCellGetPutPB,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetPutPB-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,92.11,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testSingleCellGetPutBinary,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetPutBinary-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,91.47,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testSingleCellGetJSON,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testSingleCellGetJSON-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.61,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testURLEncodedKey,7,173,"        throw new IOException(""Failed create of: "" + this.homedir.toString());
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testURLEncodedKey-con-after-changedCode-0_9_4.txt,org.apache.hadoop.hbase.regionserver.Store,<init>,5119.35,86
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testMultiCellGetPutXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testMultiCellGetPutXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,91.94,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestRowResource.testMultiCellGetPutPB,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestRowResource#testMultiCellGetPutPB-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.14,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator.testGetPlainUser,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetPlainUser-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,85.42,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator.testGetAdminUser,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetAdminUser-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,86.13,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator.testGetUserUnknown,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetUserUnknown-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,84.05,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator.testGetDisabledUser,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.auth.TestHTableAuthenticator#testGetDisabledUser-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,84.57,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestSchemaResource.testTableCreateAndDeleteXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestSchemaResource#testTableCreateAndDeleteXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.93,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestSchemaResource.testTableCreateAndDeletePB,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestSchemaResource#testTableCreateAndDeletePB-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,88.94,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource.testSimpleScannerXML,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannerResource#testSimpleScannerXML-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.59,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource.testSimpleScannerPB,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannerResource#testSimpleScannerPB-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,90.45,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource.testSimpleScannerBinary,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannerResource#testSimpleScannerBinary-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,89.48,1
+apache/hbase,contrib/stargate/core,org.apache.hadoop.hbase.stargate.TestScannerResource.testFullTableScan,0,79,"      final HRegionServer server) {
+",/NOD-Test-Repair/Java/logs-to-reproduce/100_0/org.apache.hadoop.hbase.stargate.TestScannerResource#testFullTableScan-con-after-changedCode-0_0_4.txt,org.apache.hadoop.hbase.regionserver.MemStoreFlusher,<init>,91.66,1

@@ -1,0 +1,42 @@
+Failure
+"Running org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest
+2025-05-04 12:06:28,242 INFO [org.apache.dubbo.common.logger.LoggerFactory:?] - using logger: org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter
+2025-05-04 12:13:47,888 INFO [org.apache.dubbo.remoting.transport.AbstractServer:<init>] -  [DUBBO] Start NettyServer bind /0.0.0.0:55555, export localhost/127.0.0.1:55555, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+Server bind successfully
+2025-05-04 12:15:30,647 INFO [org.apache.dubbo.remoting.transport.netty.NettyClient:doConnect] -  [DUBBO] Close new netty channel [id: 0x37ea2775, /172.17.0.1:32842 => /172.17.0.1:55555], because the client closed., dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+Exception 
+2025-05-04 12:15:47,267 WARN [org.apache.dubbo.remoting.transport.AbstractClient:run] -  [DUBBO] client reconnect to localhost:55555 find error . url: header://localhost:55555?codec=exchange&heartbeat=1000&transporter=netty3, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+org.apache.dubbo.remoting.RemotingException: Failed connect to server localhost/127.0.0.1:55555 from NettyClient 172.17.0.1 using dubbo version 2.7.0-SNAPSHOT, cause: Connect wait timeout: 1000ms.
+	at org.apache.dubbo.remoting.transport.AbstractClient.connect(AbstractClient.java:279)
+	at org.apache.dubbo.remoting.transport.AbstractClient$1.run(AbstractClient.java:156)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:308)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:294)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+2025-05-04 12:15:49,467 INFO [org.apache.dubbo.remoting.transport.AbstractServer:close] -  [DUBBO] Close NettyServer bind /0.0.0.0:55555, export localhost/127.0.0.1:55555, dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-04 12:16:04,285 INFO [org.apache.dubbo.remoting.transport.netty.NettyChannel:close] -  [DUBBO] Close netty channel [id: 0x25b50c41, /10.157.89.50:36264 => /172.17.0.1:55555], dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+2025-05-04 12:16:13,495 WARN [org.apache.dubbo.remoting.transport.AbstractServer:disconnected] -  [DUBBO] All clients has discontected from /172.17.0.1:55555. You can graceful shutdown now., dubbo version: 2.7.0-SNAPSHOT, current host: 172.17.0.1
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 591.174 sec <<< FAILURE! - in org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest
+testHeartbeat(org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest)  Time elapsed: 588.259 sec  <<< ERROR!
+org.apache.dubbo.remoting.RemotingException: client(url: header://localhost:55555?codec=exchange&heartbeat=1000&transporter=netty3) failed to connect to server localhost/127.0.0.1:55555 client-side timeout 3000ms (elapsed: 11245ms) from netty client 172.17.0.1 using dubbo version 2.7.0-SNAPSHOT
+	at org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandlerTest.testHeartbeat(HeartbeatHandlerTest.java:83)
+Found AGENT PRINT****
+ Total # Conflicting items are = 0
+[]
+Results :
+Tests in error: 
+  HeartbeatHandlerTest.testHeartbeat:83 » Remoting client(url: header://localhos...
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for dubbo-remoting-netty 2.7.0-SNAPSHOT:
+[INFO] dubbo-remoting-netty ............................... FAILURE [09:52 min]
+[INFO] dubbo-dependencies-bom ............................. SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  09:53 min
+[INFO] Finished at: 2025-05-04T12:16:19-05:00
+[INFO] ------------------------------------------------------------------------"

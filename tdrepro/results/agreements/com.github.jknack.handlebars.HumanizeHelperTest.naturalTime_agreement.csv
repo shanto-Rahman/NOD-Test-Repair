@@ -1,0 +1,39 @@
+Class,Method,Descriptor,num_csvs_topk,csvs_having_method
+com.github.jknack.handlebars.internal.HelperResolver,helper,(Ljava/lang/String;)Lcom/github/jknack/handlebars/Helper;,5,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.internal.TemplateBuilder,newVar,(Lorg/antlr/v4/runtime/Token;Lcom/github/jknack/handlebars/internal/Variable$Type;Ljava/util/List;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)Lcom/github/jknack/handlebars/Template;,4,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.Context,get,(Ljava/lang/String;)Ljava/lang/Object;,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'gpt2_embeddings.csv']"
+com.github.jknack.handlebars.internal.TemplateBuilder,<init>,(Lcom/github/jknack/handlebars/Handlebars;Ljava/lang/String;Ljava/util/Map;Ljava/util/LinkedList;)V,3,"['bigbird_embeddings.csv', 'llama_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.internal.Variable,merge,(Lcom/github/jknack/handlebars/Context;Ljava/io/Writer;)V,3,"['bigbird_embeddings.csv', 'codebert_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.Handlebars,registerBuiltinsHelpers,(Lcom/github/jknack/handlebars/Handlebars;)V,2,"['bigbird_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.HumanizeHelper,register,(Lcom/github/jknack/handlebars/Handlebars;)V,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+com.github.jknack.handlebars.helper.I18nHelper,registerHelper,(Lcom/github/jknack/handlebars/Handlebars;)V,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+com.github.jknack.handlebars.internal.HbsParserFactory,create,(Lcom/github/jknack/handlebars/Handlebars;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/github/jknack/handlebars/Parser;,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.internal.HbsParserFactory$1,parse,(Ljava/lang/String;)Lcom/github/jknack/handlebars/Template;,2,"['bigbird_embeddings.csv', 'codebert_embeddings.csv']"
+com.github.jknack.handlebars.internal.HelperResolver,<init>,(Lcom/github/jknack/handlebars/Handlebars;)V,2,"['llama_embeddings.csv', 'tf-idf_embeddings.csv']"
+com.github.jknack.handlebars.internal.HelperResolver,params,(Lcom/github/jknack/handlebars/Context;)[Ljava/lang/Object;,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.internal.HelperResolver,params,(Ljava/util/List;)Lcom/github/jknack/handlebars/internal/HelperResolver;,2,"['codebert_embeddings.csv', 'qwen_embeddings.csv']"
+com.github.jknack.handlebars.internal.TemplateBuilder,hash,(Ljava/util/List;)Ljava/util/Map;,2,"['codebert_embeddings.csv', 'gpt2_embeddings.csv']"
+com.github.jknack.handlebars.Context,setResolver,(Lcom/github/jknack/handlebars/ValueResolver;)V,1,['gpt2_embeddings.csv']
+com.github.jknack.handlebars.Context$Builder,build,()Lcom/github/jknack/handlebars/Context;,1,['bigbird_embeddings.csv']
+com.github.jknack.handlebars.Handlebars,compile,(Ljava/lang/String;)Lcom/github/jknack/handlebars/Template;,1,['tf-idf_embeddings.csv']
+com.github.jknack.handlebars.Handlebars,compile,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/github/jknack/handlebars/Template;,1,['tf-idf_embeddings.csv']
+com.github.jknack.handlebars.Handlebars,compile,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/github/jknack/handlebars/Template;,1,['tf-idf_embeddings.csv']
+com.github.jknack.handlebars.Handlebars,prettyWhitespaces,()Z,1,['gpt2_embeddings.csv']
+com.github.jknack.handlebars.Handlebars,registerHelper,(Ljava/lang/String;Lcom/github/jknack/handlebars/Helper;)Lcom/github/jknack/handlebars/Handlebars;,1,['llama_embeddings.csv']
+com.github.jknack.handlebars.Handlebars,with,(Lcom/github/jknack/handlebars/TemplateCache;)Lcom/github/jknack/handlebars/Handlebars;,1,['llama_embeddings.csv']
+com.github.jknack.handlebars.Handlebars$Utils,escapeExpression,(Ljava/lang/CharSequence;)Ljava/lang/String;,1,['bigbird_embeddings.csv']
+com.github.jknack.handlebars.HumanizeHelper$9,apply,(Ljava/lang/Object;Lcom/github/jknack/handlebars/Options;)Ljava/lang/CharSequence;,1,['llama_embeddings.csv']
+com.github.jknack.handlebars.Options,<init>,(Lcom/github/jknack/handlebars/Handlebars;Lcom/github/jknack/handlebars/Context;Lcom/github/jknack/handlebars/Template;Lcom/github/jknack/handlebars/Template;[Ljava/lang/Object;Ljava/util/Map;)V,1,['tf-idf_embeddings.csv']
+com.github.jknack.handlebars.Options$Builder,<init>,(Lcom/github/jknack/handlebars/Handlebars;Lcom/github/jknack/handlebars/Context;Lcom/github/jknack/handlebars/Template;)V,1,['tf-idf_embeddings.csv']
+com.github.jknack.handlebars.Options$Builder,build,()Lcom/github/jknack/handlebars/Options;,1,['gpt2_embeddings.csv']
+com.github.jknack.handlebars.TemplateLoader,setPrefix,(Ljava/lang/String;)V,1,['gpt2_embeddings.csv']
+com.github.jknack.handlebars.helper.I18nHelper,registerHelpers,(Lcom/github/jknack/handlebars/Handlebars;)V,1,['tf-idf_embeddings.csv']
+com.github.jknack.handlebars.internal.BaseTemplate,apply,(Ljava/lang/Object;)Ljava/lang/String;,1,['tf-idf_embeddings.csv']
+com.github.jknack.handlebars.internal.BaseTemplate,wrap,(Ljava/lang/Object;)Lcom/github/jknack/handlebars/Context;,1,['llama_embeddings.csv']
+com.github.jknack.handlebars.internal.HbsErrorReporter,<init>,(Ljava/lang/String;)V,1,['llama_embeddings.csv']
+com.github.jknack.handlebars.internal.HbsParserFactory,create,(Lcom/github/jknack/handlebars/Handlebars;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/LinkedList;)Lcom/github/jknack/handlebars/Parser;,1,['codebert_embeddings.csv']
+com.github.jknack.handlebars.internal.TemplateBuilder,visitBody,(Lcom/github/jknack/handlebars/internal/HbsParser$BodyContext;)Lcom/github/jknack/handlebars/Template;,1,['bigbird_embeddings.csv']
+com.github.jknack.handlebars.internal.TemplateBuilder,visitTemplate,(Lcom/github/jknack/handlebars/internal/HbsParser$TemplateContext;)Lcom/github/jknack/handlebars/Template;,1,['qwen_embeddings.csv']
+com.github.jknack.handlebars.internal.TemplateBuilder,visitVar,(Lcom/github/jknack/handlebars/internal/HbsParser$VarContext;)Lcom/github/jknack/handlebars/Template;,1,['qwen_embeddings.csv']
+com.github.jknack.handlebars.internal.Variable,endDelimiter,(Ljava/lang/String;)Lcom/github/jknack/handlebars/internal/Variable;,1,['gpt2_embeddings.csv']
+com.github.jknack.handlebars.internal.Variable,startDelimiter,(Ljava/lang/String;)Lcom/github/jknack/handlebars/internal/Variable;,1,['gpt2_embeddings.csv']
