@@ -342,10 +342,11 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
         print("log file name=", log_file)
         if has_errors_or_failures(log_file):
             print("Found Errors: 1 or Failures: 1")
-            return True
+            # Will check if the failure is the one that we desired
+            return True, log_file
         else:
             print("No Errors: 1 or Failures: 1")
-            return False
+            return False, log_file
 
 def append_token_row(csv_path, slug, module, test, token_count):
     p = Path(csv_path)
@@ -455,6 +456,24 @@ def gemini_output_calculate(test_code, ml_technique, code_under_test_meths, line
         #continue
     return "NA", str(retry_count), "Failure not found"
 
+def log_similarity_check(failure_log, test_run_log, test):
+    #Call the function to check the log match 
+    #test_run_log, failure_log,
+    #python3 log_similarity_init.py failure_log test_run_log test
+    result = subprocess.check_output(
+        ["python3", log_similarity_init.py, failure_log, test_run_log, test],
+            text=True
+            ).strip()
+    ith open(output_file, "a") as f:
+       if "MisMatched" in result:
+           #f.write("2;")
+           #print("MisMatched Failure found.")
+           return False
+       else:
+           f.write("1;")
+           print(f"{result} Matched Failure found.") 
+           return True
+
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 5
     tried_methods = set()
@@ -519,21 +538,31 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
                 if class_path_list:
                     failure_count = 0
-                    first_failed = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                    first_failed, test_run_log = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
                     if not first_failed:
                         print("First run: no failure; skipping additional runs.")
                         print("Only 0/1 runs failed. Not considering as valid failure.")
                     else:
                        # First run failed → run 4 more times (total 5)
                         failure_count = 1
-                        for run_id in range(1, 5):
-                            if run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
-                                failure_count += 1
-                        if failure_count >=3:
-                            print(f"Failure found in {failure_count}/5 runs.")
-                            return line, f"{retry_count}_{idx}", "Failure found."
+                        # Will check the logs 
+                        log_similar = log_similarity_check(failure_log, test_run_log, test)
+                        if not log_similar:
+                            #Call to the GPT that log does not match, so find a different location
                         else:
-                            print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
+                            for run_id in range(1, 5):
+                                _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                                log_similar = log_similarity_check(failure_log, test_run_log, test)
+                                if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+                                    #Call the function to check the log match 
+                                    failure_count += 1
+                                else:
+                                    #Call to the GPT that log does not match, so find a different location
+                            if failure_count >=3:
+                                print(f"Failure found in {failure_count}/5 runs.")
+                                return line, f"{retry_count}_{idx}", "Failure found."
+                            else:
+                                print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
                 else:
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
@@ -833,6 +862,8 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     df_with_cluster.to_csv("M.csv", index=False)
     #print(df_with_cluster)
     embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
+
+    os.makedirs("metadata/embedings", exist_ok=True)
     csv_that_saved_embedding = "metadata/embedings/"+test+"_"+embed_model_name+"_embeddings.csv"
     #csv_that_saved_embedding = "metadata/embedings_ablation_0_100/"+test+"_"+embed_model_name+"_embeddings.csv"
     embedding_required_to_generate =  True #False
