@@ -58,7 +58,7 @@ python3 wrapper_for_sequential_delay_injection_to_check_each_embedding_model.py 
 
 For running each test 100 times to get the failure, run the following command.
 ```
- bash rq2.sh results/tdrepro.csv result/ "idoft"
+ bash rq2.sh results/tdrepro.csv results/ "idoft"
 ```
 
 To run the script for parsing the ranking methods by sequentially injecting delay before each line, run the following command.
