@@ -36,17 +36,20 @@ for entry in "${IDS[@]}"; do
         --name "hbase_run_${id}" \
         hbase:shanto \
         bash -c "
-             set -euxo pipefail
+            set -x pipefail
             . \$HOME/.profile
+            cd /NOD-Test-Repair/Results
+            unzip *.zip
             cd /NOD-Test-Repair/Java
-            conda activate tdrepro
+            conda activate tdrepro || echo 'Conda activation failed'
             export OPENAI_API_KEY=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
-            bash search_for_failure_reproducing.sh ../data/new_70_tests.csv flakerake_new $id
+            bash runAll.sh ../data/talank_with_test_id_idoft.csv Result/
         "
+
+    docker logs -f "hbase_run_${id}" &
 done
 
-# Wait for all background processes to finish
-wait
+docker wait $(docker ps -q --filter "name=hbase_run_") > /dev/null
 
 for entry in "${IDS[@]}"; do
     IFS=',' read -r id slug commit module test_name <<< "$entry"
