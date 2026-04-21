@@ -251,10 +251,6 @@ def find_class_file(class_name, slug, module):
     for pattern in search_patterns:
         candidates.extend(base_dir.glob(pattern))
 
-    # ---- fallback for unqualified class names like "State" ----
-    #if not candidates and "." not in class_name:
-    #    candidates = list(base_dir.glob(f"**/{class_name}.java"))
-    # Fallback for unqualified class names like "State"
     if not candidates and "." not in class_name:
         local_candidates = list(Path(f"projects/{slug}/{module}").glob(f"**/{class_name}.java"))
         if local_candidates:
@@ -268,40 +264,6 @@ def find_class_file(class_name, slug, module):
         return [str(candidates[0])]
  
     return []
-    ## Step 1: Check in the given module
-    #main_path = Path(f"projects/{slug}/{module}/src/main/java/{rel_path}")
-    #if main_path.exists():
-    #    return str(main_path)
-
-    ## Step 2: Search all modules under projects/<slug>/
-    #base_dir = Path(f"projects/{slug}")
-    ##candidates = list(base_dir.glob(f"**/src/main/java/**/{class_name}.java"))
-    #candidates = list(base_dir.glob(f"**/src/main/java/**/{rel_path}"))
-    #print("All candidates before filtering:", candidates)
-
-
-
-
-
-    # Step 3: Filter out matches from the given module itself
-
-    #if module != ".":
-    #    module_path = (base_dir / module).resolve()
-    #    candidates = [c for c in candidates if module_path not in c.resolve().parents]
-    #for c in candidates:
-    #    if c.exists():
-    #        print(f"[INFO] Found class file: {c}")
-    #        return str(c)
-    #print("Filtered candidates:", candidates)  # <-- Add this line
-
-    # Step 4: Return the first alternative match (if any)
-    #if candidates:
-    #    print(f"[INFO] Class {class_name} not found in {module}, using {candidates[0]}")
-    #    return str(candidates[0])
-
-    #print(f"[WARN] Class {class_name} not found in any module.")
-    #exit()
-    
 
 # Filter out methods with empty or trivial bodies
 def is_non_empty_body(body):
@@ -329,10 +291,7 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
             check=True, text=True, capture_output=True
         )
         out = result_run.stdout.strip()
-        #print("***out****", out)
-        #print(CURRENT_DIR +"/logs-to-reproduce/" + test_with_hash+"-con-after-changedCode-"+tag+".txt")
         firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
-        #return (firstLine == "Failure found.")
         failed = (firstLine == "Failure found.")
         #return failed, None, (out if failed else None)
         return failed, CURRENT_DIR +"/logs-to-reproduce/" + test_with_hash + "-con-after-changedCode-"+tag+".txt"
@@ -467,15 +426,9 @@ def append_token_row(csv_path, slug, module, test, token_count):
     return "NA", str(retry_count), "Failure not found"'''
 
 def log_similarity_check(failure_log_file, test_run_log_file, test):
-    #Call the function to check the log match 
-    #test_run_log, failure_log,
-    #python3 log_similarity_init.py failure_log test_run_log test
-    #if isinstance(failure_log, pd.Series):
-    #    failure_log = failure_log["Failure"]   # or failure_log.iloc[0]
-    print("failure_log type:", type(failure_log_file))
-    print("test_run_log type:", type(test_run_log_file))
-    print("test type:", type(test))
-    
+    #print("failure_log type:", type(failure_log_file))
+    #print("test_run_log type:", type(test_run_log_file))
+    #print("test type:", type(test))
     print("failure_log value:", failure_log_file)
     print("test_run_log value:", test_run_log_file)
     print("test value:", test)
@@ -484,13 +437,9 @@ def log_similarity_check(failure_log_file, test_run_log_file, test):
         ["python3", CURRENT_DIR + "/log_similarity_init.py", str(failure_log_file), str(test_run_log_file), str(test)],
             text=True
             ).strip()
-    #with open(output_file, "a") as f:
     if "MisMatched" in result:
-        #f.write("2;")
-        #print("MisMatched Failure found.")
         return False
     else:
-        #f.write("1;")
         print(f"{result} Matched Failure found.") 
         return True
 
@@ -534,8 +483,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             line = line.strip()
             if not line:
                 continue  # skip empty lines
-            # Example: split into parts
-            # Format: Class:Method:Descriptor:LineNumber (ActualCodeLine)
             m = re.match(r"^(.*?):(.*?):(.*?):(\d+)\s+\((.*)\)$", line)
             if m:
                 class_name = m.group(1)
@@ -568,16 +515,16 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         # Will check the logs 
                         log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
 
-                        print("org failure_log=", failure_log)
-                        print("test_run_log=", test_run_log)
-                        exit()
+                        #print("org failure_log=", failure_log)
+                        #print("test_run_log=", test_run_log)
+                        #exit()
                         if not log_similar:
                             print("failure log does not match.")
                             failure_happened_but_log_matched = False
                         else:
                             for run_id in range(1, 5):
                                 _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
-                                log_similar = log_similarity_check(failure_log, test_run_log, test)
+                                log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
                                 if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
                                     #Call the function to check the log match 
                                     failure_count += 1
