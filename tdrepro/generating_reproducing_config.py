@@ -125,7 +125,7 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
     )
     return common_df
 
-def gemini_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=10):
+'''def gemini_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=10):
     retry_count = 0
     #response = client.models.generate_content(
     #model="gemini-2.5-flash",   # ✅ use one of the listed models
@@ -179,7 +179,7 @@ def gemini_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_succes
                 raise
 
     print("Max retries reached. Returning None.")
-    return None
+    return None'''
 
 
 def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
@@ -448,7 +448,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
     tried_methods = set()
 
     prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
-    print("prompt=", prompt)
+    #print("prompt=", prompt)
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
@@ -464,8 +464,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
         response_content = response['choices'][0]['message']['content']
 
-        print("RESPONSE CONTENT =============================")
-        print(response_content)
+        #print("RESPONSE CONTENT =============================")
+        #print(response_content)
         messages.append({"role": "assistant", "content": response_content})
 
         if "</Output>" in response_content:
