@@ -59,12 +59,12 @@ def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_c
 You are an expert Java developer specializing in diagnosing async-wait flakiness in tests.
 
 You will be provided with:
-1. A non-deterministic test failure log.
+1. A test failure log.
 2. Up to 10 code-under-test methods, each with Class, Method, Descriptor, LineRange, and source code, ranked by similarity to the test code. Each method body line is prefixed with its actual file line number.
 3. The test code itself.
 
 Your task:
-- Carefully analyze each provided method and identify the **single most likely location** before which injecting a deliberate delay (e.g., Thread.sleep(...)) would consistently trigger the test failure.
+- Carefully analyze each provided method and identify the **single most likely location** before which injecting a deliberate delay (e.g., Thread.sleep(...)) would consistently trigger the test failure, which is exactly the same as the given failure (i.e., within <Failure> tag).
 - Output a ranked list (most likely first) of exactly 10 locations, each in the following format:
     Class:Method:Descriptor:FileLineNumber (ActualCodeLine)
 - The FileLineNumber is the actual line number in the source file, as shown before each line in the method body.

@@ -28,6 +28,8 @@ from helper import get_line_range, find_api_match_with_flakerake
 from modify_java_file import inject_sleep_before_line
 from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
 from token_processing import count_prompt_tokens
+
+CURRENT_DIR = os.getcwd()
 #import google.generativeai as genai
 #import os
 #from google import genai
@@ -318,6 +320,8 @@ def is_synchronized_signature(body):
 def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
     inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
     tag = f"{retry_count}_{idx}_{run_id}"
+    before, after = test.rsplit('.', 1)
+    test_with_hash = f"{before}#{after}"
     try:
         print("./run_test.sh", slug, module, test, tag)
         result_run = subprocess.run(
@@ -325,9 +329,13 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
             check=True, text=True, capture_output=True
         )
         out = result_run.stdout.strip()
-        print("***out****", out)
+        #print("***out****", out)
+        #print(CURRENT_DIR +"/logs-to-reproduce/" + test_with_hash+"-con-after-changedCode-"+tag+".txt")
         firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
-        return (firstLine == "Failure found.")
+        #return (firstLine == "Failure found.")
+        failed = (firstLine == "Failure found.")
+        #return failed, None, (out if failed else None)
+        return failed, CURRENT_DIR +"/logs-to-reproduce/" + test_with_hash + "-con-after-changedCode-"+tag+".txt"
     except subprocess.CalledProcessError as e:
         print("run_test.sh failed with exit code", e.returncode)
         print("--- stdout ---"); print(e.stdout)
@@ -335,11 +343,13 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
 
         # Inspect produced log to decide if it was a failure
         currentDir_when_exception_occurs = os.getcwd()
-        before, after = test.rsplit('.', 1)
-        test_with_hash = f"{before}#{after}"
         log_file = (currentDir_when_exception_occurs + "/logs-to-reproduce/" +
                     f"{test_with_hash}-con-after-changedCode-{tag}.txt")
         print("log file name=", log_file)
+        log_text = None
+        if os.path.exists(log_file):
+            with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
+                log_text = f.read()
         if has_errors_or_failures(log_file):
             print("Found Errors: 1 or Failures: 1")
             # Will check if the failure is the one that we desired
@@ -358,7 +368,7 @@ def append_token_row(csv_path, slug, module, test, token_count):
         w.writerow([slug, module, test, token_count])
 
 
-def gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
+'''def gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 5
     tried_methods = set()
 
@@ -454,27 +464,37 @@ def gemini_output_calculate(test_code, ml_technique, code_under_test_meths, line
         messages.append({"role": "user", "content": feedback}) 
         retry_count += 1
         #continue
-    return "NA", str(retry_count), "Failure not found"
+    return "NA", str(retry_count), "Failure not found"'''
 
-def log_similarity_check(failure_log, test_run_log, test):
+def log_similarity_check(failure_log_file, test_run_log_file, test):
     #Call the function to check the log match 
     #test_run_log, failure_log,
     #python3 log_similarity_init.py failure_log test_run_log test
+    #if isinstance(failure_log, pd.Series):
+    #    failure_log = failure_log["Failure"]   # or failure_log.iloc[0]
+    print("failure_log type:", type(failure_log_file))
+    print("test_run_log type:", type(test_run_log_file))
+    print("test type:", type(test))
+    
+    print("failure_log value:", failure_log_file)
+    print("test_run_log value:", test_run_log_file)
+    print("test value:", test)
+
     result = subprocess.check_output(
-        ["python3", log_similarity_init.py, failure_log, test_run_log, test],
+        ["python3", CURRENT_DIR + "/log_similarity_init.py", str(failure_log_file), str(test_run_log_file), str(test)],
             text=True
             ).strip()
-    ith open(output_file, "a") as f:
-       if "MisMatched" in result:
-           #f.write("2;")
-           #print("MisMatched Failure found.")
-           return False
-       else:
-           f.write("1;")
-           print(f"{result} Matched Failure found.") 
-           return True
+    #with open(output_file, "a") as f:
+    if "MisMatched" in result:
+        #f.write("2;")
+        #print("MisMatched Failure found.")
+        return False
+    else:
+        #f.write("1;")
+        print(f"{result} Matched Failure found.") 
+        return True
 
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, failure_log_csv, retry_count = 0):
     max_retries = 5
     tried_methods = set()
 
@@ -535,7 +555,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     writer.writerow([slug, module, test, class_name, line_number,code_line])
                 class_path_list = find_class_file(class_name, slug, module)
                 #print("**** class_path=", class_path)
-
+                failure_happened_but_log_matched = True
                 if class_path_list:
                     failure_count = 0
                     first_failed, test_run_log = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
@@ -546,9 +566,14 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                        # First run failed → run 4 more times (total 5)
                         failure_count = 1
                         # Will check the logs 
-                        log_similar = log_similarity_check(failure_log, test_run_log, test)
+                        log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+
+                        print("org failure_log=", failure_log)
+                        print("test_run_log=", test_run_log)
+                        exit()
                         if not log_similar:
-                            #Call to the GPT that log does not match, so find a different location
+                            print("failure log does not match.")
+                            failure_happened_but_log_matched = False
                         else:
                             for run_id in range(1, 5):
                                 _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
@@ -557,6 +582,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                                     #Call the function to check the log match 
                                     failure_count += 1
                                 else:
+                                    print("failure log does not match.")
+                                    failure_happened_but_log_matched = False
                                     #Call to the GPT that log does not match, so find a different location
                             if failure_count >=3:
                                 print(f"Failure found in {failure_count}/5 runs.")
@@ -568,16 +595,28 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             else:
                 print("Line did not match expected format:", line)
         tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
-        feedback = (
-            f"Your previous suggestion did not reproduce the failure.\n"
-            f"Here is what is already tried:\n"
-            f"Method: {method_name}\n"
-            f"Location(s):\n{meth_code}\n\n"
-            f"Please suggest a new location for delay injection in a different method, "
-            f"or a different location within a method that has not already been tried. "
-            f"Do not repeat any of the previous suggestions."
-            f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
-        )
+        if not failure_happened_but_log_matched:
+            feedback = (
+                f"Your previous suggestion did not reproduce the same failure.\n"
+                f"Here is what is already tried:\n"
+                f"Method: {method_name}\n"
+                f"Location(s):\n{meth_code}\n\n"
+                f"Please suggest a new location for delay injection in a different method, "
+                f"or a different location within a method that has not already been tried so that the original failure is reproduced. "
+                f"Do not repeat any of the previous suggestions."
+                f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
+            )
+        else:
+            feedback = (
+                f"Your previous suggestion did not reproduce the failure.\n"
+                f"Here is what is already tried:\n"
+                f"Method: {method_name}\n"
+                f"Location(s):\n{meth_code}\n\n"
+                f"Please suggest a new location for delay injection in a different method, "
+                f"or a different location within a method that has not already been tried. "
+                f"Do not repeat any of the previous suggestions."
+                f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
+            )
         messages.append({"role": "user", "content": feedback}) 
         retry_count += 1
         #continue
@@ -926,7 +965,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
+            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df, failure_log_csv)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     elif ml_technique == "gemini":
             line_to_inject_delay, cot_count, test_output = gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
