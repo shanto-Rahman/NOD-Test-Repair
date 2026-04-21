@@ -26,9 +26,7 @@ echo "Starting ${#IDS[@]} tests in parallel..."
 # Loop through every single collected ID
 for entry in "${IDS[@]}"; do
     IFS=',' read -r id slug commit module test_name <<< "$entry"
-    if [[ $id -ne 202 ]]; then
-        continue
-    fi
+    
     echo "Launching container for: $test_name (ID: $id)"
 
     # Execute Docker in the background
