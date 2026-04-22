@@ -1,15 +1,15 @@
 Run command:
 
 ```shell
-bash runAll.sh ../data/talank_with_test_id_idoft_corrected.csv Result/
+bash runAll.sh ../data/all_142_tests.csv Result/
 
-bash runAll.sh ../data/new_70_tests.csv Result/
+bash runAll.sh ../data/all_142_tests.csv Result/
 ```
 
 ```shell
 export OPENAI_API_KEY="YOUR_KEY_HERE"
-bash search_for_failure_reproducing.sh ../data/all_82_tests.csv "idoft"
-bash search_for_failure_reproducing.sh ../data/new_70_tests.csv "flakerake_new"
+bash search_for_failure_reproducing.sh ../data/all_142_tests.csv "idoft"
+bash search_for_failure_reproducing.sh ../data/all_142_tests.csv "flakerake_new"
 ```
 
 To post check log similarity (between detected and reproduced)
