@@ -980,9 +980,9 @@ if __name__ == "__main__":
     sha = sys.argv[8] 
     module = sys.argv[9] 
     test = sys.argv[10] 
-    data_is_from_which_csv = sys.argv[11] 
+    #data_is_from_which_csv = sys.argv[11] 
     initialize_environment(42)
-    if data_is_from_which_csv == "idoft":
+    '''if data_is_from_which_csv == "idoft":
         filtered_fail_log_txt = extract_block(fail_log_csv, test)
         base, _ = os.path.splitext(fail_log_csv)
         fail_log_csv = f"{base}.csv"
@@ -1002,7 +1002,7 @@ if __name__ == "__main__":
                             delimiter=",",
                             quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
             writer.writerow(["Failure"])
-            writer.writerow([big_block_fail_log]) 
+            writer.writerow([big_block_fail_log])'''
 
     start_time = time.time()
     #print(type(big_block_fail_log))
