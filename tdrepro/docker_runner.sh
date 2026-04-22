@@ -21,6 +21,11 @@ while IFS=',' read -r id slug commit module test_name; do
     IDS+=("$id,$slug,$commit,$module,$test_name")
 done < <(grep ',apache/hbase,' "$INPUT_CSV")
 
+
+if [ ${#IDS[@]} -eq 0 ]; then
+    echo "Error: No tests found matching 'apache/hbase' in $INPUT_CSV"
+    exit 1
+fi
 echo "Starting ${#IDS[@]} tests in parallel..."
 
 # Loop through every single collected ID
@@ -30,7 +35,7 @@ for entry in "${IDS[@]}"; do
     echo "Launching container for: $test_name (ID: $id)"
 
     # Execute Docker in the background
-    docker run -d \
+    docker run -d -rm \
         --name "hbase_run_${id}" \
         hbase:shanto \
         bash -c "
@@ -47,7 +52,16 @@ for entry in "${IDS[@]}"; do
     docker logs -f "hbase_run_${id}" &
 done
 
-docker wait $(docker ps -q --filter "name=hbase_run_") > /dev/null
+# docker wait $(docker ps -q --filter "name=hbase_run_") > /dev/null
+# Safety: Only run docker wait if containers were actually started
+RUNNING_CONTAINERS=$(docker ps -q --filter "name=hbase_run_")
+if [ -n "$RUNNING_CONTAINERS" ]; then
+    echo "Waiting for containers to finish..."
+    docker wait $RUNNING_CONTAINERS > /dev/null
+else
+    echo "No containers are running now."
+fi
+
 
 for entry in "${IDS[@]}"; do
     IFS=',' read -r id slug commit module test_name <<< "$entry"
