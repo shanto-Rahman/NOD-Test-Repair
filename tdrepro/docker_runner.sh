@@ -35,7 +35,7 @@ for entry in "${IDS[@]}"; do
     echo "Launching container for: $test_name (ID: $id)"
 
     # Execute Docker in the background
-    docker run -d -rm \
+    docker run -d --rm \
         --name "hbase_run_${id}" \
         hbase:shanto \
         bash -c "
