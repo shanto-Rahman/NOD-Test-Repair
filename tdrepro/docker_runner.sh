@@ -41,6 +41,7 @@ for entry in "${IDS[@]}"; do
         bash -c "
             set -x pipefail
             . \$HOME/.profile
+            . /root/miniconda3/etc/profile.d/conda.sh
             cd /NOD-Test-Repair/Results
             unzip *.zip
             cd /NOD-Test-Repair/Java
