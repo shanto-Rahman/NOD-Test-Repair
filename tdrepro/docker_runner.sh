@@ -4,16 +4,6 @@
 # Use realpath to ensure Docker volume mounts don't resolve to "volume names"
 #docker_runner.sh ../data/new_70_tests.csv hbase_Result 1
 INPUT_CSV=$(realpath "$1")
-
-#if [[ -z "$INPUT_CSV" || -z "$OUTPUT_DIR" || -z "$ITERATIONS" ]]; then
-#    echo "Usage: $0 <input-csv> <output-dir> <iterations>"
-#    exit 1
-#fi
-
-#LOGS_DIR="$(pwd)/rerun-logs"
-#mkdir -p "$OUTPUT_DIR"
-#mkdir -p "$LOGS_DIR"
-#
 # Collect all CSV rows into an array
 declare -a IDS
 while IFS=',' read -r id slug commit module test_name; do
@@ -28,6 +18,7 @@ if [ ${#IDS[@]} -eq 0 ]; then
 fi
 echo "Starting ${#IDS[@]} tests in parallel..."
 
+mkdir -p docker_results docker_logs
 # Loop through every single collected ID
 for entry in "${IDS[@]}"; do
     IFS=',' read -r id slug commit module test_name <<< "$entry"
@@ -37,17 +28,22 @@ for entry in "${IDS[@]}"; do
     # Execute Docker in the background
     docker run -d --rm \
         --name "hbase_run_${id}" \
-        hbase:shanto \
+        -v "$INPUT_CSV:/tmp/input.csv" \
+        -v "$(pwd)/docker_results:/docker_results" \
+        -v "$(pwd)/docker_logs:/docker_logs" \
+        hbase:shanto_modified \
         bash -c "
-            set -x pipefail
+            set -o pipefail
             . \$HOME/.profile
             . /root/miniconda3/etc/profile.d/conda.sh
             cd /NOD-Test-Repair/Results
             unzip *.zip
-            cd /NOD-Test-Repair/Java
+            cd /NOD-Test-Repair/tdrepro
             conda activate tdrepro || echo 'Conda activation failed'
             export OPENAI_API_KEY=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
-            bash runAll.sh ../data/talank_with_test_id_idoft.csv Result/
+            bash runAll.sh /tmp/input.csv Result/
+            cp /NOD-Test-Repair/tdrepro/results/tdrepro.csv /docker_results/${id}.csv || true
+            cp -r /NOD-Test-Repair/tdrepro/logs-to-reproduce /docker_logs/${id} || true 
         "
 
     docker logs -f "hbase_run_${id}" &
@@ -64,12 +60,12 @@ else
 fi
 
 
-for entry in "${IDS[@]}"; do
-    IFS=',' read -r id slug commit module test_name <<< "$entry"
-    if [[ $id -ne 202 ]]; then
-        continue
-    fi
-    docker cp hbase_run_${id}:/NOD-Test-Repair/Java/results/tdrepro.csv docker_results/${id}.csv
-    docker cp -r hbase_run_${id}:/NOD-Test-Repair/Java/logs-to-reproduce docker_logs/${id}
-done
+#for entry in "${IDS[@]}"; do
+#    IFS=',' read -r id slug commit module test_name <<< "$entry"
+#    if [[ $id -ne 202 ]]; then
+#        continue
+#    fi
+#    docker cp hbase_run_${id}:/NOD-Test-Repair/Java/results/tdrepro.csv docker_results/${id}.csv
+#    docker cp hbase_run_${id}:/NOD-Test-Repair/Java/logs-to-reproduce docker_logs/${id}
+#done
 echo "All containers finished."
