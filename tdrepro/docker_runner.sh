@@ -42,14 +42,19 @@ for entry in "${IDS[@]}"; do
             conda activate tdrepro || echo 'Conda activation failed'
             export OPENAI_API_KEY=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
             bash runAll.sh /tmp/input.csv Result/
-            cp /NOD-Test-Repair/tdrepro/results/tdrepro.csv /docker_results/${id}.csv || true
+            mkdir -p /docker_logs/${id}
+            mkdir -p /docker_results
+
+            cp /NOD-Test-Repair/tdrepro/Result/Test-Specific-Stat.csv /docker_results/${id}_Test-Specific-Stat.csv
             cp -r /NOD-Test-Repair/tdrepro/logs-to-reproduce /docker_logs/${id} || true 
+            chown -R \$(stat -c '%u:%g' /docker_logs) /docker_logs /docker_results || true
         "
 
     docker logs -f "hbase_run_${id}" &
 done
 
-# docker wait $(docker ps -q --filter "name=hbase_run_") > /dev/null
+#cp /NOD-Test-Repair/tdrepro/results/tdrepro.csv /docker_results/${id}.csv || true
+
 # Safety: Only run docker wait if containers were actually started
 RUNNING_CONTAINERS=$(docker ps -q --filter "name=hbase_run_")
 if [ -n "$RUNNING_CONTAINERS" ]; then
