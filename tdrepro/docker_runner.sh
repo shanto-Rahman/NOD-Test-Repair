@@ -9,6 +9,14 @@ if [ -z "$OUTPUT_NAME" ]; then
     exit 1
 fi
 
+if [[ "$OUTPUT_NAME" == "hbase" ]]; then
+    IMAGE_NAME="hbase:shanto_modified"
+    PROJECT_MOUNT=""
+else
+    IMAGE_NAME="docker-nod-repair-env:latest"
+    PROJECT_MOUNT="-v $(pwd)/..:/NOD-Test-Repair"
+fi
+
 mkdir -p docker_results docker_logs
 
 docker rm -f "hbase_run_${OUTPUT_NAME}" 2>/dev/null || true
@@ -17,9 +25,11 @@ docker run --rm \
     --name "hbase_run_${OUTPUT_NAME}" \
     -e OPENAI_API_KEY="$OPENAI_API_KEY" \
     -v "$INPUT_CSV:/tmp/input.csv" \
+    -v "$(pwd)/..:/NOD-Test-Repair" \
     -v "$(pwd)/docker_results:/docker_results" \
     -v "$(pwd)/docker_logs:/docker_logs" \
-    hbase:shanto_modified \
+    $PROJECT_MOUNT \
+    "$IMAGE_NAME" \
     bash -c "
         set -o pipefail
 
@@ -30,6 +40,8 @@ docker run --rm \
         unzip -o *.zip
 
         cd /NOD-Test-Repair/tdrepro
+        git config --global --add safe.directory '*'
+
         conda activate tdrepro || echo 'Conda activation failed'
 
         bash runAll.sh /tmp/input.csv Result/
