@@ -23,7 +23,6 @@ docker rm -f "hbase_run_${OUTPUT_NAME}" 2>/dev/null || true
 
 docker run --rm \
     --name "hbase_run_${OUTPUT_NAME}" \
-    -e OPENAI_API_KEY="$OPENAI_API_KEY" \
     -v "$INPUT_CSV:/tmp/input.csv" \
     -v "$(pwd)/..:/NOD-Test-Repair" \
     -v "$(pwd)/docker_results:/docker_results" \
