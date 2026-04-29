@@ -1,10 +1,19 @@
 Run command:
 
+
+# Docker Run
+```shell
+bash docker_runner.sh ../data/all_142_tests.csv hbase 
+bash docker_runner.sh all_tmp.csv "all" #except all tests from hbase, activiti and spring-boot
+```
+
+# Without Docker
 ```shell
 bash runAll.sh ../data/all_142_tests.csv Result/
 
 bash runAll.sh ../data/all_142_tests.csv Result/
 ```
+
 
 ```shell
 export OPENAI_API_KEY="YOUR_KEY_HERE"
