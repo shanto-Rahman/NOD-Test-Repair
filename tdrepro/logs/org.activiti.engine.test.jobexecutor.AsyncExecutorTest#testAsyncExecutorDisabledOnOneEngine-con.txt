@@ -1,0 +1,74 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.activiti:activiti-engine:jar:7.0.0-SNAPSHOT
+[[1;33mWARNING[m] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ line 183, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] It is highly recommended to fix these problems because they threaten the stability of your build.
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] For this reason, future Maven versions might no longer support building such malformed projects.
+[[1;33mWARNING[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--------------------< [0;36morg.activiti:activiti-engine[0;1m >--------------------[m
+[[1;34mINFO[m] [1mBuilding Activiti :: Engine 7.0.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M1:enforce[m [1m(enforce-java)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M1:enforce[m [1m(enforce-maven)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M1:enforce[m [1m(enforce-plugin-versions)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M1:enforce[m [1m(enforce-direct-dependencies)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] Flag 'useClassesFromLastBuild' is set. Try to use existing output folder.
+[[1;34mINFO[m] Flag 'suppressTypesFromJavaRuntime' is set. Classes available in current Java-runtime will be ignored.
+[[1;34mINFO[m] Analyze dependencies of artifact 'org.activiti:activiti-engine:jar:7.0.0-SNAPSHOT'.
+[[1;34mINFO[m] No illegal transitive dependencies found in 'org.activiti:activiti-engine:jar:7.0.0-SNAPSHOT'.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M1:enforce[m [1m(ban-blacklisted-dependencies)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mjacoco-maven-plugin:0.8.8:prepare-agent[m [1m(pre-unit-test)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] argLine set to -javaagent:/root/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/NOD-Test-Repair/tdrepro/projects/activiti/activiti/activiti-engine/target/jacoco.exec -Duser.language=en
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mjacoco-maven-plugin:0.8.8:prepare-agent[m [1m(default-prepare-agent)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] argLine set to -javaagent:/root/.m2/repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8-runtime.jar=destfile=/NOD-Test-Repair/tdrepro/projects/activiti/activiti/activiti-engine/target/jacoco.exec -Duser.language=en
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.0.1:resources[m [1m(default-resources)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 368 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.7.0:compile[m [1m(default-compile)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] Nothing to compile - all classes are up to date
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.0.1:testResources[m [1m(default-testResources)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 1070 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.7.0:testCompile[m [1m(default-testCompile)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] Nothing to compile - all classes are up to date
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:2.19.1:test[m [1m(default-test)[m @ [36mactiviti-engine[0;1m ---[m
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.activiti.engine.test.jobexecutor.AsyncExecutorTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.716 sec - in org.activiti.engine.test.jobexecutor.AsyncExecutorTest
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mjacoco-maven-plugin:0.8.8:report[m [1m(post-unit-test)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] Loading execution data file /NOD-Test-Repair/tdrepro/projects/activiti/activiti/activiti-engine/target/jacoco.exec
+[[1;34mINFO[m] Analyzed bundle 'Activiti :: Engine' with 877 classes
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mjacoco-maven-plugin:0.8.8:report[m [1m(jacoco-report)[m @ [36mactiviti-engine[0;1m ---[m
+[[1;34mINFO[m] Loading execution data file /NOD-Test-Repair/tdrepro/projects/activiti/activiti/activiti-engine/target/jacoco.exec
+[[1;34mINFO[m] Analyzed bundle 'Activiti :: Engine' with 877 classes
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;32mBUILD SUCCESS[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  6.974 s
+[[1;34mINFO[m] Finished at: 2026-04-30T23:34:13Z
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m

@@ -84,6 +84,7 @@ while IFS= read -r line
     elif [[ "$slug" == "spring-projects/spring-boot" ]]; then
         git stash 
         sed -i 's~http://repo.string.io~https://repo.spring.io~g' pom.xml
+        JMVNOPTIONS="-s $FLAKY_HOME/shell_scripts/maven-repo-fix-settings.xml"
 
 
     elif [[ $slug == "apache/dubbo" ]]; then
