@@ -28,12 +28,7 @@ mkdir -p docker_results docker_logs
 docker rm -f "spring_run_${OUTPUT_NAME}" 2>/dev/null || true
 
 docker run --rm \
-<<<<<<< Updated upstream
     --name "hbase_run_${OUTPUT_NAME}" \
-=======
-    --name "spring_run_${OUTPUT_NAME}" \
-    -e OPENAI_API_KEY="$OPENAI_API_KEY" \
->>>>>>> Stashed changes
     -v "$INPUT_CSV:/tmp/input.csv" \
     -v "$(pwd)/..:/NOD-Test-Repair" \
     -v "$(pwd)/docker_results:/docker_results" \
@@ -44,7 +39,7 @@ docker run --rm \
         set -o pipefail
 
         . \$HOME/.profile
-        # . /root/miniconda3/etc/profile.d/conda.sh
+        . /root/miniconda3/etc/profile.d/conda.sh
 
         cd /NOD-Test-Repair/Results
         unzip -o *.zip
@@ -52,7 +47,7 @@ docker run --rm \
         cd /NOD-Test-Repair/tdrepro
         git config --global --add safe.directory '*'
 
-        #conda activate tdrepro || echo 'Conda activation failed'
+        conda activate tdrepro || echo 'Conda activation failed'
 
         bash runAll.sh /tmp/input.csv Result/
 
