@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     python3 \
     python3-pip \
+    unzip
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Install Maven 3.6.3 manually

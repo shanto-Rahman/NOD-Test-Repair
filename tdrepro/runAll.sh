@@ -34,7 +34,7 @@ then
 fi
 
 test_specific_stat="$currentDir/$outputDir/Test-Specific-Stat.csv"
-echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
+#echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
 
 echo "Project-Name,SHA,Module,Test-Name,Total-Executed-Meth,Total-tokens" >> "$test_specific_stat"
 while IFS= read -r line
@@ -102,7 +102,7 @@ while IFS= read -r line
      }' pom.xml
  
     fi  
-    echo -n "${slug},${sha},${module},${testName}" >> "$currentDir/$outputDir/Isolation-Result.csv"
+    #echo -n "${slug},${sha},${module},${testName}" >> "$currentDir/$outputDir/Isolation-Result.csv"
     
     if [[ $module != "." ]]; then
         projName=$(sed 's;/;.;g' <<< $module-$testName)
@@ -248,7 +248,7 @@ while IFS= read -r line
         #rm test-classes.jar 
         rm -rf merged_classes/
         rm merged-all-classes.jar
-        echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
+        #echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
     fi
     cd $currentDir
 

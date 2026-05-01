@@ -56,7 +56,7 @@ def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_c
     failure_log_str = str(failure_log_df.iloc[0]) if hasattr(failure_log_df, "iloc") else str(failure_log_df)
     test_code_str = str(test_meth_code_df.iloc[0]) if hasattr(test_meth_code_df, "iloc") else str(test_meth_code_df)
     prompt = f"""
-You are an expert Java developer specializing in diagnosing async-wait flakiness in tests.
+You are an expert Java developer specializing in diagnosing async-wait flakiness in tests, and reproduce the exact given test failure.
 
 You will be provided with:
 1. A test failure log.
