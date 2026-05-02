@@ -464,8 +464,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
         response_content = response['choices'][0]['message']['content']
 
-        #print("RESPONSE CONTENT =============================")
-        #print(response_content)
         messages.append({"role": "assistant", "content": response_content})
 
         if "</Output>" in response_content:
@@ -477,6 +475,17 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         else:
             meth_code = "</Output> not found" #response_content
         print("**meth_code=", meth_code)
+
+
+        os.makedirs("tdrepro_gpt_responses", exist_ok=True)
+
+        file_path = f"tdrepro_gpt_responses/{test}.txt"
+        print("saving to =", file_path)
+        with open(file_path, "a") as f:
+            f.write(f"\n\n===== RETRY {retry_count} =====\n")
+            f.write(response_content)
+            f.write("\n==============================\n")
+
         # Suppose meth_code is your multiline string as shown above
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** index=", idx, ",Processing line:", line)
