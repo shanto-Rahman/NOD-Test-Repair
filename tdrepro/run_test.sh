@@ -16,8 +16,9 @@ module=$2
 testName_with_dot=$3
 testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
 id=$4
-cosine_weight=$5
-log_dir="$currentDir/logs-to-reproduce/${cosine_weight}"
+#cosine_weight=$5
+dir=$5
+log_dir="$currentDir/$dir"
 if [[ ! -d $log_dir ]]; then
 mkdir $log_dir
 fi

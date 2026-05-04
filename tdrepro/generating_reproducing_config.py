@@ -285,9 +285,9 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
     before, after = test.rsplit('.', 1)
     test_with_hash = f"{before}#{after}"
     try:
-        print("./run_test.sh", slug, module, test, tag)
+        print("./run_test.sh", slug, module, test, tag, "logs-to-reproduce")
         result_run = subprocess.run(
-            ["./run_test.sh", slug, module, test, tag],
+            ["./run_test.sh", slug, module, test, tag, "logs-to-reproduce"],
             check=True, text=True, capture_output=True
         )
         out = result_run.stdout.strip()
