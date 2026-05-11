@@ -78,7 +78,7 @@ def find_source_file_with_find(repos_root: str, slug: str, class_path: str) -> O
 #slug = "your-project-slug"        # e.g., "org.java-websocket/Java-WebSocket"
 #module = "your-module-path"       # e.g., "" (if root project) or "module-name"
 #test  = "your.test.ClassName#testMethod"  # e.g., a specific test to run
-retry_count = 0
+#retry_count = 0
 run_id = 0
 
 input_csv=sys.argv[2] #"../data/all_82_tests.csv"
@@ -174,9 +174,9 @@ with open(input_csv, newline='') as inf:
         module_with_dot = module.replace("/", ".")
         test = test_info['test']
         if module == ".":
-            fail_log_csv_name=f"logs/{id}_{proj_name_only}_{test}_stacktrace.csv"
+            failure_log_csv = f"logs/{id}_{proj_name_only}_{test}_stacktrace.csv"
         else:
-            fail_log_csv_name=f"logs/{id}_{module_with_dot}_{test}_stacktrace.csv"
+            failure_log_csv = f"logs/{id}_{module_with_dot}_{test}_stacktrace.csv"
 
         method_count = 0
         test_with_dot = test.replace("#", ".")
@@ -228,7 +228,9 @@ with open(input_csv, newline='') as inf:
                         print("**** code_line=", code_line)
                         currentDir_when_exception_occurs = os.getcwd()
                         os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/", exist_ok=True)
-                        first_failed, test_run_log = run_once(0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx)
+                        failure_happened_but_log_matched = True
+                        print("0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx=", 0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, method_count, idx)
+                        first_failed, test_run_log = run_once(0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, method_count, idx)
 
                         if not first_failed:
                             print("First run: no failure; skipping additional runs.")
@@ -245,7 +247,7 @@ with open(input_csv, newline='') as inf:
                                     #if run_once(run_id, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx):
                                     #    failure_count += 1
 
-                                    _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                                    _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, method_count, idx)
                                     log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
                                     if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
                                         #Call the function to check the log match 
@@ -254,12 +256,12 @@ with open(input_csv, newline='') as inf:
                                         print("failure log does not match.")
                                         failure_happened_but_log_matched = False
                                     #Call to the GPT that log does not match, so find a different location
-                                if failure_count >=3:
+                                if failure_count >= 3:
                                     before, after = test_with_dot.rsplit('.', 1)
                                     test_with_hash = f"{before}#{after}"
                                     print(f"Failure found in {failure_count}/5 runs.")
                                     # currentDir_when_exception_occurs = os.getcwd()
-                                    log_file = currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/"+test_with_hash+"-con-after-changedCode-"+str(retry_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
+                                    log_file = currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/"+test_with_hash+"-con-after-changedCode-"+str(method_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
                                     total_time_seconds = time.time() - start_time
                                     save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
                                     break

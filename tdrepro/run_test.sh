@@ -19,8 +19,9 @@ id=$4
 #cosine_weight=$5
 dir=$5
 log_dir="$currentDir/$dir"
+
 if [[ ! -d $log_dir ]]; then
-mkdir $log_dir
+    mkdir $log_dir
 fi
 #echo "$currentDir/logs-to-reproduce/${cosine_weight}/$testName-con-after-changedCode-$id.txt"
 #echo "cosine_weight=$cosine_weight"
@@ -32,9 +33,9 @@ if [[ $slug == "apache/dubbo" ]]; then
 fi
 cd $inputProj/$slug
 if [[ $slug == "javadelight/delight-nashorn-sandbox" ]]; then
-    mvn -Dmaven.javadoc.skip=true clean install -pl $module  -am -DskipTests
+    mvn -Dmaven.javadoc.skip=true clean install -pl $module  -am -DskipTests >  "${log_dir}/MVN-Install-con-after-changedCode-$id.txt" 2>/dev/null
 else
-    mvn clean install -pl $module  -am -DskipTests
+    mvn clean install -pl $module  -am -DskipTests >  "${log_dir}/MVN-Install-con-after-changedCode-$id.txt" 2>/dev/null
 fi
 #echo "mvn clean install -pl $module  -am -DskipTests"
 #echo "mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName -Dcheckstyle.skip=true"
@@ -47,8 +48,6 @@ if [[ $bugCount -gt 0  ]]; then
     exit 1
 else
     echo "Failure not found."
-    #git stash
-    #git checkout $(find -name "*.java")
     git checkout -- '**/*.java'
     exit 0 
 fi
