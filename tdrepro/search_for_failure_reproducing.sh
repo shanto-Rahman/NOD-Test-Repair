@@ -28,6 +28,9 @@ while read line
         #if [[ $module_org == "." ]]; then
         #echo "module name is DOT ***"
         proj_name_only=$(echo $slug_org | cut -d'/' -f2)
+	#executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
+	library_meth_list=$(find "executed_methods/classified" -name ${testName_with_dot}-ResultMethods-library-methods.txt)
+	#echo ${library_meth_list}
         #echo "$proj_name_only; ${proj_name_only}-${testName}-FlakeDelay-Run-1-*.txt"
         #log_search_csv=""
 
@@ -63,7 +66,7 @@ while read line
         echo "python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot" #"$2"
         #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "embeddingOnly" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         #python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gemini" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
-        python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot #> ${id}_log.txt
+        python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} #> ${id}_log.txt
         echo "I am here"
         #python3 barebone_llm.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         exit
