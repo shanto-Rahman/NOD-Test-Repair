@@ -5,9 +5,20 @@ from pathlib import Path
 
 def method_owner(line: str) -> str:
     line = line.strip()
-    if not line or "." not in line:
+    if not line:
         return ""
-    return line.split(".", 1)[0]
+
+    paren_idx = line.find("(")
+    if paren_idx == -1:
+        return ""
+
+    before_desc = line[:paren_idx]
+
+    dot_idx = before_desc.rfind(".")
+    if dot_idx == -1:
+        return ""
+
+    return before_desc[:dot_idx]
 
 def load_all_project_classes(project_root: str):
     root = Path(project_root)
