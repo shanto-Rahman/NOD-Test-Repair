@@ -34,7 +34,7 @@ then
 fi
 
 test_specific_stat="$currentDir/$outputDir/Test-Specific-Stat.csv"
-#echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
+echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
 
 echo "Project-Name,SHA,Module,Test-Name,Total-Executed-Meth,Total-tokens" >> "$test_specific_stat"
 while IFS= read -r line
@@ -55,7 +55,7 @@ while IFS= read -r line
     #testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
     echo "$testName"
     testClass="$(echo $testName_with_dot | rev | cut -d'.' -f2 | rev)"
-    echo "$testClass"
+    #echo "$testClass"
     
 
     rootProj=$(echo "$slug" | cut -d/ -f 1)
@@ -84,7 +84,6 @@ while IFS= read -r line
     elif [[ "$slug" == "spring-projects/spring-boot" ]]; then
         git stash 
         sed -i 's~http://repo.string.io~https://repo.spring.io~g' pom.xml
-        JMVNOPTIONS="-s NOD-Test-Repair/tdrepro/maven-repo-fix-settings.xml"
 
 
     elif [[ $slug == "apache/dubbo" ]]; then
@@ -102,7 +101,7 @@ while IFS= read -r line
      }' pom.xml
  
     fi  
-    #echo -n "${slug},${sha},${module},${testName}" >> "$currentDir/$outputDir/Isolation-Result.csv"
+    echo -n "${slug},${sha},${module},${testName}" >> "$currentDir/$outputDir/Isolation-Result.csv"
     
     if [[ $module != "." ]]; then
         projName=$(sed 's;/;.;g' <<< $module-$testName)
@@ -130,6 +129,10 @@ while IFS= read -r line
     cd $inputProj/$slug
     mvn clean install -pl $module -am -DskipTests
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
+
+    mvn edu.utexas.ece:flakesync-maven-plugin:1.0-SNAPSHOT:concurrentfind -Dflakesync.testName=$testName -pl $module
+
+    cp $module/.flakesync/${testName_with_dot}-ResultMethods.txt "$currentDir/executed_methods/"
      
     cp $currentDir/jacococli.jar .
     echo "cp $currentDir/jacococli.jar $(pwd)"
@@ -145,9 +148,9 @@ while IFS= read -r line
     for mod in $(find . -name target -type d -prune); do
       base_module=$(dirname "$mod")
 
-       echo "mod=$mod"
-       echo "class dir=$mod/classes"
-       echo "source dir=$base_module/src/main/java"
+       #echo "mod=$mod"
+       #echo "class dir=$mod/classes"
+       #echo "source dir=$base_module/src/main/java"
        if [ -d "$mod/classes" ]; then
            echo "classes exists"
        else
@@ -181,14 +184,14 @@ while IFS= read -r line
         $SOURCEFILES \
         --xml $module/target/coverage.xml
 
-      echo "java -jar jacococli.jar report $module/target/jacoco.exec \
-        $CLASSFILES \
-        $SOURCEFILES \
-        --xml $module/target/coverage.xml"
+      #echo "java -jar jacococli.jar report $module/target/jacoco.exec \
+      #  $CLASSFILES \
+      #  $SOURCEFILES \
+      #  --xml $module/target/coverage.xml"
 
       #executed_methods_count_and_total_token_count=$(
     #fi
-    echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
+    #echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug" 
     #)
     #executed_methods=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f2 | cut -d':' -f1 | tr -d ' ')
@@ -207,9 +210,9 @@ while IFS= read -r line
         test_class_full_path="core/test/src/com/google/zxing/pdf417/decoder/ec/ErrorCorrectionTestCase.java"
     fi
     
-    echo "python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir"
+    #echo "python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir"
     python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
-    echo $(pwd)
+    #echo $(pwd)
 
     #exit
     #echo "matched_calls===$matched_calls"
@@ -225,7 +228,7 @@ while IFS= read -r line
     result=$(python3 $currentDir/collect_method_body.py $module   "$testName" "$slug" "${modules_array[@]}")
 
     echo " python3 $currentDir/collect_method_body.py $module $testName $slug ${modules_array[@]}"
-    echo "result=$result"
+    #echo "result=$result"
     executed_methods=$(echo "$result" | cut -d'=' -f2 | cut -d':' -f1)
     total_tokens=$(echo "$result" | cut -d'=' -f3)
 
@@ -238,7 +241,7 @@ while IFS= read -r line
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
-    echo "$base_package"
+    #echo "$base_package"
     cd $inputProj/$slug
     #exit
     if [[ $trace_collection_way == "static" ]]; then
@@ -248,7 +251,7 @@ while IFS= read -r line
         #rm test-classes.jar 
         rm -rf merged_classes/
         rm merged-all-classes.jar
-        #echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
+        echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
     fi
     cd $currentDir
 
