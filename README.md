@@ -61,3 +61,10 @@ For getting the flaky-test category, run the following command:
 ```
 python3 llama3_8b_categorization.py data/extracted_tests.csv  "llama" "category_prediction" "NA"
 ```
+
+
+unzip hbase.zip
+docker load -i hbase.tar
+docker run -it --name hbase_test --memory="16g" --cpus="4" hbase:latest /bin/bash
+. $HOME/.profile
+cd /projects/hbase
