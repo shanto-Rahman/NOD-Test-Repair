@@ -181,6 +181,68 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
     print("Max retries reached. Returning None.")
     return None'''
 
+def gpt_score_finder_5(
+    messages,
+    max_retries=5,
+    initial_wait=2,
+    sleep_on_success=2
+):
+    retry_count = 0
+
+    while retry_count < max_retries:
+        try:
+            response = openai.ChatCompletion.create(
+                #model="gpt-5.5-pro",
+                model="gpt-4.1",
+                messages=messages,
+                temperature=0.0,
+                max_tokens=2000
+            )
+
+            time.sleep(sleep_on_success)
+
+            return response
+
+        except openai.error.RateLimitError as e:
+            wait_time = initial_wait * (2 ** retry_count)
+
+            print(
+                f"Rate limit error. "
+                f"Retrying in {wait_time} seconds..."
+            )
+
+            time.sleep(wait_time)
+            retry_count += 1
+
+        except openai.error.APIError as e:
+
+            status_code = None
+
+            if hasattr(e, "response") and e.response is not None:
+                status_code = e.response.status_code
+
+            if status_code is not None and status_code >= 500:
+
+                wait_time = initial_wait * (2 ** retry_count)
+
+                print(
+                    f"Server error ({status_code}). "
+                    f"Retrying in {wait_time} seconds..."
+                )
+
+                time.sleep(wait_time)
+                retry_count += 1
+
+            else:
+                print(f"API error: {str(e)}")
+                raise
+
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            raise
+
+    print("Max retries reached. Returning None.")
+    return None
 
 def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
     retry_count = 0
@@ -443,48 +505,62 @@ def log_similarity_check(failure_log_file, test_run_log_file, test):
         print(f"{result} Matched Failure found.") 
         return True
 
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, failure_log_csv, retry_count = 0):
-    max_retries = 5
-    tried_methods = set()
+MODEL_NAME = "gpt-4.1" #"gpt-5.5-pro" #gpt-4o
 
-    prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
-    #print("prompt=", prompt)
+def get_messages(definition, prompt):
     messages = [
         {"role": "system", "content": definition},
         {"role": "user",   "content": prompt}
     ]
-    prompt_tokens = count_prompt_tokens(messages, model="gpt-4o")
+    prompt_tokens = count_prompt_tokens(messages, model=MODEL_NAME)
     token_csv_path = str(Path("results") / "prompt_token_counts.csv")
     append_token_row(token_csv_path, slug, module, test, prompt_tokens)
-    while retry_count < max_retries:
-        response = gpt_score_finder(messages)
+    return messages, prompt_tokens
 
-        if not response: 
-            break
+def parse_gpt_response(response, messages, retry_count): 
+    if not response: 
+        return ""
 
-        response_content = response['choices'][0]['message']['content']
+    response_content = response['choices'][0]['message']['content']
 
-        messages.append({"role": "assistant", "content": response_content})
+    messages.append({"role": "assistant", "content": response_content})
 
-        if "</Output>" in response_content:
-            m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
-            if m:
-                meth_code = m.group(1)
-            else:
-                meth_code = "No code found" #response_content
+    if "</Output>" in response_content:
+        m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+        if m:
+            meth_code = m.group(1)
         else:
-            meth_code = "</Output> not found" #response_content
-        print("**meth_code=", meth_code)
+            meth_code = "No code found" #response_content
+    else:
+        meth_code = "</Output> not found" #response_content
+    print("**meth_code=", meth_code)
 
 
-        os.makedirs("tdrepro_gpt_responses", exist_ok=True)
+    os.makedirs("tdrepro_gpt_responses", exist_ok=True)
 
-        file_path = f"tdrepro_gpt_responses/{test}.txt"
-        print("saving to =", file_path)
-        with open(file_path, "a") as f:
-            f.write(f"\n\n===== RETRY {retry_count} =====\n")
-            f.write(response_content)
-            f.write("\n==============================\n")
+    file_path = f"tdrepro_gpt_responses/{test}.txt"
+    print("saving to =", file_path)
+    with open(file_path, "a") as f:
+        f.write(f"\n\n===== RETRY {retry_count} =====\n")
+        f.write(response_content)
+        f.write("\n==============================\n")
+
+    return meth_code #, messages
+
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, failure_log_csv, libraries_df, retry_count = 0):
+    print(libraries_df)
+    max_retries = 2
+    library_attempts = 5
+
+    tried_methods = set()
+
+    prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
+    messages, prompt_tokens = get_messages(definition, prompt)
+
+    while retry_count < max_retries:
+        response = gpt_score_finder_5(messages)
+        #meth_code, messages = parse_gpt_response(response, messages)
+        meth_code = parse_gpt_response(response, messages, retry_count)
 
         # Suppose meth_code is your multiline string as shown above
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
@@ -511,7 +587,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     writer.writerow([slug, module, test, class_name, line_number,code_line])
                 class_path_list = find_class_file(class_name, slug, module)
                 #print("**** class_path=", class_path)
-                failure_happened_but_log_matched = True
+                failure_happened_and_log_matched = True
                 if class_path_list:
                     failure_count = 0
                     first_failed, test_run_log = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
@@ -523,13 +599,12 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         failure_count = 1
                         # Will check the logs 
                         log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
-
                         #print("org failure_log=", failure_log)
                         #print("test_run_log=", test_run_log)
                         #exit()
                         if not log_similar:
                             print("failure log does not match.")
-                            failure_happened_but_log_matched = False
+                            failure_happened_and_log_matched = False
                         else:
                             for run_id in range(1, 5):
                                 _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
@@ -539,7 +614,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                                     failure_count += 1
                                 else:
                                     print("failure log does not match.")
-                                    failure_happened_but_log_matched = False
+                                    failure_happened_and_log_matched = False
                                     #Call to the GPT that log does not match, so find a different location
                             if failure_count >=3:
                                 print(f"Failure found in {failure_count}/5 runs.")
@@ -551,7 +626,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             else:
                 print("Line did not match expected format:", line)
         tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
-        if not failure_happened_but_log_matched:
+        if not failure_happened_and_log_matched:
             feedback = (
                 f"Your previous suggestion did not reproduce the same failure.\n"
                 f"Here is what is already tried:\n"
@@ -576,6 +651,9 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         messages.append({"role": "user", "content": feedback}) 
         retry_count += 1
         #continue
+    
+    #library_prompt, library_definitions = generate_prompt_for_library_meth(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df, library_df)
+    
     return "NA", str(retry_count), "Failure not found"
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
@@ -800,8 +878,19 @@ def extract_block(path, test):
 
     return buf
 
+def read_library_txt(file_path):
+    # Read top 100 lines
+    with open(file_path, "r") as f:
+        lines = [line.strip() for line in f if line.strip()][:100]
 
-def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test):
+    # Put into DataFrame
+    libraries_df = pd.DataFrame(lines, columns=["method"])
+
+    print(libraries_df.head())
+    print("Total rows:", len(libraries_df))
+    return libraries_df
+
+def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test, library_meth_file):
     device, ml_technique, dataset_category, output_layer, where_data_comes = init_setup(technique, data_name_dir)
     
     if ml_technique == "qwen":
@@ -833,7 +922,8 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     tokens_per_project_group = {}
     Org_test_per_project_group = {}
     #print(len(input_data))
-
+    libraries_df = read_library_txt(library_meth_file)
+    
     print("test_code_csv=", test_code_csv)
     test_meth_code_df = pd.read_csv(test_code_csv) #read_data(test_code_csv)
 
@@ -921,7 +1011,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df, failure_log_csv)
+            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df, failure_log_csv, libraries_df)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     elif ml_technique == "gemini":
             line_to_inject_delay, cot_count, test_output = gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
@@ -989,6 +1079,7 @@ if __name__ == "__main__":
     sha = sys.argv[8] 
     module = sys.argv[9] 
     test = sys.argv[10] 
+    library_meth_file = sys.argv[11] #executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
     #data_is_from_which_csv = sys.argv[11] 
     initialize_environment(42)
     '''if data_is_from_which_csv == "idoft":
@@ -1015,7 +1106,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     #print(type(big_block_fail_log))
-    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test)
+    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test, library_meth_file)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
     #print("duration=", duration)
