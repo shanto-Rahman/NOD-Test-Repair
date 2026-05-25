@@ -35,7 +35,8 @@ do
     "$IMAGE" \
     bash -c "
       set -o
-      apt install bc
+      apt install bc -y 
+      apt install lsof -y
       . \$HOME/.profile
 
       cd /rerun_baseline
