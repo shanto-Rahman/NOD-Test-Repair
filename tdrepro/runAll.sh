@@ -133,6 +133,9 @@ while IFS= read -r line
     mvn edu.utexas.ece:flakesync-maven-plugin:1.0-SNAPSHOT:concurrentfind -Dflakesync.testName=$testName -pl $module
 
     cp $module/.flakesync/${testName_with_dot}-ResultMethods.txt "$currentDir/executed_methods/"
+    python3 $currentDir/classify_methods_multimodule.py "$projectRoot" "$currentDir/executed_methods/${testName_with_dot}-ResultMethods.txt"
+    exit
+
      
     cp $currentDir/jacococli.jar .
     echo "cp $currentDir/jacococli.jar $(pwd)"

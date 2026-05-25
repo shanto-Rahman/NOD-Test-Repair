@@ -14,6 +14,12 @@ bash runAll.sh ../data/all_142_tests.csv Result/
 bash runAll.sh ../data/all_142_tests.csv Result/
 ```
 
+# Docker Run (TDRepro)
+```shell
+bash docker_runner_tdrepro.sh hbase_tests.csv "hbase"
+```
+
+
 
 ```shell
 export OPENAI_API_KEY="YOUR_KEY_HERE"

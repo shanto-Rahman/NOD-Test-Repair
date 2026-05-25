@@ -18,7 +18,7 @@ import torch.nn.functional as F
 #from Testing_gemma_7b_categorization import parse_generated_output_to_get_category
 #from Testing_gemma_2b_categorization  import identify_test_category
 import transformers 
-from prompt_engineering import generate_prompt
+from prompt_engineering import generate_prompt, generate_prompt_for_library_meth
 import torch
 import openai
 from langchain.chat_models import ChatOpenAI
@@ -30,6 +30,8 @@ from heuristics import rank_methods_by_similarity, clustering_methods, rank_meth
 from token_processing import count_prompt_tokens
 
 CURRENT_DIR = os.getcwd()
+MODEL_NAME = "gpt-4.1" #"gpt-5.5-pro" #gpt-4o
+
 #import google.generativeai as genai
 #import os
 #from google import genai
@@ -181,12 +183,7 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
     print("Max retries reached. Returning None.")
     return None'''
 
-def gpt_score_finder_5(
-    messages,
-    max_retries=5,
-    initial_wait=2,
-    sleep_on_success=2
-):
+'''def gpt_score_finder_5(messages, max_retries=5, initial_wait=2, sleep_on_success=2):
     retry_count = 0
 
     while retry_count < max_retries:
@@ -242,7 +239,7 @@ def gpt_score_finder_5(
             raise
 
     print("Max retries reached. Returning None.")
-    return None
+    return None'''
 
 def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
     retry_count = 0
@@ -251,7 +248,7 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
         try:
             response = openai.ChatCompletion.create(
                 #model="gpt-4o-mini",
-                model="gpt-4o",
+                model=MODEL_NAME,
                 messages=messages,
                 temperature=0.2,
                 max_tokens=1000
@@ -505,8 +502,6 @@ def log_similarity_check(failure_log_file, test_run_log_file, test):
         print(f"{result} Matched Failure found.") 
         return True
 
-MODEL_NAME = "gpt-4.1" #"gpt-5.5-pro" #gpt-4o
-
 def get_messages(definition, prompt):
     messages = [
         {"role": "system", "content": definition},
@@ -548,17 +543,20 @@ def parse_gpt_response(response, messages, retry_count):
     return meth_code #, messages
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, failure_log_csv, libraries_df, retry_count = 0):
-    print(libraries_df)
+    #print(libraries_df)
+
+    lib_retry_count = 0 
     max_retries = 2
-    library_attempts = 5
+    lib_max_retries = 2
 
     tried_methods = set()
+    lib_tried_methods = set()
 
     prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
     messages, prompt_tokens = get_messages(definition, prompt)
 
-    while retry_count < max_retries:
-        response = gpt_score_finder_5(messages)
+    '''while retry_count < max_retries:
+        response = gpt_score_finder(messages)
         #meth_code, messages = parse_gpt_response(response, messages)
         meth_code = parse_gpt_response(response, messages, retry_count)
 
@@ -649,10 +647,94 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
             )
         messages.append({"role": "user", "content": feedback}) 
-        retry_count += 1
+        retry_count += 1'''
         #continue
     
-    #library_prompt, library_definitions = generate_prompt_for_library_meth(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df, library_df)
+    lib_prompt, lib_definitions = generate_prompt_for_library_meth(failure_log, filtered_df, test_code, libraries_df)
+    lib_messages, lib_prompt_tokens = get_messages(lib_definitions, lib_prompt)
+
+
+
+    while lib_retry_count < lib_max_retries:
+        lib_response = gpt_score_finder(lib_messages)
+        #meth_code, messages = parse_gpt_response(response, messages)
+        lib_meth_code = parse_gpt_response(lib_response, lib_messages, lib_retry_count)
+
+        # Suppose meth_code is your multiline string as shown above
+        for idx, line in enumerate(lib_meth_code.strip().splitlines(), start=1):
+            print("**** index=", idx, ",Processing line:", line)
+            line = line.strip()
+            if not line:
+                continue  # skip empty lines
+            with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
+                print("Tried lines")
+                writer = csv.writer(f)
+                writer.writerow([slug, module, test, line])
+            
+            #Will call FlakeSync to inject delay at the beginning of that method; will return the log; then will check the log outcome, if same failure, will stop, otherwise next line
+            failure_happened_and_log_matched = True
+            #if class_path_list:
+            #    failure_count = 0
+            #    first_failed, test_run_log = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+            #    if not first_failed:
+            #        print("First run: no failure; skipping additional runs.")
+            #        print("Only 0/1 runs failed. Not considering as valid failure.")
+            #    else:
+            #       # First run failed → run 4 more times (total 5)
+            #        failure_count = 1
+            #        # Will check the logs 
+            #        log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+            #        #print("org failure_log=", failure_log)
+            #        #print("test_run_log=", test_run_log)
+            #        #exit()
+            #        if not log_similar:
+            #            print("failure log does not match.")
+            #            failure_happened_and_log_matched = False
+            #        else:
+            #            for run_id in range(1, 5):
+            #                _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+            #                log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+            #                if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+            #                    #Call the function to check the log match 
+            #                    failure_count += 1
+            #                else:
+            #                    print("failure log does not match.")
+            #                    failure_happened_and_log_matched = False
+            #                    #Call to the GPT that log does not match, so find a different location
+            #            if failure_count >=3:
+            #                print(f"Failure found in {failure_count}/5 runs.")
+            #                return line, f"{retry_count}_{idx}", "Failure found."
+            #            else:
+            #                print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
+            #else:
+            #    print(f"[ERROR] Could not locate class source file for: {class_name}")
+        tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(lib_tried_methods))
+        if not failure_happened_and_log_matched:
+            lib_feedback = (
+                f"Your previous suggestion did not reproduce the same failure.\n"
+                f"Here is what is already tried:\n"
+                f"Location(s):\n{lib_meth_code}\n\n"
+                f"Please suggest a new method for delay injection "
+                f"so that the original failure is reproduced. "
+                f"Do not repeat any of the previous suggestions."
+            )
+        else:
+            lib_feedback = (
+                f"Your previous suggestion did not reproduce the failure.\n"
+                f"Here is what is already tried:\n"
+                f"Location(s):\n{lib_meth_code}\n\n"
+                f"Please suggest a new location for delay injection. "
+                f"Do not repeat any of the previous suggestions."
+            )
+        lib_messages.append({"role": "user", "content": lib_feedback}) 
+        lib_retry_count += 1
+
+
+    print("lib_prompt=", lib_prompt)
+
+    print("*****lib_def=",lib_definitions)
+
+    print("*** lib_count=", lib_retry_count)
     
     return "NA", str(retry_count), "Failure not found"
    

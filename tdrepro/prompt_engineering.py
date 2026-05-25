@@ -47,6 +47,95 @@ def fit_methods_within_budget(df, max_chars=180000):
     return df.loc[[r.name for r in selected_rows]]
 
 
+def generate_prompt_for_library_meth(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df, library_df):
+    # Convert top-100 library methods into text
+    library_methods_str = "\n".join(
+        library_df["method"]
+        .astype(str)
+        .head(100)
+        .tolist()
+    )
+    #library_methods_str = str(library_df.iloc[0]) if hasattr(library_df, "iloc") else str(library_df)
+    failure_log_str = str(failure_log_df.iloc[0]) if hasattr(failure_log_df, "iloc") else str(failure_log_df)
+    test_code_str = str(test_meth_code_df.iloc[0]) if hasattr(test_meth_code_df, "iloc") else str(test_meth_code_df)
+
+    prompt = f"""
+You are an expert Java concurrency engineer specializing in timing-dependent flaky tests.
+
+The previous project-code delay injection attempts failed to reproduce the target failure.
+
+Now your task is to identify which executed library methods are MOST likely involved
+in the timing-dependent behavior causing the observed failure.
+
+You are given:
+
+1. The failure log
+2. The test code
+3. Executed library methods observed during the failing execution
+
+Your goal:
+
+Rank the library methods by how likely they are to contribute to:
+- race conditions
+- async ordering issues
+- retries
+- RPC timing
+- network timing
+- server lifecycle timing
+- thread scheduling
+- callback ordering
+- timeout windows
+- stale reads
+- event ordering
+- shared-state visibility issues
+
+Important:
+
+- Only rank the provided library methods.
+
+Return EXACTLY 10 ranked library methods.
+
+
+Example:
+
+org/apache/zookeeper/ClientCnxn.submitRequest(...)V
+
+Rules:
+
+1. Choose ONLY from the provided executed library methods.
+4. Output ONLY inside <Output> and </Output>.
+5. Return EXACTLY 10 ranked methods.
+
+<Input>
+
+<Failure>
+{failure_log_str}
+</Failure>
+
+<Test-Code>
+{test_code_str}
+</Test-Code>
+
+<Executed-Library-Methods>
+{library_methods_str}
+</Executed-Library-Methods>
+
+</Input>
+
+<Output>
+</Output>
+"""
+
+    definitions = """
+You are an expert Java concurrency engineer specializing in flaky-test reproduction.
+Always obey:
+1. Rank ONLY the provided library methods.
+5. Output ONLY inside <Output> and </Output>.
+6. No explanations.
+"""
+
+    return prompt, definitions
+
 def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df):
     print("methods before trim:", len(code_under_test_meths_ranked_df))
     # trim methods to fit within context budget
