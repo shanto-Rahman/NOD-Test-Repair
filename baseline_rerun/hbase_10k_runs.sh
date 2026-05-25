@@ -35,7 +35,7 @@ do
     "$IMAGE" \
     bash -c "
       set -o
-
+      apt install bc
       . \$HOME/.profile
 
       cd /rerun_baseline
@@ -51,7 +51,7 @@ do
   echo ""
 
   # sleep for 3 hours (this will avoid overwhelming the system with too many concurrent containers. If the resource available is high then you can sleep for shorter time)
-  sleep 10800
+  #sleep 10800
 done
 
 echo "All containers launched."
