@@ -1,9 +1,10 @@
 from pathlib import Path
 import csv 
 import re
+import sys
 
 ROOT = Path("hbase_artifacts_baseline_10k")
-OUT_CSV = "extracted_errors_1_failures.csv"
+OUT_CSV = sys.argv[1] #"extracted_errors_1_failures.csv"
 
 ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 

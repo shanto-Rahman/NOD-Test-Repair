@@ -1,0 +1,2 @@
+python3 parse_error_to_get_uniq_failures.py extracted_failures.csv
+python3 extract_uniq_failures.py extracted_failures.csv
