@@ -8,3 +8,4 @@ Then run the script `bash hbase_10k_runs.sh` from the `NOD-Test-Repair/baseline_
 
 python3 parse_error_to_get_uniq_failures.py extracted_failures.csv
 python3 extract_uniq_failures.py extracted_failures.csv
+python3 uniq_failures_per_dir.py extracted_failures.csv > l
