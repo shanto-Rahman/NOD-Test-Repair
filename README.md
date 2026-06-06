@@ -1,3 +1,12 @@
+# Docker run
+
+```shell
+cd docker_setup
+docker build --no-cache -t docker-nod-repair-env:latest -f Dockerfile .
+```
+
+==============
+
 The goal of this project is to get the reproduction code chage (RCC) for more deterministically reproduce the failure of flaky test
 
 Create a python virtual environment and install the libraries in requirements.txt
