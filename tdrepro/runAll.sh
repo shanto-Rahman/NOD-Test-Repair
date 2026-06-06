@@ -130,7 +130,13 @@ while IFS= read -r line
     mvn clean install -pl $module -am -DskipTests
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
 
+    cd $currentDir/../FlakeSync-Shanto-Modified/
+    mvn clean install -DskipTests
+    cd -
     mvn edu.utexas.ece:flakesync-maven-plugin:1.0-SNAPSHOT:concurrentfind -Dflakesync.testName=$testName -pl $module
+    if [[ ! -d "$currentDir/executed_methods" ]]; then
+        mkdir "$currentDir/executed_methods"
+    fi
 
     cp $module/.flakesync/${testName_with_dot}-ResultMethods.txt "$currentDir/executed_methods/"
     python3 $currentDir/classify_methods_multimodule.py "$projectRoot" "$currentDir/executed_methods/${testName_with_dot}-ResultMethods.txt"
