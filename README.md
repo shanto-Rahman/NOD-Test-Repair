@@ -3,6 +3,11 @@
 ```shell
 cd docker_setup
 docker build --no-cache -t docker-nod-repair-env:latest -f Dockerfile .
+
+cd tdrepro
+bash docker_runner.sh ../data/all_tests_except_hbase.csv "all" |& tee log
+
+bash docker_runner_tdrepro.sh ../data/all_tests_except_hbase.csv  "all" |& tee log_tdrepro 
 ```
 
 ==============
