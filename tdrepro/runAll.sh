@@ -53,10 +53,29 @@ while IFS= read -r line
     #testName_with_dot=$(echo $line | cut -d',' -f5)
     #package_class_name=$(echo $testName_with_dot| rev | cut -d'.' -f2- | rev)
     #testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
-    echo "$testName"
+    #echo "$testName"
     testClass="$(echo $testName_with_dot | rev | cut -d'.' -f2 | rev)"
     #echo "$testClass"
-    
+     
+    #find $currentDir/FlakeSync-Shanto-Modified -name pom.xml
+    cd $currentDir/FlakeSync-Shanto-Modified/
+    mvn clean install -DskipTests
+    #echo "HOME=$HOME"
+    #mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout
+    #echo ""
+
+M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout)
+
+#echo "Maven repo is: $M2_REPO"
+#find "$M2_REPO" -name "*flakesync*" 2>/dev/null
+#echo "MAVEN_OPTS=$MAVEN_OPTS"
+#echo "MAVEN_CONFIG=$MAVEN_CONFIG"
+#grep -R "maven.repo.local" /NOD-Test-Repair/tdrepro/FlakeSync-Shanto-Modified ~/.m2 /tmp/.m2 2>/dev/null
+#echo "Find"
+#find /NOD-Test-Repair/tdrepro/FlakeSync-Shanto-Modified -path "*/.mvn/*" -type f -print -exec cat {} \;
+
+    cd $currentDir/
+    #exit
 
     rootProj=$(echo "$slug" | cut -d/ -f 1)
     subProj=$(echo "$slug" | cut -d/ -f 2)
@@ -130,9 +149,7 @@ while IFS= read -r line
     mvn clean install -pl $module -am -DskipTests
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
 
-    cd $currentDir/../FlakeSync-Shanto-Modified/
-    mvn clean install -DskipTests
-    cd -
+    #cd -
     mvn edu.utexas.ece:flakesync-maven-plugin:1.0-SNAPSHOT:concurrentfind -Dflakesync.testName=$testName -pl $module
     if [[ ! -d "$currentDir/executed_methods" ]]; then
         mkdir "$currentDir/executed_methods"
@@ -140,8 +157,7 @@ while IFS= read -r line
 
     cp $module/.flakesync/${testName_with_dot}-ResultMethods.txt "$currentDir/executed_methods/"
     python3 $currentDir/classify_methods_multimodule.py "$projectRoot" "$currentDir/executed_methods/${testName_with_dot}-ResultMethods.txt"
-    exit
-
+    #exit
      
     cp $currentDir/jacococli.jar .
     echo "cp $currentDir/jacococli.jar $(pwd)"

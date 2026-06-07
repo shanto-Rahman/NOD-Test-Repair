@@ -27,9 +27,12 @@ mkdir -p docker_results docker_logs docker_traces
 
 docker rm -f "spring_run_${OUTPUT_NAME}" 2>/dev/null || true
 docker rm -f "hbase_run_${OUTPUT_NAME}" 2>/dev/null || true
+docker rm -f "docker_run_${OUTPUT_NAME}" 2>/dev/null || true
 
 docker run --rm \
-    --name "hbase_run_${OUTPUT_NAME}" \
+    --user "$(id -u):$(id -g)" \
+     -e HOME=/tmp \
+    --name "docker_run_${OUTPUT_NAME}" \
     -v "$INPUT_CSV:/tmp/input.csv" \
     -v "$(pwd)/docker_results:/docker_results" \
     -v "$(pwd)/docker_logs:/docker_logs" \
@@ -39,8 +42,7 @@ docker run --rm \
     bash -c "
         set -o pipefail
 
-        . \$HOME/.profile
-        . /root/miniconda3/etc/profile.d/conda.sh
+        . /opt/conda/etc/profile.d/conda.sh
 
         cd /NOD-Test-Repair/Results
 
@@ -49,6 +51,7 @@ docker run --rm \
 
         conda activate tdrepro || echo 'Conda activation failed'
 
+        export MAVEN_OPTS="-Dmaven.repo.local=/NOD-Test-Repair/tdrepro/FlakeSync-Shanto-Modified/?/.m2/repository"
         bash runAll.sh /tmp/input.csv Result/
 
         cp /NOD-Test-Repair/tdrepro/Result/Test-Specific-Stat.csv /docker_results/${OUTPUT_NAME}_Test-Specific-Stat.csv || true
