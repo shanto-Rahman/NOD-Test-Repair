@@ -155,7 +155,7 @@ M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdo
         mkdir "$currentDir/executed_methods"
     fi
 
-    cp $module/.flakesync/${testName_with_dot}-ResultMethods.txt "$currentDir/executed_methods/"
+    mv $module/.flakesync/${testName_with_dot}-ResultMethods.txt "$currentDir/executed_methods/"
     python3 $currentDir/classify_methods_multimodule.py "$projectRoot" "$currentDir/executed_methods/${testName_with_dot}-ResultMethods.txt"
     #exit
      
@@ -262,7 +262,7 @@ M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdo
     #exit
 
 
-    echo "$slug,$sha,$module,$testName,$executed_methods,$total_tokens" >> $test_specific_stat
+    echo "$id,$slug,$sha,$module,$testName,$executed_methods,$total_tokens" >> $test_specific_stat
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
