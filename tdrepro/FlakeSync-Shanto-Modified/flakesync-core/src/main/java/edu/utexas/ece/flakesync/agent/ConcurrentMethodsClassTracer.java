@@ -67,13 +67,13 @@ public class ConcurrentMethodsClassTracer extends ClassVisitor {
 
                 // At beginning of method, insert call to help record start of method
                 super.visitLdcInsn(methodName);
-                /*super.visitMethodInsn(Opcodes.INVOKESTATIC,
-                    "edu/utexas/ece/flakesync/agent/Utility", "recordMethodEntry", "(Ljava/lang/String;)V", false);*/
                 super.visitMethodInsn(Opcodes.INVOKESTATIC,
-                    "edu/utexas/ece/flakesync/agent/Utility", "recordExecutedMethod", "(Ljava/lang/String;)V", false);
+                    "edu/utexas/ece/flakesync/agent/Utility", "recordMethodEntry", "(Ljava/lang/String;)V", false);
+                //super.visitMethodInsn(Opcodes.INVOKESTATIC,
+                //    "edu/utexas/ece/flakesync/agent/Utility", "recordExecutedMethod", "(Ljava/lang/String;)V", false);
             }
 
-            /*@Override
+            @Override
             public void visitInsn(int opcode) {
                 if (opcode == Opcodes.IRETURN || opcode == Opcodes.LRETURN || opcode == Opcodes.FRETURN
                         || opcode == Opcodes.DRETURN || opcode == Opcodes.ARETURN || opcode == Opcodes.RETURN) {
@@ -83,7 +83,7 @@ public class ConcurrentMethodsClassTracer extends ClassVisitor {
                         "edu/utexas/ece/flakesync/agent/Utility", "recordMethodExit", "(Ljava/lang/String;)V", false);
                 }
                 super.visitInsn(opcode);
-            }*/
+            }
         };
     }
 }

@@ -291,18 +291,18 @@ public class Agent {
                         File omf = new File(fp.toUri());
                         FileWriter outputMethodsFile = new FileWriter(omf);
                         bfMethods = new BufferedWriter(outputMethodsFile);
-                        /*synchronized (Utility.methodsRunConcurrently) {
+                        synchronized (Utility.methodsRunConcurrently) {
                             for (String meth : Utility.methodsRunConcurrently) {
                                 bfMethods.write(meth);
                                 bfMethods.newLine();
                             }
-                        }*/
-                        synchronized (Utility.methodsExecutedDuringTest) {
+                        }
+                        /*synchronized (Utility.methodsExecutedDuringTest) {
                             for (String meth : Utility.methodsExecutedDuringTest) {
                                 bfMethods.write(meth);
                                 bfMethods.newLine();
                             }
-                        }
+                        }*/
                         bfMethods.flush();
                     } else if (mode.equals("ALL_LOCATIONS")) {
                         Path fp = Constants.getAllLocationsFilepath(
