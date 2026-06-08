@@ -972,8 +972,8 @@ def read_library_txt(file_path):
     print("Total rows:", len(libraries_df))
     return libraries_df
 
-def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test, library_meth_file):
-    device, ml_technique, dataset_category, output_layer, where_data_comes = init_setup(technique, data_name_dir)
+def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_code_csv, failure_log_csv, slug, module, test, library_meth_file):
+    device, ml_technique = init_setup(model_name, data_name_dir)
     
     if ml_technique == "qwen":
         print('I am qwen')
@@ -983,49 +983,38 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     elif ml_technique == "deep_seek_coder":
         model_name, tokenizer, auto_model = deep_seek_coder_model_define()
     elif ml_technique == "gpt":
-        #openai.api_key = "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"
         openai.api_key = os.environ["OPENAI_API_KEY"]
     elif ml_technique == "gemini":
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
         #gemini_api_key="AIzaSyDmFFCseLDxPkgXnGsbSSjomfG2LkiQcIU"
-    #else:
-    #    print('model name not correct')
-    #    exit()
     execution_time = time.time()
     print("Start time of the experiment", execution_time)
-    #no_splits = 10 # For FlakiCat=4, IDOFT=10
-    TN = FP = FN = TP = 0
+    #TN = FP = FN = TP = 0
     project_group = 0
-    total_execution_time = 0
+    #total_execution_time = 0
     #no_split = 5
-    global_category_token_map = {}
-    predictions_per_project_group = {}
-    ground_truth_per_project_group = {}
-    tokens_per_project_group = {}
-    Org_test_per_project_group = {}
+    #global_category_token_map = {}
+    #predictions_per_project_group = {}
+    #ground_truth_per_project_group = {}
+    #tokens_per_project_group = {}
+    #Org_test_per_project_group = {}
     #print(len(input_data))
     libraries_df = read_library_txt(library_meth_file)
     
-    print("test_code_csv=", test_code_csv)
+    #print("test_code_csv=", test_code_csv)
     test_meth_code_df = pd.read_csv(test_code_csv) #read_data(test_code_csv)
 
     failure_log_df = pd.read_csv(failure_log_csv)
     test_code = test_meth_code_df.iloc[0] 
     failure_log = failure_log_df.iloc[0]
-    df = pd.read_csv(
-        dataset_path,
-            quoting=csv.QUOTE_ALL,
-                encoding='utf-8',
-                    engine='python'
-                    )
-
+    df = pd.read_csv(dataset_path, quoting=csv.QUOTE_ALL, encoding='utf-8', engine='python')
 
     print("test_code_csv=",test_code_csv, ",dataset_path=", dataset_path) 
     test_df = pd.read_csv(test_code_csv)
     method_df = pd.read_csv(dataset_path)
 
     df_with_cluster = clustering_methods(method_df)
-    print("***************")
+    #print("***************")
     df_with_cluster.to_csv("M.csv", index=False)
     #print(df_with_cluster)
     embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
@@ -1043,6 +1032,9 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         ranked_df = pd.read_csv(csv_that_saved_embedding)
         print(ranked_df)
    
+    #TO-DO: Here I will remove the methods if those are not in the concurrent-method list
+
+    #TO-DO: Hopefully the following way of ranking the ranked_df will be removed
     ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
         lambda x: int(x.split("-")[1]) - int(x.split("-")[0]) + 1 if "-" in x else 0
     )
@@ -1050,22 +1042,16 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     ranked_df["HasBody"] = ranked_df["Body"].apply(is_non_empty_body)
     ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
     ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)
-    #ranked_df["SimilarityFloat"] = ranked_df["similarity"].astype(float)
-    #ranked_df["SimilarityFloat"] = ranked_df["combined_sim"].astype(float)
-    #threshold = ranked_df["SimilarityFloat"].quantile(0.90)
-    #print("threshold=", threshold) 
-    # Filter by LineSpan < 30, then get top 20
-    #depth_filtered_df = ranked_df[ #(ranked_df["LineSpan"] <= 30) & 
-    #                              (ranked_df["HasBody"]) &  (ranked_df["CoverageFloat"] >= 90.0) & (ranked_df["SimilarityFloat"] > threshold) & 
-    #                              (~ranked_df["IsSynchronized"])] #.head(30)
+
     depth_filtered_df = ranked_df.head(10) #Collecting 10 methods from the top
     print(len(depth_filtered_df))
     #exit()
 
-    with open("metadata/meta_data.csv", mode="a", newline="") as f:
+    '''with open("metadata/meta_data.csv", mode="a", newline="") as f: #Just to see how many are in that depth_filtered_df (although it will always be 10)
         print("I AM from metadata")
         writer = csv.writer(f)
-        writer.writerow([slug, module, test, len(depth_filtered_df)])
+        writer.writerow([slug, module, test, len(depth_filtered_df)])'''
+
     code_under_test_meths = depth_filtered_df['Body'].tolist()
     lineRange = depth_filtered_df['LineRange'].tolist()
     
@@ -1151,10 +1137,10 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_o
                 seconds
             ])
 if __name__ == "__main__":
-    dataset_path = sys.argv[1] #traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_methods_with_call_labels.csv
+    dataset_path = sys.argv[1] #traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue580Test\#runNoCloseBlockingTestScenario0_executed_method_bodies.csv
     results_file = sys.argv[2] #
     data_name_dir = sys.argv[3] #traces
-    technique = sys.argv[4] 
+    model_name = sys.argv[4] 
     test_code_csv = sys.argv[5] 
     fail_log_csv = sys.argv[6]
     slug = sys.argv[7] 
@@ -1188,7 +1174,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     #print(type(big_block_fail_log))
-    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test, library_meth_file)
+    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, model_name, test_code_csv, fail_log_csv, slug, module, test, library_meth_file)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
     #print("duration=", duration)
