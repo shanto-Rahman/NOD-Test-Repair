@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-
+#../data/all_tests_except_hbase.csv
 INPUT_CSV=$(realpath "$1")
 OUTPUT_NAME="$2"
 
 if [ -z "$OUTPUT_NAME" ]; then
     echo "Usage: bash docker_runner.sh input.csv output_name"
-    echo "Example: bash docker_runner.sh hbase_tests.csv hbase"
+    echo "Example: bash docker_runner_tdrepro.sh hbase_tests.csv hbase"
     exit 1
 fi
 
@@ -27,7 +27,7 @@ docker run --rm \
     -v "$INPUT_CSV:/tmp/input.csv" \
     -v "$(pwd)/docker_results:/docker_results" \
     -v "$(pwd)/docker_logs:/docker_logs" \
-    -v "$(pwd)/docker_tdrepro_gpt_responses:/docker_tdrepro_gpt_responses" \ 
+    -v "$(pwd)/docker_tdrepro_gpt_responses:/docker_tdrepro_gpt_responses" \
     -v "$(pwd)/docker_metadata:/docker_metadata" \
     -v "$(pwd)/docker_traces/traces:/NOD-Test-Repair/tdrepro/traces:ro" \
     $PROJECT_MOUNT \
@@ -36,7 +36,7 @@ docker run --rm \
         set -o pipefail
 
         . \$HOME/.profile
-        . /root/miniconda3/etc/profile.d/conda.sh
+        . /opt/conda/etc/profile.d/conda.sh
 
         cd /NOD-Test-Repair/Results
 

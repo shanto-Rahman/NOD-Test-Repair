@@ -541,7 +541,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
     prompt, definition = generate_prompt(failure_log, filtered_df, test_code)
     messages, prompt_tokens = get_messages(definition, prompt)
 
-    '''while retry_count < max_retries:
+    while retry_count < max_retries:
         response = gpt_score_finder(messages)
         #meth_code, messages = parse_gpt_response(response, messages)
         meth_code = parse_gpt_response(response, messages, retry_count)
@@ -633,10 +633,10 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
             )
         messages.append({"role": "user", "content": feedback}) 
-        retry_count += 1'''
+        retry_count += 1
         #continue
     
-    lib_prompt, lib_definitions = generate_prompt_for_library_meth(failure_log, filtered_df, test_code, libraries_df)
+    '''lib_prompt, lib_definitions = generate_prompt_for_library_meth(failure_log, filtered_df, test_code, libraries_df)
     lib_messages, lib_prompt_tokens = get_messages(lib_definitions, lib_prompt)
 
 
@@ -720,7 +720,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
     print("*****lib_def=",lib_definitions)
 
-    print("*** lib_count=", lib_retry_count)
+    print("*** lib_count=", lib_retry_count)'''
     
     return "NA", str(retry_count), "Failure not found"
    
