@@ -28,19 +28,9 @@ while read line
         #if [[ $module_org == "." ]]; then
         #echo "module name is DOT ***"
         proj_name_only=$(echo $slug_org | cut -d'/' -f2)
-	#executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
-	library_meth_list=$(find "executed_methods/classified" -name ${testName_with_dot}-ResultMethods-library-methods.txt)
-	#echo ${library_meth_list}
-        #echo "$proj_name_only; ${proj_name_only}-${testName}-FlakeDelay-Run-1-*.txt"
-        #log_search_csv=""
-
-        #if [[ $2 == "flakerake_new" ]]; then 
-        #    log_search_csv="../Results/failure_log_new_tests.csv"
-        #elif [[ $2 == "flakerake" ]]; then #will read failure message from, and save that into a txt file similar to the name of idoft unique_failures_10K_reruns_flakerake_775.csv
-        #    log_search_csv="../Results/unique_failures_10K_reruns_flakerake_775.csv"
-        #elif [[ $2 == "idoft" ]]; then #../Results/unique_failures_10K_reruns_181_unique_only.csv
-        #    log_search_csv="../Results/unique_failures_10K_reruns_181_unique_only.csv"
-        #fi
+	    #executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
+	    library_meth_list=$(find "conc_executed_methods/classified" -name ${testName_with_dot}-ResultMethods-library-methods.txt) #Conc method list
+	    proj_meth_list=$(find "conc_executed_methods/classified" -name ${testName_with_dot}-ResultMethods-project-methods.txt) #Conc method list
         log_search_csv="../Results/merged_failures.csv"
         echo "python3 find_failure_message_and_save.py "$id" "$slug_org" "$sha" "$module_org" "$testName" "$log_search_csv" "$module_with_dot" "$proj_name_only""
         python3 find_failure_message_and_save.py "$id" "$slug_org" "$sha" "$module_org" "$testName" "$log_search_csv" "$module_with_dot" "$proj_name_only" # It outputs $id_$module_with_dot_$testName_stacktrace.txt
@@ -49,24 +39,12 @@ while read line
         else
             fail_log_csv_name="logs/${id}_${module_with_dot}_${testName}_stacktrace.csv"
         fi
-        #fi
-        #else
-        #    if [[ $2 == "idoft" ]]; then
-        #        fail_log_csv_name=$(find logs -name "${module_with_dot}-${testName}-FlakeDelay-Run-1-*.txt") #Java-WebSocket-org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-FlakeDelay-Run-1-3200.txt
-        #    else # $2 = flakerake
-        #       python3 find_failure_message_and_save.py "$id" "$slug_org" "$sha" "$module_org" "$testName" "../Results/unique_failures_10K_reruns_flakerake_775.csv" "$module_with_dot" "$proj_name_only" # It outputs $id_$module_with_dot_$testName_stacktrace.txt
-        #        fail_log_csv_name="logs/${id}_${module_with_dot}_${testName}_stacktrace.csv"
-        #    fi
-        #fi
         echo "new csv = $fail_log_csv_name"
-        ##python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
-        ##python3 generating_reproducing_script.py traces/${filename}_executed_with_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
-        #python3 generating_reproducing_script.py traces/${filename}_executed_with_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
-        #python3 generating_reproducing_script.py traces/${filename}_executed_with_static_call_depth.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot 
-        echo "python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot" #"$2"
+
+        echo "python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list}"
         #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "embeddingOnly" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         #python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gemini" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
-        python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} #> ${id}_log.txt
+        python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list} #> ${id}_log.txt
         echo "I am here"
         #python3 barebone_llm.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         exit

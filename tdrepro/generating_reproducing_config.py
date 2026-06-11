@@ -32,19 +32,6 @@ from token_processing import count_prompt_tokens
 CURRENT_DIR = os.getcwd()
 MODEL_NAME = "gpt-4.1" #"gpt-5.5-pro" #gpt-4o
 
-#import google.generativeai as genai
-#import os
-#from google import genai
-#from google.genai import types
-
-#client = genai.Client(
-#    api_key=os.environ["GEMINI_API_KEY"],
-#    http_options=types.HttpOptions(api_version="v1"),
-#)
-#for m in client.models.list():
-#    print(m.name)
-
-#login(token="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")
 def hf_login_once():
     if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
         return
@@ -542,8 +529,7 @@ def parse_gpt_response(response, messages, retry_count):
 
     return meth_code #, messages
 
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, failure_log_csv, libraries_df, retry_count = 0):
-    #print(libraries_df)
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, filtered_df, failure_log_csv, libraries_df, retry_count = 0):
 
     lib_retry_count = 0 
     max_retries = 2
@@ -972,7 +958,50 @@ def read_library_txt(file_path):
     print("Total rows:", len(libraries_df))
     return libraries_df
 
-def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_code_csv, failure_log_csv, slug, module, test, library_meth_file):
+def filter_csv_by_concurrent_methods(csv_file, method_list_file, output_csv):
+    df = pd.read_csv(csv_file) 
+
+    # Read concurrent methods from text file
+    with open(method_list_file, "r") as f:
+        concurrent_methods = {
+            line.strip()
+            for line in f
+            if line.strip()
+        }
+
+    # If no concurrent methods found, return entire CSV
+    if not concurrent_methods:
+        print("Concurrent method file is empty. Returning all rows.")
+
+        df.to_csv(output_csv, index=False)
+
+        print(f"Rows returned: {len(df)}")
+        print(f"Saved to: {output_csv}")
+        return df
+
+    # Build matching key
+    df["MethodKey"] = (
+        df["Class"].str.replace(".", "/", regex=False)
+        + "."
+        + df["Method"]
+        + df["Descriptor"]
+    )
+
+    # Keep only matched rows
+    matched_df = df[df["MethodKey"].isin(concurrent_methods)]
+
+    # Remove helper column if desired
+    matched_df = matched_df.drop(columns=["MethodKey"])
+
+    # Save
+    matched_df.to_csv(output_csv, index=False)
+
+    print(f"Matched rows: {len(matched_df)}")
+    print(f"Saved to: {output_csv}")
+
+    return matched_df
+
+def run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_code_csv, failure_log_csv, slug, module, test, library_meth_file, proj_conc_meth_file):
     device, ml_technique = init_setup(model_name, data_name_dir)
     
     if ml_technique == "qwen":
@@ -991,15 +1020,11 @@ def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_c
     print("Start time of the experiment", execution_time)
     #TN = FP = FN = TP = 0
     project_group = 0
-    #total_execution_time = 0
-    #no_split = 5
-    #global_category_token_map = {}
-    #predictions_per_project_group = {}
-    #ground_truth_per_project_group = {}
-    #tokens_per_project_group = {}
-    #Org_test_per_project_group = {}
-    #print(len(input_data))
     libraries_df = read_library_txt(library_meth_file)
+
+    #Here I will remove the methods if those are not in the concurrent-method list 
+    conc_meth_details_df = filter_csv_by_concurrent_methods(meth_body_csv, proj_conc_meth_file, "output.csv") 
+    print("printing top-10 meths=", conc_meth_details_df.head(10))
     
     #print("test_code_csv=", test_code_csv)
     test_meth_code_df = pd.read_csv(test_code_csv) #read_data(test_code_csv)
@@ -1007,15 +1032,15 @@ def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_c
     failure_log_df = pd.read_csv(failure_log_csv)
     test_code = test_meth_code_df.iloc[0] 
     failure_log = failure_log_df.iloc[0]
-    df = pd.read_csv(dataset_path, quoting=csv.QUOTE_ALL, encoding='utf-8', engine='python')
+    df = pd.read_csv(meth_body_csv, quoting=csv.QUOTE_ALL, encoding='utf-8', engine='python')
 
-    print("test_code_csv=",test_code_csv, ",dataset_path=", dataset_path) 
+    print("test_code_csv=",test_code_csv, ",meth_body_csv=", meth_body_csv) 
     test_df = pd.read_csv(test_code_csv)
-    method_df = pd.read_csv(dataset_path)
+    #method_df = pd.read_csv(meth_body_csv)
 
-    df_with_cluster = clustering_methods(method_df)
+    #df_with_cluster = clustering_methods(method_df)
     #print("***************")
-    df_with_cluster.to_csv("M.csv", index=False)
+    #df_with_cluster.to_csv("M.csv", index=False)
     #print(df_with_cluster)
     embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
 
@@ -1024,7 +1049,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_c
     #csv_that_saved_embedding = "metadata/embedings_ablation_0_100/"+test+"_"+embed_model_name+"_embeddings.csv"
     embedding_required_to_generate =  True #False
     if embedding_required_to_generate:
-        ranked_df = rank_methods_by_llm_embedding_similarity(test_df, df_with_cluster, failure_log_df, embed_model_name)
+        ranked_df = rank_methods_by_llm_embedding_similarity(test_df, conc_meth_details_df, failure_log_df, embed_model_name)
         print(ranked_df)
         ranked_df.to_csv(csv_that_saved_embedding, index=False)
     else:
@@ -1032,16 +1057,15 @@ def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_c
         ranked_df = pd.read_csv(csv_that_saved_embedding)
         print(ranked_df)
    
-    #TO-DO: Here I will remove the methods if those are not in the concurrent-method list
 
     #TO-DO: Hopefully the following way of ranking the ranked_df will be removed
-    ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
+    '''ranked_df["LineSpan"] = ranked_df["LineRange"].apply(
         lambda x: int(x.split("-")[1]) - int(x.split("-")[0]) + 1 if "-" in x else 0
     )
 
     ranked_df["HasBody"] = ranked_df["Body"].apply(is_non_empty_body)
     ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
-    ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)
+    ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)'''
 
     depth_filtered_df = ranked_df.head(10) #Collecting 10 methods from the top
     print(len(depth_filtered_df))
@@ -1062,8 +1086,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_c
     if ml_technique == "qwen":
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_qwen(test_code, tokenizer, auto_model, device, ml_technique, code_under_test_meths, lineRange, failure_log)
- 
-            #X_test, tokenizer, model, batch_size, device, project_group, test_y.numpy(), ml_technique)
             print('***************** All preds=')
             print(preds)
     
@@ -1079,10 +1101,10 @@ def run_experiment(dataset_path, results_file, data_name_dir, model_name, test_c
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df, failure_log_csv, libraries_df)
+            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, depth_filtered_df, failure_log_csv, libraries_df)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     elif ml_technique == "gemini":
-            line_to_inject_delay, cot_count, test_output = gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
+            line_to_inject_delay, cot_count, test_output = gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, depth_filtered_df)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     else:
         print('no model name found=',ml_technique)
@@ -1137,7 +1159,7 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_o
                 seconds
             ])
 if __name__ == "__main__":
-    dataset_path = sys.argv[1] #traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue580Test\#runNoCloseBlockingTestScenario0_executed_method_bodies.csv
+    meth_body_csv = sys.argv[1] #traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue580Test\#runNoCloseBlockingTestScenario0_executed_method_bodies.csv
     results_file = sys.argv[2] #
     data_name_dir = sys.argv[3] #traces
     model_name = sys.argv[4] 
@@ -1147,34 +1169,14 @@ if __name__ == "__main__":
     sha = sys.argv[8] 
     module = sys.argv[9] 
     test = sys.argv[10] 
-    library_meth_file = sys.argv[11] #executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
+    library_meth_file = sys.argv[11] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
+    proj_meth_file = sys.argv[12] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
     #data_is_from_which_csv = sys.argv[11] 
     initialize_environment(42)
-    '''if data_is_from_which_csv == "idoft":
-        filtered_fail_log_txt = extract_block(fail_log_csv, test)
-        base, _ = os.path.splitext(fail_log_csv)
-        fail_log_csv = f"{base}.csv"
-
-        cleaned_fail_log = [line for line in filtered_fail_log_txt if line.strip()]
-
-        # 2) drop lines that are just “[INFO]” (with optional spaces)
-        info_only = re.compile(r'^\[INFO\]\s*$')
-        cleaned_fail_log = [line for line in cleaned_fail_log if not info_only.match(line)]
-        print("fail cleaned=", cleaned_fail_log)
-
-        #big_block = "\n".join(filtered_fail_log_txt)
-        big_block_fail_log = "\n".join(cleaned_fail_log)
-
-        with open(fail_log_csv, "w", newline="") as fw:
-            writer = csv.writer(fw,
-                            delimiter=",",
-                            quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
-            writer.writerow(["Failure"])
-            writer.writerow([big_block_fail_log])'''
 
     start_time = time.time()
     #print(type(big_block_fail_log))
-    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, model_name, test_code_csv, fail_log_csv, slug, module, test, library_meth_file)
+    line_to_inject_delay, cot_count, test_output = run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_code_csv, fail_log_csv, slug, module, test, library_meth_file, proj_meth_file)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
     #print("duration=", duration)
