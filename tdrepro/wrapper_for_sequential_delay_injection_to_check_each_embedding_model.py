@@ -81,7 +81,7 @@ def find_source_file_with_find(repos_root: str, slug: str, class_path: str) -> O
 #retry_count = 0
 run_id = 0
 
-input_csv=sys.argv[2] #"../data/all_82_tests.csv"
+input_csv=sys.argv[1] #"../data/all_82_tests.csv"
 #input_csv="../data/l.csv"
 #input_csv="l"
 model_name = "gpt2" #"llama" #"tf-idf"#"gpt2"
@@ -180,8 +180,8 @@ with open(input_csv, newline='') as inf:
 
         method_count = 0
         test_with_dot = test.replace("#", ".")
-        csv_file = sys.argv[1] #"metadata/embedings/"
-        csv_file = csv_file + test_with_dot +"_"+model_name+ "_embeddings.csv"
+        #csv_file = sys.argv[1] #"metadata/embedings/"
+        csv_file = "metadata/embedings/" + test_with_dot +"_"+model_name+ "_embeddings.csv"
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
             reader = csv.DictReader(f)
