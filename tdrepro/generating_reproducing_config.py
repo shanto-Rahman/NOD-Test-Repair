@@ -228,7 +228,7 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
     print("Max retries reached. Returning None.")
     return None'''
 
-def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5):
+def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5):
     retry_count = 0
     #print("messages=", messages)
     while retry_count < max_retries:
@@ -583,7 +583,7 @@ def parse_gpt_response(response, messages, retry_count):
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df, retry_count = 0):
 
-    max_retries = 2
+    max_retries = 5
     tried_methods = set()
 
     prompt, definition = generate_prompt(failure_log, ranked_method_df, test_code)
@@ -592,7 +592,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
     while retry_count < max_retries:
         response = gpt_score_finder(messages)
         meth_code = parse_gpt_response(response, messages, retry_count)
-
+        print("=== meth_code=", meth_code)
         # Suppose meth_code is your multiline string as shown above
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** index=", idx, ",Processing line:", line)
@@ -620,6 +620,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 failure_happened_and_log_matched = True
                 if class_path_list:
                     failure_count = 0
+                    failure_detected = 0
                     first_failed, test_run_log = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
                     if not first_failed:
                         print("First run: no failure; skipping additional runs.")
@@ -627,8 +628,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     else:
                        # First run failed → run 4 more times (total 5)
                         failure_count = 1
+                        failure_detected = 1
                         print("Now will do log_similarity check...")
-                        exit()
                         # Will check the logs 
                         log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
                         #print("org failure_log=", failure_log)
@@ -650,7 +651,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                                     #Call to the GPT that log does not match, so find a different location
                             if failure_count >=3:
                                 print(f"Failure found in {failure_count}/5 runs.")
-                                return line, f"{retry_count}_{idx}", "Failure found."
+                                return line, f"{retry_count}_{idx}", "Failure reproduced.", failure_detected
                             else:
                                 print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
                 else:
@@ -658,23 +659,22 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             else:
                 print("Line did not match expected format:", line)
         tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+        #f"Method: {method_name}\n"
         if not failure_happened_and_log_matched:
             feedback = (
                 f"Your previous suggestion did not reproduce the same failure.\n"
                 f"Here is what is already tried:\n"
-                f"Method: {method_name}\n"
-                f"Location(s):\n{meth_code}\n\n"
+                f"\n{meth_code}\n\n"
                 f"Please suggest a new location for delay injection in a different method, "
                 f"or a different location within a method that has not already been tried so that the original failure is reproduced. "
-                f"Do not repeat any of the previous suggestions."
+                f"Do not repeat any of the previous suggestions. "
                 f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
             )
         else:
             feedback = (
                 f"Your previous suggestion did not reproduce the failure.\n"
                 f"Here is what is already tried:\n"
-                f"Method: {method_name}\n"
-                f"Location(s):\n{meth_code}\n\n"
+                f"\n{meth_code}\n\n"
                 f"Please suggest a new location for delay injection in a different method, "
                 f"or a different location within a method that has not already been tried. "
                 f"Do not repeat any of the previous suggestions."
@@ -683,7 +683,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         messages.append({"role": "user", "content": feedback}) 
         retry_count += 1
 
-    return "NA", str(retry_count), "Failure not found"
+    return "NA", str(retry_count), "Failure not found reproduced", failure_detected
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
@@ -983,9 +983,6 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     elif ml_technique == "gemini":
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-    execution_start_time = time.time()
-    print("Start time of the experiment", execution_start_time)
-
     #project_group = 0
     libraries_df = read_library_txt(library_meth_file)
 
@@ -1064,13 +1061,13 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
         torch.cuda.empty_cache()
 
     elif ml_technique == "gpt":
-        line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df)
-        print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
+        line_to_inject_delay, cot_count, test_failure_reproduced, failure_detected = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df)
+        print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_failure_reproduced=", test_failure_reproduced)
     else:
         print('no model name found=',ml_technique)
         line_to_inject_delay = "Embedding-Only"
         cot_count = "Embedding-Only"
-        test_output = "Embedding-Only"
+        test_failure_reproduced = "Embedding-Only"
 
     #if ml_technique != "gpt" or ml_technique != " embeddingOnly":
     #    print(ml_technique)
@@ -1079,7 +1076,7 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     #    torch.cuda.empty_cache()
     #    exit()
 
-    return line_to_inject_delay, cot_count, test_output 
+    return line_to_inject_delay, cot_count, test_failure_reproduced, failure_detected
     #return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
 
 
@@ -1088,7 +1085,7 @@ def initialize_environment(seed_value):
     set_seed(seed_value)  # Set the seed for reproducibility
     setup_logging()  # Setup standardized logging
 
-def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, seconds): 
+def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, seconds, test_failure_detected): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
     file_path = "results/tdrepro.csv"
@@ -1096,9 +1093,9 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_o
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
         if write_header:
-            writer.writerow(["proj_name","sha","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+            writer.writerow(["proj_name","sha","module","test_name","line_to_inject_delay", "cot_count", "time_to_run_tdrepro", "failure_detected?"])
 
-        if test_output == "Failure found.":
+        if test_failure_reproduced == "Failure reproduced.":
             writer.writerow([
                 slug,
                 sha,
@@ -1106,7 +1103,8 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_o
                 test,
                 line_to_inject_delay,  # This is the code change to inject delay
                 cot_count,
-                seconds
+                seconds,
+                failure_detected
             ])
         else:
             writer.writerow([
@@ -1116,7 +1114,8 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_o
                 test,
                 "",
                 "10",
-                seconds
+                seconds,
+                failure_detected
             ])
 if __name__ == "__main__":
     meth_body_csv = sys.argv[1] #traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue580Test\#runNoCloseBlockingTestScenario0_executed_method_bodies.csv
@@ -1133,10 +1132,10 @@ if __name__ == "__main__":
 
     start_time = time.time()
     #print(type(big_block_fail_log))
-    line_to_inject_delay, cot_count, test_output = run_experiment(meth_body_csv, model_name, test_code_csv, fail_log_csv, slug, module, test, library_meth_file, proj_meth_notin_lib_file)
+    line_to_inject_delay, cot_count, test_failure_reproduced, test_failure_detected = run_experiment(meth_body_csv, model_name, test_code_csv, fail_log_csv, slug, module, test, library_meth_file, proj_meth_notin_lib_file)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
     #print("duration=", duration)
     #minutes, seconds = divmod(duration, 60)
 
-    save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, duration_in_seconds)
+    save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, duration_in_seconds, test_failure_detected)
