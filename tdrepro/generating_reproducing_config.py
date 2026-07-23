@@ -994,7 +994,7 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     code_under_test_meths = ranked_method_df['Body'].tolist()
     lineRange = ranked_method_df['LineRange'].tolist()
     
-    ranked_method_df.to_csv("metada/ranked_method_dff.csv", index=False)
+    ranked_method_df.to_csv("metadata/ranked_method_df.csv", index=False)
     print(failure_log)
     print(test_code)
 
@@ -1011,11 +1011,8 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
         torch.cuda.empty_cache()
 
     elif ml_technique == "gpt":
-            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df)
-            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
-    '''elif ml_technique == "gemini":
-            line_to_inject_delay, cot_count, test_output = gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, depth_filtered_df)
-            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)'''
+        line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df)
+        print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     else:
         print('no model name found=',ml_technique)
         line_to_inject_delay = "Embedding-Only"
