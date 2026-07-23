@@ -1,0 +1,14 @@
+org/apache/http/pool/TestConnPool$LocalConnPool.createConnection(Ljava/lang/Object;)Ljava/lang/Object;
+org/apache/http/pool/PoolEntryFuture.get(JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;
+org/apache/http/pool/TestConnPool$GetPoolEntryThread.run()V
+org/apache/http/pool/PoolEntryFuture.isDone()Z
+org/apache/http/pool/AbstractConnPool$2.getPoolEntry(JLjava/util/concurrent/TimeUnit;)Lorg/apache/http/pool/PoolEntry;
+org/apache/http/pool/AbstractConnPool.getMaxPerRoute(Ljava/lang/Object;)I
+org/apache/http/pool/TestConnPool$LocalConnPool.createEntry(Ljava/lang/String;Lorg/apache/http/HttpConnection;)Lorg/apache/http/pool/TestConnPool$LocalPoolEntry;
+org/apache/http/pool/AbstractConnPool.getPoolEntryBlocking(Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;Lorg/apache/http/pool/PoolEntryFuture;)Lorg/apache/http/pool/PoolEntry;
+org/apache/http/pool/AbstractConnPool.access$000(Lorg/apache/http/pool/AbstractConnPool;Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;Lorg/apache/http/pool/PoolEntryFuture;)Lorg/apache/http/pool/PoolEntry;
+org/apache/http/pool/TestConnPool$LocalConnPool.createEntry(Ljava/lang/Object;Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;
+org/apache/http/pool/PoolEntryFuture.await(Ljava/util/Date;)Z
+org/apache/http/pool/AbstractConnPool.getPool(Ljava/lang/Object;)Lorg/apache/http/pool/RouteSpecificPool;
+org/apache/http/pool/AbstractConnPool$2.getPoolEntry(JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;
+org/apache/http/pool/TestConnPool$LocalConnPool.createConnection(Ljava/lang/String;)Lorg/apache/http/HttpConnection;

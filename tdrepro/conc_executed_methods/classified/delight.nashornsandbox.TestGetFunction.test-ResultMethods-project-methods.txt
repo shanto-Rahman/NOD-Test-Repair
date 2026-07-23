@@ -1,0 +1,13 @@
+delight/nashornsandbox/internal/ThreadMonitor.isMemoryExided(J)Z
+delight/nashornsandbox/internal/EvaluateOperation.executeScriptEngineOperation(Ljavax/script/ScriptEngine;)Ljava/lang/Object;
+delight/nashornsandbox/internal/JsEvaluator.run()V
+delight/nashornsandbox/internal/ThreadMonitor.reset()V
+delight/nashornsandbox/internal/ThreadMonitor.notifyMonitorThread()V
+delight/nashornsandbox/internal/ThreadMonitor.getCPUTime()J
+delight/nashornsandbox/internal/ThreadMonitor.getCurrentMemory()J
+delight/nashornsandbox/internal/ThreadMonitor.isCpuTimeExided(J)Z
+delight/nashornsandbox/internal/ThreadMonitor.stopMonitor()V
+delight/nashornsandbox/internal/SandboxClassFilter.exposeToScripts(Ljava/lang/String;)Z
+delight/nashornsandbox/internal/ThreadMonitor.scriptFinished()V
+delight/nashornsandbox/internal/ThreadMonitor.setThreadToMonitor(Ljava/lang/Thread;)V
+delight/nashornsandbox/internal/ThreadMonitor.getCheckInterval(J)J
