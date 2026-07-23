@@ -264,7 +264,7 @@ def gpt_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=5
 import os
 from pathlib import Path
 
-def find_class_file(class_name, slug, module):
+'''def old_find_class_file(class_name, slug, module):
     # Convert class name to relative path
     rel_path = class_name.replace('.', '/') + '.java'
     print("class_name=", class_name)
@@ -309,7 +309,58 @@ def find_class_file(class_name, slug, module):
     if candidates:
         return [str(candidates[0])]
  
-    return []
+    return []'''
+
+def find_class_file(class_name, slug, module):
+    """
+    Find a .java file using its fully-qualified class name, searching the
+    ENTIRE project directory (not just the given module) - since a class
+    may live in a different module than the one currently being tested.
+ 
+    Matches any file whose path ends with the class's package path, which
+    works regardless of the project's source layout (src/main/java,
+    source/, javasrc/, or no prefix at all).
+ 
+    Args:
+        class_name: Fully-qualified class name, e.g.
+                     "org.java_websocket.AbstractWebSocket".
+                     Inner classes (Outer$Inner) are handled by stripping
+                     to the outer class, since only it has its own file.
+        slug:       Project directory name, e.g. "TooTallNate/Java-WebSocket".
+                     The project lives at projects/<slug>.
+        module:     Kept for signature compatibility / logging only - not
+                     used to scope the search, since the class may live
+                     outside the given module.
+ 
+    Returns:
+        A list containing a single matched path as a string, or [] if
+        nothing was found. Deterministic across runs (sorted matches).
+    """
+    class_name = class_name.split('$')[0]  # strip inner-class suffix
+    rel_path = class_name.replace('.', '/') + '.java'
+    simple_name = class_name.split('.')[-1]
+ 
+    project_root = Path(f"projects/{slug}")
+ 
+    # --- Tier 1: exact package path, anywhere in the project ---
+    candidates = sorted(project_root.glob(f"**/{rel_path}"), key=str)
+ 
+    # --- Tier 2: fallback - simple name only, anywhere in the project ---
+    if not candidates:
+        print("***Multiple filename matched found*****")
+        candidates = sorted(project_root.glob(f"**/{simple_name}.java"), key=str)
+ 
+    if not candidates:
+        print(f"No match found for {class_name} (slug={slug}, module={module})")
+        return []
+ 
+    if len(candidates) > 1:
+        print(f"WARNING: multiple matches for {class_name}: {candidates}")
+
+    print(str(candidates[0]))
+
+    return [str(candidates[0])]
+
 
 # Filter out methods with empty or trivial bodies
 def is_non_empty_body(body):
@@ -327,6 +378,7 @@ def is_synchronized_signature(body):
 
 def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
     inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+
     tag = f"{retry_count}_{idx}_{run_id}"
     before, after = test.rsplit('.', 1)
     test_with_hash = f"{before}#{after}"
@@ -550,19 +602,18 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
             m = re.match(r"^(.*?):(.*?):(.*?):(\d+)\s+\((.*)\)$", line)
             if m:
                 class_name = m.group(1)
+                print("class_name= ", class_name)
                 method_name = m.group(2)
                 descriptor = m.group(3)
                 line_number = int(m.group(4))
                 code_line = m.group(5)
 
-                class_simple_name = class_name.split('.')[-1]  # Get class name (e.g., HeaderExchangeHandler)
-                class_name = class_simple_name.split('$')[0]
-                print(f"===Class name after split: {class_name}", ",line=", line_number)
-                exit()
                 with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
                     print("Tried lines")
                     writer = csv.writer(f)
                     writer.writerow([slug, module, test, class_name, line_number,code_line])
+                print("class_name=", class_name, ",slug=", slug, ",module=", module)
+
                 class_path_list = find_class_file(class_name, slug, module)
 
                 #print("**** class_path=", class_path)
@@ -576,6 +627,8 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     else:
                        # First run failed → run 4 more times (total 5)
                         failure_count = 1
+                        print("Now will do log_similarity check...")
+                        exit()
                         # Will check the logs 
                         log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
                         #print("org failure_log=", failure_log)
