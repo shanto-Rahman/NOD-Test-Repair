@@ -1104,7 +1104,7 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_f
                 line_to_inject_delay,  # This is the code change to inject delay
                 cot_count,
                 seconds,
-                failure_detected
+                test_failure_detected
             ])
         else:
             writer.writerow([
@@ -1115,7 +1115,7 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_f
                 "",
                 "10",
                 seconds,
-                failure_detected
+                test_failure_detected
             ])
 if __name__ == "__main__":
     meth_body_csv = sys.argv[1] #traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue580Test\#runNoCloseBlockingTestScenario0_executed_method_bodies.csv
