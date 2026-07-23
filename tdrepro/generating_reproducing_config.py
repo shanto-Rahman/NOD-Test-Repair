@@ -533,7 +533,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
 
     lib_retry_count = 0 
     max_retries = 2
-    lib_max_retries = 2
+    #lib_max_retries = 2
 
     tried_methods = set()
     lib_tried_methods = set()
@@ -1001,8 +1001,14 @@ def filter_csv_by_concurrent_methods(csv_file, method_list_file, output_csv):
 
     return matched_df
 
-def run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_code_csv, failure_log_csv, slug, module, test, library_meth_file, proj_conc_meth_file):
-    device, ml_technique = init_setup(model_name, data_name_dir)
+def removing_given_file(file_name):
+    #Here I will remove the methods if those are not in the concurrent-method list 
+    if os.path.exists(file_name):
+        os.remove(file_name)
+
+def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, slug, module, test, library_meth_file, proj_conc_meth_file):
+
+    device, ml_technique = init_setup(model_name)
     
     if ml_technique == "qwen":
         print('I am qwen')
@@ -1015,14 +1021,14 @@ def run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_
         openai.api_key = os.environ["OPENAI_API_KEY"]
     elif ml_technique == "gemini":
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-        #gemini_api_key="AIzaSyDmFFCseLDxPkgXnGsbSSjomfG2LkiQcIU"
-    execution_time = time.time()
-    print("Start time of the experiment", execution_time)
-    #TN = FP = FN = TP = 0
-    project_group = 0
+
+    execution_start_time = time.time()
+    print("Start time of the experiment", execution_start_time)
+
+    #project_group = 0
     libraries_df = read_library_txt(library_meth_file)
 
-    #Here I will remove the methods if those are not in the concurrent-method list 
+    removing_given_file("output.csv")
     conc_meth_details_df = filter_csv_by_concurrent_methods(meth_body_csv, proj_conc_meth_file, "output.csv") 
     print("printing top-10 meths=", conc_meth_details_df.head(10))
     
@@ -1032,7 +1038,8 @@ def run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_
     failure_log_df = pd.read_csv(failure_log_csv)
     test_code = test_meth_code_df.iloc[0] 
     failure_log = failure_log_df.iloc[0]
-    df = pd.read_csv(meth_body_csv, quoting=csv.QUOTE_ALL, encoding='utf-8', engine='python')
+
+    all_meth_df = pd.read_csv(meth_body_csv, quoting=csv.QUOTE_ALL, encoding='utf-8', engine='python') # All methods that are executed (not concurrently executed)
 
     print("test_code_csv=",test_code_csv, ",meth_body_csv=", meth_body_csv) 
     test_df = pd.read_csv(test_code_csv)
@@ -1049,7 +1056,7 @@ def run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_
     #csv_that_saved_embedding = "metadata/embedings_ablation_0_100/"+test+"_"+embed_model_name+"_embeddings.csv"
     embedding_required_to_generate =  True #False
     if embedding_required_to_generate:
-        ranked_df = rank_methods_by_llm_embedding_similarity(test_df, conc_meth_details_df, failure_log_df, embed_model_name)
+        ranked_df = rank_methods_by_llm_embedding_similarity(test_df, conc_meth_details_df, failure_log_df, embed_model_name) # Using conc methods only for ranking the methods
         print(ranked_df)
         ranked_df.to_csv(csv_that_saved_embedding, index=False)
     else:
@@ -1090,22 +1097,17 @@ def run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_
             print(preds)
     
     elif ml_technique == "llama3_8b":
-        #model_name, tokenizer, auto_model = llama3_8b_model_define()
         with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
-
+            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, auto_model, batch_size, device, 0, test_y.numpy(), ml_technique)
         del auto_model
         torch.cuda.empty_cache()
-    elif ml_technique == "deep_seek_coder":
-        #model_name, tokenizer, auto_model = deep_seek_coder_model_define()
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
+
     elif ml_technique == "gpt":
             line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, depth_filtered_df, failure_log_csv, libraries_df)
             print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
-    elif ml_technique == "gemini":
+    '''elif ml_technique == "gemini":
             line_to_inject_delay, cot_count, test_output = gemini_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, depth_filtered_df)
-            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
+            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)'''
     else:
         print('no model name found=',ml_technique)
         line_to_inject_delay = "Embedding-Only"
@@ -1160,23 +1162,20 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_o
             ])
 if __name__ == "__main__":
     meth_body_csv = sys.argv[1] #traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue580Test\#runNoCloseBlockingTestScenario0_executed_method_bodies.csv
-    results_file = sys.argv[2] #
-    data_name_dir = sys.argv[3] #traces
-    model_name = sys.argv[4] 
-    test_code_csv = sys.argv[5] 
-    fail_log_csv = sys.argv[6]
-    slug = sys.argv[7] 
-    sha = sys.argv[8] 
-    module = sys.argv[9] 
-    test = sys.argv[10] 
-    library_meth_file = sys.argv[11] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
-    proj_meth_file = sys.argv[12] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
-    #data_is_from_which_csv = sys.argv[11] 
+    model_name = sys.argv[2] 
+    test_code_csv = sys.argv[3] #traces/${filename}_test_code.csv
+    fail_log_csv = sys.argv[4] #failure_log csv
+    slug = sys.argv[5] 
+    sha = sys.argv[6] 
+    module = sys.argv[7] 
+    test = sys.argv[8] 
+    library_meth_file = sys.argv[9] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
+    proj_meth_notin_lib_file = sys.argv[10] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
     initialize_environment(42)
 
     start_time = time.time()
     #print(type(big_block_fail_log))
-    line_to_inject_delay, cot_count, test_output = run_experiment(meth_body_csv, results_file, data_name_dir, model_name, test_code_csv, fail_log_csv, slug, module, test, library_meth_file, proj_meth_file)
+    line_to_inject_delay, cot_count, test_output = run_experiment(meth_body_csv, model_name, test_code_csv, fail_log_csv, slug, module, test, library_meth_file, proj_meth_notin_lib_file)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
     #print("duration=", duration)
