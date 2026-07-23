@@ -18,7 +18,7 @@ def contains_english_letter(token):
 #====================================================
 #====================================================
 #login(token="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")
-def init_setup(technique, data_name):
+def init_setup(technique):
     # specify GPU
     device = torch.device("cuda")
     #device = torch.device("cpu")
