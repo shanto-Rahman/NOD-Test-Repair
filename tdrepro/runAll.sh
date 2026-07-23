@@ -50,32 +50,15 @@ while IFS= read -r line
 
     testName=$(echo $line | cut -d',' -f5) #"${testName_with_dot%.*}#${testName_with_dot##*.}"
     testName_with_dot="${testName//#/.}"
-    #testName_with_dot=$(echo $line | cut -d',' -f5)
-    #package_class_name=$(echo $testName_with_dot| rev | cut -d'.' -f2- | rev)
-    #testName="${testName_with_dot%.*}#${testName_with_dot##*.}"
-    #echo "$testName"
     testClass="$(echo $testName_with_dot | rev | cut -d'.' -f2 | rev)"
-    #echo "$testClass"
      
     #find $currentDir/FlakeSync-Shanto-Modified -name pom.xml
     cd $currentDir/FlakeSync-Shanto-Modified/
     mvn clean install -DskipTests
-    #echo "HOME=$HOME"
-    #mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout
-    #echo ""
 
-M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout)
-
-#echo "Maven repo is: $M2_REPO"
-#find "$M2_REPO" -name "*flakesync*" 2>/dev/null
-#echo "MAVEN_OPTS=$MAVEN_OPTS"
-#echo "MAVEN_CONFIG=$MAVEN_CONFIG"
-#grep -R "maven.repo.local" /NOD-Test-Repair/tdrepro/FlakeSync-Shanto-Modified ~/.m2 /tmp/.m2 2>/dev/null
-#echo "Find"
-#find /NOD-Test-Repair/tdrepro/FlakeSync-Shanto-Modified -path "*/.mvn/*" -type f -print -exec cat {} \;
+    M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout)
 
     cd $currentDir/
-    #exit
 
     rootProj=$(echo "$slug" | cut -d/ -f 1)
     subProj=$(echo "$slug" | cut -d/ -f 2)
@@ -162,20 +145,12 @@ M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdo
     cp $currentDir/jacococli.jar .
     echo "cp $currentDir/jacococli.jar $(pwd)"
 
-    #java -jar jacococli.jar report $module/target/jacoco.exec \
-    #  --classfiles $module/target/classes \
-    #    --sourcefiles $module/src/main/java \
-    #      --xml $module/target/coverage.xml
-    # Assume this is the root of your multi-module project
     CLASSFILES=""
     SOURCEFILES=""
     
     for mod in $(find . -name target -type d -prune); do
       base_module=$(dirname "$mod")
 
-       #echo "mod=$mod"
-       #echo "class dir=$mod/classes"
-       #echo "source dir=$base_module/src/main/java"
        if [ -d "$mod/classes" ]; then
            echo "classes exists"
        else
@@ -204,23 +179,12 @@ M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdo
         CLASSFILES+="--classfiles $base_module/build "
       fi
     done
-      java -jar jacococli.jar report $module/target/jacoco.exec \
-        $CLASSFILES \
-        $SOURCEFILES \
-        --xml $module/target/coverage.xml
+    java -jar jacococli.jar report $module/target/jacoco.exec \
+      $CLASSFILES \
+      $SOURCEFILES \
+      --xml $module/target/coverage.xml
 
-      #echo "java -jar jacococli.jar report $module/target/jacoco.exec \
-      #  $CLASSFILES \
-      #  $SOURCEFILES \
-      #  --xml $module/target/coverage.xml"
-
-      #executed_methods_count_and_total_token_count=$(
-    #fi
-    #echo python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug"
     python3 $currentDir/collect_executed_meths.py "$module" "$testName" "$slug" 
-    #)
-    #executed_methods=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f2 | cut -d':' -f1 | tr -d ' ')
-    #total_tokens_desc=$(echo "$executed_methods_count_and_total_token_count" | cut -d'=' -f3 | tr -d ' ')
 
     test_class_full_path=$(find $module -name "${testClass}.java")
     echo "test_class_full_path=$test_class_full_path"
@@ -237,18 +201,9 @@ M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdo
     
     #echo "python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir"
     python3 $currentDir/collect_test_meth_body.py "$module" "$testName" "$slug" "$test_class_full_path" $currentDir #) # Might need if later we want to do the repair
-    #echo $(pwd)
-
-    #exit
-    #echo "matched_calls===$matched_calls"
-
-    #python3 $currentDir/collect_method_body.py "$module" "$testName" "$slug"
-    #all_dependent_modules_including_the_main_module=$(find . -type d -name target | sed 's|/target||' | sed 's|^\./||' | sort -u)  #$(find . -type d -name target | sed 's|/target||' | sort -u)
-    #all_dependent_modules_including_the_main_module=$(find . -type d -name target -prune | sed 's|/target$||' | sed 's|^\./||' | sort -u)
+    
     readarray -t modules_array < <(find . -type d -name target -prune | sed 's|/target$||' | sed 's|^\./||' | sort -u)
 
-
-    #echo $all_dependent_modules_including_the_main_module
 
     result=$(python3 $currentDir/collect_method_body.py $module   "$testName" "$slug" "${modules_array[@]}")
 
@@ -266,7 +221,6 @@ M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdo
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv" "$trace_dir/"
     mv "${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "$trace_dir/"
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
-    #echo "$base_package"
     cd $inputProj/$slug
     #exit
     if [[ $trace_collection_way == "static" ]]; then
@@ -280,15 +234,5 @@ M2_REPO=$(mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdo
     fi
     cd $currentDir
 
-    #if [[ $trace_collection_way == "dynamic" ]]; then
-    #    python3 ff.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_dynamic_calltrace.txt "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_call_depth.csv"
-
-    #elif [[ $trace_collection_way == "static" ]]; then
-    #    python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv"
-
-    #    echo "python3 mapping_static_callgraph_to_executed_meth.py traces/${slug_with_underscore}_${module_with_underscore}_${testName}_static_callgraphs.csv "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_method_bodies.csv" "traces/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_with_static_call_depth.csv""
-
-    #fi
 done < $1
-#bash  $currentDir/run-delta-debugging.sh "$currentDir/$outputDir/Isolation-Result.csv" "Locations/" "Results-Minimizer"
 
