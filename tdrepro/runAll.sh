@@ -11,7 +11,7 @@ currentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 inputProj=$currentDir"/projects"
 trace_dir="$currentDir/traces"
 outputDir="$2"
-trace_collection_way="$3"
+#trace_collection_way="$3"
 
 if [ ! -d "$currentDir/$outputDir" ] 
 then
@@ -34,7 +34,7 @@ then
 fi
 
 test_specific_stat="$currentDir/$outputDir/Test-Specific-Stat.csv"
-echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
+#echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Runtime,#Thread" > "$currentDir/$outputDir/Isolation-Result.csv"
 
 echo "Project-Name,SHA,Module,Test-Name,Total-Executed-Meth,Total-tokens" >> "$test_specific_stat"
 while IFS= read -r line
@@ -103,7 +103,7 @@ while IFS= read -r line
      }' pom.xml
  
     fi  
-    echo -n "${slug},${sha},${module},${testName}" >> "$currentDir/$outputDir/Isolation-Result.csv"
+    #echo -n "${slug},${sha},${module},${testName}" >> "$currentDir/$outputDir/Isolation-Result.csv"
     
     if [[ $module != "." ]]; then
         projName=$(sed 's;/;.;g' <<< $module-$testName)
@@ -223,15 +223,16 @@ while IFS= read -r line
     base_package=$(python3 $currentDir/finding_base_package.py "$trace_dir/${slug_with_underscore}_${module_with_underscore}_${testName}_executed_methods.csv")
     cd $inputProj/$slug
     #exit
-    if [[ $trace_collection_way == "static" ]]; then
-        git stash
-        #git checkout $(find -name "*.java")
-        rm -rf $(find -name "target")
-        #rm test-classes.jar 
-        rm -rf merged_classes/
-        rm merged-all-classes.jar
-        echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
-    fi
+    rm -rf $(find -name "target")
+    #if [[ $trace_collection_way == "static" ]]; then
+    #    git stash
+    #    #git checkout $(find -name "*.java")
+    #    rm -rf $(find -name "target")
+    #    #rm test-classes.jar 
+    #    rm -rf merged_classes/
+    #    rm merged-all-classes.jar
+    #    echo "" >> "$currentDir/$outputDir/Isolation-Result.csv"
+    #fi
     cd $currentDir
 
 done < $1
