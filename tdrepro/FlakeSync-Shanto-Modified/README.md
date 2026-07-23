@@ -1,5 +1,7 @@
 # FlakeSync
 
+# USE FLAKESYNC As it is to find the concurrent methods.
+
 ## Using FlakeSync
 * Run the four phases (6 goals total) of the FlakeSync tool on your desired maven project to identify the sources of flakiness for a given flaky test
 * Each phase will produce output files and potentially new directories, which can be found under the following directory: `./<repo>/<module>/.flakesync/`
