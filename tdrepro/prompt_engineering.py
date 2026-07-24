@@ -201,7 +201,7 @@ Your task:
 """
     return prompt, definitions'''
 
-def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df):
+'''def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df):
     print("methods before trim:", len(code_under_test_meths_ranked_df))
     # trim methods to fit within context budget
     #code_under_test_meths_ranked_df = fit_methods_within_budget(code_under_test_meths_ranked_df)
@@ -263,7 +263,150 @@ Carefully analyze each provided method and identify the single most likely locat
 </Output>
 """
 
+    return prompt, definitions'''
+
+def generate_prompt(
+    failure_log_df,
+    code_under_test_meths_ranked_df,
+    test_meth_code_df,
+): #suggested by gpt
+    print("methods before trim:", len(code_under_test_meths_ranked_df))
+
+    # Uncomment when needed:
+    # code_under_test_meths_ranked_df = fit_methods_within_budget(
+    #     code_under_test_meths_ranked_df
+    # )
+
+    print("methods after trim:", len(code_under_test_meths_ranked_df))
+
+    code_under_test_str = format_code_under_test(
+        code_under_test_meths_ranked_df
+    )
+
+    failure_log_str = (
+        str(failure_log_df.iloc[0])
+        if hasattr(failure_log_df, "iloc")
+        else str(failure_log_df)
+    )
+    failure_log_str = (
+        failure_log_str
+        .replace("\\t", "\n\t")
+        .replace("\\n", "\n")
+    )
+
+    test_code_str = (
+        str(test_meth_code_df.iloc[0])
+        if hasattr(test_meth_code_df, "iloc")
+        else str(test_meth_code_df)
+    )
+
+    output_format = (
+        "Class:Method:Descriptor:FileLineNumber (ActualCodeLine)"
+    )
+
+    definitions = f"""
+You are an expert in Java concurrency, asynchronous systems, software
+testing, and timing-dependent flaky tests.
+
+Your goal is to identify source-code locations where inserting a delay
+immediately before a statement could reproduce the exact test failure
+provided by the user.
+
+A candidate is relevant only when delaying it could postpone, reorder,
+or interfere with an operation that affects the state observed by the
+failing test. Examples include asynchronous callbacks, heartbeats,
+state propagation, cache eviction, resource release, background-task
+completion, synchronization, or visibility of an update.
+
+Follow these rules exactly:
+
+1. Choose locations only from the supplied code-under-test methods.
+
+2. Never choose a location inside:
+   - a synchronized block,
+   - a synchronized method,
+   - an explicit lock-protected region,
+   - or any other critical section.
+
+3. Choose only the beginning of a complete executable Java statement.
+
+4. Never choose:
+   - a method declaration,
+   - an opening or closing brace,
+   - a blank line,
+   - a comment,
+   - a continuation line,
+   - a line beginning with "." or ",",
+   - a line inside an unfinished argument list or expression,
+   - or the middle of a multi-line statement.
+
+5. The suggested insertion must preserve Java syntax and compilation.
+
+6. Rank exactly 10 distinct locations from most likely to least likely.
+
+7. Rank locations by causal relevance to the exact observed failure,
+   not merely by lexical similarity between method names and test code.
+
+8. Before selecting a location, reason internally about this chain:
+
+   delay before candidate statement
+   -> postponed or reordered program event
+   -> changed state observed by the test
+   -> exact assertion or exception shown in the failure log
+
+9. Do not include explanations, confidence scores, headings, method
+   bodies, or any additional text.
+
+10. Format every location exactly as:
+
+    {output_format}
+
+    FileLineNumber must be the actual source-file line number shown
+    before the statement.
+
+    ActualCodeLine must exactly match the source code shown for that line.
+
+11. Wrap the complete answer only in:
+
+    <Output>
+    ...
+    </Output>
+
+    Do not include text before <Output> or after </Output>.
+""".strip()
+
+    prompt = f"""
+Analyze the following timing-dependent flaky-test failure.
+
+The supplied code-under-test methods are candidate methods ranked by an
+earlier retrieval technique. Their order is only a preliminary ranking;
+do not assume that an earlier method is necessarily the correct answer.
+
+Your task is to rank exactly 10 distinct source-code locations where
+inserting a deliberate delay immediately before the statement is most
+likely to reproduce the exact failure shown in <Failure>.
+
+Focus specifically on whether delaying a statement could affect the
+timing, ordering, completion, propagation, or visibility of a program
+state that the test later observes.
+
+<Input>
+<Failure>
+{failure_log_str}
+</Failure>
+
+<Code-Under-Test>
+{code_under_test_str}
+</Code-Under-Test>
+
+<Test-Code>
+{test_code_str}
+</Test-Code>
+</Input>
+""".strip()
+
     return prompt, definitions
+
 
 def generate_fix_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df, reproduction_script_str):
     code_under_test_str = format_code_under_test(code_under_test_meths_ranked_df)

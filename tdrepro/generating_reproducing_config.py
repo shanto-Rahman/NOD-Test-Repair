@@ -30,7 +30,8 @@ from heuristics import rank_methods_by_similarity, clustering_methods, rank_meth
 from token_processing import count_prompt_tokens
 
 CURRENT_DIR = os.getcwd()
-MODEL_NAME = "gpt-5.6-terra" #"gpt-4.1" #"gpt-5.5-pro" #gpt-4o
+#MODEL_NAME = "gpt-5.6-terra" #"gpt-4.1" #"gpt-5.5-pro" #gpt-4o
+MODEL_NAME = "gpt-5.6"
 
 def hf_login_once():
     if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
@@ -148,7 +149,7 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
     print("Max retries reached. Returning None.")
     return None'''
 
-def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5):
+'''def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5): #gpt-5.6-terra
     retry_count = 0
     print("****message=", messages)
     while retry_count < max_retries:
@@ -156,8 +157,9 @@ def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5
             response = openai.ChatCompletion.create(
                 model=MODEL_NAME,
                 messages=messages,
-                max_completion_tokens=3000,
+                temperature=0.2,
                 seed=42,
+                max_completion_tokens=3000,
             )
             time.sleep(sleep_on_success)
             return response
@@ -187,57 +189,76 @@ def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5
             raise
 
     print("Max retries reached. Returning None.")
+    return None'''
+
+
+def gpt_score_finder(
+    messages,
+    max_retries=5,
+    initial_wait=2,
+    sleep_on_success=5,
+):
+    retry_count = 0
+    print("****message=", messages)
+
+    while retry_count < max_retries:
+        try:
+            response = openai.ChatCompletion.create(
+                model=MODEL_NAME,
+                messages=messages,
+                reasoning_effort="high",
+                seed=42,
+                max_completion_tokens=3000,
+            )
+
+            time.sleep(sleep_on_success)
+            return response
+
+        except (
+            openai.error.APIError,
+            openai.error.ServiceUnavailableError,
+            openai.error.Timeout,
+            openai.error.APIConnectionError,
+            openai.error.RateLimitError,
+        ) as e:
+
+            status = getattr(e, "http_status", None)
+            wait_time = initial_wait * (2 ** retry_count)
+
+            if (
+                status is None
+                or status >= 500
+                or isinstance(
+                    e,
+                    (
+                        openai.error.RateLimitError,
+                        openai.error.Timeout,
+                        openai.error.APIConnectionError,
+                    ),
+                )
+            ):
+                print(
+                    f"Retryable error "
+                    f"({type(e).__name__}, status={status}). "
+                    f"Retrying in {wait_time} seconds."
+                )
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                print(f"Non-retryable API error: {e}")
+                raise
+
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            raise
+
+    print("Max retries reached. Returning None.")
     return None
+
+
 
 import os
 from pathlib import Path
-
-'''def old_find_class_file(class_name, slug, module):
-    # Convert class name to relative path
-    rel_path = class_name.replace('.', '/') + '.java'
-    print("class_name=", class_name)
-
-    if slug == "zxing/zxing":
-        print("zxing ....")
-        candidate_roots = [
-            Path(f"projects/{slug}/{module}/src"),
-        ]
-        search_patterns = [
-            f"**/src/{rel_path}",
-        ]
-    else:
-        candidate_roots = [
-            Path(f"projects/{slug}/{module}/src/main/java"),
-        ]
-        search_patterns = [
-            f"**/src/main/java/{rel_path}",
-        ]
-
-    # Step 1: Check in the given module
-    for root in candidate_roots:
-        main_path = root / rel_path
-        if main_path.exists():
-            return [str(main_path)]
-
-    # Step 2: Search all modules under projects/<slug>/
-    base_dir = Path(f"projects/{slug}")
-    candidates = []
-    for pattern in search_patterns:
-        candidates.extend(base_dir.glob(pattern))
-
-    if not candidates and "." not in class_name:
-        local_candidates = list(Path(f"projects/{slug}/{module}").glob(f"**/{class_name}.java"))
-        if local_candidates:
-            candidates = local_candidates
-        else:
-            candidates = list(base_dir.glob(f"**/{class_name}.java"))
-
-    print("All candidates before filtering:", candidates)
-
-    if candidates:
-        return [str(candidates[0])]
- 
-    return []'''
 
 def find_class_file(class_name, slug, module):
     """
