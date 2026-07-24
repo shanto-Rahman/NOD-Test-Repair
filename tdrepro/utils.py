@@ -8,7 +8,60 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import re
 import json
 import pandas as pd
+
+import os
+from pathlib import Path
 #from huggingface_hub import login
+
+def find_class_file(class_name, slug, module):
+    """  
+    Find a .java file using its fully-qualified class name, searching the
+    ENTIRE project directory (not just the given module) - since a class
+    may live in a different module than the one currently being tested.
+ 
+    Matches any file whose path ends with the class's package path, which
+    works regardless of the project's source layout (src/main/java,
+    source/, javasrc/, or no prefix at all).
+ 
+    Args:
+        class_name: Fully-qualified class name, e.g.
+                     "org.java_websocket.AbstractWebSocket".
+                     Inner classes (Outer$Inner) are handled by stripping
+                     to the outer class, since only it has its own file.
+        slug:       Project directory name, e.g. "TooTallNate/Java-WebSocket".
+                     The project lives at projects/<slug>.
+        module:     Kept for signature compatibility / logging only - not
+                     used to scope the search, since the class may live
+                     outside the given module.
+ 
+    Returns:
+        A list containing a single matched path as a string, or [] if
+        nothing was found. Deterministic across runs (sorted matches).
+    """
+    class_name = class_name.split('$')[0]  # strip inner-class suffix
+    rel_path = class_name.replace('.', '/') + '.java'
+    simple_name = class_name.split('.')[-1]
+ 
+    project_root = Path(f"projects/{slug}")
+ 
+    # --- Tier 1: exact package path, anywhere in the project ---
+    candidates = sorted(project_root.glob(f"**/{rel_path}"), key=str)
+ 
+    # --- Tier 2: fallback - simple name only, anywhere in the project ---
+    if not candidates:
+        print("***Multiple filename matched found*****")
+        candidates = sorted(project_root.glob(f"**/{simple_name}.java"), key=str)
+ 
+    if not candidates:
+        print(f"No match found for {class_name} (slug={slug}, module={module})")
+        return []
+ 
+    if len(candidates) > 1: 
+        print(f"WARNING: multiple matches for {class_name}: {candidates}")
+
+    print(str(candidates[0]))
+
+    return [str(candidates[0])]
 
 
 # Function to check if a token contains at least one English letter

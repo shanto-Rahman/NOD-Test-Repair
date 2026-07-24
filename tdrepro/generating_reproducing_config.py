@@ -6,7 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
 import sys
-from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define
+from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define, find_class_file
 import pandas as pd
 import os
 import numpy as np
@@ -260,7 +260,7 @@ def gpt_score_finder(
 import os
 from pathlib import Path
 
-def find_class_file(class_name, slug, module):
+'''def find_class_file(class_name, slug, module):
     """
     Find a .java file using its fully-qualified class name, searching the
     ENTIRE project directory (not just the given module) - since a class
@@ -308,7 +308,7 @@ def find_class_file(class_name, slug, module):
 
     print(str(candidates[0]))
 
-    return [str(candidates[0])]
+    return [str(candidates[0])]'''
 
 
 # Filter out methods with empty or trivial bodies

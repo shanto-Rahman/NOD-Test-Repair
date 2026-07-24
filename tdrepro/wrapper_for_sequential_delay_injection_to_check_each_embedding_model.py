@@ -10,6 +10,7 @@ import re
 import time
 import sys
 from generating_reproducing_config import log_similarity_check
+from utils import find_class_file
 
 
 CURRENT_DIR = os.getcwd()
@@ -89,47 +90,15 @@ model_name = "gpt2" #"llama" #"tf-idf"#"gpt2"
 output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
 output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
-'''def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
-    inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
-    #exit()
-    tag = f"{retry_count}_{idx}_{run_id}"
-    try:
-        print("./run_test.sh", slug, module, test, tag, "logs-to-reproduce-sequential-delay-injection")
-        result_run = subprocess.run(
-            ["./run_test.sh", slug, module, test, tag, "logs-to-reproduce-sequential-delay-injection"],
-            check=True, text=True, capture_output=True
-        )
-        out = result_run.stdout.strip()
-        print("***out****", out)
-        firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
-        return (firstLine == "Failure found.")
-    except subprocess.CalledProcessError as e:
-        print("run_test.sh failed with exit code", e.returncode)
-        print("--- stdout ---"); print(e.stdout)
-        print("--- stderr ---"); print(e.stderr)
-
-        # Inspect produced log to decide if it was a failure
-        currentDir_when_exception_occurs = os.getcwd()
-        before, after = test.rsplit('.', 1)
-        test_with_hash = f"{before}#{after}"
-        log_file = (currentDir_when_exception_occurs + "/logs-to-reproduce-sequential-delay-injection/" + 
-                    f"{test_with_hash}-con-after-changedCode-{tag}.txt")
-        print("log file name=", log_file)
-        if has_errors_or_failures(log_file):
-            print("Found Errors: 1 or Failures: 1")
-            return True
-        else:
-            print("No Errors: 1 or Failures: 1")
-            return False'''
-
-
-def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx, tmp=2):
     inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
     tag = f"{retry_count}_{idx}_{run_id}"
     before, after = test.rsplit('.', 1)
     test_with_hash = f"{before}#{after}"
     try:
         print("./run_test.sh", slug, module, test, tag, "logs-to-reproduce-sequential-delay-injection")
+        if tmp == 100:
+            exit()
         result_run = subprocess.run(
             ["./run_test.sh", slug, module, test, tag, "logs-to-reproduce-sequential-delay-injection"],
             check=True, text=True, capture_output=True
@@ -137,7 +106,7 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
         out = result_run.stdout.strip()
         firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
         failed = (firstLine == "Failure found.")
-        #return failed, None, (out if failed else None)
+
         return failed, CURRENT_DIR +"/logs-to-reproduce-sequential-delay-injection/" + test_with_hash + "-con-after-changedCode-"+tag+".txt"
     except subprocess.CalledProcessError as e:
         print("run_test.sh failed with exit code", e.returncode)
@@ -164,35 +133,39 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
 with open(input_csv, newline='') as inf:
     reader = csv.DictReader(inf)
     for test_info in reader: #For each test
+        print("**** test_info=", test_info)
         failure_count = 0
         iteration_count = 0
         start_time = time.time()
         id = test_info['id']
+        if id.startswith('#'):
+            continue
         slug = test_info['slug']
         commit = test_info['commit']
         module = test_info['module']
         module_with_dot = module.replace("/", ".")
         test = test_info['test']
         if module == ".":
+            proj_name_only = slug.split('/')[1]
             failure_log_csv = f"logs/{id}_{proj_name_only}_{test}_stacktrace.csv"
         else:
             failure_log_csv = f"logs/{id}_{module_with_dot}_{test}_stacktrace.csv"
 
+        print(failure_log_csv)
         method_count = 0
         test_with_dot = test.replace("#", ".")
-        #csv_file = sys.argv[1] #"metadata/embedings/"
         csv_file = "metadata/embedings/" + test_with_dot +"_"+model_name+ "_embeddings.csv"
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
             reader = csv.DictReader(f)
             #for row in reader:
             for ranked_meth_id, ranked_meth in enumerate(reader):
-                if method_count > 10:
+                if method_count > 20:
                     continue
                 method_count +=1
                 class_name = ranked_meth['Class']
-                if '$' in class_name:
-                    class_name = class_name.split('$', 1)[0]
+                #if '$' in class_name:
+                #    class_name = class_name.split('$', 1)[0]
                 method_name = ranked_meth['Method']
                 descriptor = ranked_meth['Descriptor']
                 line_range = ranked_meth['LineRange']
@@ -203,7 +176,8 @@ with open(input_csv, newline='') as inf:
                     start_line = end_line = int(line_range)
                 # Construct file path from class name (package to path)
                 #Java file not found for tachyon/thrift/WorkerService$Client.java
-                class_path = class_name.replace('.', os.sep) + ".java"
+                class_path_list = find_class_file(class_name, slug, module) 
+                '''class_path = class_name.replace('.', os.sep) + ".java"
                 java_file_path = find_source_file_with_find("projects", slug, class_path)
                 print("Resolved:", java_file_path)
                 if java_file_path is None or not os.path.exists(java_file_path):
@@ -213,67 +187,79 @@ with open(input_csv, newline='') as inf:
                 
                 print("slug, commit, module, test, class_name, method_name, descriptor, line_range=",slug, commit, module, test, class_name, method_name, descriptor, line_range, start_line, end_line, class_path)
                 #"projects"+slug+module+
-                candidates = [str(java_file_path)]   # list of one or more paths
+                candidates = [str(java_file_path)]   # list of one or more paths'''
+                print(type(class_path_list))
+                if not class_path_list:
+                    print(f"No file found for {class_name}")
+                else:
+                    java_file_path = class_path_list[0]
+                    print("java_file_path=", java_file_path)
+                    # Read original file content to restore later
+                    with open(java_file_path, 'r') as source_file:
+                        original_lines = source_file.readlines()
 
-                # Read original file content to restore later
-                with open(java_file_path, 'r') as source_file:
-                    original_lines = source_file.readlines()
+                        # Iterate through each line inside the method body (exclude signature and closing brace)
+                        #for line_no in range(start_line + 1, end_line):
+                        for idx, line_no in enumerate(range(start_line + 2, end_line)):
+                            print("line_no=", line_no)
+                            failure_count = 0
+                            failure_detected = 0 
+                            iteration_count += 1
+                            code_line = original_lines[line_no - 1]
+                            print("**** code_line=", code_line)
+                            currentDir_when_exception_occurs = os.getcwd()
+                            os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/", exist_ok=True)
+                            failure_happened_but_log_matched = True
+                            print("0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx=", 0, class_path_list, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, method_count, idx)
+                            first_failed, test_run_log = run_once(0, class_path_list, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, method_count, idx)
+                            #exit()
 
-                    # Iterate through each line inside the method body (exclude signature and closing brace)
-                    #for line_no in range(start_line + 1, end_line):
-                    for idx, line_no in enumerate(range(start_line + 1, end_line)):
-                        failure_count = 0
-                        iteration_count += 1
-                        code_line = original_lines[line_no - 1]
-                        print("**** code_line=", code_line)
-                        currentDir_when_exception_occurs = os.getcwd()
-                        os.makedirs(currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/", exist_ok=True)
-                        failure_happened_but_log_matched = True
-                        print("0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx=", 0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, method_count, idx)
-                        first_failed, test_run_log = run_once(0, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, method_count, idx)
-
-                        if not first_failed:
-                            print("First run: no failure; skipping additional runs.")
-                            print("Only 0/1 runs failed. Not considering as valid failure.")
-                        else:
-                           # First run failed → run 4 more times (total 5)
-                            failure_count = 1
-                            log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
-                            if not log_similar:
-                                print("failure log does not match.")
-                                failure_happened_but_log_matched = False
-                            else: 
-                                for run_id in range(1, 5):
-                                    #if run_once(run_id, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx):
-                                    #    failure_count += 1
-
-                                    _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, method_count, idx)
-                                    log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
-                                    if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
-                                        #Call the function to check the log match 
-                                        failure_count += 1
+                            if not first_failed:
+                                print("First run: no failure; skipping additional runs.")
+                                print("Only 0/1 runs failed. Not considering as valid failure.")
+                            else:
+                               # First run failed → run 4 more times (total 5)
+                                #break
+                                #exit()
+                                failure_count = 1
+                                failure_detected = 1
+                                log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+                                if not log_similar:
+                                    print("failure log does not match.")
+                                    failure_happened_but_log_matched = False
+                                else: 
+                                    for run_id in range(1, 5):
+                                        #if run_once(run_id, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx):
+                                        #    failure_count += 1
+                                        print("****run_id, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx=", run_id, class_path_list, line_no, method_name, descriptor, code_line,     slug, module, test_with_dot, method_count, idx)
+                                        _failed, test_run_log = run_once(run_id, class_path_list, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, method_count, idx)
+                                        log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+                                        if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+                                            #Call the function to check the log match 
+                                            failure_count += 1
+                                        else:
+                                            print("failure log does not match.")
+                                            failure_happened_but_log_matched = False
+                                        #Call to the GPT that log does not match, so find a different location
+                                    if failure_count >= 3:
+                                        before, after = test_with_dot.rsplit('.', 1)
+                                        test_with_hash = f"{before}#{after}"
+                                        print(f"Failure found in {failure_count}/5 runs.")
+                                        # currentDir_when_exception_occurs = os.getcwd()
+                                        log_file = currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/"+test_with_hash+"-con-after-changedCode-"+str(method_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
+                                        total_time_seconds = time.time() - start_time
+                                        save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
+                                        break
+                                        #return line, f"{retry_count}_{idx}", "Failure found."
                                     else:
-                                        print("failure log does not match.")
-                                        failure_happened_but_log_matched = False
-                                    #Call to the GPT that log does not match, so find a different location
-                                if failure_count >= 3:
-                                    before, after = test_with_dot.rsplit('.', 1)
-                                    test_with_hash = f"{before}#{after}"
-                                    print(f"Failure found in {failure_count}/5 runs.")
-                                    # currentDir_when_exception_occurs = os.getcwd()
-                                    log_file = currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/"+test_with_hash+"-con-after-changedCode-"+str(method_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
-                                    total_time_seconds = time.time() - start_time
-                                    save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
-                                    break
-                                    #return line, f"{retry_count}_{idx}", "Failure found."
-                                else:
-                                    print("Only {failure_count}/5 runs failed. Not considering as valid failure.")
-                if failure_count >=3:
-                    break
+                                        print("Only {failure_count}/5 runs failed. Not considering as valid failure.")
+                                    exit() 
+                    if failure_count >=3:
+                        break
         if failure_count == 0:
             total_time_seconds = time.time() - start_time
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
             print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
         
-        #exit()        
+        exit()        
 

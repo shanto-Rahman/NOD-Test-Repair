@@ -50,8 +50,8 @@ def is_valid_line_number(file_path, line_number, method_name, code_line):
         return False
 
     # Check if the line content matches
-    actual_line = lines[line_number - 1].strip()
-    print( actual_line, " ==== ",  code_line.strip())
+    #actual_line = lines[line_number - 1].strip()
+    #print( actual_line, " ==== ",  code_line.strip())
     return True
 
 def inject_sleep_before_line(candidates, line_number, method_name, descriptor, code_line):
