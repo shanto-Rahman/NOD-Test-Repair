@@ -87,7 +87,7 @@ input_csv=sys.argv[1] #"../data/all_82_tests.csv"
 #input_csv="l"
 model_name = "gpt2" #"llama" #"tf-idf"#"gpt2"
 #cosine_weight = sys.argv[2] #70_30
-output_csv = "results/output_found_failures_"+model_name+"_embedding.csv"
+output_csv = "results/sequential_delay_injection_result_in_all_methods_ranked_by_"+model_name+"_embedding.csv"
 output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
 def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx, tmp=2):
@@ -253,7 +253,6 @@ with open(input_csv, newline='') as inf:
                                         #return line, f"{retry_count}_{idx}", "Failure found."
                                     else:
                                         print("Only {failure_count}/5 runs failed. Not considering as valid failure.")
-                                    exit() 
                     if failure_count >=3:
                         break
         if failure_count == 0:
@@ -261,5 +260,3 @@ with open(input_csv, newline='') as inf:
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
             print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
         
-        exit()        
-
