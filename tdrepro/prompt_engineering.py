@@ -136,7 +136,7 @@ Always obey:
 
     return prompt, definitions
 
-def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df):
+'''def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df):
     print("methods before trim:", len(code_under_test_meths_ranked_df))
     # trim methods to fit within context budget
     code_under_test_meths_ranked_df = fit_methods_within_budget(code_under_test_meths_ranked_df)
@@ -199,9 +199,71 @@ Your task:
 3. Output a ranked list of locations, maximum 10.
 4. Wrap your answer **only** in `<Output>` and `</Output>`, with no extra text before or after.
 """
+    return prompt, definitions'''
+
+def generate_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df):
+    print("methods before trim:", len(code_under_test_meths_ranked_df))
+    # trim methods to fit within context budget
+    #code_under_test_meths_ranked_df = fit_methods_within_budget(code_under_test_meths_ranked_df)
+    print("methods after trim:", len(code_under_test_meths_ranked_df))
+    code_under_test_str = format_code_under_test(code_under_test_meths_ranked_df)
+
+    failure_log_str = str(failure_log_df.iloc[0]) if hasattr(failure_log_df, "iloc") else str(failure_log_df)
+    # restore real line breaks so stack traces aren't a single run-on line
+    failure_log_str = failure_log_str.replace('\\t', '\n\t').replace('\\n', '\n')
+
+    test_code_str = str(test_meth_code_df.iloc[0]) if hasattr(test_meth_code_df, "iloc") else str(test_meth_code_df)
+
+    # single source of truth for the output format, used identically in both
+    # the system definition and the user prompt so the model never has to
+    # reconcile two slightly different specs
+    output_format = "Class:Method:Descriptor:FileLineNumber (ActualCodeLine)"
+
+    definitions = f"""You are an expert at identifying flaky tests and analyzing their type. Flaky tests are tests that pass and fail non-deterministically for the same code.
+
+Always obey these rules exactly:
+1. Never choose a location inside any `synchronized {{ ... }}` block or lock context.
+2. Only suggest injecting a delay before the start of a complete Java statement — never in the middle of a multi-line statement, expression, lambda, constructor, method call, or method argument list. If unsure whether a line is a complete statement, skip it.
+3. Never suggest a line that is a continuation of the previous line (e.g., lines starting with '.', ',', or inside open parentheses).
+4. You must preserve Java syntax and compilation correctness.
+5. Output a ranked list of exactly 10 locations (most likely first), each formatted as:
+   {output_format}
+   - FileLineNumber is the actual line number in the source file, as shown before each line in the method body.
+   - ActualCodeLine is the exact code at that line, shown inside parentheses.
+6. Do NOT output the full method source or any other text.
+7. Wrap your answer **only** in <Output> and </Output>, with no extra text before or after, and end your answer with </Output>.
+"""
+
+    prompt = f"""
+You are an expert Java developer specializing in diagnosing async-wait flakiness in tests, and reproducing the exact given test failure.
+
+You will be provided with:
+1. A test failure log.
+2. Up to 10 code-under-test methods, each with Class, Method, Descriptor, LineRange, and source code, ranked by similarity to the test code. Each method body line is prefixed with its actual file line number.
+3. The test code itself.
+
+Your task:
+Carefully analyze each provided method and identify the single most likely location before which injecting a deliberate delay (e.g., Thread.sleep(...)) would consistently trigger the test failure shown in the <Failure> tag. Follow all rules from the system message exactly, including the output format:
+{output_format}
+
+<Input>
+    <Failure>
+{failure_log_str}
+    </Failure>
+    <Code-Under-Test>
+{code_under_test_str}
+    </Code-Under-Test>
+    <Test-Code>
+{test_code_str}
+    </Test-Code>
+</Input>
+
+<Output>
+...
+</Output>
+"""
 
     return prompt, definitions
-
 
 def generate_fix_prompt(failure_log_df, code_under_test_meths_ranked_df, test_meth_code_df, reproduction_script_str):
     code_under_test_str = format_code_under_test(code_under_test_meths_ranked_df)

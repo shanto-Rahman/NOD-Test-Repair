@@ -30,7 +30,7 @@ from heuristics import rank_methods_by_similarity, clustering_methods, rank_meth
 from token_processing import count_prompt_tokens
 
 CURRENT_DIR = os.getcwd()
-MODEL_NAME = "gpt-4.1" #"gpt-5.5-pro" #gpt-4o
+MODEL_NAME = "gpt-5.6-terra" #"gpt-4.1" #"gpt-5.5-pro" #gpt-4o
 
 def hf_login_once():
     if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
@@ -114,123 +114,10 @@ def top_n_common_scan_second_first(ranked_df1, ranked_df2, key_col="Body", n=25)
     )
     return common_df
 
-'''def gemini_score_finder(messages, max_retries=3, initial_wait=2, sleep_on_success=10):
+'''def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5): # Mainly when using GPT4
     retry_count = 0
-    #response = client.models.generate_content(
-    #model="gemini-2.5-flash",   # ✅ use one of the listed models
-    #contents="USER: Hello Gemini!",
-    #config=types.GenerateContentConfig(
-    #    temperature=0.2,
-    #    max_output_tokens=50,
-    #    ),
-    #)
-
-    #print(response.text)
-    #exit()
-
-    #converted_messages = [
-    #    {"role": m["role"], "parts": [m["content"]]}
-    #    for m in messages
-    #]
-    prompt = "\n".join(
-              f"{m.get('role', 'user').upper()}: {m.get('content', '')}"
-              for m in messages
-          )
-    print("prompt=",prompt)
-    print("END of Prompt***")
-    while retry_count < max_retries:
-        try:
-            response = client.models.generate_content(
-                #model="gemini-2.5-flash",
-                model="gemini-2.5-pro",
-                contents=prompt, #converted_messages,
-                config=types.GenerateContentConfig(
-                    temperature=0.2,
-                    max_output_tokens=7300,
-                ),
-            )
-            response_content = extract_gemini_text(response)
-            print("RESPONSE ========")
-            print(response_content)
-            time.sleep(sleep_on_success)
-            return response_content
-
-        except Exception as e:
-            # Gemini doesn't differentiate APIError subclasses the same way as OpenAI
-            err_msg = str(e)
-            if "500" in err_msg or "503" in err_msg or "unavailable" in err_msg.lower():
-                wait_time = initial_wait * (2 ** retry_count)
-                print(f"Server error. Retrying in {wait_time} seconds.")
-                time.sleep(wait_time)
-                retry_count += 1
-            else:
-                print(f"API error: {err_msg}")
-                raise
-
-    print("Max retries reached. Returning None.")
-    return None'''
-
-'''def gpt_score_finder_5(messages, max_retries=5, initial_wait=2, sleep_on_success=2):
-    retry_count = 0
-
-    while retry_count < max_retries:
-        try:
-            response = openai.ChatCompletion.create(
-                #model="gpt-5.5-pro",
-                model="gpt-4.1",
-                messages=messages,
-                temperature=0.0,
-                max_tokens=2000
-            )
-
-            time.sleep(sleep_on_success)
-
-            return response
-
-        except openai.error.RateLimitError as e:
-            wait_time = initial_wait * (2 ** retry_count)
-
-            print(
-                f"Rate limit error. "
-                f"Retrying in {wait_time} seconds..."
-            )
-
-            time.sleep(wait_time)
-            retry_count += 1
-
-        except openai.error.APIError as e:
-
-            status_code = None
-
-            if hasattr(e, "response") and e.response is not None:
-                status_code = e.response.status_code
-
-            if status_code is not None and status_code >= 500:
-
-                wait_time = initial_wait * (2 ** retry_count)
-
-                print(
-                    f"Server error ({status_code}). "
-                    f"Retrying in {wait_time} seconds..."
-                )
-
-                time.sleep(wait_time)
-                retry_count += 1
-
-            else:
-                print(f"API error: {str(e)}")
-                raise
-
-        except Exception as e:
-            print(f"Unexpected error: {str(e)}")
-            raise
-
-    print("Max retries reached. Returning None.")
-    return None'''
-
-def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5):
-    retry_count = 0
-    #print("messages=", messages)
+    print("messages=", messages)
+    exit()
     while retry_count < max_retries:
         try:
             response = openai.ChatCompletion.create(
@@ -259,7 +146,48 @@ def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5
             raise
 
     print("Max retries reached. Returning None.")
-    return None 
+    return None'''
+
+def gpt_score_finder(messages, max_retries=5, initial_wait=2, sleep_on_success=5):
+    retry_count = 0
+    print("****message=", messages)
+    while retry_count < max_retries:
+        try:
+            response = openai.ChatCompletion.create(
+                model=MODEL_NAME,
+                messages=messages,
+                max_completion_tokens=3000,
+                seed=42,
+            )
+            time.sleep(sleep_on_success)
+            return response
+
+        except (openai.error.APIError,
+                 openai.error.ServiceUnavailableError,
+                 openai.error.Timeout,
+                 openai.error.APIConnectionError,
+                 openai.error.RateLimitError) as e:
+
+            status = getattr(e, 'http_status', None)
+            wait_time = initial_wait * (2 ** retry_count)
+
+            if status is None or status >= 500 or isinstance(
+                e, (openai.error.RateLimitError, openai.error.Timeout, openai.error.APIConnectionError)
+            ):
+                print(f"Retryable error ({type(e).__name__}, status={status}). "
+                      f"Retrying in {wait_time} seconds.")
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                print(f"Non-retryable API error: {str(e)}")
+                raise
+
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            raise
+
+    print("Max retries reached. Returning None.")
+    return None
 
 import os
 from pathlib import Path
@@ -584,8 +512,9 @@ def parse_gpt_response(response, messages, retry_count):
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df, retry_count = 0):
 
     max_retries = 5
-    tried_methods = set()
+    #tried_methods = set()
 
+    failure_detected = -100
     prompt, definition = generate_prompt(failure_log, ranked_method_df, test_code)
     messages, prompt_tokens = get_messages(definition, prompt)
 
@@ -593,6 +522,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         response = gpt_score_finder(messages)
         meth_code = parse_gpt_response(response, messages, retry_count)
         print("=== meth_code=", meth_code)
+        #exit()
         # Suppose meth_code is your multiline string as shown above
         for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
             print("**** index=", idx, ",Processing line:", line)
@@ -633,8 +563,6 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                         # Will check the logs 
                         log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
                         #print("org failure_log=", failure_log)
-                        #print("test_run_log=", test_run_log)
-                        #exit()
                         if not log_similar:
                             print("failure log does not match.")
                             failure_happened_and_log_matched = False
@@ -658,28 +586,34 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                     print(f"[ERROR] Could not locate class source file for: {class_name}")
             else:
                 print("Line did not match expected format:", line)
-        tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
-        #f"Method: {method_name}\n"
-        if not failure_happened_and_log_matched:
-            feedback = (
-                f"Your previous suggestion did not reproduce the same failure.\n"
-                f"Here is what is already tried:\n"
-                f"\n{meth_code}\n\n"
-                f"Please suggest a new location for delay injection in a different method, "
-                f"or a different location within a method that has not already been tried so that the original failure is reproduced. "
-                f"Do not repeat any of the previous suggestions. "
-                f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
-            )
-        else:
-            feedback = (
-                f"Your previous suggestion did not reproduce the failure.\n"
-                f"Here is what is already tried:\n"
-                f"\n{meth_code}\n\n"
-                f"Please suggest a new location for delay injection in a different method, "
-                f"or a different location within a method that has not already been tried. "
-                f"Do not repeat any of the previous suggestions."
-                f"Sometimes, choosing lines from methods that are shorter and have simpler logic can help isolate the failure more effectively and improve reproducibility."
-            )
+        #tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+        messages.append({"role": "assistant", "content": meth_code})  # add this
+        feedback = (
+            f"Your previous suggestion (above) did not reproduce the original failure.\n\n"
+            f"Please suggest a new sleep injection location that has not been tried yet — "
+            f"either in a different method, or a different location within the same method — "
+            f"such that delaying execution there is likely to reproduce the original failure.\n\n"
+            f"Constraints:\n"
+            f"- Do not repeat any location you've already suggested in this conversation.\n"
+            f"- Before suggesting, reason about *why* slowing down execution at that "
+            f"specific location would plausibly cause the test to fail (e.g. a race "
+            f"condition, timing-dependent ordering, or a timeout boundary)."
+        )
+
+        #feedback = (
+        #    f"Your previous suggestion did not reproduce the original failure.\n\n"
+        #    f"Locations already tried:\n"
+        #    f"{meth_code}\n\n"
+        #    f"Please suggest a new sleep injection location that has not been tried yet — "
+        #    f"either in a different method, or a different location within the same method — "
+        #    f"such that delaying execution there is likely to reproduce the original failure.\n\n"
+        #    f"Constraints:\n"
+        #    f"- Do not repeat any previously suggested location.\n"
+        #    f"- Before suggesting, reason about *why* slowing down execution at that "
+        #    f"specific location would plausibly cause the test to fail (e.g. a race "
+        #    f"condition, timing-dependent ordering, or a timeout boundary)."
+        #)
+        print("==== Feedback=====", feedback)
         messages.append({"role": "user", "content": feedback}) 
         retry_count += 1
 
@@ -1113,7 +1047,7 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_f
                 module,
                 test,
                 "",
-                "10",
+                "50",
                 seconds,
                 test_failure_detected
             ])
