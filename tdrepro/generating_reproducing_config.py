@@ -949,11 +949,12 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     os.makedirs("metadata/embedings", exist_ok=True)
     csv_that_saved_embedding = "metadata/embedings/"+test+"_"+embed_model_name+"_embeddings.csv"
     #csv_that_saved_embedding = "metadata/embedings_ablation_0_100/"+test+"_"+embed_model_name+"_embeddings.csv"
-    embedding_required_to_generate =  True #False
+    embedding_required_to_generate =  False # True
     if embedding_required_to_generate:
         ranked_df = rank_methods_by_llm_embedding_similarity(test_df, conc_meth_details_df, failure_log_df, embed_model_name) # Using conc methods only for ranking the methods
         print(ranked_df)
         ranked_df.to_csv(csv_that_saved_embedding, index=False)
+        print("***==", csv_that_saved_embedding)
     else:
         print("loading embedding", csv_that_saved_embedding)
         ranked_df = pd.read_csv(csv_that_saved_embedding)
@@ -1014,6 +1015,7 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     #    exit()
 
     return line_to_inject_delay, cot_count, test_failure_reproduced, failure_detected
+    #return "", "", "", ""
     #return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
 
 
