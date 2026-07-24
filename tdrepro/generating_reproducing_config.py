@@ -6,7 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
 import sys
-from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define, find_class_file
+from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define, find_class_file, log_similarity_check
 import pandas as pd
 import os
 import numpy as np
@@ -471,24 +471,6 @@ def append_token_row(csv_path, slug, module, test, token_count):
         retry_count += 1
         #continue
     return "NA", str(retry_count), "Failure not found"'''
-
-def log_similarity_check(failure_log_file, test_run_log_file, test):
-    #print("failure_log type:", type(failure_log_file))
-    #print("test_run_log type:", type(test_run_log_file))
-    #print("test type:", type(test))
-    print("failure_log value:", failure_log_file)
-    print("test_run_log value:", test_run_log_file)
-    print("test value:", test)
-
-    result = subprocess.check_output(
-        ["python3", CURRENT_DIR + "/log_similarity_init.py", str(failure_log_file), str(test_run_log_file), str(test)],
-            text=True
-            ).strip()
-    if "MisMatched" in result:
-        return False
-    else:
-        print(f"{result} Matched Failure found.") 
-        return True
 
 def get_messages(definition, prompt):
     messages = [

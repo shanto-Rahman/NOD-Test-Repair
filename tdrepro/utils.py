@@ -13,6 +13,25 @@ import os
 from pathlib import Path
 #from huggingface_hub import login
 
+def log_similarity_check(failure_log_file, test_run_log_file, test):
+    #print("failure_log type:", type(failure_log_file))
+    #print("test_run_log type:", type(test_run_log_file))
+    #print("test type:", type(test))
+    print("failure_log value:", failure_log_file)
+    print("test_run_log value:", test_run_log_file)
+    print("test value:", test)
+
+    result = subprocess.check_output(
+        ["python3", CURRENT_DIR + "/log_similarity_init.py", str(failure_log_file), str(test_run_log_file), str(test)],
+            text=True
+            ).strip()
+    if "MisMatched" in result:
+        return False
+    else:
+        print(f"{result} Matched Failure found.") 
+        return True
+
+
 def find_class_file(class_name, slug, module):
     """  
     Find a .java file using its fully-qualified class name, searching the

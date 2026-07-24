@@ -9,8 +9,8 @@ from modify_java_file import inject_sleep_before_line
 import re
 import time
 import sys
-from generating_reproducing_config import log_similarity_check
-from utils import find_class_file
+#from generating_reproducing_config import log_similarity_check
+from utils import find_class_file, log_similarity_check
 
 
 CURRENT_DIR = os.getcwd()
