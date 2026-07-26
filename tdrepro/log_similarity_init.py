@@ -56,26 +56,47 @@ def save_log_into_a_file(filtered_fail_log_txt):
         writer.writerow([big_block_fail_log]) 
 
 def read_panda(baseline_csv, mvn_test_log_csv):
-    #print("baseline_csv=", baseline_csv)
-    #print("mvn_test_log_csv=", mvn_test_log_csv)
     import pandas as pd
     # Read the CSV file
     df_baseline = pd.read_csv(baseline_csv)
+    baseline_failures = df_baseline['Failure'].dropna().tolist()
+
     df_mvn_test_log = pd.read_csv(mvn_test_log_csv)
     
     # Display only the failure message (excluding the header)
-    return df_baseline['Failure'][0], df_mvn_test_log['Failure'][0]
+    return baseline_failures, df_mvn_test_log['Failure'][0]
 
 if __name__ == "__main__":
     _, baseline_log, maven_test_run_log_full, test_name = sys.argv
     #print("((((-====",_, baseline_log, maven_test_run_log_full, test_name)
     mvn_fail_log_by_this_script = extract_block(maven_test_run_log_full, test_name)
     save_log_into_a_file(mvn_fail_log_by_this_script)
+
     #tmp-rq2-log.csv baseline_log
-    baseline, mvn_log_now = read_panda(baseline_log, "tmp-rq2-log.csv")
+    baseline_failures, mvn_log_now = read_panda(baseline_log, "tmp-rq2-log.csv")
+    print(f"Found {len(baseline_failures)} baseline failure(s) to check against.")
+    
+    matched = False
+    for idx, baseline in enumerate(baseline_failures):
+        print(f"--- Checking baseline failure #{idx + 1} ---")
+        print("baseline_log=", baseline)
+
+        score = semantic_similarity_score(baseline, mvn_log_now)
+        print("score=", score)
+
+        if score >= 0.9:
+            print(f"Matched (against baseline failure #{idx + 1})")
+            matched = True
+            break  # stop at the first match; remove this if you want to check all and report every match
+
+    if not matched:
+        print("MisMatched (no baseline failure matched)")
+
+    '''print("mvn_log=", mvn_log_now)
+    print("baseline_log= ", baseline)
     score = semantic_similarity_score(baseline, mvn_log_now)
-    #print("score=", score)
+    print("score=", score)
     if score >= 0.9:
         print("Matched")
     else:
-        print("MisMatched")
+        print("MisMatched")'''
