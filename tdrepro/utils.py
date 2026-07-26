@@ -8,11 +8,12 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import re
 import json
 import pandas as pd
-
+import subprocess
 import os
 from pathlib import Path
 #from huggingface_hub import login
 
+CURRENT_DIR = os.getcwd()
 def log_similarity_check(failure_log_file, test_run_log_file, test):
     #print("failure_log type:", type(failure_log_file))
     #print("test_run_log type:", type(test_run_log_file))
