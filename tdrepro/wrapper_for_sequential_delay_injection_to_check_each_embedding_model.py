@@ -18,7 +18,9 @@ CURRENT_DIR = os.getcwd()
 #    with open(path, 'r') as f:
 #        text = f.read()
 #    return 'Errors: 1' in text or 'Failures: 1' in text
-def save_result(output_csv, slug, module, test, row_id, line_number, actual_line, log_file, class_name, method_name, total_time_seconds, iteration_count):
+
+output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count", "failure_detected"]
+def save_result(output_csv, slug, module, test, row_id, line_number, actual_line, log_file, class_name, method_name, total_time_seconds, iteration_count, failure_detected):
     with open(output_csv, "a", newline='') as outf:
         writer = csv.DictWriter(outf, fieldnames=output_fields)
         if outf.tell() == 0:
@@ -34,7 +36,8 @@ def save_result(output_csv, slug, module, test, row_id, line_number, actual_line
             "class_name": class_name,
             "method_name": method_name,
             "total_time_seconds": round(total_time_seconds, 2),
-            "iteration_count": iteration_count
+            "iteration_count": iteration_count,
+            "failure_detected": failure_detected
         })
 def has_errors_or_failures(path):
     with open(path, 'r') as f:
@@ -88,7 +91,6 @@ input_csv=sys.argv[1] #"../data/all_82_tests.csv"
 model_name = "gpt2" #"llama" #"tf-idf"#"gpt2"
 #cosine_weight = sys.argv[2] #70_30
 output_csv = "results/sequential_delay_injection_result_in_all_methods_ranked_by_"+model_name+"_embedding.csv"
-output_fields = ["slug", "module", "test", "method_id", "line_number", "actual_line", "log_file", "class_name", "method_name", "total_time_seconds", "iteration_count"]
 
 def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx, tmp=2):
     inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
@@ -155,6 +157,7 @@ with open(input_csv, newline='') as inf:
         method_count = 0
         test_with_dot = test.replace("#", ".")
         csv_file = "metadata/embedings/" + test_with_dot +"_"+model_name+ "_embeddings.csv"
+        failure_detected = 0 
         # Open and read the CSV data
         with open(csv_file, newline='') as f:  #ranked_method_list
             reader = csv.DictReader(f)
@@ -195,6 +198,7 @@ with open(input_csv, newline='') as inf:
                     java_file_path = class_path_list[0]
                     print("java_file_path=", java_file_path)
                     # Read original file content to restore later
+
                     with open(java_file_path, 'r') as source_file:
                         original_lines = source_file.readlines()
 
@@ -203,7 +207,6 @@ with open(input_csv, newline='') as inf:
                         for idx, line_no in enumerate(range(start_line + 2, end_line)):
                             print("line_no=", line_no)
                             failure_count = 0
-                            failure_detected = 0 
                             iteration_count += 1
                             code_line = original_lines[line_no - 1]
                             print("**** code_line=", code_line)
@@ -248,15 +251,15 @@ with open(input_csv, newline='') as inf:
                                         # currentDir_when_exception_occurs = os.getcwd()
                                         log_file = currentDir_when_exception_occurs+"/logs-to-reproduce-sequential-delay-injection/"+test_with_hash+"-con-after-changedCode-"+str(method_count) +"_" +str(idx)+ "_" + str(run_id)+".txt"
                                         total_time_seconds = time.time() - start_time
-                                        save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count)
+                                        save_result(output_csv, slug, module, test_with_dot, ranked_meth_id, line_no, code_line, log_file, class_name, method_name, total_time_seconds, iteration_count, failure_detected)
                                         break
                                         #return line, f"{retry_count}_{idx}", "Failure found."
                                     else:
                                         print("Only {failure_count}/5 runs failed. Not considering as valid failure.")
                     if failure_count >=3:
                         break
-        if failure_count == 0:
+        if failure_count == 0: #not reproduced
             total_time_seconds = time.time() - start_time
-            save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
-            print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count)
+            save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count, failure_detected)
+            print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count, failure_detected)
         
