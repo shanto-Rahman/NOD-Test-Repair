@@ -1,6 +1,7 @@
-import sys
+import csv 
+import os
 import pandas as pd
-import csv
+import sys
 
 def main():
     if len(sys.argv) != 9:
@@ -8,6 +9,12 @@ def main():
         sys.exit(1)
 
     _, id_arg, slug, sha, module_org, testName, fail_log_filename, module_with_dot, proj_name_only = sys.argv
+
+    if os.path.isdir("logs"):
+        print("Directory exists")
+    else:
+        print("Directory does not exist")
+        os.makedirs("logs", exist_ok=True)
 
     # Output file: save to <id>_stacktrace.txt
     if module_with_dot == ".":
