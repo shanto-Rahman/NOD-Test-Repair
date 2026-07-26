@@ -1,5 +1,5 @@
 #from generating_reproducing_script import extract_block 
-from get_similarity_score_stacktrace import semantic_similarity_score
+from get_similarity_score_stacktrace import semantic_similarity_score, sanitize_stacktrace
 import sys
 import re
 import csv
@@ -75,10 +75,13 @@ if __name__ == "__main__":
     #tmp-rq2-log.csv baseline_log
     baseline_failures, mvn_log_now = read_panda(baseline_log, "tmp-rq2-log.csv")
     print(f"Found {len(baseline_failures)} baseline failure(s) to check against.")
+
+    mvn_log_now = sanitize_stacktrace(mvn_log_now)
     
     matched = False
     for idx, baseline in enumerate(baseline_failures):
         print(f"--- Checking baseline failure #{idx + 1} ---")
+        baseline = sanitize_stacktrace(baseline)
         print("baseline_log=", baseline)
 
         score = semantic_similarity_score(baseline, mvn_log_now)

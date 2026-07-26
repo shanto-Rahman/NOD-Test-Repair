@@ -76,15 +76,39 @@ def extract_failure_traces(log_path):
 
 
 
+# def sanitize_stacktrace(failure_stacktrace_isolated):
+#     failure_stacktrace_isolated = [line.replace('\n', ' ') for line in failure_stacktrace_isolated]
+#     failure_stacktrace_isolated = [line.replace('\t', '') for line in failure_stacktrace_isolated]
+#     failure_stacktrace_isolated = [line.replace('at ', '') for line in failure_stacktrace_isolated]
+#     # if edu.gmu.swe.flaky.sleepy.runner.SleepyTestRunner.main in line, then remove that line
+#     failure_stacktrace_isolated = [line for line in failure_stacktrace_isolated if 'edu.gmu.swe.flaky.sleepy.runner.SleepyTestRunner.main' not in line]
+#     failure_stacktrace_isolated = ' '.join(failure_stacktrace_isolated)
+#     failure_stacktrace_isolated = re.sub(r'\s+', ' ', failure_stacktrace_isolated)
+#     return failure_stacktrace_isolated
+
 def sanitize_stacktrace(failure_stacktrace_isolated):
-    failure_stacktrace_isolated = [line.replace('\n', ' ') for line in failure_stacktrace_isolated]
-    failure_stacktrace_isolated = [line.replace('\t', '') for line in failure_stacktrace_isolated]
-    failure_stacktrace_isolated = [line.replace('at ', '') for line in failure_stacktrace_isolated]
-    # if edu.gmu.swe.flaky.sleepy.runner.SleepyTestRunner.main in line, then remove that line
-    failure_stacktrace_isolated = [line for line in failure_stacktrace_isolated if 'edu.gmu.swe.flaky.sleepy.runner.SleepyTestRunner.main' not in line]
-    failure_stacktrace_isolated = ' '.join(failure_stacktrace_isolated)
-    failure_stacktrace_isolated = re.sub(r'\s+', ' ', failure_stacktrace_isolated)
-    return failure_stacktrace_isolated
+    if not isinstance(failure_stacktrace_isolated, str):
+        failure_stacktrace_isolated = '\n'.join(failure_stacktrace_isolated)
+    s = failure_stacktrace_isolated
+    # maven scaffolding: log-level tags, banner rules and the build verdict
+    s = re.sub(r'\[(?:INFO|ERROR|WARNING|DEBUG|FATAL|TRACE)\]|-{3,}|\bBUILD (?:FAILURE|SUCCESS)\b', ' ', s)
+
+    # run-to-run noise: wall-clock timings and the "- in <class>" echo
+    s = re.sub(r'Time\s+elapsed:?\s*\d+(?:\.\d+)?\s*(?:s|sec)\b|\s-\sin\s[\w.$]+', ' ', s)
+
+    # JDK / test-framework frames that one log keeps and the other drops
+    s = re.sub(r'\bat\s+(?:sun\.reflect|jdk\.internal|java\.lang\.reflect|java\.base|org\.junit'
+               r'|junit\.|org\.apache\.maven\.surefire|edu\.gmu\.swe\.flaky\.sleepy)\S*\([^()]*\)', ' ', s)
+    
+    # surefire writes the failure summary two ways: "m(pkg.C): msg" and "C.m:LINE msg"
+    s = re.sub(r'(\w+)\((?:[\w.$]*\.)?(\w+)\):', r'\2.\1:', s)
+    s = re.sub(r'(\w+\.\w+):\d+(?=\s)', r'\1:', s)
+    
+    # a log flattened to one line has lost the newlines that separated these tokens
+    s = re.sub(r'(?<=\S)(?=Running\b|Tests run:|Results\b|Failed tests:|<<<)', ' ', s)
+    s = re.sub(r'(?<=[!)])(?=[\w$])', ' ', s)
+
+    return re.sub(r'\s+', ' ', s).strip()
 
 
 
@@ -126,8 +150,9 @@ def semantic_similarity_score(failure1, failure2):
     model = SentenceTransformer('sentence-transformers/stsb-roberta-large')
     model.similarity_fn_name = SimilarityFunction.COSINE
 
-    print(failure1)
-    print(failure2)
+    # print(failure1)
+    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    # print(failure2)
 
     # Use raw strings
     failure1 = failure1.lower()
@@ -145,43 +170,43 @@ def semantic_similarity_score(failure1, failure2):
 # file1="/scratch/tbaral/ase26/nod-rr/baseline_10k_reruns_failing_runs_only/104-org.java_websocket.issues.Issue713Test#testIssue-230.txt"
 # file2="/scratch/tbaral/ase26/nod-rr/baseline_10k_reruns_failing_runs_only/104-org.java_websocket.issues.Issue713Test#testIssue-442.txt"
 
-file1 = sys.argv[1]
-file2 = sys.argv[2]
+# file1 = sys.argv[1]
+# file2 = sys.argv[2]
 
 
-stacktrace1, exception_line1, failure_message1 = extract_failure_traces(file1)
-stacktrace2, exception_line2, failure_message2 = extract_failure_traces(file2)
+# stacktrace1, exception_line1, failure_message1 = extract_failure_traces(file1)
+# stacktrace2, exception_line2, failure_message2 = extract_failure_traces(file2)
 
-# Sanitize stacktraces
-if stacktrace1 is not None:
-    stacktrace1 = sanitize_stacktrace(stacktrace1)
-if stacktrace2 is not None:
-    stacktrace2 = sanitize_stacktrace(stacktrace2)
-if exception_line1 is not None:
-    exception_line1 = sanitize_stacktrace(exception_line1)
-if exception_line2 is not None:
-    exception_line2 = sanitize_stacktrace(exception_line2)
-if failure_message1 is not None:
-    failure_message1 = sanitize_stacktrace(failure_message1)
-if failure_message2 is not None:
-    failure_message2 = sanitize_stacktrace(failure_message2)
+# # Sanitize stacktraces
+# if stacktrace1 is not None:
+#     stacktrace1 = sanitize_stacktrace(stacktrace1)
+# if stacktrace2 is not None:
+#     stacktrace2 = sanitize_stacktrace(stacktrace2)
+# if exception_line1 is not None:
+#     exception_line1 = sanitize_stacktrace(exception_line1)
+# if exception_line2 is not None:
+#     exception_line2 = sanitize_stacktrace(exception_line2)
+# if failure_message1 is not None:
+#     failure_message1 = sanitize_stacktrace(failure_message1)
+# if failure_message2 is not None:
+#     failure_message2 = sanitize_stacktrace(failure_message2)
 
-similarity_stacktrace = semantic_similarity_score(stacktrace1, stacktrace2)
-similarity_exception = semantic_similarity_score(exception_line1, exception_line2)
-similarity_failure_message = semantic_similarity_score(failure_message1, failure_message2)
+# similarity_stacktrace = semantic_similarity_score(stacktrace1, stacktrace2)
+# similarity_exception = semantic_similarity_score(exception_line1, exception_line2)
+# similarity_failure_message = semantic_similarity_score(failure_message1, failure_message2)
 
-# if any of the value is not None then save the .4f value
-if similarity_stacktrace is not None:
-    similarity_stacktrace = f"{similarity_stacktrace:.4f}"
-else:
-    similarity_stacktrace = "None"
-if similarity_exception is not None:
-    similarity_exception = f"{similarity_exception:.4f}"
-else:
-    similarity_exception = "None"
-if similarity_failure_message is not None:
-    similarity_failure_message = f"{similarity_failure_message:.4f}"
-else:
-    similarity_failure_message = "None"
+# # if any of the value is not None then save the .4f value
+# if similarity_stacktrace is not None:
+#     similarity_stacktrace = f"{similarity_stacktrace:.4f}"
+# else:
+#     similarity_stacktrace = "None"
+# if similarity_exception is not None:
+#     similarity_exception = f"{similarity_exception:.4f}"
+# else:
+#     similarity_exception = "None"
+# if similarity_failure_message is not None:
+#     similarity_failure_message = f"{similarity_failure_message:.4f}"
+# else:
+#     similarity_failure_message = "None"
 
-print(f"{similarity_exception},{similarity_stacktrace},{similarity_failure_message}")
+# print(f"{similarity_exception},{similarity_stacktrace},{similarity_failure_message}")
