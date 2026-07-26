@@ -45,17 +45,25 @@ def main():
         print("[INFO] No matching rows found.")
         return
 
+    # Collect every non-empty stacktrace instead of stopping at the first one
+    all_stacktraces = []
     for _, row in matched_rows.iterrows():
         stacktrace = row.get('stacktrace', '')
         if pd.notna(stacktrace) and stacktrace.strip():
-            with open(output_csv, "w", newline="") as fw:
-                writer = csv.writer(fw, delimiter=",", quoting=csv.QUOTE_MINIMAL)
-                writer.writerow(["Failure"])
-                writer.writerow([stacktrace.strip()])
-            print(f"[INFO] Stacktrace saved to {output_csv}")
-            return
+            all_stacktraces.append(stacktrace.strip())
 
-    print("[INFO] Matching rows found, but no non-empty stacktrace.")
+    if not all_stacktraces:
+        print("[INFO] Matching rows found, but no non-empty stacktrace.")
+        return
+
+    with open(output_csv, "w", newline="") as fw:
+        writer = csv.writer(fw, delimiter=",", quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(["Failure"])
+        for st in all_stacktraces:
+            writer.writerow([st])
+    
+    print(f"[INFO] {len(all_stacktraces)} stacktrace(s) saved to {output_csv}")
+
 
 if __name__ == "__main__":
     main()
