@@ -1,0 +1,96 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+delight.nashornsandbox.internal.ThreadMonitor,getCheckInterval,(J)J,3,5,60.0%,"private long getCheckInterval(final long runtime) {
+		if (maxCPUTime == 0) {
+			return 10;
+		}
+		if (maxMemory == 0) {
+			return Math.max((maxCPUTime - runtime) / MILI_TO_NANO, 5);
+		}
+		return Math.min((maxCPUTime - runtime) / MILI_TO_NANO, 10);
+	}",134-142,0.98897517,0.9839098,0.9839098
+delight.nashornsandbox.internal.JsEvaluator,run,()V,5,10,50.0%,"@Override
+  public void run() {
+    try {
+      threadMonitor.setThreadToMonitor(Thread.currentThread());
+      result = operation.executeScriptEngineOperation(scriptEngine);
+    } 
+    catch (final RuntimeException e) {
+      // InterruptedException means script was successfully interrupted,
+      // so no exception should be propagated
+      if(!(e.getCause() instanceof InterruptedException)) {
+        exception = e;
+      }
+    }
+    catch (final Exception e) {
+      exception = e;
+    } 
+    finally {
+      threadMonitor.scriptFinished();
+      threadMonitor.stopMonitor();
+    }
+  }",50-70,0.94630134,0.9837853,0.9837853
+delight.nashornsandbox.internal.SandboxClassFilter,exposeToScripts,(Ljava/lang/String;)Z,1,1,100.0%,"@Override
+  public boolean exposeToScripts(final String className) {
+    return stringCache.contains(className);
+  }",23-26,0.99509215,0.9766639,0.9766639
+delight.nashornsandbox.internal.ThreadMonitor,isCpuTimeExided,(J)Z,2,3,66.7%,"private boolean isCpuTimeExided(final long runtime) {
+		if (maxCPUTime == 0) {
+			return false;
+		}
+		return runtime > maxCPUTime;
+	}",144-149,0.9975991,0.97463846,0.97463846
+delight.nashornsandbox.internal.ThreadMonitor,getCurrentMemory,()J,2,3,66.7%,"private long getCurrentMemory() {
+		if (maxMemory == 0 || memoryCouter != null) {
+			return memoryCouter.getThreadAllocatedBytes(threadToMonitor.getId());
+		}
+		return 0L;
+	}",163-168,0.9975961,0.96991146,0.96991146
+delight.nashornsandbox.internal.ThreadMonitor,scriptFinished,()V,2,2,100.0%,"public void scriptFinished() {
+		scriptFinished.set(false);
+	}",185-187,0.9974072,0.9681652,0.9681652
+delight.nashornsandbox.internal.ThreadMonitor,getCPUTime,()J,1,1,100.0%,"private long getCPUTime() {
+		return threadBean.getThreadCpuTime(threadToMonitor.getId());
+	}",170-172,0.99637026,0.9648531,0.9648531
+delight.nashornsandbox.internal.ThreadMonitor,stopMonitor,()V,3,3,100.0%,"public void stopMonitor() {
+		stop.set(true);
+		notifyMonitorThread();
+	}",174-177,0.9960419,0.9633806,0.9633806
+delight.nashornsandbox.internal.ThreadMonitor,setThreadToMonitor,(Ljava/lang/Thread;)V,4,4,100.0%,"public void setThreadToMonitor(final Thread t) {
+		reset();
+		threadToMonitor = t;
+		notifyMonitorThread();
+	}",179-183,0.994965,0.96261597,0.96261597
+delight.nashornsandbox.internal.ThreadMonitor,isMemoryExided,(J)Z,2,3,66.7%,"private boolean isMemoryExided(final long memory) {
+		if (maxMemory == 0) {
+			return false;
+		}
+		return memory > maxMemory;
+	}",151-156,0.99420756,0.95963067,0.95963067
+delight.nashornsandbox.internal.ThreadMonitor,notifyMonitorThread,()V,4,4,100.0%,"private void notifyMonitorThread() {
+		synchronized (monitor) {
+			monitor.notifyAll();
+		}
+	}",201-205,0.993988,0.9563249,0.9563249
+delight.nashornsandbox.internal.ThreadMonitor,reset,()V,6,6,100.0%,"private void reset() {
+		stop.set(false);
+		scriptFinished.set(false);
+		scriptKilled.set(false);
+		cpuLimitExceeded.set(false);
+		threadToMonitor = null;
+	}",73-79,0.9521474,0.9438239,0.9438239
+delight.nashornsandbox.internal.EvaluateOperation,executeScriptEngineOperation,(Ljavax/script/ScriptEngine;)Ljava/lang/Object;,4,9,44.4%,"@Override
+    public Object executeScriptEngineOperation(ScriptEngine scriptEngine) throws ScriptException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(""--- Running JS ---"");
+            LOG.debug(js);
+            LOG.debug(""--- JS END ---"");
+        }
+       
+        if (bindings != null) {
+            return scriptEngine.eval(js, bindings);
+        } else if (scriptContext != null) {
+            return scriptEngine.eval(js, scriptContext);
+        } else {
+            return scriptEngine.eval(js);
+        }
+    }",34-49,0.79580116,0.8903512,0.8903512

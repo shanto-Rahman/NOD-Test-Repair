@@ -1,0 +1,99 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+org.java_websocket.AbstractWebSocket,startConnectionLostTimer,()V,3,7,42.9%,"protected void startConnectionLostTimer() {
+        if (this.connectionLostTimeout <= 0) {
+          	log.trace(""Connection lost timer deactivated"");
+            return;
+        }
+		log.trace(""Connection lost timer started"");
+        this.websocketRunning = true;
+       	restartConnectionLostTimer();
+    }",143-151,0.9273226,0.99162376,0.99162376
+org.java_websocket.server.DefaultWebSocketServerFactory,close,()V,1,1,100.0%,"@Override
+	public void close() {
+	}",50-52,0.9961526,0.9448248,0.9448248
+org.java_websocket.AbstractWebSocket,isTcpNoDelay,()Z,1,1,100.0%,"public boolean isTcpNoDelay() {
+        return tcpNoDelay;
+    }",226-228,0.9851761,0.9326011,0.9326011
+org.java_websocket.AbstractWebSocket,isReuseAddr,()Z,1,1,100.0%,"public boolean isReuseAddr() {
+		return reuseAddr;
+	}",248-250,0.99838984,0.9316886,0.9316886
+org.java_websocket.client.WebSocketClient,run,()V,8,37,21.6%,"public void run() {
+		InputStream istream;
+		try {
+			boolean isNewSocket = false;
+
+			if( socket == null ) {
+				socket = new Socket( proxy );
+				isNewSocket = true;
+
+			} else if( socket.isClosed() ) {
+				throw new IOException();
+			}
+
+			socket.setTcpNoDelay( isTcpNoDelay() );
+			socket.setReuseAddress( isReuseAddr() );
+
+			if( !socket.isBound() ) {
+				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			}
+
+			// if the socket is set by others we don't apply any TLS wrapper
+			if (isNewSocket && ""wss"".equals( uri.getScheme())) {
+
+				SSLContext sslContext = SSLContext.getInstance(""TLS"");
+				sslContext.init(null, null, null);
+				SSLSocketFactory factory = sslContext.getSocketFactory();
+				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+			}
+
+			istream = socket.getInputStream();
+			ostream = socket.getOutputStream();
+
+			sendHandshake();
+		} catch ( /*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e ) {
+			onWebsocketError( engine, e );
+			engine.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			return;
+		}
+
+		writeThread = new Thread( new WebsocketWriteThread() );
+		writeThread.start();
+
+		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
+		int readBytes;
+
+		try {
+			while ( !isClosing() && !isClosed() && ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
+				engine.decode( ByteBuffer.wrap( rawbuffer, 0, readBytes ) );
+			}
+			engine.eot();
+		} catch ( IOException e ) {
+			handleIOException(e);
+		} catch ( RuntimeException e ) {
+			// this catch case covers internal errors only and indicates a bug in this websocket implementation
+			onError( e );
+			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
+		}
+		connectReadThread = null;
+	}",371-429,0.99715483,0.91191155,0.91191155
+org.java_websocket.client.WebSocketClient,getPort,()I,3,9,33.3%,"private int getPort() {
+		int port = uri.getPort();
+		if( port == -1 ) {
+			String scheme = uri.getScheme();
+			if( ""wss"".equals( scheme ) ) {
+				return WebSocket.DEFAULT_WSS_PORT;
+			} else if(  ""ws"".equals( scheme ) ) {
+				return WebSocket.DEFAULT_PORT;
+			} else {
+				throw new IllegalArgumentException( ""unknown scheme: "" + scheme );
+			}
+		}
+		return port;
+	}",435-448,0.99132407,0.90890104,0.90890104
+org.java_websocket.AbstractWebSocket,stopConnectionLostTimer,()V,2,5,40.0%,"protected void stopConnectionLostTimer() {
+        if (connectionLostTimer != null ||connectionLostTimerTask != null) {
+			this.websocketRunning = false;
+			log.trace( ""Connection lost timer stopped"" );
+            cancelConnectionLostTimer();
+        }
+    }",132-138,0.9739039,0.8477372,0.8477372
