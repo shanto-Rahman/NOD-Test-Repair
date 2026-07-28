@@ -393,7 +393,6 @@ org/apache/cassandra/utils/ObjectSizes.getReferenceSize()I
 org/apache/cassandra/transport/ServerConnection.getQueryState(I)Lorg/apache/cassandra/service/QueryState;
 org/apache/cassandra/io/compress/LZ4Compressor.initialCompressedBufferLength(I)I
 org/apache/cassandra/db/RangeTombstoneList.copy()Lorg/apache/cassandra/db/RangeTombstoneList;
-com/yammer/metrics/core/MetricsRegistry.removeListener(Lcom/yammer/metrics/core/MetricsRegistryListener;)V
 org/codehaus/jackson/map/introspect/AnnotatedMethod.getParameterType(I)Ljava/lang/reflect/Type;
 org/apache/cassandra/db/Directories.sstableLister()Lorg/apache/cassandra/db/Directories$SSTableLister;
 org/apache/cassandra/cql3/statements/Restriction$EQ.isIN()Z
@@ -964,7 +963,6 @@ org/apache/cassandra/gms/HeartBeatState.getGeneration()I
 org/apache/cassandra/db/commitlog/CommitLog$2.call()Ljava/lang/Object;
 org/apache/cassandra/io/sstable/IndexSummary.caclculateEnd(I)J
 org/apache/cassandra/config/CFMetaData$SpeculativeRetry$RetryType.valueOf(Ljava/lang/String;)Lorg/apache/cassandra/config/CFMetaData$SpeculativeRetry$RetryType;
-org/apache/cassandra/service/StorageService.access$000(Lorg/apache/cassandra/service/StorageService;)V
 org/codehaus/jackson/JsonFactory._getBufferRecycler()Lorg/codehaus/jackson/util/BufferRecycler;
 org/apache/cassandra/io/sstable/SSTableWriter.writeMetadata(Lorg/apache/cassandra/io/sstable/Descriptor;Lorg/apache/cassandra/io/sstable/SSTableMetadata;Ljava/util/Set;)V
 org/yaml/snakeyaml/composer/Composer.composeNode(Lorg/yaml/snakeyaml/nodes/Node;)Lorg/yaml/snakeyaml/nodes/Node;
@@ -1165,7 +1163,6 @@ org/apache/cassandra/config/DatabaseDescriptor.getRpcAddress()Ljava/net/InetAddr
 org/apache/cassandra/cql3/QueryOptions.getPageSize()I
 org/apache/log4j/spi/LocationInfo.getMethodName()Ljava/lang/String;
 org/apache/cassandra/service/StorageService.isInitialized()Z
-com/yammer/metrics/reporting/JmxReporter.unregisterBean(Ljavax/management/ObjectName;)V
 org/apache/cassandra/db/DataTracker.buildIntervalTree(Ljava/lang/Iterable;)Lorg/apache/cassandra/db/DataTracker$SSTableIntervalTree;
 org/apache/cassandra/db/Memtable$FlushRunnable.getExpectedWriteSize()J
 com/codahale/metrics/MetricRegistry.addListener(Lcom/codahale/metrics/MetricRegistryListener;)V

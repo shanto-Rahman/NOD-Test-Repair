@@ -622,6 +622,7 @@ org/apache/cassandra/db/RangeTombstone$Tracker$1.compare(Lorg/apache/cassandra/d
 org/apache/cassandra/cql3/CFDefinition.partitionKeyCount()I
 org/antlr/runtime/Lexer.matchRange(II)V
 org/apache/cassandra/cql3/CqlLexer.mK_WHERE()V
+org/apache/cassandra/utils/ObjectSizes$3.getArrayHeaderSize()I
 org/apache/cassandra/db/compaction/CompactionManager.submitBackground(Lorg/apache/cassandra/db/ColumnFamilyStore;)Ljava/util/List;
 org/apache/log4j/Category.forcedLog(Ljava/lang/String;Lorg/apache/log4j/Priority;Ljava/lang/Object;Ljava/lang/Throwable;)V
 org/apache/cassandra/io/util/ByteBufferOutputStream.write(I)V
@@ -1385,6 +1386,7 @@ com/datastax/driver/core/CBUtil.writeEnumValue(Ljava/lang/Enum;Lorg/jboss/netty/
 com/codahale/metrics/MetricRegistry.buildMap()Ljava/util/concurrent/ConcurrentMap;
 org/apache/cassandra/utils/StreamingHistogram$StreamingHistogramSerializer.serialize(Lorg/apache/cassandra/utils/StreamingHistogram;Ljava/io/DataOutput;)V
 org/codehaus/jackson/map/introspect/POJOPropertyBuilder.findRenamed(Lorg/codehaus/jackson/map/introspect/POJOPropertyBuilder$Node;Lorg/codehaus/jackson/map/introspect/POJOPropertyBuilder$Node;)Lorg/codehaus/jackson/map/introspect/POJOPropertyBuilder$Node;
+org/apache/cassandra/utils/ObjectSizes$3.getReferenceSize()I
 org/apache/cassandra/cache/ConcurrentLinkedHashCache.get(Lorg/apache/cassandra/cache/IMeasurableMemory;)Lorg/apache/cassandra/cache/IMeasurableMemory;
 org/apache/cassandra/cql3/CFName.setColumnFamily(Ljava/lang/String;Z)V
 org/antlr/runtime/CommonToken.getType()I
@@ -1680,6 +1682,7 @@ org/apache/cassandra/db/marshal/UUIDType.compare(Ljava/nio/ByteBuffer;Ljava/nio/
 org/apache/cassandra/transport/DataType.serializedValueSize(Ljava/lang/Object;)I
 org/apache/cassandra/locator/TokenMetadata.getBootstrapTokens()Lorg/apache/cassandra/utils/BiMultiValMap;
 org/codehaus/jackson/map/introspect/AnnotatedClass.resolveCreators(Z)V
+org/apache/cassandra/utils/ObjectSizes$3.getObjectHeaderSize()I
 org/apache/cassandra/service/StorageService.getApplicationStateValue(Ljava/net/InetAddress;Lorg/apache/cassandra/gms/ApplicationState;)[B
 org/codehaus/jackson/impl/JsonGeneratorBase.getOutputContext()Lorg/codehaus/jackson/impl/JsonWriteContext;
 org/cliffc/high_scale_lib/NonBlockingHashMap$2.contains(Ljava/lang/Object;)Z
@@ -1723,7 +1726,6 @@ org/apache/cassandra/service/StorageService.shouldBootstrap()Z
 org/apache/cassandra/serializers/BooleanSerializer.serialize(Ljava/lang/Object;)Ljava/nio/ByteBuffer;
 com/codahale/metrics/JmxReporter.forRegistry(Lcom/codahale/metrics/MetricRegistry;)Lcom/codahale/metrics/JmxReporter$Builder;
 org/apache/cassandra/db/DataTracker.notifySSTablesChanged(Ljava/util/Collection;Ljava/util/Collection;Lorg/apache/cassandra/db/compaction/OperationType;)V
-org/apache/cassandra/thrift/ThriftServer.stop()V
 com/datastax/driver/core/CBUtil.sizeOfEnumValue(Ljava/lang/Enum;)I
 org/apache/cassandra/cql3/statements/Selection.access$400(Lorg/apache/cassandra/cql3/statements/Selection;)Ljava/util/Collection;
 org/apache/cassandra/utils/ByteBufferUtil.string(Ljava/nio/ByteBuffer;Ljava/nio/charset/Charset;)Ljava/lang/String;
@@ -1854,8 +1856,8 @@ org/apache/cassandra/db/SystemKeyspace.copyAllAliasesToColumnsProper()V
 com/datastax/driver/core/Responses$Ready$1.decode(Lorg/jboss/netty/buffer/ChannelBuffer;)Lcom/datastax/driver/core/Message$Response;
 org/apache/cassandra/utils/IntervalTree.isEmpty()Z
 org/cliffc/high_scale_lib/NonBlockingHashMap.access$1500([Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;)Z
-org/apache/log4j/helpers/AppenderAttachableImpl.appendLoopOnAppenders(Lorg/apache/log4j/spi/LoggingEvent;)I
 org/apache/cassandra/utils/Allocator.clone(Ljava/nio/ByteBuffer;)Ljava/nio/ByteBuffer;
+org/apache/log4j/helpers/AppenderAttachableImpl.appendLoopOnAppenders(Lorg/apache/log4j/spi/LoggingEvent;)I
 org/apache/cassandra/cql3/ColumnSpecification.toString()Ljava/lang/String;
 org/apache/cassandra/utils/FBUtilities.toString(Ljava/util/Map;)Ljava/lang/String;
 org/apache/cassandra/utils/Hex.hexToBytes(Ljava/lang/String;)[B
@@ -2062,7 +2064,6 @@ org/apache/cassandra/cql3/statements/CreateTableStatement.access$100(Lorg/apache
 org/apache/cassandra/io/sstable/SSTableReader.getReplayPosition()Lorg/apache/cassandra/db/commitlog/ReplayPosition;
 org/apache/cassandra/utils/FBUtilities.waitOnFuture(Ljava/util/concurrent/Future;)Ljava/lang/Object;
 com/codahale/metrics/EWMA.fiveMinuteEWMA()Lcom/codahale/metrics/EWMA;
-org/apache/cassandra/utils/ObjectSizes$2.getArrayHeaderSize()I
 org/apache/cassandra/cql3/statements/SelectStatement.access$800(Lorg/apache/cassandra/cql3/statements/SelectStatement;)Ljava/util/Map;
 org/apache/cassandra/db/DeletionTime$Serializer.deserialize(Ljava/io/DataInput;)Lorg/apache/cassandra/db/DeletionTime;
 org/apache/cassandra/db/compaction/SizeTieredCompactionStrategy.trimToThresholdWithHotness(Ljava/util/List;I)Lorg/apache/cassandra/utils/Pair;
@@ -2114,8 +2115,8 @@ org/apache/cassandra/config/ColumnDefinition.isIndexed()Z
 org/apache/cassandra/utils/ConcurrentBiMap.put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 org/apache/cassandra/io/sstable/SSTableReader.openDataReader(Lcom/google/common/util/concurrent/RateLimiter;)Lorg/apache/cassandra/io/util/RandomAccessReader;
 org/apache/cassandra/db/filter/ColumnCounter.count(Lorg/apache/cassandra/db/Column;Lorg/apache/cassandra/db/DeletionInfo$InOrderTester;)V
-org/apache/log4j/NDC.getCurrentStack()Ljava/util/Stack;
 org/apache/cassandra/db/AbstractThreadUnsafeSortedColumns.deletionInfo()Lorg/apache/cassandra/db/DeletionInfo;
+org/apache/log4j/NDC.getCurrentStack()Ljava/util/Stack;
 org/apache/commons/lang3/builder/ToStringStyle.append(Ljava/lang/StringBuffer;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Boolean;)V
 org/apache/cassandra/cql3/CqlLexer.mT__139()V
 org/apache/cassandra/cql3/CqlLexer.mT__140()V
@@ -2293,7 +2294,6 @@ org/apache/cassandra/gms/Gossiper.doGossipToSeed(Lorg/apache/cassandra/net/Messa
 org/apache/cassandra/transport/Message$ProtocolDecoder.decode(Lorg/jboss/netty/channel/ChannelHandlerContext;Lorg/jboss/netty/channel/Channel;Ljava/lang/Object;)Ljava/lang/Object;
 edu/stanford/ppl/concurrent/SnapTreeMap.putIfAbsent(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 org/apache/cassandra/utils/FBUtilities$1.initialValue()Ljava/security/MessageDigest;
-org/apache/cassandra/utils/ObjectSizes$2.getReferenceSize()I
 org/yaml/snakeyaml/constructor/BaseConstructor.constructSet2ndStep(Lorg/yaml/snakeyaml/nodes/MappingNode;Ljava/util/Set;)V
 org/yaml/snakeyaml/scanner/ScannerImpl.checkBlockEntry()Z
 org/yaml/snakeyaml/scanner/ScannerImpl.scanTagUri(Ljava/lang/String;Lorg/yaml/snakeyaml/error/Mark;)Ljava/lang/String;
@@ -2315,7 +2315,6 @@ org/apache/log4j/spi/LoggingEvent.getLevel()Lorg/apache/log4j/Level;
 org/apache/cassandra/io/util/FileUtils.close(Ljava/lang/Iterable;)V
 com/datastax/driver/core/DataType.getName()Lcom/datastax/driver/core/DataType$Name;
 org/codehaus/jackson/JsonFactory._createJsonParser(Ljava/io/Reader;Lorg/codehaus/jackson/io/IOContext;)Lorg/codehaus/jackson/JsonParser;
-org/apache/cassandra/service/StorageService.stopRPCServer()V
 org/codehaus/jackson/map/type/TypeBindings.addBinding(Ljava/lang/String;Lorg/codehaus/jackson/type/JavaType;)V
 org/apache/cassandra/db/compaction/PrecompactedRow$1.reduce(Lorg/apache/cassandra/db/Column;)V
 org/apache/log4j/Category.callAppenders(Lorg/apache/log4j/spi/LoggingEvent;)V
@@ -2747,6 +2746,7 @@ com/yammer/metrics/core/Clock.defaultClock()Lcom/yammer/metrics/core/Clock;
 org/apache/cassandra/io/compress/CompressedSequentialWriter.getOnDiskFilePointer()J
 org/apache/cassandra/db/Directories$FileAction.hasPrivilege(Ljava/io/File;Lorg/apache/cassandra/db/Directories$FileAction;)Z
 org/apache/cassandra/service/RangeSliceResponseResolver.getData()Ljava/util/List;
+org/apache/cassandra/utils/ObjectSizes$3.getObjectPadding()I
 org/apache/cassandra/cql3/statements/Selection.getColumns()Ljava/util/Collection;
 org/apache/cassandra/db/ColumnFamily.id()Ljava/util/UUID;
 org/codehaus/jackson/map/introspect/JacksonAnnotationIntrospector.findTypeResolver(Lorg/codehaus/jackson/map/MapperConfig;Lorg/codehaus/jackson/map/introspect/AnnotatedClass;Lorg/codehaus/jackson/type/JavaType;)Lorg/codehaus/jackson/map/jsontype/TypeResolverBuilder;
@@ -2895,7 +2895,6 @@ org/apache/cassandra/config/CFMetaData.getKeyValidator()Lorg/apache/cassandra/db
 org/apache/cassandra/serializers/LongSerializer.serialize(Ljava/lang/Long;)Ljava/nio/ByteBuffer;
 org/apache/cassandra/service/MigrationManager$2.runMayThrow()V
 org/apache/cassandra/service/ClientState.validateKeyspace(Ljava/lang/String;)V
-org/apache/cassandra/thrift/ThriftServer$ThriftServerThread.stopServer()V
 org/apache/cassandra/config/CFMetaData.addColumnMetadataFromAliases(Ljava/util/List;Lorg/apache/cassandra/db/marshal/AbstractType;Lorg/apache/cassandra/config/ColumnDefinition$Type;)V
 org/codehaus/jackson/map/deser/StdDeserializerProvider._createAndCache2(Lorg/codehaus/jackson/map/DeserializationConfig;Lorg/codehaus/jackson/type/JavaType;Lorg/codehaus/jackson/map/BeanProperty;)Lorg/codehaus/jackson/map/JsonDeserializer;
 org/yaml/snakeyaml/constructor/BaseConstructor.setComposer(Lorg/yaml/snakeyaml/composer/Composer;)V
@@ -2945,7 +2944,6 @@ org/apache/log4j/Hierarchy.getLogger(Ljava/lang/String;)Lorg/apache/log4j/Logger
 org/yaml/snakeyaml/scanner/ScannerImpl.fetchFlowMappingEnd()V
 org/apache/cassandra/utils/ByteBufferUtil.minimalBufferFor(Ljava/nio/ByteBuffer;)Ljava/nio/ByteBuffer;
 org/apache/cassandra/db/DeletionInfo.copy()Lorg/apache/cassandra/db/DeletionInfo;
-org/apache/cassandra/utils/ObjectSizes$2.getObjectHeaderSize()I
 org/yaml/snakeyaml/constructor/BaseConstructor.createArray(Ljava/lang/Class;I)[Ljava/lang/Object;
 org/apache/cassandra/db/AbstractThreadUnsafeSortedColumns.purgeTombstones(I)V
 com/googlecode/concurrentlinkedhashmap/ConcurrentLinkedHashMap.afterCompletion(Lcom/googlecode/concurrentlinkedhashmap/ConcurrentLinkedHashMap$Task;)V
@@ -3218,7 +3216,6 @@ edu/stanford/ppl/concurrent/CopyOnWriteManager.begin(Z)Ledu/stanford/ppl/concurr
 org/apache/cassandra/config/DatabaseDescriptor.getSavedCachesLocation()Ljava/lang/String;
 org/apache/cassandra/utils/IntervalTree.access$200()Lorg/slf4j/Logger;
 org/apache/cassandra/db/RangeTombstoneList.access$400(Lorg/apache/cassandra/db/RangeTombstoneList;)[J
-org/apache/cassandra/service/StorageService.shutdownClientServers()V
 org/apache/cassandra/config/Schema.updateVersionAndAnnounce()V
 org/cliffc/high_scale_lib/NonBlockingHashMap.chm([Ljava/lang/Object;)Lorg/cliffc/high_scale_lib/NonBlockingHashMap$CHM;
 org/apache/cassandra/db/ColumnFamily.hasOnlyTombstones(J)Z
@@ -3514,7 +3511,6 @@ org/apache/cassandra/db/ColumnFamilyType.values()[Lorg/apache/cassandra/db/Colum
 org/apache/cassandra/cql3/Operation.collectMarkerSpecification(Lorg/apache/cassandra/cql3/VariableSpecifications;)V
 org/apache/cassandra/io/util/SegmentedFile$SegmentIterator.next()Lorg/apache/cassandra/io/util/FileDataInput;
 com/datastax/driver/core/ControlConnection.reconnectInternal()Lcom/datastax/driver/core/Connection;
-org/apache/cassandra/utils/ObjectSizes$2.getObjectPadding()I
 org/apache/cassandra/db/marshal/UTF8Type.getSerializer()Lorg/apache/cassandra/serializers/TypeSerializer;
 org/apache/cassandra/db/marshal/TypeParser.parse()Lorg/apache/cassandra/db/marshal/AbstractType;
 com/yammer/metrics/core/MetricsRegistry.newMeter(Lcom/yammer/metrics/core/MetricName;Ljava/lang/String;Ljava/util/concurrent/TimeUnit;)Lcom/yammer/metrics/core/Meter;
