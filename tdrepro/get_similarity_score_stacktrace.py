@@ -93,8 +93,22 @@ def sanitize_stacktrace(failure_stacktrace_isolated):
     # maven scaffolding: log-level tags, banner rules and the build verdict
     s = re.sub(r'\[(?:INFO|ERROR|WARNING|DEBUG|FATAL|TRACE)\]|-{3,}|\bBUILD (?:FAILURE|SUCCESS)\b', ' ', s)
 
-    # run-to-run noise: wall-clock timings and the "- in <class>" echo
-    s = re.sub(r'Time\s+elapsed:?\s*\d+(?:\.\d+)?\s*(?:s|sec)\b|\s-\sin\s[\w.$]+', ' ', s)
+    # run-to-run noise: wall-clock timings
+    s = re.sub(r'Time\s+elapsed:?\s*\d+(?:\.\d+)?\s*(?:s|sec)\b', ' ', s)
+
+    # the "- in <class>" echo. flattening glued the test method name onto the end of
+    # that class name, so drop only the duplicated class -- never the method, or two
+    # tests of the same class collapse to identical text (this filter is necessary for okhttp)
+    s = re.sub(r'\s-\sin\s([\w.$]+?)(\w+)\(\1\)', r' \2(\1)', s)
+    s = re.sub(r'\s-\sin\s[\w.$]+', ' ', s)
+
+    # logger timestamps that prefix each line, e.g. "16:39:00.999 [main] DEBUG ..".
+    # milliseconds are required so a bare "hh:mm:ss" inside a message is left alone
+    s = re.sub(r'\d{1,2}:\d{2}:\d{2}[.,]\d{1,3}', ' ', s)
+
+    # the maven build footer: "Total time: 10.365 s Finished at: 2025-06-15T13:08:08-04:00"
+    # wall-clock, unrelated to the failure, and different on every single run
+    s = re.sub(r'Total time:\s*[\d.:]+\s*(?:s|ms|sec|min|h)?|Finished at:\s*\S+', ' ', s)
 
     # JDK / test-framework frames that one log keeps and the other drops
     s = re.sub(r'\bat\s+(?:sun\.reflect|jdk\.internal|java\.lang\.reflect|java\.base|org\.junit'
