@@ -133,7 +133,7 @@ while IFS= read -r line
     mvn test $JMVNOPTIONS  -pl $module  -Dtest=$testName >  "$currentDir/logs/$testName-con.txt"
 
     #cd -
-    mvn edu.utexas.ece:flakesync-maven-plugin:1.0-SNAPSHOT:concurrentfind -Dflakesync.testName=$testName -pl $module
+    timeout 10m mvn edu.utexas.ece:flakesync-maven-plugin:1.0-SNAPSHOT:concurrentfind -Dflakesync.testName=$testName -pl $module
     if [[ ! -d "$currentDir/conc_executed_methods" ]]; then
         mkdir "$currentDir/conc_executed_methods"
     fi
