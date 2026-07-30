@@ -4,7 +4,14 @@ import sys
 import re
 import csv
 def extract_block(path, test):
-    test_class = test.rsplit('.', 1)[0]
+    test_class = test.split("#", 1)[0]
+    
+    #make sure that we always get the correct test class name
+    parts = test_class.split(".")
+    if len(parts) > 1 and parts[-1][:1].islower():
+        parts.pop()  # remove the last part if it starts with a lowercase letter
+    test_class = ".".join(parts)
+
     start_re = re.compile(fr"Running {test_class}")
     end_re   = re.compile(r"There are test failures")
     drop_re  = re.compile(r'^\s*at\s+(org\.junit|org\.apache\.maven\.surefire|java.base)')
