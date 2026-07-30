@@ -8,12 +8,18 @@ def extract_block(path, test):
     start_re = re.compile(fr"Running {test_class}")
     end_re   = re.compile(r"There are test failures")
     drop_re  = re.compile(r'^\s*at\s+(org\.junit|org\.apache\.maven\.surefire|java.base)')
+    compile_fail_re = re.compile(r"COMPILATION ERROR")
+
+    saw_compile_failure = False
     buf = []
 
     in_block = False
 
     with open(path) as f:
         for line in f:
+
+            if compile_fail_re.search(line):
+                saw_compile_failure = True
             if not in_block and start_re.search(line):
                 in_block = True
             if in_block:
@@ -34,7 +40,8 @@ def extract_block(path, test):
     buf = [re.sub(r'Total time: \s+\d+\.\d+ s', '', line) for line in buf]
     buf = [re.sub(r'Finished at:\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:\d{2})?', '', line) for line in buf]
 
-    return buf
+    return buf, saw_compile_failure
+
 def save_log_into_a_file(filtered_fail_log_txt):
     #print("HI ***")
     fail_log_csv="tmp-rq2-log.csv"
@@ -58,6 +65,7 @@ def save_log_into_a_file(filtered_fail_log_txt):
 def read_panda(baseline_csv, mvn_test_log_csv):
     import pandas as pd
     # Read the CSV file
+    print(baseline_csv)
     df_baseline = pd.read_csv(baseline_csv)
     baseline_failures = df_baseline['Failure'].dropna().tolist()
 
@@ -69,12 +77,18 @@ def read_panda(baseline_csv, mvn_test_log_csv):
 if __name__ == "__main__":
     _, baseline_log, maven_test_run_log_full, test_name = sys.argv
     #print("((((-====",_, baseline_log, maven_test_run_log_full, test_name)
-    mvn_fail_log_by_this_script = extract_block(maven_test_run_log_full, test_name)
+    mvn_fail_log_by_this_script, saw_compile_failure = extract_block(maven_test_run_log_full, test_name)
+    # ADDED — this entire new block:
+    if saw_compile_failure:
+        print("[INFO] Compile failure detected in this run; skipping similarity check, treating as MisMatched.")
+        print("MisMatched (compile failure)")
+        sys.exit(0)
+     
     save_log_into_a_file(mvn_fail_log_by_this_script)
 
     #tmp-rq2-log.csv baseline_log
     baseline_failures, mvn_log_now = read_panda(baseline_log, "tmp-rq2-log.csv")
-    print(f"Found {len(baseline_failures)} baseline failure(s) to check against.")
+    #print(f"Found {len(baseline_failures)} baseline failure(s) to check against.")
 
     mvn_log_now = sanitize_stacktrace(mvn_log_now)
     
@@ -82,10 +96,11 @@ if __name__ == "__main__":
     for idx, baseline in enumerate(baseline_failures):
         print(f"--- Checking baseline failure #{idx + 1} ---")
         baseline = sanitize_stacktrace(baseline)
-        print("baseline_log=", baseline)
+        print("***mvn_log=", mvn_log_now)
+        print("***baseline_log=", baseline)
 
         score = semantic_similarity_score(baseline, mvn_log_now)
-        print("score=", score)
+        print("***score=", score)
 
         if score >= 0.9:
             print(f"Matched (against baseline failure #{idx + 1})")
