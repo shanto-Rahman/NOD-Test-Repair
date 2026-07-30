@@ -87,6 +87,12 @@ def extract_failure_traces(log_path):
 #     return failure_stacktrace_isolated
 
 def sanitize_stacktrace(failure_stacktrace_isolated):
+
+    # filter the None values and from the failure_stacktrace_isolated list, remove the None values and join the list into a single string
+    failure_stacktrace_isolated = [line for line in failure_stacktrace_isolated if line is not None]
+    if not failure_stacktrace_isolated:
+        return ""
+
     if not isinstance(failure_stacktrace_isolated, str):
         failure_stacktrace_isolated = '\n'.join(failure_stacktrace_isolated)
     s = failure_stacktrace_isolated
