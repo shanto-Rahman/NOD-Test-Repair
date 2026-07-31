@@ -1,0 +1,3159 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter$InternalEncoder,encode,(Lio/netty/channel/ChannelHandlerContext;Ljava/lang/Object;Lio/netty/buffer/ByteBuf;)V,6,6,100.0%,"@Override
+        protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
+            org.apache.dubbo.remoting.buffer.ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
+            Channel ch = ctx.channel();
+            NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
+            try {
+                codec.encode(channel, buffer, msg);
+            } finally {
+                NettyChannel.removeChannelIfDisconnected(ch);
+            }
+        }",64-74,0.9919901,0.9956235,0.9956235
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,getInvoker,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Invoker;,12,16,75.0%,"Invoker<?> getInvoker(Channel channel, Invocation inv) throws RemotingException {
+        boolean isCallBackServiceInvoke = false;
+        boolean isStubServiceInvoke = false;
+        int port = channel.getLocalAddress().getPort();
+        String path = inv.getAttachments().get(Constants.PATH_KEY);
+        // if it's callback service on client side
+        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(Constants.STUB_EVENT_KEY));
+        if (isStubServiceInvoke) {
+            port = channel.getRemoteAddress().getPort();
+        }
+        //callback
+        isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
+        if (isCallBackServiceInvoke) {
+            path = inv.getAttachments().get(Constants.PATH_KEY) + ""."" + inv.getAttachments().get(Constants.CALLBACK_SERVICE_KEY);
+            inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
+        }
+        String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
+
+        DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
+
+        if (exporter == null)
+            throw new RemotingException(channel, ""Not found exported service: "" + serviceKey + "" in "" + exporterMap.keySet() + "", may be version or group mismatch "" + "", channel: consumer: "" + channel.getRemoteAddress() + "" --> provider: "" + channel.getLocalAddress() + "", message:"" + inv);
+
+        return exporter.getInvoker();
+    }",208-232,0.9870314,0.99503267,0.99503267
+org.apache.dubbo.remoting.transport.netty4.NettyClient$1,initChannel,(Lio/netty/channel/Channel;)V,6,6,100.0%,"@Override
+            protected void initChannel(Channel ch) throws Exception {
+                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
+                ch.pipeline()//.addLast(""logging"",new LoggingHandler(LogLevel.INFO))//for debug
+                        .addLast(""decoder"", adapter.getDecoder())
+                        .addLast(""encoder"", adapter.getEncoder())
+                        .addLast(""handler"", nettyClientHandler);
+            }",77-84,0.98641986,0.9949431,0.9949431
+org.apache.dubbo.common.utils.ReflectUtils,getDesc,([Ljava/lang/Class;)Ljava/lang/String;,5,6,83.3%,"public static String getDesc(Class<?> c) {
+        StringBuilder ret = new StringBuilder();
+
+        while (c.isArray()) {
+            ret.append('[');
+            c = c.getComponentType();
+        }
+
+        if (c.isPrimitive()) {
+            String t = c.getName();
+            if (""void"".equals(t)) ret.append(JVM_VOID);
+            else if (""boolean"".equals(t)) ret.append(JVM_BOOLEAN);
+            else if (""byte"".equals(t)) ret.append(JVM_BYTE);
+            else if (""char"".equals(t)) ret.append(JVM_CHAR);
+            else if (""double"".equals(t)) ret.append(JVM_DOUBLE);
+            else if (""float"".equals(t)) ret.append(JVM_FLOAT);
+            else if (""int"".equals(t)) ret.append(JVM_INT);
+            else if (""long"".equals(t)) ret.append(JVM_LONG);
+            else if (""short"".equals(t)) ret.append(JVM_SHORT);
+        } else {
+            ret.append('L');
+            ret.append(c.getName().replace('.', '/'));
+            ret.append(';');
+        }
+        return ret.toString();
+    }",323-348,0.98554724,0.994837,0.994837
+org.apache.dubbo.common.utils.ReflectUtils,getDesc,(Ljava/lang/Class;)Ljava/lang/String;,19,20,95.0%,"public static String getDesc(Class<?> c) {
+        StringBuilder ret = new StringBuilder();
+
+        while (c.isArray()) {
+            ret.append('[');
+            c = c.getComponentType();
+        }
+
+        if (c.isPrimitive()) {
+            String t = c.getName();
+            if (""void"".equals(t)) ret.append(JVM_VOID);
+            else if (""boolean"".equals(t)) ret.append(JVM_BOOLEAN);
+            else if (""byte"".equals(t)) ret.append(JVM_BYTE);
+            else if (""char"".equals(t)) ret.append(JVM_CHAR);
+            else if (""double"".equals(t)) ret.append(JVM_DOUBLE);
+            else if (""float"".equals(t)) ret.append(JVM_FLOAT);
+            else if (""int"".equals(t)) ret.append(JVM_INT);
+            else if (""long"".equals(t)) ret.append(JVM_LONG);
+            else if (""short"".equals(t)) ret.append(JVM_SHORT);
+        } else {
+            ret.append('L');
+            ret.append(c.getName().replace('.', '/'));
+            ret.append(';');
+        }
+        return ret.toString();
+    }",323-348,0.98554724,0.994837,0.994837
+org.apache.dubbo.common.extension.ExtensionLoader,createExtension,(Ljava/lang/String;)Ljava/lang/Object;,13,17,76.5%,"@SuppressWarnings(""unchecked"")
+    private T createExtension(String name) {
+        Class<?> clazz = getExtensionClasses().get(name);
+        if (clazz == null) {
+            throw findException(name);
+        }
+        try {
+            T instance = (T) EXTENSION_INSTANCES.get(clazz);
+            if (instance == null) {
+                EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
+                instance = (T) EXTENSION_INSTANCES.get(clazz);
+            }
+            injectExtension(instance);
+            Set<Class<?>> wrapperClasses = cachedWrapperClasses;
+            if (wrapperClasses != null && !wrapperClasses.isEmpty()) {
+                for (Class<?> wrapperClass : wrapperClasses) {
+                    instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
+                }
+            }
+            return instance;
+        } catch (Throwable t) {
+            throw new IllegalStateException(""Extension instance(name: "" + name + "", class: "" +
+                    type + "")  could not be instantiated: "" + t.getMessage(), t);
+        }
+    }",497-521,0.99294525,0.9948125,0.9948125
+org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec,encodeInvocationArgument,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/rpc/RpcInvocation;I)Ljava/lang/Object;,6,11,54.5%,"public static Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException {
+        // get URL directly
+        URL url = inv.getInvoker() == null ? null : inv.getInvoker().getUrl();
+        byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
+        Object[] args = inv.getArguments();
+        Class<?>[] pts = inv.getParameterTypes();
+        switch (callbackstatus) {
+            case CallbackServiceCodec.CALLBACK_NONE:
+                return args[paraIndex];
+            case CallbackServiceCodec.CALLBACK_CREATE:
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrunexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
+                return null;
+            case CallbackServiceCodec.CALLBACK_DESTROY:
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrunexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], false));
+                return null;
+            default:
+                return args[paraIndex];
+        }
+    }",245-263,0.9831527,0.994712,0.994712
+org.apache.dubbo.common.extension.ExtensionLoader,loadExtensionClasses,()Ljava/util/Map;,15,17,88.2%,"private Map<String, Class<?>> loadExtensionClasses() {
+        final SPI defaultAnnotation = type.getAnnotation(SPI.class);
+        if (defaultAnnotation != null) {
+            String value = defaultAnnotation.value();
+            if ((value = value.trim()).length() > 0) {
+                String[] names = NAME_SEPARATOR.split(value);
+                if (names.length > 1) {
+                    throw new IllegalStateException(""more than 1 default extension name on extension "" + type.getName()
+                            + "": "" + Arrays.toString(names));
+                }
+                if (names.length == 1) cachedDefaultName = names[0];
+            }
+        }
+
+        Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
+        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName().replace(""org.apache"", ""com.alibaba""));
+        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName().replace(""org.apache"", ""com.alibaba""));
+        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName().replace(""org.apache"", ""com.alibaba""));
+        return extensionClasses;
+    }",576-598,0.9849913,0.99468863,0.99468863
+org.apache.dubbo.rpc.AbstractPostProcessFilter,postProcessResult,(Lorg/apache/dubbo/rpc/Result;Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,5,40.0%,"@Override
+    public Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation) {
+        if (result instanceof AsyncRpcResult) {
+            AsyncRpcResult asyncResult = (AsyncRpcResult) result;
+            asyncResult.thenApplyWithContext(r -> doPostProcess(r, invoker, invocation));
+            return asyncResult;
+        } else {
+            return doPostProcess(result, invoker, invocation);
+        }
+    }",23-32,0.99097234,0.99465996,0.99465996
+org.apache.dubbo.rpc.filter.ExceptionFilter,doPostProcess,(Lorg/apache/dubbo/rpc/Result;Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,31,6.5%,"@Override
+    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+        if (result.hasException() && GenericService.class != invoker.getInterface()) {
+            try {
+                Throwable exception = result.getException();
+
+                // directly throw if it's checked exception
+                if (!(exception instanceof RuntimeException) && (exception instanceof Exception)) {
+                    return result;
+                }
+                // directly throw if the exception appears in the signature
+                try {
+                    Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+                    Class<?>[] exceptionClassses = method.getExceptionTypes();
+                    for (Class<?> exceptionClass : exceptionClassses) {
+                        if (exception.getClass().equals(exceptionClass)) {
+                            return result;
+                        }
+                    }
+                } catch (NoSuchMethodException e) {
+                    return result;
+                }
+
+                // for the exception not found in method's signature, print ERROR message in server's log.
+                logger.error(""Got unchecked and undeclared exception which called by "" + RpcContext.getContext().getRemoteHost()
+                        + "". service: "" + invoker.getInterface().getName() + "", method: "" + invocation.getMethodName()
+                        + "", exception: "" + exception.getClass().getName() + "": "" + exception.getMessage(), exception);
+
+                // directly throw if exception class and interface class are in the same jar file.
+                String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
+                String exceptionFile = ReflectUtils.getCodeBase(exception.getClass());
+                if (serviceFile == null || exceptionFile == null || serviceFile.equals(exceptionFile)) {
+                    return result;
+                }
+                // directly throw if it's JDK exception
+                String className = exception.getClass().getName();
+                if (className.startsWith(""java."") || className.startsWith(""javax."")) {
+                    return result;
+                }
+                // directly throw if it's dubbo exception
+                if (exception instanceof RpcException) {
+                    return result;
+                }
+
+                // otherwise, wrap with RuntimeException and throw back to the client
+                return new RpcResult(new RuntimeException(StringUtils.toString(exception)));
+            } catch (Throwable e) {
+                logger.warn(""Fail to ExceptionFilter when called by "" + RpcContext.getContext().getRemoteHost()
+                        + "". service: "" + invoker.getInterface().getName() + "", method: "" + invocation.getMethodName()
+                        + "", exception: "" + e.getClass().getName() + "": "" + e.getMessage(), e);
+                return result;
+            }
+        }
+        return result;
+    }",72-126,0.9850072,0.9942976,0.9942976
+org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker,doInvoke,(Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,14,30,46.7%,"@Override
+    protected Result doInvoke(final Invocation invocation) throws Throwable {
+        RpcInvocation inv = (RpcInvocation) invocation;
+        final String methodName = RpcUtils.getMethodName(invocation);
+        inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
+        inv.setAttachment(Constants.VERSION_KEY, version);
+
+        ExchangeClient currentClient;
+        if (clients.length == 1) {
+            currentClient = clients[0];
+        } else {
+            currentClient = clients[index.getAndIncrement() % clients.length];
+        }
+        try {
+            boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
+            boolean isAsyncFuture = RpcUtils.isGeneratedFuture(inv) || RpcUtils.isFutureReturnType(inv);
+            boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
+            int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            if (isOneway) {
+                boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
+                currentClient.send(inv, isSent);
+                RpcContext.getContext().setFuture(null);
+                return new RpcResult();
+            } else if (isAsync) {
+                ResponseFuture future = currentClient.request(inv, timeout);
+                // For compatibility
+                FutureAdapter<Object> futureAdapter = new FutureAdapter<>(future);
+                RpcContext.getContext().setFuture(futureAdapter);
+
+                Result result;
+                if (isAsyncFuture) {
+                    // register resultCallback, sometimes we need the asyn result being processed by the filter chain.
+                    result = new AsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
+                } else {
+                    result = new SimpleAsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
+                }
+                return result;
+            } else {
+                RpcContext.getContext().setFuture(null);
+                return (Result) currentClient.request(inv, timeout).get();
+            }
+        } catch (TimeoutException e) {
+            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, ""Invoke remote method timeout. method: "" + invocation.getMethodName() + "", provider: "" + getUrl() + "", cause: "" + e.getMessage(), e);
+        } catch (RemotingException e) {
+            throw new RpcException(RpcException.NETWORK_EXCEPTION, ""Failed to invoke remote method: "" + invocation.getMethodName() + "", provider: "" + getUrl() + "", cause: "" + e.getMessage(), e);
+        }
+    }",69-115,0.9847897,0.99428785,0.99428785
+org.apache.dubbo.remoting.transport.netty4.NettyClientHandler,write,(Lio/netty/channel/ChannelHandlerContext;Ljava/lang/Object;Lio/netty/channel/ChannelPromise;)V,6,12,50.0%,"@Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        super.write(ctx, msg, promise);
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            // if error happens from write, mock a BAD_REQUEST response so that invoker can return immediately without
+            // waiting until timeout. FIXME: not sure if this is the right approach, but exceptionCaught doesn't work
+            // as expected.
+            if (promise.cause() != null && msg instanceof Request) {
+                Request request = (Request) msg;
+                Response response = new Response(request.getId(), request.getVersion());
+                response.setStatus(Response.BAD_REQUEST);
+                response.setErrorMessage(StringUtils.toString(promise.cause()));
+                handler.received(channel, response);
+            } else {
+                handler.sent(channel, msg);
+            }
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }",82-102,0.99383867,0.994088,0.994088
+org.apache.dubbo.remoting.transport.netty4.NettyServerHandler,channelActive,(Lio/netty/channel/ChannelHandlerContext;)V,6,6,100.0%,"@Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            if (channel != null) {
+                channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
+            }
+            handler.connected(channel);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }",59-70,0.9955063,0.9939829,0.9939829
+org.apache.dubbo.common.extension.ExtensionLoader,getExtension,(Ljava/lang/String;)Ljava/lang/Object;,15,17,88.2%,"@SuppressWarnings(""unchecked"")
+    public T getExtension(String name) {
+        if (name == null || name.length() == 0)
+            throw new IllegalArgumentException(""Extension name == null"");
+        if (""true"".equals(name)) {
+            return getDefaultExtension();
+        }
+        Holder<Object> holder = cachedInstances.get(name);
+        if (holder == null) {
+            cachedInstances.putIfAbsent(name, new Holder<Object>());
+            holder = cachedInstances.get(name);
+        }
+        Object instance = holder.get();
+        if (instance == null) {
+            synchronized (holder) {
+                instance = holder.get();
+                if (instance == null) {
+                    instance = createExtension(name);
+                    holder.set(instance);
+                }
+            }
+        }
+        return (T) instance;
+    }",304-327,0.990701,0.9939605,0.9939605
+org.apache.dubbo.remoting.exchange.codec.ExchangeCodec,encodeResponse,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/buffer/ChannelBuffer;Lorg/apache/dubbo/remoting/exchange/Response;)V,27,56,48.2%,"protected void encodeResponse(Channel channel, ChannelBuffer buffer, Response res) throws IOException {
+        int savedWriteIndex = buffer.writerIndex();
+        try {
+            Serialization serialization = getSerialization(channel);
+            // header.
+            byte[] header = new byte[HEADER_LENGTH];
+            // set magic number.
+            Bytes.short2bytes(MAGIC, header);
+            // set request and serialization flag.
+            header[2] = serialization.getContentTypeId();
+            if (res.isHeartbeat()) header[2] |= FLAG_EVENT;
+            // set response status.
+            byte status = res.getStatus();
+            header[3] = status;
+            // set request id.
+            Bytes.long2bytes(res.getId(), header, 4);
+
+            buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
+            ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
+            ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+            // encode response data or error message.
+            if (status == Response.OK) {
+                if (res.isHeartbeat()) {
+                    encodeHeartbeatData(channel, out, res.getResult());
+                } else {
+                    encodeResponseData(channel, out, res.getResult(), res.getVersion());
+                }
+            } else out.writeUTF(res.getErrorMessage());
+            out.flushBuffer();
+            if (out instanceof Cleanable) {
+                ((Cleanable) out).cleanup();
+            }
+            bos.flush();
+            bos.close();
+
+            int len = bos.writtenBytes();
+            checkPayload(channel, len);
+            Bytes.int2bytes(len, header, 12);
+            // write
+            buffer.writerIndex(savedWriteIndex);
+            buffer.writeBytes(header); // write header.
+            buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
+        } catch (Throwable t) {
+            // clear buffer
+            buffer.writerIndex(savedWriteIndex);
+            // send error message to Consumer, otherwise, Consumer will wait till timeout.
+            if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
+                Response r = new Response(res.getId(), res.getVersion());
+                r.setStatus(Response.BAD_RESPONSE);
+
+                if (t instanceof ExceedPayloadLimitException) {
+                    logger.warn(t.getMessage(), t);
+                    try {
+                        r.setErrorMessage(t.getMessage());
+                        channel.send(r);
+                        return;
+                    } catch (RemotingException e) {
+                        logger.warn(""Failed to send bad_response info back: "" + t.getMessage() + "", cause: "" + e.getMessage(), e);
+                    }
+                } else {
+                    // FIXME log error message in Codec and handle in caught() of IoHanndler?
+                    logger.warn(""Fail to encode response: "" + res + "", send bad_response info instead, cause: "" + t.getMessage(), t);
+                    try {
+                        r.setErrorMessage(""Failed to send response: "" + res + "", cause: "" + StringUtils.toString(t));
+                        channel.send(r);
+                        return;
+                    } catch (RemotingException e) {
+                        logger.warn(""Failed to send bad_response info back: "" + res + "", cause: "" + e.getMessage(), e);
+                    }
+                }
+            }
+
+            // Rethrow exception
+            if (t instanceof IOException) {
+                throw (IOException) t;
+            } else if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            } else if (t instanceof Error) {
+                throw (Error) t;
+            } else {
+                throw new RuntimeException(t.getMessage(), t);
+            }
+        }
+    }",253-336,0.9863751,0.9938795,0.9938795
+org.apache.dubbo.common.timer.HashedWheelTimer$Worker,transferTimeoutsToBuckets,()V,12,13,92.3%,"private void transferTimeoutsToBuckets() {
+            // transfer only max. 100000 timeouts per tick to prevent a thread to stale the workerThread when it just
+            // adds new timeouts in a loop.
+            for (int i = 0; i < 100000; i++) {
+                HashedWheelTimeout timeout = timeouts.poll();
+                if (timeout == null) {
+                    // all processed
+                    break;
+                }
+                if (timeout.state() == HashedWheelTimeout.ST_CANCELLED) {
+                    // Was cancelled in the meantime.
+                    continue;
+                }
+
+                long calculated = timeout.deadline / tickDuration;
+                timeout.remainingRounds = (calculated - tick) / wheel.length;
+
+                // Ensure we don't schedule for past.
+                final long ticks = Math.max(calculated, tick);
+                int stopIndex = (int) (ticks & mask);
+
+                HashedWheelBucket bucket = wheel[stopIndex];
+                bucket.addTimeout(timeout);
+            }
+        }",463-487,0.98590666,0.99376273,0.99376273
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,addToVariablesToRemove,(Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;Lorg/apache/dubbo/common/threadlocal/InternalThreadLocal;)V,7,7,100.0%,"@SuppressWarnings(""unchecked"")
+    private static void addToVariablesToRemove(InternalThreadLocalMap threadLocalMap, InternalThreadLocal<?> variable) {
+        Object v = threadLocalMap.indexedVariable(variablesToRemoveIndex);
+        Set<InternalThreadLocal<?>> variablesToRemove;
+        if (v == InternalThreadLocalMap.UNSET || v == null) {
+            variablesToRemove = Collections.newSetFromMap(new IdentityHashMap<InternalThreadLocal<?>, Boolean>());
+            threadLocalMap.setIndexedVariable(variablesToRemoveIndex, variablesToRemove);
+        } else {
+            variablesToRemove = (Set<InternalThreadLocal<?>>) v;
+        }
+
+        variablesToRemove.add(variable);
+    }",87-99,0.99374837,0.9936776,0.9936776
+org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter,postProcessResult,(Lorg/apache/dubbo/rpc/Result;Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,3,6,50.0%,"@Override
+    public Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation) {
+        if (result instanceof AsyncRpcResult) {
+            AsyncRpcResult asyncResult = (AsyncRpcResult) result;
+            asyncResult.thenApplyWithContext(r -> {
+                asyncCallback(invoker, invocation, r);
+                return r;
+            });
+            return asyncResult;
+        } else {
+            syncCallback(invoker, invocation, result);
+            return result;
+        }
+    }",50-63,0.98509,0.99348927,0.99348927
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler,connected,(Lorg/apache/dubbo/remoting/Channel;)V,6,6,100.0%,"@Override
+    public void connected(Channel channel) throws RemotingException {
+        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
+        channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
+        ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
+        try {
+            handler.connected(exchangeChannel);
+        } finally {
+            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+        }
+    }",129-139,0.9971422,0.9934517,0.9934517
+org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec,decodeInvocationArgument,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/rpc/RpcInvocation;[Ljava/lang/Class;ILjava/lang/Object;)Ljava/lang/Object;,6,18,33.3%,"public static Object decodeInvocationArgument(Channel channel, RpcInvocation inv, Class<?>[] pts, int paraIndex, Object inObject) throws IOException {
+        // if it's a callback, create proxy on client side, callback interface on client side can be invoked through channel
+        // need get URL from channel and env when decode
+        URL url = null;
+        try {
+            url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
+        } catch (RemotingException e) {
+            if (logger.isInfoEnabled()) {
+                logger.info(e.getMessage(), e);
+            }
+            return inObject;
+        }
+        byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
+        switch (callbackstatus) {
+            case CallbackServiceCodec.CALLBACK_NONE:
+                return inObject;
+            case CallbackServiceCodec.CALLBACK_CREATE:
+                try {
+                    return referOrdestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    throw new IOException(StringUtils.toString(e));
+                }
+            case CallbackServiceCodec.CALLBACK_DESTROY:
+                try {
+                    return referOrdestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
+                } catch (Exception e) {
+                    throw new IOException(StringUtils.toString(e));
+                }
+            default:
+                return inObject;
+        }
+    }",265-297,0.98086196,0.99329245,0.99329245
+org.apache.dubbo.rpc.support.RpcUtils,getMethodName,(Lorg/apache/dubbo/rpc/Invocation;)Ljava/lang/String;,2,6,33.3%,"public static String getMethodName(Invocation invocation) {
+        if (Constants.$INVOKE.equals(invocation.getMethodName())
+                && invocation.getArguments() != null
+                && invocation.getArguments().length > 0
+                && invocation.getArguments()[0] instanceof String) {
+            return (String) invocation.getArguments()[0];
+        }
+        return invocation.getMethodName();
+    }",138-146,0.98913497,0.99326783,0.99326783
+org.apache.dubbo.remoting.transport.AbstractCodec,checkPayload,(Lorg/apache/dubbo/remoting/Channel;J)V,5,8,62.5%,"protected static void checkPayload(Channel channel, long size) throws IOException {
+        int payload = Constants.DEFAULT_PAYLOAD;
+        if (channel != null && channel.getUrl() != null) {
+            payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
+        }
+        if (payload > 0 && size > payload) {
+            ExceedPayloadLimitException e = new ExceedPayloadLimitException(""Data length too large: "" + size + "", max payload: "" + payload + "", channel: "" + channel);
+            logger.error(e);
+            throw e;
+        }
+    }",38-48,0.9927969,0.99321395,0.99321395
+org.apache.dubbo.remoting.transport.MultiMessageHandler,received,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,3,8,37.5%,"@SuppressWarnings(""unchecked"")
+    @Override
+    public void received(Channel channel, Object message) throws RemotingException {
+        if (message instanceof MultiMessage) {
+            MultiMessage list = (MultiMessage) message;
+            for (Object obj : list) {
+                handler.received(channel, obj);
+            }
+        } else {
+            handler.received(channel, message);
+        }
+    }",34-45,0.9871578,0.9930594,0.9930594
+org.apache.dubbo.remoting.transport.DecodeHandler,decode,(Ljava/lang/Object;)V,5,9,55.6%,"private void decode(Object message) {
+        if (message != null && message instanceof Decodeable) {
+            try {
+                ((Decodeable) message).decode();
+                if (log.isDebugEnabled()) {
+                    log.debug(""Decode decodeable message "" + message.getClass().getName());
+                }
+            } catch (Throwable e) {
+                if (log.isWarnEnabled()) {
+                    log.warn(""Call Decodeable.decode failed: "" + e.getMessage(), e);
+                }
+            } // ~ end of catch
+        } // ~ end of if
+    }",54-67,0.9819984,0.99295205,0.99295205
+org.apache.dubbo.common.utils.NetUtils,getLocalAddress,()Ljava/net/InetAddress;,5,5,100.0%,"public static InetAddress getLocalAddress() {
+        if (LOCAL_ADDRESS != null)
+            return LOCAL_ADDRESS;
+        InetAddress localAddress = getLocalAddress0();
+        LOCAL_ADDRESS = localAddress;
+        return localAddress;
+    }",223-229,0.9945362,0.99280757,0.99280757
+org.apache.dubbo.rpc.proxy.AbstractProxyInvoker,invoke,(Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,5,13,38.5%,"@Override
+    public Result invoke(Invocation invocation) throws RpcException {
+        RpcContext rpcContext = RpcContext.getContext();
+        try {
+            Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+            if (RpcUtils.isFutureReturnType(invocation)) {
+                return new AsyncRpcResult((CompletableFuture<Object>) obj);
+            } else if (rpcContext.isAsyncStarted()) { // ignore obj in case of RpcContext.startAsync()? always rely on user to write back.
+                return new AsyncRpcResult(rpcContext.getAsyncContext().getInternalFuture());
+            } else {
+                return new RpcResult(obj);
+            }
+        } catch (InvocationTargetException e) {
+            // TODO async throw exception before async thread write back, should stop asyncContext
+            if (rpcContext.isAsyncStarted() && !rpcContext.stopAsync()) {
+                logger.error(""Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread."", e);
+            }
+            return new RpcResult(e.getTargetException());
+        } catch (Throwable e) {
+            throw new RpcException(""Failed to invoke remote proxy method "" + invocation.getMethodName() + "" to "" + getUrl() + "", cause: "" + e.getMessage(), e);
+        }
+    }",81-102,0.99595636,0.99260205,0.99260205
+org.apache.dubbo.common.extension.ExtensionLoader,loadDirectory,(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V,11,14,78.6%,"private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
+        String fileName = dir + type;
+        try {
+            Enumeration<java.net.URL> urls;
+            ClassLoader classLoader = findClassLoader();
+            if (classLoader != null) {
+                urls = classLoader.getResources(fileName);
+            } else {
+                urls = ClassLoader.getSystemResources(fileName);
+            }
+            if (urls != null) {
+                while (urls.hasMoreElements()) {
+                    java.net.URL resourceURL = urls.nextElement();
+                    loadResource(extensionClasses, classLoader, resourceURL);
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(""Exception when load extension class(interface: "" +
+                    type + "", description file: "" + fileName + "")."", t);
+        }
+    }",600-620,0.9847872,0.99260074,0.99260074
+org.apache.dubbo.remoting.exchange.codec.ExchangeCodec,encodeRequest,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/buffer/ChannelBuffer;Lorg/apache/dubbo/remoting/exchange/Request;)V,24,26,92.3%,"protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request req) throws IOException {
+        Serialization serialization = getSerialization(channel);
+        // header.
+        byte[] header = new byte[HEADER_LENGTH];
+        // set magic number.
+        Bytes.short2bytes(MAGIC, header);
+
+        // set request and serialization flag.
+        header[2] = (byte) (FLAG_REQUEST | serialization.getContentTypeId());
+
+        if (req.isTwoWay()) header[2] |= FLAG_TWOWAY;
+        if (req.isEvent()) header[2] |= FLAG_EVENT;
+
+        // set request id.
+        Bytes.long2bytes(req.getId(), header, 4);
+
+        // encode request data.
+        int savedWriteIndex = buffer.writerIndex();
+        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
+        ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
+        ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+        if (req.isEvent()) {
+            encodeEventData(channel, out, req.getData());
+        } else {
+            encodeRequestData(channel, out, req.getData(), req.getVersion());
+        }
+        out.flushBuffer();
+        if (out instanceof Cleanable) {
+            ((Cleanable) out).cleanup();
+        }
+        bos.flush();
+        bos.close();
+        int len = bos.writtenBytes();
+        checkPayload(channel, len);
+        Bytes.int2bytes(len, header, 12);
+
+        // write
+        buffer.writerIndex(savedWriteIndex);
+        buffer.writeBytes(header); // write header.
+        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
+    }",211-251,0.9972,0.9925993,0.9925993
+org.apache.dubbo.rpc.filter.TimeoutFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,6,10,60.0%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        long start = System.currentTimeMillis();
+        Result result = invoker.invoke(invocation);
+        long elapsed = System.currentTimeMillis() - start;
+        if (invoker.getUrl() != null
+                && elapsed > invoker.getUrl().getMethodParameter(invocation.getMethodName(),
+                ""timeout"", Integer.MAX_VALUE)) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(""invoke time out. method: "" + invocation.getMethodName()
+                        + "" arguments: "" + Arrays.toString(invocation.getArguments()) + "" , url is ""
+                        + invoker.getUrl() + "", invoke elapsed "" + elapsed + "" ms."");
+            }
+        }
+        return result;
+    }",39-54,0.9964888,0.99254006,0.99254006
+org.apache.dubbo.rpc.filter.ConsumerContextFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,11,11,100.0%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        RpcContext.getContext()
+                .setInvoker(invoker)
+                .setInvocation(invocation)
+                .setLocalAddress(NetUtils.getLocalHost(), 0)
+                .setRemoteAddress(invoker.getUrl().getHost(),
+                        invoker.getUrl().getPort());
+        if (invocation instanceof RpcInvocation) {
+            ((RpcInvocation) invocation).setInvoker(invoker);
+        }
+        try {
+            // TODO should we clear server context?
+            RpcContext.removeServerContext();
+            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+        } finally {
+            // TODO removeContext? but we need to save future for RpcContext.getFuture() API. If clear attachments here, attachments will not available when postProcessResult is invoked.
+            RpcContext.getContext().clearAttachments();
+        }
+    }",36-55,0.99404454,0.99240226,0.99240226
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol$1,invoke,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/String;)V,3,7,42.9%,"private void invoke(Channel channel, String methodKey) {
+            Invocation invocation = createInvocation(channel, channel.getUrl(), methodKey);
+            if (invocation != null) {
+                try {
+                    received(channel, invocation);
+                } catch (Throwable t) {
+                    logger.warn(""Failed to invoke event method "" + invocation.getMethodName() + ""(), cause: "" + t.getMessage(), t);
+                }
+            }
+        }",149-158,0.9828848,0.9923283,0.9923283
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol$1,createInvocation,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/common/URL;Ljava/lang/String;)Lorg/apache/dubbo/rpc/Invocation;,3,11,27.3%,"private Invocation createInvocation(Channel channel, URL url, String methodKey) {
+            String method = url.getParameter(methodKey);
+            if (method == null || method.length() == 0) {
+                return null;
+            }
+            RpcInvocation invocation = new RpcInvocation(method, new Class<?>[0], new Object[0]);
+            invocation.setAttachment(Constants.PATH_KEY, url.getPath());
+            invocation.setAttachment(Constants.GROUP_KEY, url.getParameter(Constants.GROUP_KEY));
+            invocation.setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
+            invocation.setAttachment(Constants.VERSION_KEY, url.getParameter(Constants.VERSION_KEY));
+            if (url.getParameter(Constants.STUB_EVENT_KEY, false)) {
+                invocation.setAttachment(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString());
+            }
+            return invocation;
+        }",160-174,0.97736394,0.9920948,0.9920948
+org.apache.dubbo.rpc.protocol.dubbo.DubboCodec,decodeBody,(Lorg/apache/dubbo/remoting/Channel;Ljava/io/InputStream;[B)Ljava/lang/Object;,32,54,59.3%,"@Override
+    protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
+        byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
+        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
+        // get request id.
+        long id = Bytes.bytes2long(header, 4);
+        if ((flag & FLAG_REQUEST) == 0) {
+            // decode response.
+            Response res = new Response(id);
+            if ((flag & FLAG_EVENT) != 0) {
+                res.setEvent(Response.HEARTBEAT_EVENT);
+            }
+            // get status.
+            byte status = header[3];
+            res.setStatus(status);
+            if (status == Response.OK) {
+                try {
+                    Object data;
+                    if (res.isHeartbeat()) {
+                        data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                    } else if (res.isEvent()) {
+                        data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
+                    } else {
+                        DecodeableRpcResult result;
+                        if (channel.getUrl().getParameter(
+                                Constants.DECODE_IN_IO_THREAD_KEY,
+                                Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
+                            result = new DecodeableRpcResult(channel, res, is,
+                                    (Invocation) getRequestData(id), proto);
+                            result.decode();
+                        } else {
+                            result = new DecodeableRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    (Invocation) getRequestData(id), proto);
+                        }
+                        data = result;
+                    }
+                    res.setResult(data);
+                } catch (Throwable t) {
+                    if (log.isWarnEnabled()) {
+                        log.warn(""Decode response failed: "" + t.getMessage(), t);
+                    }
+                    res.setStatus(Response.CLIENT_ERROR);
+                    res.setErrorMessage(StringUtils.toString(t));
+                }
+            } else {
+                res.setErrorMessage(deserialize(s, channel.getUrl(), is).readUTF());
+            }
+            return res;
+        } else {
+            // decode request.
+            Request req = new Request(id);
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
+            if ((flag & FLAG_EVENT) != 0) {
+                req.setEvent(Request.HEARTBEAT_EVENT);
+            }
+            try {
+                Object data;
+                if (req.isHeartbeat()) {
+                    data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                } else if (req.isEvent()) {
+                    data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
+                } else {
+                    DecodeableRpcInvocation inv;
+                    if (channel.getUrl().getParameter(
+                            Constants.DECODE_IN_IO_THREAD_KEY,
+                            Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
+                        inv = new DecodeableRpcInvocation(channel, req, is, proto);
+                        inv.decode();
+                    } else {
+                        inv = new DecodeableRpcInvocation(channel, req,
+                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                    }
+                    data = inv;
+                }
+                req.setData(data);
+            } catch (Throwable t) {
+                if (log.isWarnEnabled()) {
+                    log.warn(""Decode request failed: "" + t.getMessage(), t);
+                }
+                // bad request
+                req.setBroken(true);
+                req.setData(t);
+            }
+            return req;
+        }
+    }",64-151,0.9797052,0.9920212,0.9920212
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler,handleRequest,(Lorg/apache/dubbo/remoting/exchange/ExchangeChannel;Lorg/apache/dubbo/remoting/exchange/Request;)V,9,24,37.5%,"void handleRequest(final ExchangeChannel channel, Request req) throws RemotingException {
+        Response res = new Response(req.getId(), req.getVersion());
+        if (req.isBroken()) {
+            Object data = req.getData();
+
+            String msg;
+            if (data == null) msg = null;
+            else if (data instanceof Throwable) msg = StringUtils.toString((Throwable) data);
+            else msg = data.toString();
+            res.setErrorMessage(""Fail to decode request due to: "" + msg);
+            res.setStatus(Response.BAD_REQUEST);
+
+            channel.send(res);
+            return;
+        }
+        // find handler by message class.
+        Object msg = req.getData();
+        try {
+            // handle data.
+            CompletableFuture<Object> future = handler.reply(channel, msg);
+            if (future.isDone()) {
+                res.setStatus(Response.OK);
+                res.setResult(future.get());
+                channel.send(res);
+                return;
+            }
+            future.whenComplete((result, t) -> {
+                try {
+                    if (t == null) {
+                        res.setStatus(Response.OK);
+                        res.setResult(result);
+                    } else {
+                        res.setStatus(Response.SERVICE_ERROR);
+                        res.setErrorMessage(StringUtils.toString(t));
+                    }
+                    channel.send(res);
+                } catch (RemotingException e) {
+                    logger.warn(""Send result to consumer failed, channel is "" + channel + "", msg is "" + e);
+                } finally {
+                    // HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+                }
+            });
+        } catch (Throwable e) {
+            res.setStatus(Response.SERVICE_ERROR);
+            res.setErrorMessage(StringUtils.toString(e));
+            channel.send(res);
+        }
+    }",80-127,0.9810761,0.99190474,0.99190474
+org.apache.dubbo.rpc.RpcContext,setInvocation,(Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/RpcContext;,6,6,100.0%,"public RpcContext setInvocation(Invocation invocation) {
+        this.invocation = invocation;
+        if (invocation != null) {
+            setMethodName(invocation.getMethodName());
+            setParameterTypes(invocation.getParameterTypes());
+            setArguments(invocation.getArguments());
+        }
+        return this;
+    }",613-621,0.995023,0.99166656,0.99166656
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler,sent,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,11,19,57.9%,"@Override
+    public void sent(Channel channel, Object message) throws RemotingException {
+        Throwable exception = null;
+        try {
+            channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
+            ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
+            try {
+                handler.sent(exchangeChannel, message);
+            } finally {
+                HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+            }
+        } catch (Throwable t) {
+            exception = t;
+        }
+        if (message instanceof Request) {
+            Request request = (Request) message;
+            DefaultFuture.sent(channel, request);
+        }
+        if (exception != null) {
+            if (exception instanceof RuntimeException) {
+                throw (RuntimeException) exception;
+            } else if (exception instanceof RemotingException) {
+                throw (RemotingException) exception;
+            } else {
+                throw new RemotingException(channel.getLocalAddress(), channel.getRemoteAddress(),
+                        exception.getMessage(), exception);
+            }
+        }
+    }",154-182,0.9826507,0.9915536,0.9915536
+org.apache.dubbo.remoting.exchange.codec.ExchangeCodec,encode,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/buffer/ChannelBuffer;Ljava/lang/Object;)V,5,6,83.3%,"@Override
+    public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
+        if (msg instanceof Request) {
+            encodeRequest(channel, buffer, (Request) msg);
+        } else if (msg instanceof Response) {
+            encodeResponse(channel, buffer, (Response) msg);
+        } else {
+            super.encode(channel, buffer, msg);
+        }
+    }",69-78,0.9913031,0.9915124,0.9915124
+org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec,isCallBack,(Lorg/apache/dubbo/common/URL;Ljava/lang/String;I)B,5,9,55.6%,"private static byte isCallBack(URL url, String methodName, int argIndex) {
+        // parameter callback rule: method-name.parameter-index(starting from 0).callback
+        byte isCallback = CALLBACK_NONE;
+        if (url != null) {
+            String callback = url.getParameter(methodName + ""."" + argIndex + "".callback"");
+            if (callback != null) {
+                if (callback.equalsIgnoreCase(""true"")) {
+                    isCallback = CALLBACK_CREATE;
+                } else if (callback.equalsIgnoreCase(""false"")) {
+                    isCallback = CALLBACK_DESTROY;
+                }
+            }
+        }
+        return isCallback;
+    }",53-67,0.97875875,0.9911923,0.9911923
+org.apache.dubbo.common.logger.support.FailsafeLogger,isInfoEnabled,()Z,1,3,33.3%,"@Override
+    public boolean isInfoEnabled() {
+        try {
+            return logger.isInfoEnabled();
+        } catch (Throwable t) {
+            return false;
+        }
+    }",181-188,0.98487645,0.9910837,0.9910837
+org.apache.dubbo.common.logger.support.FailsafeLogger,isDebugEnabled,()Z,1,3,33.3%,"@Override
+    public boolean isDebugEnabled() {
+        try {
+            return logger.isDebugEnabled();
+        } catch (Throwable t) {
+            return false;
+        }
+    }",172-179,0.984773,0.99092656,0.99092656
+org.apache.dubbo.rpc.support.RpcUtils,isOneway,(Lorg/apache/dubbo/common/URL;Lorg/apache/dubbo/rpc/Invocation;)Z,3,4,75.0%,"public static boolean isOneway(URL url, Invocation inv) {
+        boolean isOneway;
+        if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))) {
+            isOneway = true;
+        } else {
+            isOneway = !url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
+        }
+        return isOneway;
+    }",203-211,0.9978399,0.99077696,0.99077696
+org.apache.dubbo.remoting.transport.netty4.NettyServerHandler,write,(Lio/netty/channel/ChannelHandlerContext;Ljava/lang/Object;Lio/netty/channel/ChannelPromise;)V,5,5,100.0%,"@Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        super.write(ctx, msg, promise);
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            handler.sent(channel, msg);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }",94-103,0.99755466,0.99064136,0.99064136
+org.apache.dubbo.rpc.proxy.InvokerInvocationHandler,invoke,(Ljava/lang/Object;Ljava/lang/reflect/Method;[Ljava/lang/Object;)Ljava/lang/Object;,10,23,43.5%,"@Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        String methodName = method.getName();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (method.getDeclaringClass() == Object.class) {
+            return method.invoke(invoker, args);
+        }
+        if (""toString"".equals(methodName) && parameterTypes.length == 0) {
+            return invoker.toString();
+        }
+        if (""hashCode"".equals(methodName) && parameterTypes.length == 0) {
+            return invoker.hashCode();
+        }
+        if (""equals"".equals(methodName) && parameterTypes.length == 1) {
+            return invoker.equals(args[0]);
+        }
+
+        RpcInvocation invocation;
+        if (RpcUtils.hasGeneratedFuture(method)) {
+            Class<?> clazz = method.getDeclaringClass();
+            String syncMethodName = methodName.substring(0, methodName.length() - Constants.ASYNC_SUFFIX.length());
+            Method syncMethod = clazz.getMethod(syncMethodName, method.getParameterTypes());
+            invocation = new RpcInvocation(syncMethod, args);
+            invocation.setAttachment(Constants.FUTURE_GENERATED_KEY, ""true"");
+            invocation.setAttachment(Constants.ASYNC_KEY, ""true"");
+        } else {
+            invocation = new RpcInvocation(method, args);
+            if (RpcUtils.hasFutureReturnType(method)) {
+                invocation.setAttachment(Constants.FUTURE_RETURNTYPE_KEY, ""true"");
+                invocation.setAttachment(Constants.ASYNC_KEY, ""true"");
+            }
+        }
+        return invoker.invoke(invocation).recreate();
+    }",38-71,0.974473,0.99059033,0.99059033
+org.apache.dubbo.common.Version,parseInt,(Ljava/lang/String;)I,6,6,100.0%,"private static int parseInt(String version) {
+        int v = 0;
+        String[] vArr = version.split(""\\."");
+        int len = vArr.length;
+        for (int i = 0; i < len; i++) {
+            v += Integer.parseInt(getDigital(vArr[i])) * Math.pow(10, (len - i - 1) * 2);
+        }
+        return v;
+    }",87-95,0.99256384,0.9905593,0.9905593
+org.apache.dubbo.remoting.transport.netty4.NettyServer$1,initChannel,(Lio/netty/channel/socket/nio/NioSocketChannel;)V,6,6,100.0%,"@Override
+                    protected void initChannel(NioSocketChannel ch) throws Exception {
+                        NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
+                        ch.pipeline()//.addLast(""logging"",new LoggingHandler(LogLevel.INFO))//for debug
+                                .addLast(""decoder"", adapter.getDecoder())
+                                .addLast(""encoder"", adapter.getEncoder())
+                                .addLast(""handler"", nettyServerHandler);
+                    }",85-92,0.9752234,0.9905228,0.9905228
+org.apache.dubbo.common.timer.HashedWheelTimer,newTimeout,(Lorg/apache/dubbo/common/timer/TimerTask;JLjava/util/concurrent/TimeUnit;)Lorg/apache/dubbo/common/timer/Timeout;,10,15,66.7%,"@Override
+    public Timeout newTimeout(TimerTask task, long delay, TimeUnit unit) {
+        if (task == null) {
+            throw new NullPointerException(""task"");
+        }
+        if (unit == null) {
+            throw new NullPointerException(""unit"");
+        }
+
+        long pendingTimeoutsCount = pendingTimeouts.incrementAndGet();
+
+        if (maxPendingTimeouts > 0 && pendingTimeoutsCount > maxPendingTimeouts) {
+            pendingTimeouts.decrementAndGet();
+            throw new RejectedExecutionException(""Number of pending timeouts (""
+                    + pendingTimeoutsCount + "") is greater than or equal to maximum allowed pending ""
+                    + ""timeouts ("" + maxPendingTimeouts + "")"");
+        }
+
+        start();
+
+        // Add the timeout to the timeout queue which will be processed on the next tick.
+        // During processing all the queued HashedWheelTimeouts will be added to the correct HashedWheelBucket.
+        long deadline = System.nanoTime() + unit.toNanos(delay) - startTime;
+
+        // Guard against overflow.
+        if (delay > 0 && deadline < 0) {
+            deadline = Long.MAX_VALUE;
+        }
+        HashedWheelTimeout timeout = new HashedWheelTimeout(this, task, deadline);
+        timeouts.add(timeout);
+        return timeout;
+    }",370-401,0.9861404,0.99027085,0.99027085
+org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler,getExecutorService,()Ljava/util/concurrent/ExecutorService;,3,4,75.0%,"public ExecutorService getExecutorService() {
+        ExecutorService cexecutor = executor;
+        if (cexecutor == null || cexecutor.isShutdown()) {
+            cexecutor = SHARED_EXECUTOR;
+        }
+        return cexecutor;
+    }",112-118,0.99518055,0.99024916,0.99024916
+org.apache.dubbo.common.timer.HashedWheelTimer$Worker,processCancelledTasks,()V,4,10,40.0%,"private void processCancelledTasks() {
+            for (; ; ) {
+                HashedWheelTimeout timeout = cancelledTimeouts.poll();
+                if (timeout == null) {
+                    // all processed
+                    break;
+                }
+                try {
+                    timeout.remove();
+                } catch (Throwable t) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn(""An exception was thrown while process a cancellation task"", t);
+                    }
+                }
+            }
+        }",489-504,0.97615504,0.99020135,0.99020135
+org.apache.dubbo.rpc.support.RpcUtils,isAsync,(Lorg/apache/dubbo/common/URL;Lorg/apache/dubbo/rpc/Invocation;)Z,3,4,75.0%,"public static boolean isAsync(URL url, Invocation inv) {
+        boolean isAsync;
+        if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
+            isAsync = true;
+        } else {
+            isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
+        }
+        return isAsync;
+    }",176-184,0.99708563,0.9901825,0.9901825
+org.apache.dubbo.remoting.transport.AbstractClient,isConnected,()Z,4,4,100.0%,"@Override
+    public boolean isConnected() {
+        Channel channel = getChannel();
+        if (channel == null)
+            return false;
+        return channel.isConnected();
+    }",215-221,0.99201787,0.9901353,0.9901353
+org.apache.dubbo.rpc.support.RpcUtils,isAttachInvocationId,(Lorg/apache/dubbo/common/URL;Lorg/apache/dubbo/rpc/Invocation;)Z,3,6,50.0%,"private static boolean isAttachInvocationId(URL url, Invocation invocation) {
+        String value = url.getMethodParameter(invocation.getMethodName(), Constants.AUTO_ATTACH_INVOCATIONID_KEY);
+        if (value == null) {
+            // add invocationid in async operation by default
+            return isAsync(url, invocation);
+        } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+            return true;
+        } else {
+            return false;
+        }
+    }",126-136,0.9974361,0.9898511,0.9898511
+org.apache.dubbo.common.extension.ExtensionLoader,getAdaptiveExtension,()Ljava/lang/Object;,11,15,73.3%,"@SuppressWarnings(""unchecked"")
+    public T getAdaptiveExtension() {
+        Object instance = cachedAdaptiveInstance.get();
+        if (instance == null) {
+            if (createAdaptiveInstanceError == null) {
+                synchronized (cachedAdaptiveInstance) {
+                    instance = cachedAdaptiveInstance.get();
+                    if (instance == null) {
+                        try {
+                            instance = createAdaptiveExtension();
+                            cachedAdaptiveInstance.set(instance);
+                        } catch (Throwable t) {
+                            createAdaptiveInstanceError = t;
+                            throw new IllegalStateException(""fail to create adaptive instance: "" + t.toString(), t);
+                        }
+                    }
+                }
+            } else {
+                throw new IllegalStateException(""fail to create adaptive instance: "" + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);
+            }
+        }
+
+        return (T) instance;
+    }",447-470,0.9753095,0.98976535,0.98976535
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol$1,reply,(Lorg/apache/dubbo/remoting/exchange/ExchangeChannel;Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;,11,30,36.7%,"@Override
+        public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
+            if (message instanceof Invocation) {
+                Invocation inv = (Invocation) message;
+                Invoker<?> invoker = getInvoker(channel, inv);
+                // need to consider backward-compatibility if it's a callback
+                if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
+                    String methodsStr = invoker.getUrl().getParameters().get(""methods"");
+                    boolean hasMethod = false;
+                    if (methodsStr == null || !methodsStr.contains("","")) {
+                        hasMethod = inv.getMethodName().equals(methodsStr);
+                    } else {
+                        String[] methods = methodsStr.split("","");
+                        for (String method : methods) {
+                            if (inv.getMethodName().equals(method)) {
+                                hasMethod = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hasMethod) {
+                        logger.warn(new IllegalStateException(""The methodName "" + inv.getMethodName()
+                                + "" not found in callback service interface ,invoke will be ignored.""
+                                + "" please update the api interface. url is:""
+                                + invoker.getUrl()) + "" ,invocation is :"" + inv);
+                        return null;
+                    }
+                }
+                RpcContext rpcContext = RpcContext.getContext();
+                boolean supportServerAsync = invoker.getUrl().getMethodParameter(inv.getMethodName(), Constants.ASYNC_KEY, false);
+                if (supportServerAsync) {
+                    CompletableFuture<Object> future = new CompletableFuture<>();
+                    rpcContext.setAsyncContext(new AsyncContextImpl(future));
+                }
+                rpcContext.setRemoteAddress(channel.getRemoteAddress());
+                Result result = invoker.invoke(inv);
+
+                if (result instanceof AsyncRpcResult) {
+                    return ((AsyncRpcResult) result).getResultFuture().thenApply(r -> (Object) r);
+                } else {
+                    return CompletableFuture.completedFuture(result);
+                }
+            }
+            throw new RemotingException(channel, ""Unsupported request: ""
+                    + (message == null ? null : (message.getClass().getName() + "": "" + message))
+                    + "", channel: consumer: "" + channel.getRemoteAddress() + "" --> provider: "" + channel.getLocalAddress());
+        }",79-125,0.97463536,0.98967606,0.98967606
+org.apache.dubbo.remoting.transport.netty4.NettyClientHandler,channelActive,(Lio/netty/channel/ChannelHandlerContext;)V,4,4,100.0%,"@Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            handler.connected(channel);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }",51-59,0.9980654,0.9896655,0.9896655
+org.apache.dubbo.remoting.exchange.codec.ExchangeCodec,getRequestData,(J)Ljava/lang/Object;,5,7,71.4%,"protected Object getRequestData(long id) {
+        DefaultFuture future = DefaultFuture.getFuture(id);
+        if (future == null)
+            return null;
+        Request req = future.getRequest();
+        if (req == null)
+            return null;
+        return req.getData();
+    }",201-209,0.9874103,0.9895292,0.9895292
+org.apache.dubbo.remoting.transport.netty4.NettyServerHandler,channelRead,(Lio/netty/channel/ChannelHandlerContext;Ljava/lang/Object;)V,4,4,100.0%,"@Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            handler.received(channel, msg);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }",83-91,0.99816877,0.98952186,0.98952186
+org.apache.dubbo.remoting.transport.netty4.NettyClientHandler,channelRead,(Lio/netty/channel/ChannelHandlerContext;Ljava/lang/Object;)V,4,4,100.0%,"@Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        try {
+            handler.received(channel, msg);
+        } finally {
+            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        }
+    }",71-79,0.99816877,0.98952186,0.98952186
+org.apache.dubbo.remoting.transport.DecodeHandler,received,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,7,8,87.5%,"@Override
+    public void received(Channel channel, Object message) throws RemotingException {
+        if (message instanceof Decodeable) {
+            decode(message);
+        }
+
+        if (message instanceof Request) {
+            decode(((Request) message).getData());
+        }
+
+        if (message instanceof Response) {
+            decode(((Response) message).getResult());
+        }
+
+        handler.received(channel, message);
+    }",37-52,0.9766196,0.9894763,0.9894763
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,fastGet,(Lorg/apache/dubbo/common/threadlocal/InternalThread;)Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;,4,4,100.0%,"private static InternalThreadLocalMap fastGet(InternalThread thread) {
+        InternalThreadLocalMap threadLocalMap = thread.threadLocalMap();
+        if (threadLocalMap == null) {
+            thread.setThreadLocalMap(threadLocalMap = new InternalThreadLocalMap());
+        }
+        return threadLocalMap;
+    }",133-139,0.9857961,0.98943937,0.98943937
+org.apache.dubbo.common.timer.HashedWheelTimer$Worker,waitForNextTick,()J,10,15,66.7%,"private long waitForNextTick() {
+            long deadline = tickDuration * (tick + 1);
+
+            for (; ; ) {
+                final long currentTime = System.nanoTime() - startTime;
+                long sleepTimeMs = (deadline - currentTime + 999999) / 1000000;
+
+                if (sleepTimeMs <= 0) {
+                    if (currentTime == Long.MIN_VALUE) {
+                        return -Long.MAX_VALUE;
+                    } else {
+                        return currentTime;
+                    }
+                }
+                if (isWindows()) {
+                    sleepTimeMs = sleepTimeMs / 10 * 10;
+                }
+
+                try {
+                    Thread.sleep(sleepTimeMs);
+                } catch (InterruptedException ignored) {
+                    if (WORKER_STATE_UPDATER.get(HashedWheelTimer.this) == WORKER_STATE_SHUTDOWN) {
+                        return Long.MIN_VALUE;
+                    }
+                }
+            }
+        }",513-539,0.9735587,0.9888661,0.9888661
+org.apache.dubbo.common.timer.HashedWheelTimer$Worker,run,()V,13,24,54.2%,"@Override
+        public void run() {
+            // Initialize the startTime.
+            startTime = System.nanoTime();
+            if (startTime == 0) {
+                // We use 0 as an indicator for the uninitialized value here, so make sure it's not 0 when initialized.
+                startTime = 1;
+            }
+
+            // Notify the other threads waiting for the initialization at start().
+            startTimeInitialized.countDown();
+
+            do {
+                final long deadline = waitForNextTick();
+                if (deadline > 0) {
+                    int idx = (int) (tick & mask);
+                    processCancelledTasks();
+                    HashedWheelBucket bucket =
+                            wheel[idx];
+                    transferTimeoutsToBuckets();
+                    bucket.expireTimeouts(deadline);
+                    tick++;
+                }
+            } while (WORKER_STATE_UPDATER.get(HashedWheelTimer.this) == WORKER_STATE_STARTED);
+
+            // Fill the unprocessedTimeouts so we can return them from stop() method.
+            for (HashedWheelBucket bucket : wheel) {
+                bucket.clearTimeouts(unprocessedTimeouts);
+            }
+            for (; ; ) {
+                HashedWheelTimeout timeout = timeouts.poll();
+                if (timeout == null) {
+                    break;
+                }
+                if (!timeout.isCancelled()) {
+                    unprocessedTimeouts.add(timeout);
+                }
+            }
+            processCancelledTasks();
+        }",422-461,0.9728409,0.9888562,0.9888562
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,received,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/exchange/Response;)V,5,9,55.6%,"public static void received(Channel channel, Response response) {
+        try {
+            DefaultFuture future = FUTURES.remove(response.getId());
+            if (future != null) {
+                future.doReceived(response);
+            } else {
+                logger.warn(""The timeout response finally returned at ""
+                        + (new SimpleDateFormat(""yyyy-MM-dd HH:mm:ss.SSS"").format(new Date()))
+                        + "", response "" + response
+                        + (channel == null ? """" : "", channel: "" + channel.getLocalAddress()
+                        + "" -> "" + channel.getRemoteAddress()));
+            }
+        } finally {
+            CHANNELS.remove(response.getId());
+        }
+    }",145-160,0.9765704,0.9888294,0.9888294
+org.apache.dubbo.common.extension.ExtensionLoader,getExtensionLoader,(Ljava/lang/Class;)Lorg/apache/dubbo/common/extension/ExtensionLoader;,8,12,66.7%,"@SuppressWarnings(""unchecked"")
+    public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        if (type == null)
+            throw new IllegalArgumentException(""Extension type == null"");
+        if (!type.isInterface()) {
+            throw new IllegalArgumentException(""Extension type("" + type + "") is not interface!"");
+        }
+        if (!withExtensionAnnotation(type)) {
+            throw new IllegalArgumentException(""Extension type("" + type +
+                    "") is not extension, because WITHOUT @"" + SPI.class.getSimpleName() + "" Annotation!"");
+        }
+
+        ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
+        if (loader == null) {
+            EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader<T>(type));
+            loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
+        }
+        return loader;
+    }",105-123,0.99698377,0.9886521,0.9886521
+org.apache.dubbo.common.URL,getServiceKey,()Ljava/lang/String;,9,11,81.8%,"public String getServiceKey() {
+        String inf = getServiceInterface();
+        if (inf == null) return null;
+        StringBuilder buf = new StringBuilder();
+        String group = getParameter(Constants.GROUP_KEY);
+        if (group != null && group.length() > 0) {
+            buf.append(group).append(""/"");
+        }
+        buf.append(inf);
+        String version = getParameter(Constants.VERSION_KEY);
+        if (version != null && version.length() > 0) {
+            buf.append("":"").append(version);
+        }
+        return buf.toString();
+    }",1219-1233,0.9779063,0.98852676,0.98852676
+org.apache.dubbo.common.extension.ExtensionLoader,getExtensionClasses,()Ljava/util/Map;,9,9,100.0%,"private Map<String, Class<?>> getExtensionClasses() {
+        Map<String, Class<?>> classes = cachedClasses.get();
+        if (classes == null) {
+            synchronized (cachedClasses) {
+                classes = cachedClasses.get();
+                if (classes == null) {
+                    classes = loadExtensionClasses();
+                    cachedClasses.set(classes);
+                }
+            }
+        }
+        return classes;
+    }",561-573,0.9798657,0.98851126,0.98851126
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,send,(Ljava/lang/Object;Z)V,10,16,62.5%,"@Override
+    public void send(Object message, boolean sent) throws RemotingException {
+        super.send(message, sent);
+
+        boolean success = true;
+        int timeout = 0;
+        try {
+            ChannelFuture future = channel.writeAndFlush(message);
+            if (sent) {
+                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                success = future.await(timeout);
+            }
+            Throwable cause = future.cause();
+            if (cause != null) {
+                throw cause;
+            }
+        } catch (Throwable e) {
+            throw new RemotingException(this, ""Failed to send message "" + message + "" to "" + getRemoteAddress() + "", cause: "" + e.getMessage(), e);
+        }
+
+        if (!success) {
+            throw new RemotingException(this, ""Failed to send message "" + message + "" to "" + getRemoteAddress()
+                    + ""in timeout("" + timeout + ""ms) limit"");
+        }
+    }",94-118,0.97769403,0.9884322,0.9884322
+org.apache.dubbo.rpc.filter.ContextFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,23,24,95.8%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        Map<String, String> attachments = invocation.getAttachments();
+        if (attachments != null) {
+            attachments = new HashMap<String, String>(attachments);
+            attachments.remove(Constants.PATH_KEY);
+            attachments.remove(Constants.GROUP_KEY);
+            attachments.remove(Constants.VERSION_KEY);
+            attachments.remove(Constants.DUBBO_VERSION_KEY);
+            attachments.remove(Constants.TOKEN_KEY);
+            attachments.remove(Constants.TIMEOUT_KEY);
+            attachments.remove(Constants.ASYNC_KEY);// Remove async property to avoid being passed to the following invoke chain.
+        }
+        RpcContext.getContext()
+                .setInvoker(invoker)
+                .setInvocation(invocation)
+//                .setAttachments(attachments)  // merged from dubbox
+                .setLocalAddress(invoker.getUrl().getHost(),
+                        invoker.getUrl().getPort());
+
+        // merged from dubbox
+        // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
+        // TODO
+        if (attachments != null) {
+            if (RpcContext.getContext().getAttachments() != null) {
+                RpcContext.getContext().getAttachments().putAll(attachments);
+            } else {
+                RpcContext.getContext().setAttachments(attachments);
+            }
+        }
+
+        if (invocation instanceof RpcInvocation) {
+            ((RpcInvocation) invocation).setInvoker(invoker);
+        }
+        try {
+            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+        } finally {
+            // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
+            RpcContext.removeContext();
+            RpcContext.removeServerContext();
+        }
+    }",38-79,0.9773231,0.9880683,0.9880683
+org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter$InternalDecoder,decode,(Lio/netty/channel/ChannelHandlerContext;Lio/netty/buffer/ByteBuf;Ljava/util/List;)V,12,17,70.6%,"@Override
+        protected void decode(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
+
+            ChannelBuffer message = new NettyBackedChannelBuffer(input);
+
+            NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+
+            Object msg;
+
+            int saveReaderIndex;
+
+            try {
+                // decode object.
+                do {
+                    saveReaderIndex = message.readerIndex();
+                    try {
+                        msg = codec.decode(channel, message);
+                    } catch (IOException e) {
+                        throw e;
+                    }
+                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
+                        message.readerIndex(saveReaderIndex);
+                        break;
+                    } else {
+                        //is it possible to go here ?
+                        if (saveReaderIndex == message.readerIndex()) {
+                            throw new IOException(""Decode without read data."");
+                        }
+                        if (msg != null) {
+                            out.add(msg);
+                        }
+                    }
+                } while (message.readable());
+            } finally {
+                NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            }
+        }",79-115,0.97102785,0.98804605,0.98804605
+org.apache.dubbo.common.utils.ClassHelper,getClassLoader,(Ljava/lang/Class;)Ljava/lang/ClassLoader;,5,7,71.4%,"public static ClassLoader getClassLoader(Class<?> cls) {
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+        } catch (Throwable ex) {
+            // Cannot access thread context ClassLoader - falling back to system class loader...
+        }
+        if (cl == null) {
+            // No thread context class loader -> use class loader of this class.
+            cl = cls.getClassLoader();
+        }
+        return cl;
+    }",91-103,0.98701453,0.9878407,0.9878407
+org.apache.dubbo.common.utils.ClassHelper,getClassLoader,()Ljava/lang/ClassLoader;,1,1,100.0%,"public static ClassLoader getClassLoader(Class<?> cls) {
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+        } catch (Throwable ex) {
+            // Cannot access thread context ClassLoader - falling back to system class loader...
+        }
+        if (cl == null) {
+            // No thread context class loader -> use class loader of this class.
+            cl = cls.getClassLoader();
+        }
+        return cl;
+    }",91-103,0.98701453,0.9878407,0.9878407
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,get,()Ljava/lang/Object;,5,5,100.0%,"@SuppressWarnings(""unchecked"")
+    public final V get() {
+        InternalThreadLocalMap threadLocalMap = InternalThreadLocalMap.get();
+        Object v = threadLocalMap.indexedVariable(index);
+        if (v != InternalThreadLocalMap.UNSET) {
+            return (V) v;
+        }
+
+        return initialize(threadLocalMap);
+    }",117-126,0.99785787,0.9876314,0.9876314
+org.apache.dubbo.remoting.transport.netty4.NettyServer,getChannels,()Ljava/util/Collection;,6,7,85.7%,"@Override
+    public Collection<Channel> getChannels() {
+        Collection<Channel> chs = new HashSet<Channel>();
+        for (Channel channel : this.channels.values()) {
+            if (channel.isConnected()) {
+                chs.add(channel);
+            } else {
+                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
+            }
+        }
+        return chs;
+    }",142-153,0.97314477,0.98705006,0.98705006
+org.apache.dubbo.common.timer.HashedWheelTimer,start,()V,8,11,72.7%,"public void start() {
+        switch (WORKER_STATE_UPDATER.get(this)) {
+            case WORKER_STATE_INIT:
+                if (WORKER_STATE_UPDATER.compareAndSet(this, WORKER_STATE_INIT, WORKER_STATE_STARTED)) {
+                    workerThread.start();
+                }
+                break;
+            case WORKER_STATE_STARTED:
+                break;
+            case WORKER_STATE_SHUTDOWN:
+                throw new IllegalStateException(""cannot be started once stopped"");
+            default:
+                throw new Error(""Invalid WorkerState"");
+        }
+
+        // Wait until the startTime is initialized by the worker.
+        while (startTime == 0) {
+            try {
+                startTimeInitialized.await();
+            } catch (InterruptedException ignore) {
+                // Ignore - it will be ready very soon.
+            }
+        }
+    }",307-330,0.9685355,0.9869206,0.9869206
+org.apache.dubbo.rpc.proxy.javassist.JavassistProxyFactory$1,doInvoke,(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"@Override
+            protected Object doInvoke(T proxy, String methodName,
+                                      Class<?>[] parameterTypes,
+                                      Object[] arguments) throws Throwable {
+                return wrapper.invokeMethod(proxy, methodName, parameterTypes, arguments);
+            }",43-48,0.97408223,0.9868712,0.9868712
+org.apache.dubbo.rpc.filter.ClassLoaderFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,4,4,100.0%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        ClassLoader ocl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(invoker.getInterface().getClassLoader());
+        try {
+            return invoker.invoke(invocation);
+        } finally {
+            Thread.currentThread().setContextClassLoader(ocl);
+        }
+    }",33-42,0.99783325,0.98683614,0.98683614
+org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,5,37,13.5%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        long start = System.currentTimeMillis();
+        Result result = invoker.invoke(invocation);
+        long end = System.currentTimeMillis();
+        if (tracers.size() > 0) {
+            String key = invoker.getInterface().getName() + ""."" + invocation.getMethodName();
+            Set<Channel> channels = tracers.get(key);
+            if (channels == null || channels.isEmpty()) {
+                key = invoker.getInterface().getName();
+                channels = tracers.get(key);
+            }
+            if (channels != null && !channels.isEmpty()) {
+                for (Channel channel : new ArrayList<Channel>(channels)) {
+                    if (channel.isConnected()) {
+                        try {
+                            int max = 1;
+                            Integer m = (Integer) channel.getAttribute(TRACE_MAX);
+                            if (m != null) {
+                                max = (int) m;
+                            }
+                            int count = 0;
+                            AtomicInteger c = (AtomicInteger) channel.getAttribute(TRACE_COUNT);
+                            if (c == null) {
+                                c = new AtomicInteger();
+                                channel.setAttribute(TRACE_COUNT, c);
+                            }
+                            count = c.getAndIncrement();
+                            if (count < max) {
+                                String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
+                                channel.send(""\r\n"" + RpcContext.getContext().getRemoteAddress() + "" -> ""
+                                        + invoker.getInterface().getName()
+                                        + ""."" + invocation.getMethodName()
+                                        + ""("" + JSON.toJSONString(invocation.getArguments()) + "")"" + "" -> "" + JSON.toJSONString(result.getValue())
+                                        + ""\r\nelapsed: "" + (end - start) + "" ms.""
+                                        + ""\r\n\r\n"" + prompt);
+                            }
+                            if (count >= max - 1) {
+                                channels.remove(channel);
+                            }
+                        } catch (Throwable e) {
+                            channels.remove(channel);
+                            logger.warn(e.getMessage(), e);
+                        }
+                    } else {
+                        channels.remove(channel);
+                    }
+                }
+            }
+        }
+        return result;
+    }",75-126,0.96825397,0.9866377,0.9866377
+org.apache.dubbo.common.timer.HashedWheelTimer$HashedWheelBucket,expireTimeouts,(J)V,3,15,20.0%,"void expireTimeouts(long deadline) {
+            HashedWheelTimeout timeout = head;
+
+            // process all timeouts
+            while (timeout != null) {
+                HashedWheelTimeout next = timeout.next;
+                if (timeout.remainingRounds <= 0) {
+                    next = remove(timeout);
+                    if (timeout.deadline <= deadline) {
+                        timeout.expire();
+                    } else {
+                        // The timeout was placed into a wrong slot. This should never happen.
+                        throw new IllegalStateException(String.format(
+                                ""timeout.deadline (%d) > deadline (%d)"", timeout.deadline, deadline));
+                    }
+                } else if (timeout.isCancelled()) {
+                    next = remove(timeout);
+                } else {
+                    timeout.remainingRounds--;
+                }
+                timeout = next;
+            }
+        }",711-733,0.96943617,0.9865309,0.9865309
+org.apache.dubbo.common.extension.ExtensionLoader,injectExtension,(Ljava/lang/Object;)Ljava/lang/Object;,13,18,72.2%,"private T injectExtension(T instance) {
+        try {
+            if (objectFactory != null) {
+                for (Method method : instance.getClass().getMethods()) {
+                    if (method.getName().startsWith(""set"")
+                            && method.getParameterTypes().length == 1
+                            && Modifier.isPublic(method.getModifiers())) {
+                        Class<?> pt = method.getParameterTypes()[0];
+                        try {
+                            String property = method.getName().length() > 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : """";
+                            Object object = objectFactory.getExtension(pt, property);
+                            if (object != null) {
+                                method.invoke(instance, object);
+                            }
+                        } catch (Exception e) {
+                            logger.error(""fail to inject via method "" + method.getName()
+                                    + "" of interface "" + type.getName() + "": "" + e.getMessage(), e);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return instance;
+    }",523-548,0.96885514,0.9865093,0.9865093
+org.apache.dubbo.rpc.filter.GenericFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,56,3.6%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
+        if (inv.getMethodName().equals(Constants.$INVOKE)
+                && inv.getArguments() != null
+                && inv.getArguments().length == 3
+                && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+            String name = ((String) inv.getArguments()[0]).trim();
+            String[] types = (String[]) inv.getArguments()[1];
+            Object[] args = (Object[]) inv.getArguments()[2];
+            try {
+                Method method = ReflectUtils.findMethodByMethodSignature(invoker.getInterface(), name, types);
+                Class<?>[] params = method.getParameterTypes();
+                if (args == null) {
+                    args = new Object[params.length];
+                }
+                String generic = inv.getAttachment(Constants.GENERIC_KEY);
+
+                if (StringUtils.isBlank(generic)) {
+                    generic = RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
+                }
+
+                if (StringUtils.isEmpty(generic)
+                        || ProtocolUtils.isDefaultGenericSerialization(generic)) {
+                    args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    for (int i = 0; i < args.length; i++) {
+                        if (byte[].class == args[i].getClass()) {
+                            try {
+                                UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i]);
+                                args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                                        .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
+                                        .deserialize(null, is).readObject();
+                            } catch (Exception e) {
+                                throw new RpcException(""Deserialize argument ["" + (i + 1) + ""] failed."", e);
+                            }
+                        } else {
+                            throw new RpcException(
+                                    ""Generic serialization ["" +
+                                            Constants.GENERIC_SERIALIZATION_NATIVE_JAVA +
+                                            ""] only support message type "" +
+                                            byte[].class +
+                                            "" and your message type is "" +
+                                            args[i].getClass());
+                        }
+                    }
+                } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+                    for (int i = 0; i < args.length; i++) {
+                        if (args[i] instanceof JavaBeanDescriptor) {
+                            args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
+                        } else {
+                            throw new RpcException(
+                                    ""Generic serialization ["" +
+                                            Constants.GENERIC_SERIALIZATION_BEAN +
+                                            ""] only support message type "" +
+                                            JavaBeanDescriptor.class.getName() +
+                                            "" and your message type is "" +
+                                            args[i].getClass().getName());
+                        }
+                    }
+                }
+                Result result = invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
+                if (result.hasException()
+                        && !(result.getException() instanceof GenericException)) {
+                    return new RpcResult(new GenericException(result.getException()));
+                }
+                if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    try {
+                        UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                        ExtensionLoader.getExtensionLoader(Serialization.class)
+                                .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
+                                .serialize(null, os).writeObject(result.getValue());
+                        return new RpcResult(os.toByteArray());
+                    } catch (IOException e) {
+                        throw new RpcException(""Serialize result failed."", e);
+                    }
+                } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+                    return new RpcResult(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
+                } else {
+                    return new RpcResult(PojoUtils.generalize(result.getValue()));
+                }
+            } catch (NoSuchMethodException e) {
+                throw new RpcException(e.getMessage(), e);
+            } catch (ClassNotFoundException e) {
+                throw new RpcException(e.getMessage(), e);
+            }
+        }
+        return invoker.invoke(inv);
+    }",52-139,0.9672433,0.98630863,0.98630863
+org.apache.dubbo.common.timer.HashedWheelTimer$HashedWheelBucket,addTimeout,(Lorg/apache/dubbo/common/timer/HashedWheelTimer$HashedWheelTimeout;)V,8,8,100.0%,"void addTimeout(HashedWheelTimeout timeout) {
+            assert timeout.bucket == null;
+            timeout.bucket = this;
+            if (head == null) {
+                head = tail = timeout;
+            } else {
+                tail.next = timeout;
+                timeout.prev = tail;
+                tail = timeout;
+            }
+        }",696-706,0.97099286,0.98624694,0.98624694
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,getDubboProtocol,()Lorg/apache/dubbo/rpc/protocol/dubbo/DubboProtocol;,2,3,66.7%,"public static DubboProtocol getDubboProtocol() {
+        if (INSTANCE == null) {
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME); // load
+        }
+        return INSTANCE;
+    }",181-186,0.9960833,0.98617685,0.98617685
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,get,()Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;,4,4,100.0%,"public static InternalThreadLocalMap get() {
+        Thread thread = Thread.currentThread();
+        if (thread instanceof InternalThread) {
+            return fastGet((InternalThread) thread);
+        }
+        return slowGet();
+    }",45-51,0.9961201,0.9857703,0.9857703
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,setAttribute,(Ljava/lang/String;Ljava/lang/Object;)V,3,4,75.0%,"@Override
+    public void setAttribute(String key, Object value) {
+        if (value == null) { // The null value unallowed in the ConcurrentHashMap.
+            attributes.remove(key);
+        } else {
+            attributes.put(key, value);
+        }
+    }",157-164,0.98954505,0.9854512,0.9854512
+org.apache.dubbo.remoting.transport.AbstractServer,connected,(Lorg/apache/dubbo/remoting/Channel;)V,5,11,45.5%,"@Override
+    public void connected(Channel ch) throws RemotingException {
+        // If the server has entered the shutdown process, reject any new connection
+        if (this.isClosing() || this.isClosed()) {
+            logger.warn(""Close new channel "" + ch + "", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process."");
+            ch.close();
+            return;
+        }
+
+        Collection<Channel> channels = getChannels();
+        if (accepts > 0 && channels.size() > accepts) {
+            logger.error(""Close channel "" + ch + "", cause: The server "" + ch.getLocalAddress() + "" connections greater than max config "" + accepts);
+            ch.close();
+            return;
+        }
+        super.connected(ch);
+    }",183-199,0.9959621,0.98532784,0.98532784
+org.apache.dubbo.remoting.buffer.ChannelBufferInputStream,read,([BII)I,5,6,83.3%,"@Override
+    public int read() throws IOException {
+        if (!buffer.readable()) {
+            return -1;
+        }
+        return buffer.readByte() & 0xff;
+    }",69-75,0.9960619,0.98522365,0.98522365
+org.apache.dubbo.common.logger.LoggerFactory,getLogger,(Ljava/lang/Class;)Lorg/apache/dubbo/common/logger/Logger;,5,5,100.0%,"public static Logger getLogger(Class<?> key) {
+        FailsafeLogger logger = LOGGERS.get(key.getName());
+        if (logger == null) {
+            LOGGERS.putIfAbsent(key.getName(), new FailsafeLogger(LOGGER_ADAPTER.getLogger(key)));
+            logger = LOGGERS.get(key.getName());
+        }
+        return logger;
+    }",105-112,0.9928938,0.984722,0.984722
+org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter,fireInvokeCallback,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)V,4,16,25.0%,"private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
+        final Method onInvokeMethod = (Method) StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_INVOKE_METHOD_KEY));
+        final Object onInvokeInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_INVOKE_INSTANCE_KEY));
+
+        if (onInvokeMethod == null && onInvokeInst == null) {
+            return;
+        }
+        if (onInvokeMethod == null || onInvokeInst == null) {
+            throw new IllegalStateException(""service:"" + invoker.getUrl().getServiceKey() + "" has a onreturn callback config , but no such "" + (onInvokeMethod == null ? ""method"" : ""instance"") + "" found. url:"" + invoker.getUrl());
+        }
+        if (!onInvokeMethod.isAccessible()) {
+            onInvokeMethod.setAccessible(true);
+        }
+
+        Object[] params = invocation.getArguments();
+        try {
+            onInvokeMethod.invoke(onInvokeInst, params);
+        } catch (InvocationTargetException e) {
+            fireThrowCallback(invoker, invocation, e.getTargetException());
+        } catch (Throwable e) {
+            fireThrowCallback(invoker, invocation, e);
+        }
+    }",81-103,0.9652905,0.98457354,0.98457354
+org.apache.dubbo.rpc.protocol.AbstractInvoker,invoke,(Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,9,27,33.3%,"@Override
+    public Result invoke(Invocation inv) throws RpcException {
+        if (destroyed.get()) {
+            throw new RpcException(""Rpc invoker for service "" + this + "" on consumer "" + NetUtils.getLocalHost()
+                    + "" use dubbo version "" + Version.getVersion()
+                    + "" is DESTROYED, can not be invoked any more!"");
+        }
+        RpcInvocation invocation = (RpcInvocation) inv;
+        invocation.setInvoker(this);
+        if (attachment != null && attachment.size() > 0) {
+            invocation.addAttachmentsIfAbsent(attachment);
+        }
+        Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
+        if (contextAttachments != null && contextAttachments.size() != 0) {
+            /**
+             * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
+             * because the {@link RpcContext#setAttachment(String, String)} is passed in the Filter when the call is triggered
+             * by the built-in retry mechanism of the Dubbo. The attachment to update RpcContext will no longer work, which is
+             * a mistake in most cases (for example, through Filter to RpcContext output traceId and spanId and other information).
+             */
+            invocation.addAttachments(contextAttachments);
+        }
+        if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
+            invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+        }
+        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+
+
+        try {
+            return doInvoke(invocation);
+        } catch (InvocationTargetException e) { // biz exception
+            Throwable te = e.getTargetException();
+            if (te == null) {
+                return new RpcResult(e);
+            } else {
+                if (te instanceof RpcException) {
+                    ((RpcException) te).setCode(RpcException.BIZ_EXCEPTION);
+                }
+                return new RpcResult(te);
+            }
+        } catch (RpcException e) {
+            if (e.isBiz()) {
+                return new RpcResult(e);
+            } else {
+                throw e;
+            }
+        } catch (Throwable e) {
+            return new RpcResult(e);
+        }
+    }",125-174,0.9708875,0.9841535,0.9841535
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,slowGet,()Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;,6,6,100.0%,"private static InternalThreadLocalMap slowGet() {
+        ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = InternalThreadLocalMap.slowThreadLocalMap;
+        InternalThreadLocalMap ret = slowThreadLocalMap.get();
+        if (ret == null) {
+            ret = new InternalThreadLocalMap();
+            slowThreadLocalMap.set(ret);
+        }
+        return ret;
+    }",141-149,0.9734087,0.98409414,0.98409414
+org.apache.dubbo.common.Version,isSupportResponseAttatchment,(Ljava/lang/String;)Z,4,6,66.7%,"public static boolean isSupportResponseAttatchment(String version) {
+        if (version == null || version.length() == 0) {
+            return false;
+        }
+        // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to be ignore
+        int iVersion = getIntVersion(version);
+        if (iVersion >= 20010 && iVersion <= 20602) {
+            return false;
+        }
+
+        return iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT;
+    }",65-76,0.9964104,0.9838908,0.9838908
+org.apache.dubbo.common.extension.ExtensionLoader,isWrapperClass,(Ljava/lang/Class;)Z,4,4,100.0%,"private boolean isWrapperClass(Class<?> clazz) {
+        try {
+            clazz.getConstructor(type);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }",713-720,0.9964739,0.9836884,0.9836884
+org.apache.dubbo.remoting.transport.AbstractClient,getRemoteAddress,()Ljava/net/InetSocketAddress;,3,4,75.0%,"@Override
+    public InetSocketAddress getRemoteAddress() {
+        Channel channel = getChannel();
+        if (channel == null)
+            return getUrl().toInetSocketAddress();
+        return channel.getRemoteAddress();
+    }",199-205,0.99729365,0.98363775,0.98363775
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,removeFromVariablesToRemove,(Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;Lorg/apache/dubbo/common/threadlocal/InternalThreadLocal;)V,5,6,83.3%,"@SuppressWarnings(""unchecked"")
+    private static void removeFromVariablesToRemove(InternalThreadLocalMap threadLocalMap, InternalThreadLocal<?> variable) {
+
+        Object v = threadLocalMap.indexedVariable(variablesToRemoveIndex);
+
+        if (v == InternalThreadLocalMap.UNSET || v == null) {
+            return;
+        }
+
+        Set<InternalThreadLocal<?>> variablesToRemove = (Set<InternalThreadLocal<?>>) v;
+        variablesToRemove.remove(variable);
+    }",101-112,0.9961559,0.98357934,0.98357934
+org.apache.dubbo.rpc.filter.ExceptionFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,1,6,16.7%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        try {
+            return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+        } catch (RuntimeException e) {
+            logger.error(""Got unchecked and undeclared exception which called by "" + RpcContext.getContext().getRemoteHost()
+                    + "". service: "" + invoker.getInterface().getName() + "", method: "" + invocation.getMethodName()
+                    + "", exception: "" + e.getClass().getName() + "": "" + e.getMessage(), e);
+            throw e;
+        }
+    }",60-70,0.996871,0.9833744,0.9833744
+org.apache.dubbo.common.Version,getIntVersion,(Ljava/lang/String;)I,5,5,100.0%,"public static int getIntVersion(String version) {
+        Integer v = VERSION2INT.get(version);
+        if (v == null) {
+            v = parseInt(version);
+            VERSION2INT.put(version, v);
+        }
+        return v;
+    }",78-85,0.97177833,0.98335207,0.98335207
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,sent,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/exchange/Request;)V,4,4,100.0%,"public static void sent(Channel channel, Request request) {
+        DefaultFuture future = FUTURES.get(request.getId());
+        if (future != null) {
+            future.doSent();
+        }
+    }",115-120,0.99579155,0.98328555,0.98328555
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,removeIndexedVariable,(I)Ljava/lang/Object;,5,6,83.3%,"public Object removeIndexedVariable(int index) {
+        Object[] lookup = indexedVariables;
+        if (index < lookup.length) {
+            Object v = lookup[index];
+            lookup[index] = UNSET;
+            return v;
+        } else {
+            return UNSET;
+        }
+    }",103-112,0.97098845,0.9827603,0.9827603
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol,isClientSide,(Lorg/apache/dubbo/remoting/Channel;)Z,4,5,80.0%,"private boolean isClientSide(Channel channel) {
+        InetSocketAddress address = channel.getRemoteAddress();
+        URL url = channel.getUrl();
+        return url.getPort() == address.getPort() &&
+                NetUtils.filterLocalHost(channel.getUrl().getIp())
+                        .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+    }",200-206,0.98618644,0.982712,0.982712
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,getIfSet,()Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;,4,4,100.0%,"public static InternalThreadLocalMap getIfSet() {
+        Thread thread = Thread.currentThread();
+        if (thread instanceof InternalThread) {
+            return ((InternalThread) thread).threadLocalMap();
+        }
+        return slowThreadLocalMap.get();
+    }",37-43,0.9961245,0.9822829,0.9822829
+org.apache.dubbo.rpc.support.RpcUtils,getReturnTypes,(Lorg/apache/dubbo/rpc/Invocation;)[Ljava/lang/reflect/Type;,14,29,48.3%,"public static Type[] getReturnTypes(Invocation invocation) {
+        try {
+            if (invocation != null && invocation.getInvoker() != null
+                    && invocation.getInvoker().getUrl() != null
+                    && !invocation.getMethodName().startsWith(""$"")) {
+                String service = invocation.getInvoker().getUrl().getServiceInterface();
+                if (service != null && service.length() > 0) {
+                    Class<?> invokerInterface = invocation.getInvoker().getInterface();
+                    Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
+                            : ReflectUtils.forName(service);
+                    Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+                    if (method.getReturnType() == void.class) {
+                        return null;
+                    }
+                    Class<?> returnType = method.getReturnType();
+                    Type genericReturnType = method.getGenericReturnType();
+                    if (Future.class.isAssignableFrom(returnType)) {
+                        if (genericReturnType instanceof ParameterizedType) {
+                            Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                            if (actualArgType instanceof ParameterizedType) {
+                                returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                                genericReturnType = actualArgType;
+                            } else {
+                                returnType = (Class<?>) actualArgType;
+                                genericReturnType = returnType;
+                            }
+                        } else {
+                            returnType = null;
+                            genericReturnType = null;
+                        }
+                    }
+                    return new Type[]{returnType, genericReturnType};
+                }
+            }
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
+        return null;
+    }",69-107,0.960274,0.98193014,0.98193014
+org.apache.dubbo.remoting.transport.AbstractClient,send,(Ljava/lang/Object;Z)V,5,7,71.4%,"@Override
+    public void send(Object message, boolean sent) throws RemotingException {
+        if (send_reconnect && !isConnected()) {
+            connect();
+        }
+        Channel channel = getChannel();
+        //TODO Can the value returned by getChannel() be null? need improvement.
+        if (channel == null || !channel.isConnected()) {
+            throw new RemotingException(this, ""message can not send, because channel is closed . url:"" + getUrl());
+        }
+        channel.send(message, sent);
+    }",255-266,0.9953041,0.9815109,0.9815109
+org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter,fireReturnCallback,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;Ljava/lang/Object;)V,4,26,15.4%,"private void fireReturnCallback(final Invoker<?> invoker, final Invocation invocation, final Object result) {
+        final Method onReturnMethod = (Method) StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_RETURN_METHOD_KEY));
+        final Object onReturnInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_RETURN_INSTANCE_KEY));
+
+        //not set onreturn callback
+        if (onReturnMethod == null && onReturnInst == null) {
+            return;
+        }
+
+        if (onReturnMethod == null || onReturnInst == null) {
+            throw new IllegalStateException(""service:"" + invoker.getUrl().getServiceKey() + "" has a onreturn callback config , but no such "" + (onReturnMethod == null ? ""method"" : ""instance"") + "" found. url:"" + invoker.getUrl());
+        }
+        if (!onReturnMethod.isAccessible()) {
+            onReturnMethod.setAccessible(true);
+        }
+
+        Object[] args = invocation.getArguments();
+        Object[] params;
+        Class<?>[] rParaTypes = onReturnMethod.getParameterTypes();
+        if (rParaTypes.length > 1) {
+            if (rParaTypes.length == 2 && rParaTypes[1].isAssignableFrom(Object[].class)) {
+                params = new Object[2];
+                params[0] = result;
+                params[1] = args;
+            } else {
+                params = new Object[args.length + 1];
+                params[0] = result;
+                System.arraycopy(args, 0, params, 1, args.length);
+            }
+        } else {
+            params = new Object[]{result};
+        }
+        try {
+            onReturnMethod.invoke(onReturnInst, params);
+        } catch (InvocationTargetException e) {
+            fireThrowCallback(invoker, invocation, e.getTargetException());
+        } catch (Throwable e) {
+            fireThrowCallback(invoker, invocation, e);
+        }
+    }",105-144,0.9593727,0.9814917,0.9814917
+org.apache.dubbo.rpc.RpcContext,isAsyncStarted,()Z,2,3,66.7%,"public boolean isAsyncStarted() {
+        if (this.asyncContext == null) {
+            return false;
+        }
+        return asyncContext.isAsyncStarted();
+    }",714-719,0.99481076,0.98145676,0.98145676
+org.apache.dubbo.rpc.RpcContext,setAttachments,(Ljava/util/Map;)Lorg/apache/dubbo/rpc/RpcContext;,4,4,100.0%,"public RpcContext setAttachments(Map<String, String> attachment) {
+        this.attachments.clear();
+        if (attachment != null && attachment.size() > 0) {
+            this.attachments.putAll(attachment);
+        }
+        return this;
+    }",494-500,0.99583864,0.98131454,0.98131454
+org.apache.dubbo.rpc.protocol.dubbo.DubboCountCodec,decode,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/buffer/ChannelBuffer;)Ljava/lang/Object;,13,15,86.7%,"@Override
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        int save = buffer.readerIndex();
+        MultiMessage result = MultiMessage.create();
+        do {
+            Object obj = codec.decode(channel, buffer);
+            if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
+                buffer.readerIndex(save);
+                break;
+            } else {
+                result.addMessage(obj);
+                logMessageLength(obj, buffer.readerIndex() - save);
+                save = buffer.readerIndex();
+            }
+        } while (true);
+        if (result.isEmpty()) {
+            return Codec2.DecodeResult.NEED_MORE_INPUT;
+        }
+        if (result.size() == 1) {
+            return result.get(0);
+        }
+        return result;
+    }",41-63,0.9599924,0.98107684,0.98107684
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,doReceived,(Lorg/apache/dubbo/remoting/exchange/Response;)V,7,8,87.5%,"private void doReceived(Response res) {
+        lock.lock();
+        try {
+            response = res;
+            if (done != null) {
+                done.signal();
+            }
+        } finally {
+            lock.unlock();
+        }
+        if (callback != null) {
+            invokeCallback(callback);
+        }
+    }",329-342,0.9618999,0.98067343,0.98067343
+org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter,syncCallback,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;Lorg/apache/dubbo/rpc/Result;)V,3,4,75.0%,"private void syncCallback(final Invoker<?> invoker, final Invocation invocation, final Result result) {
+        if (result.hasException()) {
+            fireThrowCallback(invoker, invocation, result.getException());
+        } else {
+            fireReturnCallback(invoker, invocation, result.getValue());
+        }
+    }",65-71,0.9682726,0.98045266,0.98045266
+org.apache.dubbo.rpc.RpcContext,setInvoker,(Lorg/apache/dubbo/rpc/Invoker;)Lorg/apache/dubbo/rpc/RpcContext;,4,4,100.0%,"public RpcContext setInvoker(Invoker<?> invoker) {
+        this.invoker = invoker;
+        if (invoker != null) {
+            setUrl(invoker.getUrl());
+        }
+        return this;
+    }",597-603,0.9954307,0.9799193,0.9799193
+org.apache.dubbo.common.extension.ExtensionLoader,loadResource,(Ljava/util/Map;Ljava/lang/ClassLoader;Ljava/net/URL;)V,18,23,78.3%,"private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, java.net.URL resourceURL) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), ""utf-8""));
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    final int ci = line.indexOf('#');
+                    if (ci >= 0) line = line.substring(0, ci);
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        try {
+                            String name = null;
+                            int i = line.indexOf('=');
+                            if (i > 0) {
+                                name = line.substring(0, i).trim();
+                                line = line.substring(i + 1).trim();
+                            }
+                            if (line.length() > 0) {
+                                loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
+                            }
+                        } catch (Throwable t) {
+                            IllegalStateException e = new IllegalStateException(""Failed to load extension class(interface: "" + type + "", class line: "" + line + "") in "" + resourceURL + "", cause: "" + t.getMessage(), t);
+                            exceptions.put(line, e);
+                        }
+                    }
+                }
+            } finally {
+                reader.close();
+            }
+        } catch (Throwable t) {
+            logger.error(""Exception when load extension class(interface: "" +
+                    type + "", class file: "" + resourceURL + "") in "" + resourceURL, t);
+        }
+    }",622-655,0.9575924,0.97969896,0.97969896
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,initialize,(Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;)Ljava/lang/Object;,6,8,75.0%,"private V initialize(InternalThreadLocalMap threadLocalMap) {
+        V v = null;
+        try {
+            v = initialValue();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        threadLocalMap.setIndexedVariable(index, v);
+        addToVariablesToRemove(threadLocalMap, this);
+        return v;
+    }",128-139,0.9716793,0.9789551,0.9789551
+org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler,connected,(Lorg/apache/dubbo/remoting/Channel;)V,4,6,66.7%,"@Override
+    public void connected(Channel channel) throws RemotingException {
+        ExecutorService cexecutor = getExecutorService();
+        try {
+            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
+        } catch (Throwable t) {
+            throw new ExecutionException(""connect event"", channel, getClass() + "" error when process connected event ."", t);
+        }
+    }",39-47,0.9955995,0.97846943,0.97846943
+org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler,received,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,5,18,27.8%,"@Override
+    public void received(Channel channel, Object message) throws RemotingException {
+        setReadTimestamp(channel);
+        if (isHeartbeatRequest(message)) {
+            Request req = (Request) message;
+            if (req.isTwoWay()) {
+                Response res = new Response(req.getId(), req.getVersion());
+                res.setEvent(Response.HEARTBEAT_EVENT);
+                channel.send(res);
+                if (logger.isInfoEnabled()) {
+                    int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(""Received heartbeat from remote channel "" + channel.getRemoteAddress()
+                                + "", cause: The channel has no data-transmission exceeds a heartbeat period""
+                                + (heartbeat > 0 ? "": "" + heartbeat + ""ms"" : """"));
+                    }
+                }
+            }
+            return;
+        }
+        if (isHeartbeatResponse(message)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(""Receive heartbeat response in thread "" + Thread.currentThread().getName());
+            }
+            return;
+        }
+        handler.received(channel, message);
+    }",62-89,0.9566011,0.9777728,0.9777728
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,hashCode,()I,4,4,100.0%,"@Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+        return result;
+    }",171-177,0.9931251,0.9768453,0.9768453
+org.apache.dubbo.remoting.transport.netty4.NettyClient,getChannel,()Lorg/apache/dubbo/remoting/Channel;,4,4,100.0%,"@Override
+    protected org.apache.dubbo.remoting.Channel getChannel() {
+        Channel c = channel;
+        if (c == null || !c.isActive())
+            return null;
+        return NettyChannel.getOrAddChannel(c, getUrl(), this);
+    }",156-162,0.9946843,0.97620016,0.97620016
+org.apache.dubbo.common.utils.Assert,notNull,(Ljava/lang/Object;Ljava/lang/String;)V,2,3,66.7%,"public static void notNull(Object obj, String message) {
+        if (obj == null) {
+            throw new IllegalArgumentException(message);
+        }
+    }",25-29,0.9925741,0.9755595,0.9755595
+org.apache.dubbo.common.URL,getMethodParameter,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,3,4,75.0%,"public String getMethodParameter(String method, String key) {
+        String value = parameters.get(method + ""."" + key);
+        if (value == null || value.length() == 0) {
+            return getParameter(key);
+        }
+        return value;
+    }",659-665,0.9923257,0.9753009,0.9753009
+org.apache.dubbo.common.URL,getMethodParameter,(Ljava/lang/String;Ljava/lang/String;Z)Z,3,4,75.0%,"public String getMethodParameter(String method, String key) {
+        String value = parameters.get(method + ""."" + key);
+        if (value == null || value.length() == 0) {
+            return getParameter(key);
+        }
+        return value;
+    }",659-665,0.9923257,0.9753009,0.9753009
+org.apache.dubbo.common.URL,getMethodParameter,(Ljava/lang/String;Ljava/lang/String;I)I,6,10,60.0%,"public String getMethodParameter(String method, String key) {
+        String value = parameters.get(method + ""."" + key);
+        if (value == null || value.length() == 0) {
+            return getParameter(key);
+        }
+        return value;
+    }",659-665,0.9923257,0.9753009,0.9753009
+org.apache.dubbo.rpc.protocol.dubbo.DubboCountCodec,logMessageLength,(Ljava/lang/Object;I)V,10,13,76.9%,"private void logMessageLength(Object result, int bytes) {
+        if (bytes <= 0) {
+            return;
+        }
+        if (result instanceof Request) {
+            try {
+                ((RpcInvocation) ((Request) result).getData()).setAttachment(
+                        Constants.INPUT_KEY, String.valueOf(bytes));
+            } catch (Throwable e) {
+                /* ignore */
+            }
+        } else if (result instanceof Response) {
+            try {
+                ((RpcResult) ((Response) result).getResult()).setAttachment(
+                        Constants.OUTPUT_KEY, String.valueOf(bytes));
+            } catch (Throwable e) {
+                /* ignore */
+            }
+        }
+    }",65-84,0.9515997,0.97506803,0.97506803
+org.apache.dubbo.rpc.RpcContext,setRemoteAddress,(Ljava/lang/String;I)Lorg/apache/dubbo/rpc/RpcContext;,3,4,75.0%,"public RpcContext setRemoteAddress(String host, int port) {
+        if (port < 0) {
+            port = 0;
+        }
+        this.remoteAddress = InetSocketAddress.createUnresolved(host, port);
+        return this;
+    }",352-358,0.99263656,0.9730604,0.9730604
+org.apache.dubbo.rpc.RpcContext,setRemoteAddress,(Ljava/net/InetSocketAddress;)Lorg/apache/dubbo/rpc/RpcContext;,2,2,100.0%,"public RpcContext setRemoteAddress(String host, int port) {
+        if (port < 0) {
+            port = 0;
+        }
+        this.remoteAddress = InetSocketAddress.createUnresolved(host, port);
+        return this;
+    }",352-358,0.99263656,0.9730604,0.9730604
+org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream,write,([BII)V,3,4,75.0%,"@Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        if (len == 0) {
+            return;
+        }
+
+        buffer.writeBytes(b, off, len);
+    }",40-47,0.99058574,0.9713847,0.9713847
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,getOrAddChannel,(Lio/netty/channel/Channel;Lorg/apache/dubbo/common/URL;Lorg/apache/dubbo/remoting/ChannelHandler;)Lorg/apache/dubbo/remoting/transport/netty4/NettyChannel;,9,10,90.0%,"static NettyChannel getOrAddChannel(Channel ch, URL url, ChannelHandler handler) {
+        if (ch == null) {
+            return null;
+        }
+        NettyChannel ret = channelMap.get(ch);
+        if (ret == null) {
+            NettyChannel nettyChannel = new NettyChannel(ch, url, handler);
+            if (ch.isActive()) {
+                ret = channelMap.putIfAbsent(ch, nettyChannel);
+            }
+            if (ret == null) {
+                ret = nettyChannel;
+            }
+        }
+        return ret;
+    }",56-71,0.9473293,0.9712658,0.9712658
+org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public String getParameter(String key) {
+        String value = parameters.get(key);
+        if (value == null || value.length() == 0) {
+            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+        }
+        return value;
+    }",428-434,0.98975563,0.9708849,0.9708849
+org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,4,4,100.0%,"public String getParameter(String key) {
+        String value = parameters.get(key);
+        if (value == null || value.length() == 0) {
+            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+        }
+        return value;
+    }",428-434,0.98975563,0.9708849,0.9708849
+org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;I)I,8,9,88.9%,"public String getParameter(String key) {
+        String value = parameters.get(key);
+        if (value == null || value.length() == 0) {
+            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+        }
+        return value;
+    }",428-434,0.98975563,0.9708849,0.9708849
+org.apache.dubbo.common.URL,getParameter,(Ljava/lang/String;Z)Z,3,4,75.0%,"public String getParameter(String key) {
+        String value = parameters.get(key);
+        if (value == null || value.length() == 0) {
+            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+        }
+        return value;
+    }",428-434,0.98975563,0.9708849,0.9708849
+org.apache.dubbo.remoting.transport.AbstractPeer,received,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,3,4,75.0%,"@Override
+    public void received(Channel ch, Object msg) throws RemotingException {
+        if (closed) {
+            return;
+        }
+        handler.received(ch, msg);
+    }",142-148,0.9916599,0.97035533,0.97035533
+org.apache.dubbo.rpc.protocol.AbstractProtocol,serviceKey,(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"protected static String serviceKey(URL url) {
+        int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+        return serviceKey(port, url.getPath(), url.getParameter(Constants.VERSION_KEY),
+                url.getParameter(Constants.GROUP_KEY));
+    }",46-50,0.98805577,0.97001797,0.97001797
+org.apache.dubbo.common.URL,getNumbers,()Ljava/util/Map;,3,3,100.0%,"private Map<String, Number> getNumbers() {
+        if (numbers == null) { // concurrent initialization is tolerant
+            numbers = new ConcurrentHashMap<String, Number>();
+        }
+        return numbers;
+    }",452-457,0.990922,0.96968484,0.96968484
+org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory,newThread,(Ljava/lang/Runnable;)Ljava/lang/Thread;,4,4,100.0%,"@Override
+    public Thread newThread(Runnable runnable) {
+        String name = mPrefix + mThreadNum.getAndIncrement();
+        InternalThread ret = new InternalThread(mGroup, runnable, name, 0);
+        ret.setDaemon(mDaemon);
+        return ret;
+    }",40-46,0.9920715,0.9694822,0.9694822
+org.apache.dubbo.rpc.RpcContext,setLocalAddress,(Ljava/lang/String;I)Lorg/apache/dubbo/rpc/RpcContext;,3,4,75.0%,"public RpcContext setLocalAddress(String host, int port) {
+        if (port < 0) {
+            port = 0;
+        }
+        this.localAddress = InetSocketAddress.createUnresolved(host, port);
+        return this;
+    }",300-306,0.99107945,0.9694315,0.9694315
+org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler,connected,(Lorg/apache/dubbo/remoting/Channel;)V,4,4,100.0%,"@Override
+    public void connected(Channel channel) throws RemotingException {
+        setReadTimestamp(channel);
+        setWriteTimestamp(channel);
+        handler.connected(channel);
+    }",42-47,0.98757684,0.96751314,0.96751314
+org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler,received,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,4,15,26.7%,"@Override
+    public void received(Channel channel, Object message) throws RemotingException {
+        ExecutorService cexecutor = getExecutorService();
+        try {
+            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+        } catch (Throwable t) {
+            //TODO A temporary solution to the problem that the exception information can not be sent to the opposite end after the thread pool is full. Need a refactoring
+            //fix The thread pool is full, refuses to call, does not return, and causes the consumer to wait for time out
+        	if(message instanceof Request && t instanceof RejectedExecutionException){
+        		Request request = (Request)message;
+        		if(request.isTwoWay()){
+        			String msg = ""Server side("" + url.getIp() + "","" + url.getPort() + "") threadpool is exhausted ,detail msg:"" + t.getMessage();
+        			Response response = new Response(request.getId(), request.getVersion());
+        			response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
+        			response.setErrorMessage(msg);
+        			channel.send(response);
+        			return;
+        		}
+        	}
+            throw new ExecutionException(message, channel, getClass() + "" error when process received event ."", t);
+        }
+    }",59-80,0.9899037,0.96705914,0.96705914
+org.apache.dubbo.remoting.transport.AbstractPeer,sent,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,3,4,75.0%,"@Override
+    public void sent(Channel ch, Object msg) throws RemotingException {
+        if (closed) {
+            return;
+        }
+        handler.sent(ch, msg);
+    }",134-140,0.98971426,0.9665327,0.9665327
+org.apache.dubbo.remoting.transport.AbstractPeer,connected,(Lorg/apache/dubbo/remoting/Channel;)V,3,4,75.0%,"@Override
+    public void connected(Channel ch) throws RemotingException {
+        if (closed) {
+            return;
+        }
+        handler.connected(ch);
+    }",121-127,0.98899806,0.9657884,0.9657884
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler,received,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,11,23,47.8%,"@Override
+    public void received(Channel channel, Object message) throws RemotingException {
+        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
+        final ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
+        try {
+            if (message instanceof Request) {
+                // handle request.
+                Request request = (Request) message;
+                if (request.isEvent()) {
+                    handlerEvent(channel, request);
+                } else {
+                    if (request.isTwoWay()) {
+                        handleRequest(exchangeChannel, request);
+                    } else {
+                        handler.received(exchangeChannel, request.getData());
+                    }
+                }
+            } else if (message instanceof Response) {
+                handleResponse(channel, (Response) message);
+            } else if (message instanceof String) {
+                if (isClientSide(channel)) {
+                    Exception e = new Exception(""Dubbo client can not supported string message: "" + message + "" in channel: "" + channel + "", url: "" + channel.getUrl());
+                    logger.error(e.getMessage(), e);
+                } else {
+                    String echo = handler.telnet(channel, (String) message);
+                    if (echo != null && echo.length() > 0) {
+                        channel.send(echo);
+                    }
+                }
+            } else {
+                handler.received(exchangeChannel, message);
+            }
+        } finally {
+            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+        }
+    }",184-219,0.9390281,0.96543527,0.96543527
+org.apache.dubbo.common.utils.ReflectUtils,forName,(Ljava/lang/ClassLoader;Ljava/lang/String;)Ljava/lang/Class;,1,3,33.3%,"public static Class<?> forName(String name) {
+        try {
+            return name2class(name);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(""Not found class "" + name + "", cause: "" + e.getMessage(), e);
+        }
+    }",586-592,0.9886758,0.965214,0.965214
+org.apache.dubbo.rpc.support.RpcUtils,getNecessaryAttachments,(Lorg/apache/dubbo/rpc/Invocation;)Ljava/util/Map;,4,4,100.0%,"public static Map<String, String> getNecessaryAttachments(Invocation inv) {
+        Map<String, String> attachments = new HashMap<>(inv.getAttachments());
+        attachments.remove(Constants.ASYNC_KEY);
+        attachments.remove(Constants.FUTURE_GENERATED_KEY);
+        return attachments;
+    }",213-218,0.9822817,0.9646736,0.9646736
+org.apache.dubbo.rpc.RpcContext$1,initialValue,()Lorg/apache/dubbo/rpc/RpcContext;,1,1,100.0%,"@Override
+        protected RpcContext initialValue() {
+            return new RpcContext();
+        }",54-57,0.98864496,0.96464145,0.96464145
+org.apache.dubbo.rpc.RpcContext$2,initialValue,()Lorg/apache/dubbo/rpc/RpcContext;,1,1,100.0%,"@Override
+        protected RpcContext initialValue() {
+            return new RpcContext();
+        }",54-57,0.98864496,0.96464145,0.96464145
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,newIndexedVariableTable,()[Ljava/lang/Object;,3,3,100.0%,"private static Object[] newIndexedVariableTable() {
+        Object[] array = new Object[32];
+        Arrays.fill(array, UNSET);
+        return array;
+    }",127-131,0.98763686,0.963737,0.963737
+org.apache.dubbo.remoting.exchange.codec.ExchangeCodec,decode,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/buffer/ChannelBuffer;I[B)Ljava/lang/Object;,10,27,37.0%,"@Override
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        int readable = buffer.readableBytes();
+        byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
+        buffer.readBytes(header);
+        return decode(channel, buffer, readable, header);
+    }",80-86,0.9887449,0.9637097,0.9637097
+org.apache.dubbo.remoting.exchange.codec.ExchangeCodec,decode,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/buffer/ChannelBuffer;)Ljava/lang/Object;,4,4,100.0%,"@Override
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        int readable = buffer.readableBytes();
+        byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
+        buffer.readBytes(header);
+        return decode(channel, buffer, readable, header);
+    }",80-86,0.9887449,0.9637097,0.9637097
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,returnFromResponse,()Ljava/lang/Object;,4,8,50.0%,"private Object returnFromResponse() throws RemotingException {
+        Response res = response;
+        if (res == null) {
+            throw new IllegalStateException(""response cannot be null"");
+        }
+        if (res.getStatus() == Response.OK) {
+            return res.getResult();
+        }
+        if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
+            throw new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage());
+        }
+        throw new RemotingException(channel, res.getErrorMessage());
+    }",287-299,0.9417338,0.963236,0.963236
+org.apache.dubbo.remoting.transport.AbstractChannel,send,(Ljava/lang/Object;Z)V,2,5,40.0%,"@Override
+    public void send(Object message, boolean sent) throws RemotingException {
+        if (isClosed()) {
+            throw new RemotingException(this, ""Failed to send message ""
+                    + (message == null ? """" : message.getClass().getName()) + "":"" + message
+                    + "", cause: Channel closed. channel: "" + getLocalAddress() + "" -> "" + getRemoteAddress());
+        }
+    }",33-40,0.98723644,0.9618349,0.9618349
+org.apache.dubbo.common.utils.NamedThreadFactory,newThread,(Ljava/lang/Runnable;)Ljava/lang/Thread;,4,4,100.0%,"@Override
+    public Thread newThread(Runnable runnable) {
+        String name = mPrefix + mThreadNum.getAndIncrement();
+        Thread ret = new Thread(mGroup, runnable, name, 0);
+        ret.setDaemon(mDaemon);
+        return ret;
+    }",52-58,0.98735195,0.96097505,0.96097505
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler,handleResponse,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/exchange/Response;)V,3,3,100.0%,"static void handleResponse(Channel channel, Response response) throws RemotingException {
+        if (response != null && !response.isHeartbeat()) {
+            DefaultFuture.received(channel, response);
+        }
+    }",60-64,0.9860999,0.959619,0.959619
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,newFuture,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/exchange/Request;I)Lorg/apache/dubbo/remoting/exchange/support/DefaultFuture;,3,3,100.0%,"public static DefaultFuture newFuture(Channel channel, Request request, int timeout) {
+        final DefaultFuture future = new DefaultFuture(channel, request, timeout);
+        // timeout check
+        timeoutCheck(future);
+        return future;
+    }",100-105,0.98150474,0.95957434,0.95957434
+org.apache.dubbo.common.extension.ExtensionLoader,loadClass,(Ljava/util/Map;Ljava/net/URL;Ljava/lang/Class;Ljava/lang/String;)V,27,40,67.5%,"private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
+        if (!type.isAssignableFrom(clazz)) {
+            throw new IllegalStateException(""Error when load extension class(interface: "" +
+                    type + "", class line: "" + clazz.getName() + ""), class ""
+                    + clazz.getName() + ""is not subtype of interface."");
+        }
+        if (clazz.isAnnotationPresent(Adaptive.class)) {
+            if (cachedAdaptiveClass == null) {
+                cachedAdaptiveClass = clazz;
+            } else if (!cachedAdaptiveClass.equals(clazz)) {
+                throw new IllegalStateException(""More than 1 adaptive class found: ""
+                        + cachedAdaptiveClass.getClass().getName()
+                        + "", "" + clazz.getClass().getName());
+            }
+        } else if (isWrapperClass(clazz)) {
+            Set<Class<?>> wrappers = cachedWrapperClasses;
+            if (wrappers == null) {
+                cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
+                wrappers = cachedWrapperClasses;
+            }
+            wrappers.add(clazz);
+        } else {
+            clazz.getConstructor();
+            if (name == null || name.length() == 0) {
+                name = findAnnotationName(clazz);
+                if (name.length() == 0) {
+                    throw new IllegalStateException(""No such extension name for the class "" + clazz.getName() + "" in the config "" + resourceURL);
+                }
+            }
+            String[] names = NAME_SEPARATOR.split(name);
+            if (names != null && names.length > 0) {
+                Activate activate = clazz.getAnnotation(Activate.class);
+                if (activate != null) {
+                    cachedActivates.put(names[0], activate);
+                } else {
+                    // support com.alibaba.dubbo.common.extension.Activate
+                    com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
+                    if (oldActivate != null) {
+                        cachedActivates.put(names[0], oldActivate);
+                    }
+                }
+                for (String n : names) {
+                    if (!cachedNames.containsKey(clazz)) {
+                        cachedNames.put(clazz, n);
+                    }
+                    Class<?> c = extensionClasses.get(n);
+                    if (c == null) {
+                        extensionClasses.put(n, clazz);
+                    } else if (c != clazz) {
+                        throw new IllegalStateException(""Duplicate extension "" + type.getName() + "" name "" + n + "" on "" + c.getName() + "" and "" + clazz.getName());
+                    }
+                }
+            }
+        }
+    }",657-711,0.9357148,0.95938444,0.95938444
+org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable,run,()V,7,28,25.0%,"@Override
+    public void run() {
+        if (state == ChannelState.RECEIVED) {
+            try {
+                handler.received(channel, message);
+            } catch (Exception e) {
+                logger.warn(""ChannelEventRunnable handle "" + state + "" operation error, channel is "" + channel
+                        + "", message is "" + message, e);
+            }
+        } else {
+            switch (state) {
+            case CONNECTED:
+                try {
+                    handler.connected(channel);
+                } catch (Exception e) {
+                    logger.warn(""ChannelEventRunnable handle "" + state + "" operation error, channel is "" + channel, e);
+                }
+                break;
+            case DISCONNECTED:
+                try {
+                    handler.disconnected(channel);
+                } catch (Exception e) {
+                    logger.warn(""ChannelEventRunnable handle "" + state + "" operation error, channel is "" + channel, e);
+                }
+                break;
+            case SENT:
+                try {
+                    handler.sent(channel, message);
+                } catch (Exception e) {
+                    logger.warn(""ChannelEventRunnable handle "" + state + "" operation error, channel is "" + channel
+                            + "", message is "" + message, e);
+                }
+                break;
+            case CAUGHT:
+                try {
+                    handler.caught(channel, exception);
+                } catch (Exception e) {
+                    logger.warn(""ChannelEventRunnable handle "" + state + "" operation error, channel is "" + channel
+                            + "", message is: "" + message + "", exception is "" + exception, e);
+                }
+                break;
+            default:
+                logger.warn(""unknown state: "" + state + "", message is "" + message);
+            }
+        }
+
+    }",53-99,0.9259063,0.9589685,0.9589685
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,setIndexedVariable,(ILjava/lang/Object;)Z,5,7,71.4%,"public boolean setIndexedVariable(int index, Object value) {
+        Object[] lookup = indexedVariables;
+        if (index < lookup.length) {
+            Object oldValue = lookup[index];
+            lookup[index] = value;
+            return oldValue == UNSET;
+        } else {
+            expandIndexedVariableTableAndSet(index, value);
+            return true;
+        }
+    }",91-101,0.93374366,0.95864123,0.95864123
+org.apache.dubbo.rpc.StaticContext,getContext,(Ljava/lang/String;)Lorg/apache/dubbo/rpc/StaticContext;,6,6,100.0%,"public static StaticContext getContext(String name) {
+        StaticContext appContext = context_map.get(name);
+        if (appContext == null) {
+            appContext = context_map.putIfAbsent(name, new StaticContext(name));
+            if (appContext == null) {
+                appContext = context_map.get(name);
+            }
+        }
+        return appContext;
+    }",44-53,0.9275784,0.9574541,0.9574541
+org.apache.dubbo.common.threadlocal.InternalThread,setThreadLocalMap,(Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;)V,2,2,100.0%,"public final void setThreadLocalMap(InternalThreadLocalMap threadLocalMap) {
+        this.threadLocalMap = threadLocalMap;
+    }",70-72,0.9634768,0.9554269,0.9554269
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,timeoutCheck,(Lorg/apache/dubbo/remoting/exchange/support/DefaultFuture;)V,3,3,100.0%,"private static void timeoutCheck(DefaultFuture future) {
+        TimeoutCheckTask task = new TimeoutCheckTask(future);
+        TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+    }",85-88,0.98329055,0.9543774,0.9543774
+org.apache.dubbo.rpc.filter.EchoFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,3,66.7%,"@Override
+    public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
+        if (inv.getMethodName().equals(Constants.$ECHO) && inv.getArguments() != null && inv.getArguments().length == 1)
+            return new RpcResult(inv.getArguments()[0]);
+        return invoker.invoke(inv);
+    }",34-39,0.9812063,0.95139307,0.95139307
+org.apache.dubbo.common.Version,getDigital,(Ljava/lang/String;)Ljava/lang/String;,7,11,63.6%,"private static String getDigital(String v) {
+        int index = 0;
+        for (int i = 0; i < v.length(); i++) {
+            char c = v.charAt(i);
+            if (Character.isDigit(c)) {
+                if (i == v.length() - 1) {
+                    index = i + 1;
+                } else {
+                    index = i;
+                }
+                continue;
+            } else {
+                index = i;
+                break;
+            }
+        }
+        return v.substring(0, index);
+    }",97-114,0.90616745,0.9431522,0.9431522
+org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler,setWriteTimestamp,(Lorg/apache/dubbo/remoting/Channel;)V,2,2,100.0%,"private void setWriteTimestamp(Channel channel) {
+        channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
+    }",95-97,0.9742795,0.9415322,0.9415322
+org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler,setReadTimestamp,(Lorg/apache/dubbo/remoting/Channel;)V,2,2,100.0%,"private void setReadTimestamp(Channel channel) {
+        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
+    }",91-93,0.9738867,0.94107693,0.94107693
+org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter,invoke,(Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,2,100.0%,"@Override
+    public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
+        fireInvokeCallback(invoker, invocation);
+        // need to configure if there's return value before the invocation in order to help invoker to judge if it's
+        // necessary to return future.
+        return postProcessResult(invoker.invoke(invocation), invoker, invocation);
+    }",42-48,0.9727012,0.9409746,0.9409746
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,isConnected,()Z,1,1,100.0%,"@Override
+    public boolean isConnected() {
+        return !isClosed() && channel.isActive();
+    }",89-92,0.97333056,0.93861127,0.93861127
+org.apache.dubbo.rpc.support.RpcUtils,attachInvocationIdIfAsync,(Lorg/apache/dubbo/common/URL;Lorg/apache/dubbo/rpc/Invocation;)V,2,3,66.7%,"public static void attachInvocationIdIfAsync(URL url, Invocation inv) {
+        if (isAttachInvocationId(url, inv) && getInvocationId(inv) == null && inv instanceof RpcInvocation) {
+            ((RpcInvocation) inv).setAttachment(Constants.ID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
+        }
+    }",120-124,0.97108364,0.93601596,0.93601596
+org.apache.dubbo.common.logger.log4j.Log4jLogger,isInfoEnabled,()Z,1,1,100.0%,"@Override
+    public boolean isInfoEnabled() {
+        return logger.isInfoEnabled();
+    }",119-122,0.96938527,0.9350685,0.9350685
+org.apache.dubbo.common.extension.ExtensionLoader,getSupportedExtensions,()Ljava/util/Set;,2,2,100.0%,"public Set<String> getSupportedExtensions() {
+        Map<String, Class<?>> clazzes = getExtensionClasses();
+        return Collections.unmodifiableSet(new TreeSet<String>(clazzes.keySet()));
+    }",352-355,0.9703099,0.9350315,0.9350315
+org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol$1,connected,(Lorg/apache/dubbo/remoting/Channel;)V,2,2,100.0%,"@Override
+        public void connected(Channel channel) throws RemotingException {
+            invoke(channel, Constants.ON_CONNECT_KEY);
+        }",136-139,0.9707041,0.93424696,0.93424696
+org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler,isHeartbeatRequest,(Ljava/lang/Object;)Z,1,1,100.0%,"private boolean isHeartbeatRequest(Object message) {
+        return message instanceof Request && ((Request) message).isHeartbeat();
+    }",107-109,0.96690744,0.9339681,0.9339681
+org.apache.dubbo.rpc.filter.ContextFilter,doPostProcess,(Lorg/apache/dubbo/rpc/Result;Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,2,100.0%,"@Override
+    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+        // pass attachments to result
+        result.addAttachments(RpcContext.getServerContext().getAttachments());
+        return result;
+    }",81-86,0.96933806,0.93329835,0.93329835
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,onRemoval,(Ljava/lang/Object;)V,1,1,100.0%,"protected void onRemoval(@SuppressWarnings(""unused"") V value) throws Exception {
+    }",196-197,0.9677726,0.9325981,0.9325981
+org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler,sent,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,3,3,100.0%,"@Override
+    public void sent(Channel channel, Object message) throws RemotingException {
+        setWriteTimestamp(channel);
+        handler.sent(channel, message);
+    }",56-60,0.96868026,0.9324834,0.9324834
+org.apache.dubbo.rpc.filter.ConsumerContextFilter,doPostProcess,(Lorg/apache/dubbo/rpc/Result;Lorg/apache/dubbo/rpc/Invoker;Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,2,2,100.0%,"@Override
+    protected Result doPostProcess(Result result, Invoker<?> invoker, Invocation invocation) {
+        RpcContext.getServerContext().setAttachments(result.getAttachments());
+        return result;
+    }",57-61,0.9683999,0.93168885,0.93168885
+org.apache.dubbo.rpc.support.RpcUtils,hasGeneratedFuture,(Ljava/lang/reflect/Method;)Z,2,2,100.0%,"public static boolean hasGeneratedFuture(Method method) {
+        Class<?> clazz = method.getDeclaringClass();
+        return clazz.isAnnotationPresent(AsyncFor.class) && method.getName().endsWith(Constants.ASYNC_SUFFIX) && hasFutureReturnType(method);
+    }",190-193,0.9665362,0.9308338,0.9308338
+org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization,getContentTypeId,()B,1,1,100.0%,"@Override
+    public byte getContentTypeId() {
+        return ID;
+    }",32-35,0.9658298,0.9286954,0.9286954
+org.apache.dubbo.common.logger.log4j.Log4jLogger,isDebugEnabled,()Z,1,1,100.0%,"@Override
+    public boolean isDebugEnabled() {
+        return logger.isDebugEnabled();
+    }",114-117,0.96449274,0.927916,0.927916
+org.apache.dubbo.rpc.StaticContext,getKey,(Lorg/apache/dubbo/common/URL;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,1,1,100.0%,"public static String getKey(URL url, String methodName, String suffix) {
+        return getKey(url.getServiceKey(), methodName, suffix);
+    }",59-61,0.96306324,0.92715,0.92715
+org.apache.dubbo.rpc.StaticContext,getKey,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,2,2,100.0%,"public static String getKey(URL url, String methodName, String suffix) {
+        return getKey(url.getServiceKey(), methodName, suffix);
+    }",59-61,0.96306324,0.92715,0.92715
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,removeChannelIfDisconnected,(Lio/netty/channel/Channel;)V,2,3,66.7%,"static void removeChannelIfDisconnected(Channel ch) {
+        if (ch != null && !ch.isActive()) {
+            channelMap.remove(ch);
+        }
+    }",73-77,0.96081465,0.92698914,0.92698914
+org.apache.dubbo.remoting.exchange.support.header.HeartbeatHandler,isHeartbeatResponse,(Ljava/lang/Object;)Z,1,1,100.0%,"private boolean isHeartbeatResponse(Object message) {
+        return message instanceof Response && ((Response) message).isHeartbeat();
+    }",111-113,0.96253234,0.9263055,0.9263055
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writeBytes,([BII)V,2,2,100.0%,"@Override
+    public void writeBytes(byte[] src) {
+        buffer.writeBytes(src);
+    }",380-383,0.96406347,0.92528975,0.92528975
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writeBytes,([B)V,2,2,100.0%,"@Override
+    public void writeBytes(byte[] src) {
+        buffer.writeBytes(src);
+    }",380-383,0.96406347,0.92528975,0.92528975
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readable,()Z,1,1,100.0%,"@Override
+    public boolean readable() {
+        return buffer.isReadable();
+    }",218-221,0.9615189,0.9239713,0.9239713
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readBytes,([B)V,2,2,100.0%,"@Override
+    public void readBytes(byte[] dst) {
+        buffer.readBytes(dst);
+    }",236-239,0.9627833,0.9236574,0.9236574
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readBytes,([BII)V,2,2,100.0%,"@Override
+    public void readBytes(byte[] dst) {
+        buffer.readBytes(dst);
+    }",236-239,0.9627833,0.9236574,0.9236574
+org.apache.dubbo.remoting.buffer.ChannelBufferInputStream,available,()I,1,1,100.0%,"@Override
+    public int available() throws IOException {
+        return endIndex - buffer.readerIndex();
+    }",54-57,0.96259004,0.9233212,0.9233212
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writerIndex,()I,1,1,100.0%,"@Override
+    public int writerIndex() {
+        return buffer.writerIndex();
+    }",431-434,0.96190745,0.9229804,0.9229804
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,writerIndex,(I)V,2,2,100.0%,"@Override
+    public int writerIndex() {
+        return buffer.writerIndex();
+    }",431-434,0.96190745,0.9229804,0.9229804
+org.apache.dubbo.rpc.RpcContext,setParameterTypes,([Ljava/lang/Class;)V,2,2,100.0%,"public void setParameterTypes(Class<?>[] parameterTypes) {
+        this.parameterTypes = parameterTypes;
+    }",276-278,0.9575788,0.9225806,0.9225806
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,markReaderIndex,()V,2,2,100.0%,"@Override
+    public void markReaderIndex() {
+        buffer.markReaderIndex();
+    }",206-209,0.96169615,0.92255294,0.92255294
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readableBytes,()I,1,1,100.0%,"@Override
+    public int readableBytes() {
+        return buffer.readableBytes();
+    }",224-227,0.961331,0.9218798,0.9218798
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,doSent,()V,2,2,100.0%,"private void doSent() {
+        sent = System.currentTimeMillis();
+    }",325-327,0.9554765,0.9181681,0.9181681
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readerIndex,(I)V,2,2,100.0%,"@Override
+    public int readerIndex() {
+        return buffer.readerIndex();
+    }",302-305,0.9585047,0.9181313,0.9181313
+org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer,readerIndex,()I,1,1,100.0%,"@Override
+    public int readerIndex() {
+        return buffer.readerIndex();
+    }",302-305,0.9585047,0.9181313,0.9181313
+org.apache.dubbo.remoting.transport.AbstractPeer,isClosed,()Z,1,1,100.0%,"@Override
+    public boolean isClosed() {
+        return closed;
+    }",112-115,0.95714945,0.9180104,0.9180104
+org.apache.dubbo.rpc.protocol.AbstractInvoker,getInterface,()Ljava/lang/Class;,1,1,100.0%,"@Override
+    public Class<T> getInterface() {
+        return type;
+    }",89-92,0.9559224,0.9147267,0.9147267
+org.apache.dubbo.rpc.proxy.AbstractProxyInvoker,getInterface,()Ljava/lang/Class;,1,1,100.0%,"@Override
+    public Class<T> getInterface() {
+        return type;
+    }",61-64,0.9559224,0.9147267,0.9147267
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,getAttribute,(Ljava/lang/String;)Ljava/lang/Object;,1,1,100.0%,"@Override
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }",152-155,0.9547076,0.91448015,0.91448015
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectOutput,writeByte,(B)V,2,2,100.0%,"@Override
+    public void writeByte(byte v) throws IOException {
+        mH2o.writeInt(v);
+    }",41-44,0.9560033,0.91433233,0.91433233
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,toString,()Ljava/lang/String;,1,1,100.0%,"@Override
+    public String toString() {
+        return ""NettyChannel [channel="" + channel + ""]"";
+    }",191-194,0.9562834,0.914073,0.914073
+org.apache.dubbo.rpc.protocol.AbstractInvoker,getUrl,()Lorg/apache/dubbo/common/URL;,1,1,100.0%,"@Override
+    public URL getUrl() {
+        return url;
+    }",94-97,0.9553409,0.91378,0.91378
+org.apache.dubbo.rpc.proxy.AbstractProxyInvoker,getUrl,()Lorg/apache/dubbo/common/URL;,1,1,100.0%,"@Override
+    public URL getUrl() {
+        return url;
+    }",66-69,0.9553409,0.91378,0.91378
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,isDone,()Z,1,1,100.0%,"@Override
+    public boolean isDone() {
+        return response != null;
+    }",202-205,0.9529723,0.91336584,0.91336584
+org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization,deserialize,(Lorg/apache/dubbo/common/URL;Ljava/io/InputStream;)Lorg/apache/dubbo/common/serialize/ObjectInput;,1,1,100.0%,"@Override
+    public ObjectInput deserialize(URL url, InputStream is) throws IOException {
+        return new Hessian2ObjectInput(is);
+    }",47-50,0.955395,0.9130251,0.9130251
+org.apache.dubbo.rpc.protocol.dubbo.DubboCountCodec,encode,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/remoting/buffer/ChannelBuffer;Ljava/lang/Object;)V,2,2,100.0%,"@Override
+    public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
+        codec.encode(channel, buffer, msg);
+    }",36-39,0.95404166,0.91204065,0.91204065
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectOutput,writeUTF,(Ljava/lang/String;)V,2,2,100.0%,"@Override
+    public void writeUTF(String v) throws IOException {
+        mH2o.writeString(v);
+    }",81-84,0.95395535,0.9116302,0.9116302
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectInput,readByte,()B,1,1,100.0%,"@Override
+    public byte readByte() throws IOException {
+        return (byte) mH2i.readInt();
+    }",42-45,0.95418596,0.9115769,0.9115769
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,get,(I)Ljava/lang/Object;,10,15,66.7%,"@Override
+    public Object get() throws RemotingException {
+        return get(timeout);
+    }",162-165,0.95340234,0.91119105,0.91119105
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,get,()Ljava/lang/Object;,1,1,100.0%,"@Override
+    public Object get() throws RemotingException {
+        return get(timeout);
+    }",162-165,0.95340234,0.91119105,0.91119105
+org.apache.dubbo.common.io.Bytes,bytes2long,([BI)J,1,1,100.0%,"public static long bytes2long(byte[] b) {
+        return bytes2long(b, 0);
+    }",328-330,0.95275664,0.91062903,0.91062903
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectOutput,flushBuffer,()V,2,2,100.0%,"@Override
+    public void flushBuffer() throws IOException {
+        mH2o.flushBuffer();
+    }",91-94,0.9532552,0.9105061,0.9105061
+org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter,getLogger,(Ljava/lang/Class;)Lorg/apache/dubbo/common/logger/Logger;,1,1,100.0%,"@Override
+    public Logger getLogger(Class<?> key) {
+        return new Log4jLogger(LogManager.getLogger(key));
+    }",90-93,0.95283103,0.91041195,0.91041195
+org.apache.dubbo.common.Version,getProtocolVersion,()Ljava/lang/String;,1,1,100.0%,"public static String getProtocolVersion() {
+        return DEFAULT_DUBBO_PROTOCOL_VERSION;
+    }",57-59,0.94893074,0.91017246,0.91017246
+org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization,serialize,(Lorg/apache/dubbo/common/URL;Ljava/io/OutputStream;)Lorg/apache/dubbo/common/serialize/ObjectOutput;,1,1,100.0%,"@Override
+    public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
+        return new Hessian2ObjectOutput(out);
+    }",42-45,0.9524079,0.9091908,0.9091908
+org.apache.dubbo.remoting.transport.ChannelHandlerAdapter,sent,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,1,1,100.0%,"@Override
+    public void sent(Channel channel, Object message) throws RemotingException {
+    }",36-38,0.95182997,0.9091136,0.9091136
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,remove,()V,2,2,100.0%,"@SuppressWarnings(""unchecked"")
+    public final void remove() {
+        remove(InternalThreadLocalMap.getIfSet());
+    }",158-161,0.95200413,0.9089551,0.9089551
+org.apache.dubbo.common.threadlocal.InternalThreadLocal,remove,(Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;)V,7,10,70.0%,"@SuppressWarnings(""unchecked"")
+    public final void remove() {
+        remove(InternalThreadLocalMap.getIfSet());
+    }",158-161,0.95200413,0.9089551,0.9089551
+org.apache.dubbo.remoting.transport.CodecSupport,getSerializationById,(Ljava/lang/Byte;)Lorg/apache/dubbo/common/serialize/Serialization;,1,1,100.0%,"public static Serialization getSerializationById(Byte id) {
+        return ID_SERIALIZATION_MAP.get(id);
+    }",58-60,0.9493717,0.9088516,0.9088516
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectInput,readUTF,()Ljava/lang/String;,1,1,100.0%,"@Override
+    public String readUTF() throws IOException {
+        return mH2i.readString();
+    }",77-80,0.9516779,0.90851015,0.90851015
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,getRemoteAddress,()Ljava/net/InetSocketAddress;,1,1,100.0%,"@Override
+    public InetSocketAddress getRemoteAddress() {
+        return (InetSocketAddress) channel.remoteAddress();
+    }",84-87,0.9518381,0.9082201,0.9082201
+org.apache.dubbo.remoting.transport.netty4.NettyChannel,getLocalAddress,()Ljava/net/InetSocketAddress;,1,1,100.0%,"@Override
+    public InetSocketAddress getLocalAddress() {
+        return (InetSocketAddress) channel.localAddress();
+    }",79-82,0.9516527,0.9081009,0.9081009
+org.apache.dubbo.rpc.protocol.dubbo.ReferenceCountExchangeClient,request,(Ljava/lang/Object;I)Lorg/apache/dubbo/remoting/exchange/ResponseFuture;,1,1,100.0%,"@Override
+    public ResponseFuture request(Object request) throws RemotingException {
+        return client.request(request);
+    }",61-64,0.95042884,0.9068271,0.9068271
+org.apache.dubbo.rpc.RpcContext,setMethodName,(Ljava/lang/String;)V,2,2,100.0%,"public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }",263-265,0.94090384,0.906814,0.906814
+org.apache.dubbo.common.utils.NetUtils,getLocalHost,()Ljava/lang/String;,2,2,100.0%,"public static String getLocalHost() {
+        InetAddress address = getLocalAddress();
+        return address == null ? LOCALHOST : address.getHostAddress();
+    }",191-194,0.94706094,0.9060328,0.9060328
+org.apache.dubbo.remoting.transport.AbstractCodec,getSerialization,(Lorg/apache/dubbo/remoting/Channel;)Lorg/apache/dubbo/common/serialize/Serialization;,1,1,100.0%,"protected Serialization getSerialization(Channel channel) {
+        return CodecSupport.getSerialization(channel.getUrl());
+    }",50-52,0.9491721,0.9059136,0.9059136
+org.apache.dubbo.remoting.transport.CodecSupport,getSerialization,(Lorg/apache/dubbo/common/URL;Ljava/lang/Byte;)Lorg/apache/dubbo/common/serialize/Serialization;,5,6,83.3%,"public static Serialization getSerialization(URL url) {
+        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
+                url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+    }",62-65,0.94246155,0.90569276,0.90569276
+org.apache.dubbo.remoting.transport.CodecSupport,getSerialization,(Lorg/apache/dubbo/common/URL;)Lorg/apache/dubbo/common/serialize/Serialization;,2,2,100.0%,"public static Serialization getSerialization(URL url) {
+        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
+                url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+    }",62-65,0.94246155,0.90569276,0.90569276
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,getFuture,(J)Lorg/apache/dubbo/remoting/exchange/support/DefaultFuture;,1,1,100.0%,"public static DefaultFuture getFuture(long id) {
+        return FUTURES.get(id);
+    }",107-109,0.94586974,0.905312,0.905312
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectOutput,writeObject,(Ljava/lang/Object;)V,2,2,100.0%,"@Override
+    public void writeObject(Object obj) throws IOException {
+        mH2o.writeObject(obj);
+    }",86-89,0.9481573,0.903894,0.903894
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectInput,readObject,(Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"@Override
+    public Object readObject() throws IOException {
+        return mH2i.readObject();
+    }",82-85,0.9480697,0.9037186,0.9037186
+org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectInput,readObject,(Ljava/lang/Class;Ljava/lang/reflect/Type;)Ljava/lang/Object;,1,1,100.0%,"@Override
+    public Object readObject() throws IOException {
+        return mH2i.readObject();
+    }",82-85,0.9480697,0.9037186,0.9037186
+org.apache.dubbo.rpc.protocol.AbstractExporter,getInvoker,()Lorg/apache/dubbo/rpc/Invoker;,1,1,100.0%,"@Override
+    public Invoker<T> getInvoker() {
+        return invoker;
+    }",45-48,0.9471462,0.90311307,0.90311307
+org.apache.dubbo.rpc.support.RpcUtils,isGeneratedFuture,(Lorg/apache/dubbo/rpc/Invocation;)Z,1,1,100.0%,"public static boolean isGeneratedFuture(Invocation inv) {
+        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_GENERATED_KEY));
+    }",186-188,0.9449963,0.90247923,0.90247923
+org.apache.dubbo.common.io.Bytes,bytes2int,([BI)I,1,1,100.0%,"public static int bytes2int(byte[] b) {
+        return bytes2int(b, 0);
+    }",279-281,0.94462645,0.90100574,0.90100574
+org.apache.dubbo.rpc.protocol.dubbo.DubboCodec,encodeRequestData,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/common/serialize/ObjectOutput;Ljava/lang/Object;Ljava/lang/String;)V,12,12,100.0%,"@Override
+    protected void encodeRequestData(Channel channel, ObjectOutput out, Object data) throws IOException {
+        encodeRequestData(channel, out, data, DUBBO_VERSION);
+    }",167-170,0.9457173,0.9008889,0.9008889
+org.apache.dubbo.remoting.transport.AbstractPeer,send,(Ljava/lang/Object;)V,2,2,100.0%,"@Override
+    public void send(Object message) throws RemotingException {
+        send(message, url.getParameter(Constants.SENT_KEY, false));
+    }",51-54,0.9458951,0.90086085,0.90086085
+org.apache.dubbo.common.timer.HashedWheelTimer,isWindows,()Z,1,1,100.0%,"private boolean isWindows() {
+        return System.getProperty(""os.name"", """").toLowerCase(Locale.US).contains(""win"");
+    }",802-804,0.9407381,0.89987874,0.89987874
+org.apache.dubbo.rpc.support.RpcUtils,isFutureReturnType,(Lorg/apache/dubbo/rpc/Invocation;)Z,1,1,100.0%,"public static boolean isFutureReturnType(Invocation inv) {
+        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_RETURNTYPE_KEY));
+    }",195-197,0.9431289,0.8994902,0.8994902
+org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient,request,(Ljava/lang/Object;I)Lorg/apache/dubbo/remoting/exchange/ResponseFuture;,1,1,100.0%,"@Override
+    public ResponseFuture request(Object request) throws RemotingException {
+        return channel.request(request);
+    }",73-76,0.9447841,0.8993738,0.8993738
+org.apache.dubbo.common.extension.ExtensionLoader,findClassLoader,()Ljava/lang/ClassLoader;,1,1,100.0%,"private static ClassLoader findClassLoader() {
+        return ExtensionLoader.class.getClassLoader();
+    }",125-127,0.9436342,0.8984988,0.8984988
+org.apache.dubbo.rpc.protocol.dubbo.DubboCodec,encodeResponseData,(Lorg/apache/dubbo/remoting/Channel;Lorg/apache/dubbo/common/serialize/ObjectOutput;Ljava/lang/Object;Ljava/lang/String;)V,13,16,81.2%,"@Override
+    protected void encodeResponseData(Channel channel, ObjectOutput out, Object data) throws IOException {
+        encodeResponseData(channel, out, data, DUBBO_VERSION);
+    }",172-175,0.94390506,0.89845973,0.89845973
+org.apache.dubbo.common.threadlocal.InternalThread,threadLocalMap,()Lorg/apache/dubbo/common/threadlocal/InternalThreadLocalMap;,1,1,100.0%,"public final InternalThreadLocalMap threadLocalMap() {
+        return threadLocalMap;
+    }",62-64,0.94256043,0.89732635,0.89732635
+org.apache.dubbo.remoting.transport.AbstractChannelHandlerDelegate,connected,(Lorg/apache/dubbo/remoting/Channel;)V,2,2,100.0%,"@Override
+    public void connected(Channel channel) throws RemotingException {
+        handler.connected(channel);
+    }",41-44,0.9426347,0.8963985,0.8963985
+org.apache.dubbo.common.utils.NetUtils,toAddressString,(Ljava/net/InetSocketAddress;)Ljava/lang/String;,1,1,100.0%,"public static String toAddressString(InetSocketAddress address) {
+        return address.getAddress().getHostAddress() + "":"" + address.getPort();
+    }",314-316,0.9400794,0.8948967,0.8948967
+org.apache.dubbo.common.extension.ExtensionLoader,withExtensionAnnotation,(Ljava/lang/Class;)Z,1,1,100.0%,"private static <T> boolean withExtensionAnnotation(Class<T> type) {
+        return type.isAnnotationPresent(SPI.class);
+    }",101-103,0.94024813,0.89463073,0.89463073
+org.apache.dubbo.rpc.support.RpcUtils,hasFutureReturnType,(Ljava/lang/reflect/Method;)Z,1,1,100.0%,"public static boolean hasFutureReturnType(Method method) {
+        return CompletableFuture.class.isAssignableFrom(method.getReturnType());
+    }",199-201,0.9381658,0.8942699,0.8942699
+org.apache.dubbo.rpc.listener.ListenerInvokerWrapper,invoke,(Lorg/apache/dubbo/rpc/Invocation;)Lorg/apache/dubbo/rpc/Result;,1,1,100.0%,"@Override
+    public Result invoke(Invocation invocation) throws RpcException {
+        return invoker.invoke(invocation);
+    }",75-78,0.9398683,0.893446,0.893446
+org.apache.dubbo.remoting.transport.AbstractPeer,getUrl,()Lorg/apache/dubbo/common/URL;,1,1,100.0%,"@Override
+    public URL getUrl() {
+        return url;
+    }",74-77,0.93952215,0.89275765,0.89275765
+org.apache.dubbo.remoting.transport.AbstractChannelHandlerDelegate,sent,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,2,2,100.0%,"@Override
+    public void sent(Channel channel, Object message) throws RemotingException {
+        handler.sent(channel, message);
+    }",51-54,0.938126,0.89133567,0.89133567
+org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler,sent,(Lorg/apache/dubbo/remoting/Channel;Ljava/lang/Object;)V,2,2,100.0%,"@Override
+    public void sent(Channel channel, Object message) throws RemotingException {
+        handler.sent(channel, message);
+    }",80-83,0.938126,0.89133567,0.89133567
+org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream,writtenBytes,()I,1,1,100.0%,"public int writtenBytes() {
+        return buffer.writerIndex() - startIndex;
+    }",36-38,0.9355654,0.8887384,0.8887384
+org.apache.dubbo.remoting.exchange.Response,isHeartbeat,()Z,1,1,100.0%,"public boolean isHeartbeat() {
+        return mEvent && HEARTBEAT_EVENT == mResult;
+    }",140-142,0.9332145,0.8859638,0.8859638
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,getTimeout,()I,1,1,100.0%,"private int getTimeout() {
+        return timeout;
+    }",317-319,0.93010736,0.8850677,0.8850677
+org.apache.dubbo.common.utils.ReflectUtils,desc2class,(Ljava/lang/ClassLoader;Ljava/lang/String;)Ljava/lang/Class;,9,22,40.9%,"public static Class<?> desc2class(String desc) throws ClassNotFoundException {
+        return desc2class(ClassHelper.getClassLoader(), desc);
+    }",676-678,0.93233925,0.8840925,0.8840925
+org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter,getEncoder,()Lio/netty/channel/ChannelHandler;,1,1,100.0%,"public ChannelHandler getEncoder() {
+        return encoder;
+    }",54-56,0.9308225,0.8834744,0.8834744
+org.apache.dubbo.remoting.exchange.support.DefaultFuture,getRequest,()Lorg/apache/dubbo/remoting/exchange/Request;,1,1,100.0%,"public Request getRequest() {
+        return request;
+    }",313-315,0.9299667,0.88291204,0.88291204
+org.apache.dubbo.common.utils.ReflectUtils,name2class,(Ljava/lang/ClassLoader;Ljava/lang/String;)Ljava/lang/Class;,18,36,50.0%,"public static Class<?> name2class(String name) throws ClassNotFoundException {
+        return name2class(ClassHelper.getClassLoader(), name);
+    }",610-612,0.9308864,0.88238895,0.88238895
+org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter,getDecoder,()Lio/netty/channel/ChannelHandler;,1,1,100.0%,"public ChannelHandler getDecoder() {
+        return decoder;
+    }",58-60,0.9287553,0.8813191,0.8813191
+org.apache.dubbo.rpc.RpcContext,setFuture,(Ljava/util/concurrent/Future;)V,2,2,100.0%,"public void setFuture(Future<?> future) {
+        this.future = future;
+    }",234-236,0.92544395,0.8801594,0.8801594
+org.apache.dubbo.rpc.RpcContext,getAttachments,()Ljava/util/Map;,1,1,100.0%,"public Map<String, String> getAttachments() {
+        return attachments;
+    }",484-486,0.9272662,0.8783044,0.8783044
+org.apache.dubbo.rpc.RpcContext,getServerContext,()Lorg/apache/dubbo/rpc/RpcContext;,1,1,100.0%,"public static RpcContext getServerContext() {
+        return SERVER_LOCAL.get();
+    }",104-106,0.92586714,0.8772425,0.8772425
+org.apache.dubbo.rpc.StaticContext,getSystemContext,()Lorg/apache/dubbo/rpc/StaticContext;,1,1,100.0%,"public static StaticContext getSystemContext() {
+        return getContext(SYSTEMNAME);
+    }",40-42,0.9170311,0.87463504,0.87463504
+org.apache.dubbo.common.utils.Holder,get,()Ljava/lang/Object;,1,1,100.0%,"public T get() {
+        return value;
+    }",30-32,0.9229995,0.87432086,0.87432086
+org.apache.dubbo.remoting.exchange.support.MultiMessage,isEmpty,()Z,1,1,100.0%,"public boolean isEmpty() {
+        return messages.isEmpty();
+    }",71-73,0.9152184,0.8734534,0.8734534
+org.apache.dubbo.common.URL,getServiceInterface,()Ljava/lang/String;,1,1,100.0%,"public String getServiceInterface() {
+        return getParameter(Constants.INTERFACE_KEY, path);
+    }",1248-1250,0.9216454,0.87146413,0.87146413
+org.apache.dubbo.rpc.RpcContext,getContext,()Lorg/apache/dubbo/rpc/RpcContext;,1,1,100.0%,"public static RpcContext getContext() {
+        return LOCAL.get();
+    }",126-128,0.9164087,0.86550033,0.86550033
+org.apache.dubbo.remoting.transport.AbstractEndpoint,getCodec,()Lorg/apache/dubbo/remoting/Codec2;,1,1,100.0%,"protected Codec2 getCodec() {
+        return codec;
+    }",100-102,0.91333073,0.8639367,0.8639367
+org.apache.dubbo.remoting.exchange.Response,getId,()J,1,1,100.0%,"public long getId() {
+        return mId;
+    }",107-109,0.9125152,0.8602549,0.8602549
+org.apache.dubbo.remoting.transport.AbstractPeer,isClosing,()Z,1,1,100.0%,"public boolean isClosing() {
+        return closing && !closed;
+    }",117-119,0.9060113,0.85672283,0.85672283
+org.apache.dubbo.remoting.exchange.support.MultiMessage,size,()I,1,1,100.0%,"public int size() {
+        return messages.size();
+    }",63-65,0.90542394,0.8551894,0.8551894
+org.apache.dubbo.remoting.exchange.Response,setStatus,(B)V,2,2,100.0%,"public void setStatus(byte status) {
+        mStatus = status;
+    }",127-129,0.9084064,0.8549306,0.8549306
+org.apache.dubbo.common.URL,getPort,()I,1,1,100.0%,"public int getPort() {
+        return port;
+    }",331-333,0.90724725,0.854553,0.854553
+org.apache.dubbo.remoting.exchange.support.MultiMessage,get,(I)Ljava/lang/Object;,1,1,100.0%,"public Object get(int index) {
+        return messages.get(index);
+    }",67-69,0.9022259,0.8537016,0.8537016
+org.apache.dubbo.rpc.RpcContext,removeServerContext,()V,2,2,100.0%,"public static void removeServerContext() {
+        SERVER_LOCAL.remove();
+    }",117-119,0.9052369,0.8535011,0.8535011
+org.apache.dubbo.remoting.exchange.Response,getStatus,()B,1,1,100.0%,"public byte getStatus() {
+        return mStatus;
+    }",123-125,0.9035506,0.84951246,0.84951246
+org.apache.dubbo.rpc.RpcContext,clearAttachments,()V,2,2,100.0%,"public void clearAttachments() {
+        this.attachments.clear();
+    }",502-504,0.8962389,0.8443295,0.8443295
+org.apache.dubbo.remoting.exchange.Response,isEvent,()Z,1,1,100.0%,"public boolean isEvent() {
+        return mEvent;
+    }",131-133,0.8950122,0.8432148,0.8432148
+org.apache.dubbo.remoting.exchange.Response,setResult,(Ljava/lang/Object;)V,2,2,100.0%,"public void setResult(Object msg) {
+        mResult = msg;
+    }",155-157,0.89522594,0.8409352,0.8409352
+org.apache.dubbo.remoting.exchange.Response,getResult,()Ljava/lang/Object;,1,1,100.0%,"public Object getResult() {
+        return mResult;
+    }",151-153,0.8900687,0.8347034,0.8347034
+org.apache.dubbo.remoting.exchange.support.MultiMessage,create,()Lorg/apache/dubbo/remoting/exchange/support/MultiMessage;,1,1,100.0%,"public static MultiMessage create() {
+        return new MultiMessage();
+    }",47-49,0.8817797,0.83366156,0.83366156
+org.apache.dubbo.rpc.RpcContext,removeContext,()V,2,2,100.0%,"public static void removeContext() {
+        LOCAL.remove();
+    }",139-141,0.8882729,0.8335598,0.8335598
+org.apache.dubbo.rpc.RpcContext,setArguments,([Ljava/lang/Object;)V,2,2,100.0%,"public void setArguments(Object[] arguments) {
+        this.arguments = arguments;
+    }",289-291,0.8819513,0.83284026,0.83284026
+org.apache.dubbo.remoting.exchange.Response,getVersion,()Ljava/lang/String;,1,1,100.0%,"public String getVersion() {
+        return mVersion;
+    }",115-117,0.88366395,0.82854533,0.82854533
+org.apache.dubbo.common.URL,getPath,()Ljava/lang/String;,1,1,100.0%,"public String getPath() {
+        return path;
+    }",401-403,0.8819786,0.8266122,0.8266122
+org.apache.dubbo.common.URL,getHost,()Ljava/lang/String;,1,1,100.0%,"public String getHost() {
+        return host;
+    }",308-310,0.87627995,0.820529,0.820529
+org.apache.dubbo.rpc.RpcContext,setUrl,(Lorg/apache/dubbo/common/URL;)V,2,2,100.0%,"public void setUrl(URL url) {
+        this.url = url;
+    }",250-252,0.85857564,0.80634767,0.80634767
+org.apache.dubbo.common.utils.Holder,set,(Ljava/lang/Object;)V,2,2,100.0%,"public void set(T value) {
+        this.value = value;
+    }",26-28,0.8294842,0.78364515,0.78364515
+org.apache.dubbo.remoting.exchange.support.MultiMessage,addMessage,(Ljava/lang/Object;)V,2,2,100.0%,"public void addMessage(Object msg) {
+        messages.add(msg);
+    }",51-53,0.8222749,0.77393734,0.77393734
+org.apache.dubbo.rpc.support.ProtocolUtils,serviceKey,(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;,7,11,63.6%,"public static String serviceKey(URL url) {
+        return serviceKey(url.getPort(), url.getPath(), url.getParameter(Constants.VERSION_KEY),
+                url.getParameter(Constants.GROUP_KEY));
+    }",27-30,0.8056245,0.76812345,0.76812345
+org.apache.dubbo.common.utils.ReflectUtils,desc2classArray,(Ljava/lang/String;)[Ljava/lang/Class;,2,2,100.0%,"public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException {
+        Class<?>[] ret = desc2classArray(ClassHelper.getClassLoader(), desc);
+        return ret;
+    }",737-740,0.8012482,0.7377679,0.7377679
+org.apache.dubbo.common.utils.ReflectUtils,desc2classArray,(Ljava/lang/ClassLoader;Ljava/lang/String;)[Ljava/lang/Class;,6,7,85.7%,"public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException {
+        Class<?>[] ret = desc2classArray(ClassHelper.getClassLoader(), desc);
+        return ret;
+    }",737-740,0.8012482,0.7377679,0.7377679
+org.apache.dubbo.common.threadlocal.InternalThreadLocalMap,indexedVariable,(I)Ljava/lang/Object;,2,2,100.0%,"public Object indexedVariable(int index) {
+        Object[] lookup = indexedVariables;
+        return index < lookup.length ? lookup[index] : UNSET;
+    }",83-86,0.63732934,0.57086223,0.57086223
+org.apache.dubbo.common.io.Bytes,int2bytes,(I[BI)V,5,5,100.0%,"public static byte[] int2bytes(int v) {
+        byte[] ret = {0, 0, 0, 0};
+        int2bytes(v, ret);
+        return ret;
+    }",103-107,0.574531,0.4971487,0.4971487
+org.apache.dubbo.common.io.Bytes,short2bytes,(S[BI)V,3,3,100.0%,"public static byte[] short2bytes(short v) {
+        byte[] ret = {0, 0};
+        short2bytes(v, ret);
+        return ret;
+    }",70-74,0.5535286,0.47546014,0.47546014
+org.apache.dubbo.common.io.Bytes,short2bytes,(S[B)V,2,2,100.0%,"public static byte[] short2bytes(short v) {
+        byte[] ret = {0, 0};
+        short2bytes(v, ret);
+        return ret;
+    }",70-74,0.5535286,0.47546014,0.47546014
+org.apache.dubbo.common.Version,getVersion,()Ljava/lang/String;,1,1,100.0%,"public static String getVersion() {
+        return VERSION;
+    }",61-63,0.12457867,0.09601824,0.09601824
+org.apache.dubbo.common.io.Bytes,long2bytes,(J[BI)V,9,9,100.0%,"public static byte[] long2bytes(long v) {
+        byte[] ret = {0, 0, 0, 0, 0, 0, 0, 0};
+        long2bytes(v, ret);
+        return ret;
+    }",176-180,0.13875487,0.07071678,0.07071678
+org.apache.dubbo.common.timer.HashedWheelTimer$HashedWheelTimeout,state,()I,1,1,100.0%,"public int state() {
+            return state;
+        }",621-623,-0.8973338,-0.8860556,-0.8860556

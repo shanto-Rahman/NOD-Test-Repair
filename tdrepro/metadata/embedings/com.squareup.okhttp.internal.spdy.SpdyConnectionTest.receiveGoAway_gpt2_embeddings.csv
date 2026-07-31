@@ -1,0 +1,1047 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+okio.Okio,source,(Ljava/io/InputStream;)Lokio/Source;,1,1,100.0%,"public static Source source(final InputStream in) {
+    return new Source() {
+      private Deadline deadline = Deadline.NONE;
+
+      @Override public long read(OkBuffer sink, long byteCount) throws IOException {
+        if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+        deadline.throwIfReached();
+        Segment tail = sink.writableSegment(1);
+        int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
+        int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
+        if (bytesRead == -1) return -1;
+        tail.limit += bytesRead;
+        sink.size += bytesRead;
+        return bytesRead;
+      }
+
+      @Override public void close() throws IOException {
+        in.close();
+      }
+
+      @Override public Source deadline(Deadline deadline) {
+        if (deadline == null) throw new IllegalArgumentException(""deadline == null"");
+        this.deadline = deadline;
+        return this;
+      }
+
+      @Override public String toString() {
+        return ""source("" + in + "")"";
+      }
+    };
+  }",104-134,0.92525065,0.9961594,0.9961594
+com.squareup.okhttp.internal.spdy.NameValueBlockReader,readNameValueBlock,(I)Ljava/util/List;,12,12,100.0%,"public List<Header> readNameValueBlock(int length) throws IOException {
+    this.compressedLimit += length;
+
+    int numberOfPairs = source.readInt();
+    if (numberOfPairs < 0) throw new IOException(""numberOfPairs < 0: "" + numberOfPairs);
+    if (numberOfPairs > 1024) throw new IOException(""numberOfPairs > 1024: "" + numberOfPairs);
+
+    List<Header> entries = new ArrayList<Header>(numberOfPairs);
+    for (int i = 0; i < numberOfPairs; i++) {
+      ByteString name = readByteString().toAsciiLowercase();
+      ByteString values = readByteString();
+      if (name.size() == 0) throw new IOException(""name.size == 0"");
+      entries.add(new Header(name, values));
+    }
+
+    doneReading();
+    return entries;
+  }",76-93,0.9419462,0.99448204,0.99448204
+okio.InflaterSource,read,(Lokio/OkBuffer;J)J,10,18,55.6%,"@Override public long read(
+      OkBuffer sink, long byteCount) throws IOException {
+    if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+    if (closed) throw new IllegalStateException(""closed"");
+    if (byteCount == 0) return 0;
+
+    while (true) {
+      boolean sourceExhausted = refill();
+
+      // Decompress the inflater's compressed data into the sink.
+      try {
+        Segment tail = sink.writableSegment(1);
+        int bytesInflated = inflater.inflate(tail.data, tail.limit, Segment.SIZE - tail.limit);
+        if (bytesInflated > 0) {
+          tail.limit += bytesInflated;
+          sink.size += bytesInflated;
+          return bytesInflated;
+        }
+        if (inflater.finished() || inflater.needsDictionary()) {
+          releaseInflatedBytes();
+          return -1;
+        }
+        if (sourceExhausted) throw new EOFException(""source exhausted prematurely"");
+      } catch (DataFormatException e) {
+        throw new IOException(e);
+      }
+    }
+  }",55-82,0.9323133,0.9941701,0.9941701
+com.squareup.okhttp.internal.Util,threadFactory,(Ljava/lang/String;Z)Ljava/util/concurrent/ThreadFactory;,1,1,100.0%,"public static ThreadFactory threadFactory(final String name, final boolean daemon) {
+    return new ThreadFactory() {
+      @Override public Thread newThread(Runnable runnable) {
+        Thread result = new Thread(runnable, name);
+        result.setDaemon(daemon);
+        return result;
+      }
+    };
+  }",272-280,0.9382378,0.9938016,0.9938016
+com.squareup.okhttp.internal.spdy.SpdyStream$SpdyDataSink,write,(Lokio/OkBuffer;J)V,13,16,81.2%,"@Override public void write(OkBuffer source, long byteCount) throws IOException {
+      assert (!Thread.holdsLock(SpdyStream.this));
+      while (byteCount > 0) {
+        long toWrite;
+        synchronized (SpdyStream.this) {
+          try {
+            while (bytesLeftInWriteWindow <= 0) {
+              SpdyStream.this.wait(); // Wait until we receive a WINDOW_UPDATE.
+            }
+          } catch (InterruptedException e) {
+            throw new InterruptedIOException();
+          }
+
+          checkOutNotClosed(); // Kick out if the stream was reset or closed while waiting.
+          toWrite = Math.min(bytesLeftInWriteWindow, byteCount);
+          bytesLeftInWriteWindow -= toWrite;
+        }
+
+        byteCount -= toWrite;
+        connection.writeData(id, false, source, toWrite);
+      }
+    }",516-537,0.9222701,0.9937418,0.9937418
+com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/Socket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (RuntimeException rethrown) {
+        throw rethrown;
+      } catch (Exception ignored) {
+      }
+    }
+  }",94-103,0.935054,0.99312466,0.99312466
+com.squareup.okhttp.internal.Util,closeQuietly,(Ljava/net/ServerSocket;)V,4,7,57.1%,"public static void closeQuietly(Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (RuntimeException rethrown) {
+        throw rethrown;
+      } catch (Exception ignored) {
+      }
+    }
+  }",94-103,0.935054,0.99312466,0.99312466
+okio.OkBuffer,readInt,()I,13,17,76.5%,"@Override public int readInt() {
+    if (size < 4) throw new IllegalArgumentException(""size < 4: "" + size);
+
+    Segment segment = head;
+    int pos = segment.pos;
+    int limit = segment.limit;
+
+    // If the int is split across multiple segments, delegate to readByte().
+    if (limit - pos < 4) {
+      return (readByte() & 0xff) << 24
+          |  (readByte() & 0xff) << 16
+          |  (readByte() & 0xff) << 8
+          |  (readByte() & 0xff);
+    }
+
+    byte[] data = segment.data;
+    int i = (data[pos++] & 0xff) << 24
+        |   (data[pos++] & 0xff) << 16
+        |   (data[pos++] & 0xff) << 8
+        |   (data[pos++] & 0xff);
+    size -= 4;
+
+    if (pos == limit) {
+      head = segment.pop();
+      SegmentPool.INSTANCE.recycle(segment);
+    } else {
+      segment.pos = pos;
+    }
+
+    return i;
+  }",202-232,0.9158202,0.9929252,0.9929252
+okio.OkBuffer,skip,(J)V,12,12,100.0%,"public void skip(long byteCount) {
+    checkOffsetAndCount(this.size, 0, byteCount);
+
+    this.size -= byteCount;
+    while (byteCount > 0) {
+      int toSkip = (int) Math.min(byteCount, head.limit - head.pos);
+      byteCount -= toSkip;
+      head.pos += toSkip;
+
+      if (head.pos == head.limit) {
+        Segment toRecycle = head;
+        head = toRecycle.pop();
+        SegmentPool.INSTANCE.recycle(toRecycle);
+      }
+    }
+  }",348-363,0.94753706,0.99267757,0.99267757
+okio.Okio$2,read,(Lokio/OkBuffer;J)J,9,9,100.0%,"@Override public long read(OkBuffer sink, long byteCount) throws IOException {
+        if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+        deadline.throwIfReached();
+        Segment tail = sink.writableSegment(1);
+        int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
+        int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
+        if (bytesRead == -1) return -1;
+        tail.limit += bytesRead;
+        sink.size += bytesRead;
+        return bytesRead;
+      }",108-118,0.9598067,0.99219924,0.99219924
+okio.OkBuffer,readBytes,(J)[B,16,17,94.1%,"private byte[] readBytes(long byteCount) {
+    checkOffsetAndCount(this.size, 0, byteCount);
+    if (byteCount > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException(""byteCount > Integer.MAX_VALUE: "" + byteCount);
+    }
+
+    int offset = 0;
+    byte[] result = new byte[(int) byteCount];
+
+    while (offset < byteCount) {
+      int toCopy = (int) Math.min(byteCount - offset, head.limit - head.pos);
+      System.arraycopy(head.data, head.pos, result, offset, toCopy);
+
+      offset += toCopy;
+      head.pos += toCopy;
+
+      if (head.pos == head.limit) {
+        Segment toRecycle = head;
+        head = toRecycle.pop();
+        SegmentPool.INSTANCE.recycle(toRecycle);
+      }
+    }
+
+    this.size -= byteCount;
+    return result;
+  }",293-318,0.95213693,0.9915098,0.9915098
+okio.DeflaterSink,write,(Lokio/OkBuffer;J)V,14,14,100.0%,"@Override public void write(OkBuffer source, long byteCount)
+      throws IOException {
+    checkOffsetAndCount(source.size, 0, byteCount);
+    while (byteCount > 0) {
+      // Share bytes from the head segment of 'source' with the deflater.
+      Segment head = source.head;
+      int toDeflate = (int) Math.min(byteCount, head.limit - head.pos);
+      deflater.setInput(head.data, head.pos, toDeflate);
+
+      // Deflate those bytes into sink.
+      deflate(false);
+
+      // Mark those bytes as read.
+      source.size -= toDeflate;
+      head.pos += toDeflate;
+      if (head.pos == head.limit) {
+        source.head = head.pop();
+        SegmentPool.INSTANCE.recycle(head);
+      }
+
+      byteCount -= toDeflate;
+    }
+  }",47-69,0.95896566,0.99085724,0.99085724
+com.squareup.okhttp.internal.spdy.Spdy3$Reader,readSynStream,(Lcom/squareup/okhttp/internal/spdy/FrameReader$Handler;II)V,11,11,100.0%,"private void readSynStream(Handler handler, int flags, int length) throws IOException {
+      int w1 = source.readInt();
+      int w2 = source.readInt();
+      int s3 = source.readShort();
+      int streamId = w1 & 0x7fffffff;
+      int associatedStreamId = w2 & 0x7fffffff;
+      int priority = (s3 & 0xe000) >>> 13;
+      // int slot = s3 & 0xff;
+      List<Header> headerBlock = headerBlockReader.readNameValueBlock(length - 10);
+
+      boolean inFinished = (flags & FLAG_FIN) != 0;
+      boolean outFinished = (flags & FLAG_UNIDIRECTIONAL) != 0;
+      handler.headers(outFinished, inFinished, streamId, associatedStreamId, priority,
+          headerBlock, HeadersMode.SPDY_SYN_STREAM);
+    }",196-210,0.95706034,0.99064004,0.99064004
+okio.Okio$1,write,(Lokio/OkBuffer;J)V,14,14,100.0%,"@Override public void write(OkBuffer source, long byteCount)
+          throws IOException {
+        checkOffsetAndCount(source.size, 0, byteCount);
+        while (byteCount > 0) {
+          deadline.throwIfReached();
+          Segment head = source.head;
+          int toCopy = (int) Math.min(byteCount, head.limit - head.pos);
+          out.write(head.data, head.pos, toCopy);
+
+          head.pos += toCopy;
+          byteCount -= toCopy;
+          source.size -= toCopy;
+
+          if (head.pos == head.limit) {
+            source.head = head.pop();
+            SegmentPool.INSTANCE.recycle(head);
+          }
+        }
+      }",63-81,0.89848334,0.9901938,0.9901938
+okio.Segment,split,(I)Lokio/Segment;,10,16,62.5%,"public Segment split(int byteCount) {
+    int aSize = byteCount;
+    int bSize = (limit - pos) - byteCount;
+    if (aSize <= 0 || bSize <= 0) throw new IllegalArgumentException();
+
+    // Which side of the split is larger? We want to copy as few bytes as possible.
+    if (aSize < bSize) {
+      // Create a segment of size 'aSize' before this segment.
+      Segment before = SegmentPool.INSTANCE.take();
+      System.arraycopy(data, pos, before.data, before.pos, aSize);
+      pos += aSize;
+      before.limit += aSize;
+      prev.push(before);
+      return before;
+    } else {
+      // Create a new segment of size 'bSize' after this segment.
+      Segment after = SegmentPool.INSTANCE.take();
+      System.arraycopy(data, pos + aSize, after.data, after.pos, bSize);
+      limit -= bSize;
+      after.limit += bSize;
+      push(after);
+      return this;
+    }
+  }",81-104,0.91069126,0.9900301,0.9900301
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,synStream,(ZZIIIILjava/util/List;)V,14,14,100.0%,"@Override public synchronized void synStream(boolean outFinished, boolean inFinished,
+        int streamId, int associatedStreamId, int priority, int slot, List<Header> headerBlock)
+        throws IOException {
+      if (closed) throw new IOException(""closed"");
+      writeNameValueBlockToBuffer(headerBlock);
+      int length = (int) (10 + headerBlockBuffer.size());
+      int type = TYPE_SYN_STREAM;
+      int flags = (outFinished ? FLAG_FIN : 0) | (inFinished ? FLAG_UNIDIRECTIONAL : 0);
+
+      int unused = 0;
+      sink.writeInt(0x80000000 | (VERSION & 0x7fff) << 16 | type & 0xffff);
+      sink.writeInt((flags & 0xff) << 24 | length & 0xffffff);
+      sink.writeInt(streamId & 0x7fffffff);
+      sink.writeInt(associatedStreamId & 0x7fffffff);
+      sink.writeShort((priority & 0x7) << 13 | (unused & 0x1f) << 8 | (slot & 0xff));
+      sink.write(headerBlockBuffer, headerBlockBuffer.size());
+      sink.flush();
+    }",329-346,0.966696,0.9881916,0.9881916
+okio.OkBuffer,writableSegment,(I)Lokio/Segment;,7,8,87.5%,"Segment writableSegment(int minimumCapacity) {
+    if (minimumCapacity < 1 || minimumCapacity > Segment.SIZE) throw new IllegalArgumentException();
+
+    if (head == null) {
+      head = SegmentPool.INSTANCE.take(); // Acquire a first segment.
+      return head.next = head.prev = head;
+    }
+
+    Segment tail = head.prev;
+    if (tail.limit + minimumCapacity > Segment.SIZE) {
+      tail = tail.push(SegmentPool.INSTANCE.take()); // Append a new empty segment to fill up.
+    }
+    return tail;
+  }",434-447,0.95606023,0.9877038,0.9877038
+okio.ByteString,toAsciiLowercase,()Lokio/ByteString;,4,11,36.4%,"public ByteString toAsciiLowercase() {
+    // Search for an uppercase character. If we don't find one, return this.
+    for (int i = 0; i < data.length; i++) {
+      byte c = data[i];
+      if (c < 'A' || c > 'Z') continue;
+
+      // If we reach this point, this string is not not lowercase. Create and
+      // return a new byte string.
+      byte[] lowercase = data.clone();
+      lowercase[i++] = (byte) (c - ('A' - 'a'));
+      for (; i < lowercase.length; i++) {
+        c = lowercase[i];
+        if (c < 'A' || c > 'Z') continue;
+        lowercase[i] = (byte) (c - ('A' - 'a'));
+      }
+      return new ByteString(lowercase);
+    }
+    return this;
+  }",159-177,0.93285817,0.9876561,0.9876561
+okio.SegmentPool,take,()Lokio/Segment;,9,9,100.0%,"Segment take() {
+    synchronized (this) {
+      if (next != null) {
+        Segment result = next;
+        next = result.next;
+        result.next = null;
+        byteCount -= Segment.SIZE;
+        return result;
+      }
+    }
+    return new Segment(); // Pool is empty. Don't zero-fill while holding a lock.
+  }",38-49,0.94319755,0.9871547,0.9871547
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,ping,(ZII)V,11,11,100.0%,"@Override public synchronized void ping(boolean reply, int payload1, int payload2)
+        throws IOException {
+      if (closed) throw new IOException(""closed"");
+      boolean payloadIsReply = client != ((payload1 & 1) == 1);
+      if (reply != payloadIsReply) throw new IllegalArgumentException(""payload != reply"");
+      int type = TYPE_PING;
+      int flags = 0;
+      int length = 4;
+      sink.writeInt(0x80000000 | (VERSION & 0x7fff) << 16 | type & 0xffff);
+      sink.writeInt((flags & 0xff) << 24 | length & 0xffffff);
+      sink.writeInt(payload1);
+      sink.flush();
+    }",447-459,0.9731288,0.98712677,0.98712677
+com.squareup.okhttp.internal.spdy.Spdy3$Reader,readGoAway,(Lcom/squareup/okhttp/internal/spdy/FrameReader$Handler;II)V,7,8,87.5%,"private void readGoAway(Handler handler, int flags, int length) throws IOException {
+      if (length != 8) throw ioException(""TYPE_GOAWAY length: %d != 8"", length);
+      int lastGoodStreamId = source.readInt() & 0x7fffffff;
+      int errorCodeInt = source.readInt();
+      ErrorCode errorCode = ErrorCode.fromSpdyGoAway(errorCodeInt);
+      if (errorCode == null) {
+        throw ioException(""TYPE_GOAWAY unexpected error code: %d"", errorCodeInt);
+      }
+      handler.goAway(lastGoodStreamId, errorCode, ByteString.EMPTY);
+    }",255-264,0.9755499,0.98699474,0.98699474
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,rstStream,(ILcom/squareup/okhttp/internal/spdy/ErrorCode;)V,11,11,100.0%,"@Override public synchronized void rstStream(int streamId, ErrorCode errorCode)
+        throws IOException {
+      if (closed) throw new IOException(""closed"");
+      if (errorCode.spdyRstCode == -1) throw new IllegalArgumentException();
+      int flags = 0;
+      int type = TYPE_RST_STREAM;
+      int length = 8;
+      sink.writeInt(0x80000000 | (VERSION & 0x7fff) << 16 | type & 0xffff);
+      sink.writeInt((flags & 0xff) << 24 | length & 0xffffff);
+      sink.writeInt(streamId & 0x7fffffff);
+      sink.writeInt(errorCode.spdyRstCode);
+      sink.flush();
+    }",377-389,0.9734156,0.98665017,0.98665017
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,sendDataFrame,(IILokio/OkBuffer;I)V,7,8,87.5%,"void sendDataFrame(int streamId, int flags, OkBuffer buffer, int byteCount)
+        throws IOException {
+      if (closed) throw new IOException(""closed"");
+      if (byteCount > 0xffffffL) {
+        throw new IllegalArgumentException(""FRAME_TOO_LARGE max size is 16Mib: "" + byteCount);
+      }
+      sink.writeInt(streamId & 0x7fffffff);
+      sink.writeInt((flags & 0xff) << 24 | byteCount & 0xffffff);
+      if (byteCount > 0) {
+        sink.write(buffer, byteCount);
+      }
+    }",402-413,0.9728636,0.98661315,0.98661315
+com.squareup.okhttp.internal.spdy.NameValueBlockReader$1,read,(Lokio/OkBuffer;J)J,5,5,100.0%,"@Override public long read(OkBuffer sink, long byteCount)
+          throws IOException {
+        if (compressedLimit == 0) return -1; // Out of data for the current block.
+        long read = source.read(sink, Math.min(byteCount, compressedLimit));
+        if (read == -1) return -1;
+        compressedLimit -= read;
+        return read;
+      }",40-47,0.9661732,0.98602664,0.98602664
+okio.OkBuffer,readShort,()S,11,16,68.8%,"@Override public short readShort() {
+    if (size < 2) throw new IllegalArgumentException(""size < 2: "" + size);
+
+    Segment segment = head;
+    int pos = segment.pos;
+    int limit = segment.limit;
+
+    // If the short is split across multiple segments, delegate to readByte().
+    if (limit - pos < 2) {
+      int s = (readByte() & 0xff) << 8
+          |   (readByte() & 0xff);
+      return (short) s;
+    }
+
+    byte[] data = segment.data;
+    int s = (data[pos++] & 0xff) << 8
+        |   (data[pos++] & 0xff);
+    size -= 2;
+
+    if (pos == limit) {
+      head = segment.pop();
+      SegmentPool.INSTANCE.recycle(segment);
+    } else {
+      segment.pos = pos;
+    }
+
+    return (short) s;
+  }",173-200,0.9535631,0.98597693,0.98597693
+okio.Segment,writeTo,(Lokio/Segment;I)V,6,9,66.7%,"public void writeTo(Segment sink, int byteCount) {
+    if (byteCount + (sink.limit - sink.pos) > SIZE) throw new IllegalArgumentException();
+
+    if (sink.limit + byteCount > SIZE) {
+      // We can't fit byteCount bytes at the sink's current position. Compact sink first.
+      System.arraycopy(sink.data, sink.pos, sink.data, 0, sink.limit - sink.pos);
+      sink.limit -= sink.pos;
+      sink.pos = 0;
+    }
+
+    System.arraycopy(data, pos, sink.data, sink.limit, byteCount);
+    sink.limit += byteCount;
+    pos += byteCount;
+  }",121-134,0.9677384,0.98513186,0.98513186
+okio.Okio,sink,(Ljava/io/OutputStream;)Lokio/Sink;,1,1,100.0%,"public static Sink sink(final OutputStream out) {
+    return new Sink() {
+      private Deadline deadline = Deadline.NONE;
+
+      @Override public void write(OkBuffer source, long byteCount)
+          throws IOException {
+        checkOffsetAndCount(source.size, 0, byteCount);
+        while (byteCount > 0) {
+          deadline.throwIfReached();
+          Segment head = source.head;
+          int toCopy = (int) Math.min(byteCount, head.limit - head.pos);
+          out.write(head.data, head.pos, toCopy);
+
+          head.pos += toCopy;
+          byteCount -= toCopy;
+          source.size -= toCopy;
+
+          if (head.pos == head.limit) {
+            source.head = head.pop();
+            SegmentPool.INSTANCE.recycle(head);
+          }
+        }
+      }
+
+      @Override public void flush() throws IOException {
+        out.flush();
+      }
+
+      @Override public void close() throws IOException {
+        out.close();
+      }
+
+      @Override public Sink deadline(Deadline deadline) {
+        if (deadline == null) throw new IllegalArgumentException(""deadline == null"");
+        this.deadline = deadline;
+        return this;
+      }
+
+      @Override public String toString() {
+        return ""sink("" + out + "")"";
+      }
+    };
+  }",59-101,0.8783229,0.98456186,0.98456186
+okio.InflaterSource,releaseInflatedBytes,()V,5,5,100.0%,"private void releaseInflatedBytes() throws IOException {
+    if (bufferBytesHeldByInflater == 0) return;
+    int toRelease = bufferBytesHeldByInflater - inflater.getRemaining();
+    bufferBytesHeldByInflater -= toRelease;
+    source.skip(toRelease);
+  }",106-111,0.9775883,0.9812969,0.9812969
+okio.RealBufferedSource,skip,(J)V,8,9,88.9%,"@Override public void skip(long byteCount) throws IOException {
+    checkNotClosed();
+    while (byteCount > 0) {
+      if (buffer.size == 0 && source.read(buffer, Segment.SIZE) == -1) {
+        throw new EOFException();
+      }
+      long toSkip = Math.min(byteCount, buffer.size());
+      buffer.skip(toSkip);
+      byteCount -= toSkip;
+    }
+  }",129-139,0.9738145,0.9808311,0.9808311
+okio.SegmentPool,recycle,(Lokio/Segment;)V,9,9,100.0%,"void recycle(Segment segment) {
+    if (segment.next != null || segment.prev != null) throw new IllegalArgumentException();
+    synchronized (this) {
+      if (byteCount + Segment.SIZE > MAX_SIZE) return; // Pool is full.
+      byteCount += Segment.SIZE;
+      segment.next = next;
+      segment.pos = segment.limit = 0;
+      next = segment;
+    }
+  }",51-60,0.97022223,0.98037064,0.98037064
+okio.RealBufferedSource,checkNotClosed,()V,2,3,66.7%,"private void checkNotClosed() throws IOException {
+        if (RealBufferedSource.this.closed) {
+          // By convention in java.io, IOException and not IllegalStateException is used.
+          throw new IOException(""closed"");
+        }
+      }",188-193,0.9784689,0.980283,0.980283
+com.squareup.okhttp.internal.spdy.Spdy3$Reader,nextFrame,(Lcom/squareup/okhttp/internal/spdy/FrameReader$Handler;)Z,23,36,63.9%,"@Override public boolean nextFrame(Handler handler) throws IOException {
+      int w1;
+      int w2;
+      try {
+        w1 = source.readInt();
+        w2 = source.readInt();
+      } catch (IOException e) {
+        return false; // This might be a normal socket close.
+      }
+
+      boolean control = (w1 & 0x80000000) != 0;
+      int flags = (w2 & 0xff000000) >>> 24;
+      int length = (w2 & 0xffffff);
+
+      if (control) {
+        int version = (w1 & 0x7fff0000) >>> 16;
+        int type = (w1 & 0xffff);
+
+        if (version != 3) {
+          throw new ProtocolException(""version != 3: "" + version);
+        }
+
+        switch (type) {
+          case TYPE_SYN_STREAM:
+            readSynStream(handler, flags, length);
+            return true;
+
+          case TYPE_SYN_REPLY:
+            readSynReply(handler, flags, length);
+            return true;
+
+          case TYPE_RST_STREAM:
+            readRstStream(handler, flags, length);
+            return true;
+
+          case TYPE_SETTINGS:
+            readSettings(handler, flags, length);
+            return true;
+
+          case TYPE_PING:
+            readPing(handler, flags, length);
+            return true;
+
+          case TYPE_GOAWAY:
+            readGoAway(handler, flags, length);
+            return true;
+
+          case TYPE_HEADERS:
+            readHeaders(handler, flags, length);
+            return true;
+
+          case TYPE_WINDOW_UPDATE:
+            readWindowUpdate(handler, flags, length);
+            return true;
+
+          default:
+            source.skip(length);
+            return true;
+        }
+      } else {
+        int streamId = w1 & 0x7fffffff;
+        boolean inFinished = (flags & FLAG_FIN) != 0;
+        handler.data(inFinished, streamId, source, length);
+        return true;
+      }
+    }",129-194,0.8594486,0.97938406,0.97938406
+com.squareup.okhttp.internal.spdy.SpdyStream,closeInternal,(Lcom/squareup/okhttp/internal/spdy/ErrorCode;)Z,9,11,81.8%,"private boolean closeInternal(ErrorCode errorCode) {
+    assert (!Thread.holdsLock(this));
+    synchronized (this) {
+      if (this.errorCode != null) {
+        return false;
+      }
+      if (source.finished && sink.finished) {
+        return false;
+      }
+      this.errorCode = errorCode;
+      notifyAll();
+    }
+    connection.removeStream(id);
+    return true;
+  }",254-268,0.9046221,0.97707075,0.97707075
+com.squareup.okhttp.internal.NamedRunnable,run,()V,5,5,100.0%,"@Override public final void run() {
+    String oldName = Thread.currentThread().getName();
+    Thread.currentThread().setName(name);
+    try {
+      execute();
+    } finally {
+      Thread.currentThread().setName(oldName);
+    }
+  }",29-37,0.9308414,0.9764996,0.9764996
+okio.DeflaterSink,deflate,(Z)V,10,10,100.0%,"@IgnoreJRERequirement
+  private void deflate(boolean syncFlush) throws IOException {
+    OkBuffer buffer = sink.buffer();
+    while (true) {
+      Segment s = buffer.writableSegment(1);
+
+      // The 4-parameter overload of deflate() doesn't exist in the RI until
+      // Java 1.7, and is public (although with @hide) on Android since 2.3.
+      // The @hide tag means that this code won't compile against the Android
+      // 2.3 SDK, but it will run fine there.
+      int deflated = syncFlush
+          ? deflater.deflate(s.data, s.limit, Segment.SIZE - s.limit, Deflater.SYNC_FLUSH)
+          : deflater.deflate(s.data, s.limit, Segment.SIZE - s.limit);
+
+      if (deflated == 0) return;
+      s.limit += deflated;
+      buffer.size += deflated;
+      sink.emitCompleteSegments();
+    }
+  }",71-90,0.9804903,0.97397536,0.97397536
+com.squareup.okhttp.internal.spdy.Settings,getInitialWindowSize,()I,2,2,100.0%,"int getInitialWindowSize() {
+    int bit = 1 << INITIAL_WINDOW_SIZE;
+    return (bit & set) != 0 ? values[INITIAL_WINDOW_SIZE] : -1;
+  }",176-179,0.98958623,0.97039974,0.97039974
+okio.ByteString,encodeUtf8,(Ljava/lang/String;)Lokio/ByteString;,3,3,100.0%,"public static ByteString encodeUtf8(String s) {
+    ByteString byteString = new ByteString(s.getBytes(Util.UTF_8));
+    byteString.utf8 = s;
+    return byteString;
+  }",60-64,0.9677702,0.9693383,0.9693383
+okio.RealBufferedSource,read,(Lokio/OkBuffer;J)J,5,7,71.4%,"@Override public long read(OkBuffer sink, long byteCount) throws IOException {
+    if (byteCount < 0) throw new IllegalArgumentException(""byteCount < 0: "" + byteCount);
+    checkNotClosed();
+
+    if (buffer.size == 0) {
+      long read = source.read(buffer, Segment.SIZE);
+      if (read == -1) return -1;
+    }
+
+    long toRead = Math.min(byteCount, buffer.size);
+    return buffer.read(sink, toRead);
+  }",43-54,0.98947966,0.9685805,0.9685805
+com.squareup.okhttp.internal.spdy.SpdyStream,cancelStreamIfNecessary,()V,8,10,80.0%,"private void cancelStreamIfNecessary() throws IOException {
+    assert (!Thread.holdsLock(SpdyStream.this));
+    boolean open;
+    boolean cancel;
+    synchronized (this) {
+      cancel = !source.finished && source.closed && (sink.finished || sink.closed);
+      open = isOpen();
+    }
+    if (cancel) {
+      // RST this stream to prevent additional data from being sent. This
+      // is safe because the input stream is closed (we won't use any
+      // further bytes) and the output stream is either finished or closed
+      // (so RSTing both streams doesn't cause harm).
+      SpdyStream.this.close(ErrorCode.CANCEL);
+    } else if (!open) {
+      connection.removeStream(id);
+    }
+  }",484-501,0.98641247,0.9685378,0.9685378
+okio.InflaterSource,refill,()Z,8,8,100.0%,"public boolean refill() throws IOException {
+    if (!inflater.needsInput()) return false;
+
+    releaseInflatedBytes();
+    if (inflater.getRemaining() != 0) throw new IllegalStateException(""?""); // TODO: possible?
+
+    // If there are compressed bytes in the source, assign them to the inflater.
+    if (source.exhausted()) return true;
+
+    // Assign buffer bytes to the inflater.
+    Segment head = source.buffer().head;
+    bufferBytesHeldByInflater = head.limit - head.pos;
+    inflater.setInput(head.data, head.pos, bufferBytesHeldByInflater);
+    return false;
+  }",89-103,0.9887307,0.9641849,0.9641849
+com.squareup.okhttp.internal.spdy.SpdyStream,checkOutNotClosed,()V,5,7,71.4%,"private void checkOutNotClosed() throws IOException {
+    if (sink.closed) {
+      throw new IOException(""stream closed"");
+    } else if (sink.finished) {
+      throw new IOException(""stream finished"");
+    } else if (errorCode != null) {
+      throw new IOException(""stream was reset: "" + errorCode);
+    }
+  }",577-585,0.9563735,0.960708,0.960708
+okio.OkBuffer,completeSegmentByteCount,()J,6,6,100.0%,"public long completeSegmentByteCount() {
+    long result = size;
+    if (result == 0) return 0;
+
+    // Omit the tail if it's still writable.
+    Segment tail = head.prev;
+    if (tail.limit < Segment.SIZE) {
+      result -= tail.limit - tail.pos;
+    }
+
+    return result;
+  }",129-140,0.983767,0.9591242,0.9591242
+com.squareup.okhttp.internal.spdy.Spdy3$Reader,readPing,(Lcom/squareup/okhttp/internal/spdy/FrameReader$Handler;II)V,5,5,100.0%,"private void readPing(Handler handler, int flags, int length) throws IOException {
+      if (length != 4) throw ioException(""TYPE_PING length: %d != 4"", length);
+      int id = source.readInt();
+      boolean ack = client == ((id & 1) == 1);
+      handler.ping(ack, id, 0);
+    }",248-253,0.99473035,0.9574079,0.9574079
+com.squareup.okhttp.internal.spdy.NameValueBlockReader,doneReading,()V,2,4,50.0%,"private void doneReading() throws IOException {
+    // Move any outstanding unread bytes into the inflater. One side-effect of
+    // deflate compression is that sometimes there are bytes remaining in the
+    // stream after we've consumed all of the content.
+    if (compressedLimit > 0) {
+      inflaterSource.refill();
+      if (compressedLimit != 0) throw new IOException(""compressedLimit > 0: "" + compressedLimit);
+    }
+  }",100-108,0.9850082,0.9564749,0.9564749
+com.squareup.okhttp.internal.spdy.ErrorCode,fromSpdyGoAway,(I)Lcom/squareup/okhttp/internal/spdy/ErrorCode;,2,3,66.7%,"public static ErrorCode fromSpdyGoAway(int code) {
+    for (ErrorCode errorCode : ErrorCode.values()) {
+      if (errorCode.spdyGoAwayCode == code) return errorCode;
+    }
+    return null;
+  }",63-68,0.9915863,0.9550828,0.9550828
+com.squareup.okhttp.internal.spdy.SpdyStream,receiveRstStream,(Lcom/squareup/okhttp/internal/spdy/ErrorCode;)V,4,4,100.0%,"synchronized void receiveRstStream(ErrorCode errorCode) {
+    if (this.errorCode == null) {
+      this.errorCode = errorCode;
+      notifyAll();
+    }
+  }",319-324,0.98533267,0.9537042,0.9537042
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,data,(ZILokio/OkBuffer;I)V,3,3,100.0%,"@Override public synchronized void data(boolean outFinished, int streamId, OkBuffer source)
+        throws IOException {
+      data(outFinished, streamId, source, (int) source.size());
+    }",391-394,0.9928036,0.95207834,0.95207834
+okio.Okio,buffer,(Lokio/Source;)Lokio/BufferedSource;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
+    return new RealBufferedSource(source);
+  }",28-30,0.9948085,0.9520593,0.9520593
+okio.Okio,buffer,(Lokio/Sink;)Lokio/BufferedSink;,1,1,100.0%,"public static BufferedSource buffer(Source source) {
+    return new RealBufferedSource(source);
+  }",28-30,0.9948085,0.9520593,0.9520593
+com.squareup.okhttp.internal.spdy.SpdyStream,isOpen,()Z,3,6,50.0%,"public synchronized boolean isOpen() {
+    if (errorCode != null) {
+      return false;
+    }
+    if ((source.finished || source.closed)
+        && (sink.finished || sink.closed)
+        && responseHeaders != null) {
+      return false;
+    }
+    return true;
+  }",102-112,0.88730025,0.9481123,0.9481123
+com.squareup.okhttp.internal.Util,closeAll,(Ljava/io/Closeable;Ljava/io/Closeable;)V,6,14,42.9%,"public static void closeAll(Closeable a, Closeable b) throws IOException {
+    Throwable thrown = null;
+    try {
+      a.close();
+    } catch (Throwable e) {
+      thrown = e;
+    }
+    try {
+      b.close();
+    } catch (Throwable e) {
+      if (thrown == null) thrown = e;
+    }
+    if (thrown == null) return;
+    if (thrown instanceof IOException) throw (IOException) thrown;
+    if (thrown instanceof RuntimeException) throw (RuntimeException) thrown;
+    if (thrown instanceof Error) throw (Error) thrown;
+    throw new AssertionError(thrown);
+  }",139-156,0.83425933,0.945926,0.945926
+okio.Util,checkOffsetAndCount,(JJJ)V,2,3,66.7%,"public static void checkOffsetAndCount(long arrayLength, long offset, long count) {
+    if ((offset | count) < 0 || offset > arrayLength || arrayLength - offset < count) {
+      throw new ArrayIndexOutOfBoundsException();
+    }
+  }",27-31,0.9939094,0.9445585,0.9445585
+com.squareup.okhttp.internal.spdy.Settings,set,(III)Lcom/squareup/okhttp/internal/spdy/Settings;,9,12,75.0%,"Settings set(int id, int idFlags, int value) {
+    if (id >= values.length) {
+      return this; // Discard unknown settings.
+    }
+
+    int bit = 1 << id;
+    set |= bit;
+    if ((idFlags & PERSIST_VALUE) != 0) {
+      persistValue |= bit;
+    } else {
+      persistValue &= ~bit;
+    }
+    if ((idFlags & PERSISTED) != 0) {
+      persisted |= bit;
+    } else {
+      persisted &= ~bit;
+    }
+
+    values[id] = value;
+    return this;
+  }",79-99,0.8562542,0.94399697,0.94399697
+com.squareup.okhttp.internal.spdy.SpdyStream$SpdyDataSink,close,()V,12,12,100.0%,"public void close(ErrorCode rstStatusCode) throws IOException {
+    if (!closeInternal(rstStatusCode)) {
+      return; // Already closed.
+    }
+    connection.writeSynReset(id, rstStatusCode);
+  }",235-240,0.99822646,0.94163233,0.94163233
+com.squareup.okhttp.internal.spdy.SpdyStream,close,(Lcom/squareup/okhttp/internal/spdy/ErrorCode;)V,3,4,75.0%,"public void close(ErrorCode rstStatusCode) throws IOException {
+    if (!closeInternal(rstStatusCode)) {
+      return; // Already closed.
+    }
+    connection.writeSynReset(id, rstStatusCode);
+  }",235-240,0.99822646,0.94163233,0.94163233
+okio.RealBufferedSource,readByteString,(J)Lokio/ByteString;,2,2,100.0%,"@Override public ByteString readByteString(long byteCount) throws IOException {
+    require(byteCount);
+    return buffer.readByteString(byteCount);
+  }",73-76,0.9971353,0.94051546,0.94051546
+okio.OkBuffer,readByteString,(J)Lokio/ByteString;,1,1,100.0%,"public ByteString readByteString(long byteCount) {
+    return new ByteString(readBytes(byteCount));
+  }",242-244,0.9966055,0.93891275,0.93891275
+com.squareup.okhttp.internal.spdy.NameValueBlockReader$2,inflate,([BII)I,5,5,100.0%,"@Override public int inflate(byte[] buffer, int offset, int count)
+          throws DataFormatException {
+        int result = super.inflate(buffer, offset, count);
+        if (result == 0 && needsDictionary()) {
+          setDictionary(Spdy3.DICTIONARY);
+          result = super.inflate(buffer, offset, count);
+        }
+        return result;
+      }",61-69,0.80497414,0.93799365,0.93799365
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,flush,()V,3,3,100.0%,"@Override public synchronized void flush() throws IOException {
+      if (closed) throw new IOException(""closed"");
+      sink.flush();
+    }",324-327,0.9969884,0.9373042,0.9373042
+com.squareup.okhttp.internal.spdy.SpdyStream,isLocallyInitiated,()Z,2,2,100.0%,"public boolean isLocallyInitiated() {
+    boolean streamIsClient = ((id & 1) == 1);
+    return connection.client == streamIsClient;
+  }",115-118,0.9984477,0.9372303,0.9372303
+okio.DeflaterSink,flush,()V,3,3,100.0%,"@Override public void flush() throws IOException {
+    deflate(true);
+    sink.flush();
+  }",92-95,0.9983077,0.9355937,0.9355937
+okio.OkBuffer,clear,()V,2,2,100.0%,"public void clear() {
+    skip(size);
+  }",343-345,0.99874336,0.9344774,0.9344774
+com.squareup.okhttp.internal.spdy.SpdyStream,getSink,()Lokio/Sink;,4,5,80.0%,"public Sink getSink() {
+    synchronized (this) {
+      if (responseHeaders == null && !isLocallyInitiated()) {
+        throw new IllegalStateException(""reply before requesting the sink"");
+      }
+    }
+    return sink;
+  }",222-229,0.99663633,0.93370676,0.93370676
+okio.ByteString,size,()I,1,1,100.0%,"public int size() {
+    return data.length;
+  }",196-198,0.9984599,0.9332617,0.9332617
+okio.InflaterSource,close,()V,5,5,100.0%,"@Override public void close() throws IOException {
+    if (closed) return;
+    inflater.end();
+    closed = true;
+    source.close();
+  }",118-123,0.99504405,0.93161607,0.93161607
+com.squareup.okhttp.internal.spdy.Spdy3,getProtocol,()Lcom/squareup/okhttp/Protocol;,1,1,100.0%,"@Override public Protocol getProtocol() {
+    return Protocol.SPDY_3;
+  }",38-40,0.99837995,0.9314972,0.9314972
+okio.OkBuffer,close,()V,1,1,100.0%,"@Override public void close() {
+      }",74-75,0.99778295,0.93131804,0.93131804
+okio.OkBuffer,flush,()V,1,1,100.0%,"@Override public void flush() {
+      }",71-72,0.9973878,0.93110687,0.93110687
+okio.OkBuffer,size,()J,1,1,100.0%,"public long size() {
+    return size;
+  }",53-55,0.99797463,0.9308281,0.9308281
+okio.OkBuffer,writeUtf8,(Ljava/lang/String;)Lokio/OkBuffer;,2,2,100.0%,"@Override public OkBuffer writeUtf8(String string) {
+    byte[] data = string.getBytes(Util.UTF_8);
+    return write(data, 0, data.length);
+  }",371-374,0.9971861,0.93079346,0.93079346
+okio.OkBuffer,exhausted,()Z,1,1,100.0%,"@Override public boolean exhausted() {
+    return size == 0;
+  }",87-89,0.995756,0.92955077,0.92955077
+com.squareup.okhttp.internal.spdy.Spdy3,maxFrameSize,()I,1,1,100.0%,"@Override public int maxFrameSize() {
+    return 16383;
+  }",106-108,0.9976398,0.92875344,0.92875344
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,writeNameValueBlockToBuffer,(Ljava/util/List;)V,11,11,100.0%,"private void writeNameValueBlockToBuffer(List<Header> headerBlock) throws IOException {
+      if (headerBlockBuffer.size() != 0) throw new IllegalStateException();
+      headerBlockOut.writeInt(headerBlock.size());
+      for (int i = 0, size = headerBlock.size(); i < size; i++) {
+        ByteString name = headerBlock.get(i).name;
+        headerBlockOut.writeInt(name.size());
+        headerBlockOut.write(name);
+        ByteString value = headerBlock.get(i).value;
+        headerBlockOut.writeInt(value.size());
+        headerBlockOut.write(value);
+      }
+      headerBlockOut.flush();
+    }",415-427,0.76916724,0.9287418,0.9287418
+okio.RealBufferedSource,buffer,()Lokio/OkBuffer;,1,1,100.0%,"@Override public OkBuffer buffer() {
+    return buffer;
+  }",39-41,0.99715173,0.92764163,0.92764163
+com.squareup.okhttp.internal.spdy.Spdy3,newWriter,(Lokio/BufferedSink;Z)Lcom/squareup/okhttp/internal/spdy/FrameWriter;,1,1,100.0%,"@Override public FrameWriter newWriter(BufferedSink sink, boolean client) {
+    return new Writer(sink, client);
+  }",102-104,0.9979827,0.92640346,0.92640346
+okio.ByteString,toByteArray,()[B,1,1,100.0%,"public byte[] toByteArray() {
+    return data.clone();
+  }",203-205,0.998306,0.92493653,0.92493653
+com.squareup.okhttp.internal.spdy.Ping,send,()V,3,3,100.0%,"void send() {
+    if (sent != -1) throw new IllegalStateException();
+    sent = System.nanoTime();
+  }",32-35,0.99848866,0.92454755,0.92454755
+okio.OkBuffer,writeShort,(I)Lokio/OkBuffer;,8,8,100.0%,"@Override public OkBuffer writeShort(int s) {
+    Segment tail = writableSegment(2);
+    byte[] data = tail.data;
+    int limit = tail.limit;
+    data[limit++] = (byte) ((s >> 8) & 0xff);
+    data[limit++] = (byte)  (s       & 0xff);
+    tail.limit = limit;
+    size += 2;
+    return this;
+  }",405-414,0.967864,0.92449075,0.92449075
+com.squareup.okhttp.internal.spdy.Spdy3,newReader,(Lokio/BufferedSource;Z)Lcom/squareup/okhttp/internal/spdy/FrameReader;,1,1,100.0%,"@Override public FrameReader newReader(BufferedSource source, boolean client) {
+    return new Reader(source, client);
+  }",98-100,0.9970531,0.9241358,0.9241358
+com.squareup.okhttp.internal.spdy.NameValueBlockReader,readByteString,()Lokio/ByteString;,2,2,100.0%,"private ByteString readByteString() throws IOException {
+    int length = source.readInt();
+    return source.readByteString(length);
+  }",95-98,0.99637914,0.9238911,0.9238911
+okio.Deadline,throwIfReached,()V,2,2,100.0%,"public void throwIfReached() throws IOException {
+    // TODO: a more catchable exception type?
+    if (reached()) throw new IOException(""Deadline reached"");
+  }",50-53,0.9978787,0.9234643,0.9234643
+okio.RealBufferedSource,exhausted,()Z,2,2,100.0%,"@Override public boolean exhausted() throws IOException {
+    checkNotClosed();
+    return buffer.exhausted() && source.read(buffer, Segment.SIZE) == -1;
+  }",56-59,0.9979872,0.919822,0.919822
+okio.RealBufferedSource,readInt,()I,2,2,100.0%,"@Override public int readInt() throws IOException {
+    require(4);
+    return buffer.readInt();
+  }",119-122,0.9978612,0.9181743,0.9181743
+okio.Segment,compact,()V,6,6,100.0%,"public void compact() {
+    if (prev == this) throw new IllegalStateException();
+    if ((prev.limit - prev.pos) + (limit - pos) > SIZE) return; // Cannot compact.
+    writeTo(prev, limit - pos);
+    pop();
+    SegmentPool.INSTANCE.recycle(this);
+  }",110-116,0.9946119,0.91665316,0.91665316
+okio.RealBufferedSource,readShort,()S,2,2,100.0%,"@Override public short readShort() throws IOException {
+    require(2);
+    return buffer.readShort();
+  }",109-112,0.99774534,0.9161392,0.9161392
+com.squareup.okhttp.internal.spdy.Ping,roundTripTime,()J,2,2,100.0%,"public long roundTripTime() throws InterruptedException {
+    latch.await();
+    return received - sent;
+  }",54-57,0.99791354,0.9153012,0.9153012
+okio.RealBufferedSource,require,(J)V,4,4,100.0%,"@Override public void require(long byteCount) throws IOException {
+    checkNotClosed();
+    while (buffer.size < byteCount) {
+      if (source.read(buffer, Segment.SIZE) == -1) throw new EOFException();
+    }
+  }",61-66,0.9935886,0.9143178,0.9143178
+okio.DeflaterSink,close,()V,4,4,100.0%,"@Override public void close() throws IOException {
+    deflater.finish();
+    deflate(false);
+    sink.close();
+  }",97-101,0.9921142,0.9103974,0.9103974
+com.squareup.okhttp.internal.spdy.Ping,receive,()V,4,4,100.0%,"void receive() {
+    if (received != -1 || sent == -1) throw new IllegalStateException();
+    received = System.nanoTime();
+    latch.countDown();
+  }",37-41,0.9953856,0.9098334,0.9098334
+com.squareup.okhttp.internal.spdy.Spdy3$Writer,close,()V,3,3,100.0%,"@Override public void close() throws IOException {
+      headerBlockReader.close();
+    }",287-289,0.9922345,0.90147775,0.90147775
+com.squareup.okhttp.internal.spdy.Spdy3$Reader,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+      headerBlockReader.close();
+    }",287-289,0.9922345,0.90147775,0.90147775
+okio.OkBuffer,writeInt,(I)Lokio/OkBuffer;,10,10,100.0%,"@Override public OkBuffer writeInt(int i) {
+    Segment tail = writableSegment(4);
+    byte[] data = tail.data;
+    int limit = tail.limit;
+    data[limit++] = (byte) ((i >> 24) & 0xff);
+    data[limit++] = (byte) ((i >> 16) & 0xff);
+    data[limit++] = (byte) ((i >>  8) & 0xff);
+    data[limit++] = (byte)  (i        & 0xff);
+    tail.limit = limit;
+    size += 4;
+    return this;
+  }",417-428,0.7629186,0.8774864,0.8774864
+okio.Segment,pop,()Lokio/Segment;,6,6,100.0%,"public Segment pop() {
+    Segment result = next != this ? next : null;
+    prev.next = next;
+    next.prev = prev;
+    next = null;
+    prev = null;
+    return result;
+  }",52-59,0.9491637,0.87016964,0.87016964
+okio.Deadline$1,reached,()Z,1,1,100.0%,"@Override public boolean reached() {
+      return false;
+    }",31-33,0.906223,0.80123895,0.80123895
+okio.OkBuffer,write,([BII)Lokio/OkBuffer;,10,10,100.0%,"@Override public void write(int b) {
+        writeByte((byte) b);
+      }",63-65,0.9235466,0.79306096,0.79306096
+okio.OkBuffer,write,(Lokio/OkBuffer;J)V,21,26,80.8%,"@Override public void write(int b) {
+        writeByte((byte) b);
+      }",63-65,0.9235466,0.79306096,0.79306096
+okio.OkBuffer,write,(Lokio/ByteString;)Lokio/OkBuffer;,1,1,100.0%,"@Override public void write(int b) {
+        writeByte((byte) b);
+      }",63-65,0.9235466,0.79306096,0.79306096
+okio.RealBufferedSource,close,()V,5,5,100.0%,"@Override public void close() throws IOException {
+        RealBufferedSource.this.close();
+      }",180-182,0.92723536,0.78417045,0.78417045
+okio.Segment,push,(Lokio/Segment;)Lokio/Segment;,5,5,100.0%,"public Segment push(Segment segment) {
+    segment.prev = this;
+    segment.next = next;
+    next.prev = segment;
+    next = segment;
+    return segment;
+  }",65-71,0.810123,0.76804024,0.76804024
+com.squareup.okhttp.internal.Util,headerEntries,([Ljava/lang/String;)Ljava/util/List;,4,4,100.0%,"public static List<Header> headerEntries(String... elements) {
+    List<Header> result = new ArrayList<Header>(elements.length / 2);
+    for (int i = 0; i < elements.length; i += 2) {
+      result.add(new Header(elements[i], elements[i + 1]));
+    }
+    return result;
+  }",282-288,0.7678837,0.7099634,0.7099634
+okio.OkBuffer,read,(Lokio/OkBuffer;J)J,4,4,100.0%,"@Override public int read() {
+        return readByte() & 0xff;
+      }",103-105,0.85785824,0.70209897,0.70209897
+okio.Okio$2,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+        out.close();
+      }",87-89,0.85349935,0.68072546,0.68072546
+okio.Okio$1,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+        out.close();
+      }",87-89,0.85349935,0.68072546,0.68072546
+com.squareup.okhttp.internal.spdy.NameValueBlockReader$1,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+        source.close();
+      }",49-51,0.8297029,0.6479892,0.6479892
+com.squareup.okhttp.internal.spdy.NameValueBlockReader,close,()V,2,2,100.0%,"@Override public void close() throws IOException {
+        source.close();
+      }",49-51,0.8297029,0.6479892,0.6479892
+okio.Okio$1,flush,()V,2,2,100.0%,"@Override public void flush() throws IOException {
+        out.flush();
+      }",83-85,0.8244271,0.64757335,0.64757335
