@@ -93,6 +93,7 @@ model_name = "gpt2" #"llama" #"tf-idf"#"gpt2"
 output_csv = "results/sequential_delay_injection_result_in_all_methods_ranked_by_"+model_name+"_embedding.csv"
 
 def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx, tmp=2):
+    print("***code_line=", code_line)
     inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
     tag = f"{retry_count}_{idx}_{run_id}"
     before, after = test.rsplit('.', 1)
@@ -108,8 +109,9 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
         out = result_run.stdout.strip()
         firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
         failed = (firstLine == "Failure found.")
-
+        
         return failed, CURRENT_DIR +"/logs-to-reproduce-sequential-delay-injection/" + test_with_hash + "-con-after-changedCode-"+tag+".txt"
+        #return 1, CURRENT_DIR +"/logs-to-reproduce-sequential-delay-injection/" + test_with_hash + "-con-after-changedCode-"+tag+".txt"
     except subprocess.CalledProcessError as e:
         print("run_test.sh failed with exit code", e.returncode)
         print("--- stdout ---"); print(e.stdout)
@@ -163,7 +165,7 @@ with open(input_csv, newline='') as inf:
             reader = csv.DictReader(f)
             #for row in reader:
             for ranked_meth_id, ranked_meth in enumerate(reader):
-                if method_count > 20:
+                if method_count > 10:
                     continue
                 method_count +=1
                 class_name = ranked_meth['Class']
@@ -224,6 +226,7 @@ with open(input_csv, newline='') as inf:
                                # First run failed → run 4 more times (total 5)
                                 #break
                                 #exit()
+                                print("HA HA TEST FAILED *************")
                                 failure_count = 1
                                 failure_detected = 1
                                 log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
@@ -231,7 +234,11 @@ with open(input_csv, newline='') as inf:
                                     print("failure log does not match.")
                                     failure_happened_but_log_matched = False
                                 else: 
+
+                                    print('********** FIRST FAILURE FOUND ****************, and log_matched', test_run_log)
                                     for run_id in range(1, 5):
+
+                                        print('********** Running REPEATED FAILURE TO GET ****************')
                                         #if run_once(run_id, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx):
                                         #    failure_count += 1
                                         print("****run_id, candidates, line_no, method_name, descriptor, code_line, slug, module, test_with_dot, retry_count, idx=", run_id, class_path_list, line_no, method_name, descriptor, code_line,     slug, module, test_with_dot, method_count, idx)
@@ -240,8 +247,12 @@ with open(input_csv, newline='') as inf:
                                         if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
                                             #Call the function to check the log match 
                                             failure_count += 1
+
+                                            print('********** Repeated FAILURE FOUND ****************')
+
+                                            #exit()
                                         else:
-                                            print("failure log does not match.")
+                                            print("*** Repeated failure log does not match.")
                                             failure_happened_but_log_matched = False
                                         #Call to the GPT that log does not match, so find a different location
                                     if failure_count >= 3:
@@ -262,4 +273,6 @@ with open(input_csv, newline='') as inf:
             total_time_seconds = time.time() - start_time
             save_result(output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count, failure_detected)
             print("I AM HERE", output_csv, slug, module, test, "no_test_failure", "NA", "NA", "NA", "NA", "NA", total_time_seconds, iteration_count, failure_detected)
+
+        #exit()
         
