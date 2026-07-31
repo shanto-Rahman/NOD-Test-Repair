@@ -1,4 +1,5 @@
 com/vmware/admiral/compute/container/ContainerHostDataCollectionService$ContainerHostDataCollectionStateConstructorAccess.newInstance()Ljava/lang/Object;
+com/vmware/xenon/common/ServiceHost.stopServices(Ljava/util/Set;)Ljava/util/List;
 com/vmware/xenon/common/StatelessService.getDocumentIndexPath()Ljava/lang/String;
 com/vmware/xenon/common/StringBuilderThreadLocal.get()Ljava/lang/StringBuilder;
 com/vmware/xenon/common/OperationJoin.getOperation(J)Lcom/vmware/xenon/common/Operation;
@@ -77,7 +78,6 @@ com/vmware/xenon/common/ServiceHost.registerForServiceAvailability(Lcom/vmware/x
 com/vmware/xenon/common/OperationJoin.create(Ljava/util/Collection;)Lcom/vmware/xenon/common/OperationJoin;
 com/esotericsoftware/kryo/serializers/DefaultSerializers$BooleanSerializer.read(Lcom/esotericsoftware/kryo/Kryo;Lcom/esotericsoftware/kryo/io/Input;Ljava/lang/Class;)Ljava/lang/Boolean;
 com/vmware/xenon/common/FactoryService.synchronizeChildServicesAsOwner(Lcom/vmware/xenon/common/Operation;J)V
-com/vmware/xenon/common/test/TestContext.getCompletion()Lcom/vmware/xenon/common/Operation$CompletionHandler;
 com/vmware/xenon/services/common/QueryTask$Builder.addOption(Lcom/vmware/xenon/services/common/QueryTask$QuerySpecification$QueryOption;)Lcom/vmware/xenon/services/common/QueryTask$Builder;
 com/vmware/xenon/common/StatelessService.getUtilityService(Ljava/lang/String;)Lcom/vmware/xenon/common/Service;
 com/vmware/xenon/services/common/NodeSelectorSynchronizationService.handleStart(Lcom/vmware/xenon/common/Operation;)V
@@ -158,7 +158,6 @@ com/esotericsoftware/kryo/Kryo.addDefaultSerializer(Ljava/lang/Class;Lcom/esoter
 com/vmware/xenon/common/FactoryService.handleGet(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/xenon/common/TaskState.isFinished(Lcom/vmware/xenon/common/TaskState;)Z
 com/vmware/xenon/services/common/LuceneIndexDocumentHelper.getAndSetSortedStoredField(Ljava/lang/String;Ljava/lang/String;)Lorg/apache/lucene/document/Field;
-com/vmware/xenon/common/ServiceHost.getServiceMemoryLimitMB(Ljava/lang/String;Lcom/vmware/xenon/common/ServiceHost$ServiceHostState$MemoryLimitType;)Ljava/lang/Long;
 com/vmware/xenon/common/Operation$AuthorizationContext.isSystemUser()Z
 com/vmware/xenon/common/ServiceRequestSender.lambda$sendWithDeferredResult$0(Ljava/lang/Class;Lcom/vmware/xenon/common/Operation;)Ljava/lang/Object;
 com/fasterxml/jackson/core/JsonParser$Feature.getMask()I
@@ -172,6 +171,7 @@ com/esotericsoftware/kryo/io/Output.getBuffer()[B
 reflectasm/java/util/LinkedHashMapConstructorAccess.newInstance()Ljava/lang/Object;
 org/bouncycastle/jcajce/provider/asymmetric/GOST$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 com/vmware/xenon/common/LogFormatter$LogItem.create(Ljava/util/logging/Formatter;Ljava/util/logging/LogRecord;)Lcom/vmware/xenon/common/LogFormatter$LogItem;
+com/vmware/xenon/common/ServiceResourceTracker.stopServiceAndClearFromCache(Lcom/vmware/xenon/common/Service;Lcom/vmware/xenon/common/ServiceDocument;)V
 com/vmware/xenon/common/ServiceHost.lambda$stopSubscriptionService$10(Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/xenon/common/StatefulService.doLogging(Ljava/util/logging/Level;Ljava/util/function/Supplier;)V
 com/vmware/xenon/common/UriUtils.buildDocumentQueryUri(Lcom/vmware/xenon/common/ServiceHost;Ljava/lang/String;Ljava/lang/String;ZZLcom/vmware/xenon/common/Service$ServiceOption;)Ljava/net/URI;
@@ -188,7 +188,6 @@ com/vmware/xenon/services/common/QueryFilter.evaluate(Lcom/vmware/xenon/common/S
 com/vmware/xenon/common/config/XenonConfiguration.bool(Ljava/lang/Class;Ljava/lang/String;Z)Z
 com/vmware/xenon/common/FactoryService.create(Ljava/lang/Class;[Lcom/vmware/xenon/common/Service$ServiceOption;)Lcom/vmware/xenon/common/FactoryService;
 com/vmware/xenon/common/serialization/BufferThreadLocal.initialValue()Ljava/lang/Object;
-com/vmware/xenon/services/common/LuceneDocumentIndexService.handleStart(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/xenon/common/Utils.fromNowMicrosUtc(J)J
 com/vmware/xenon/common/ServiceHost.checkIfServiceExistsAndAttach(Lcom/vmware/xenon/common/Service;Ljava/lang/String;Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/Operation;)Z
 com/vmware/xenon/common/ServiceHost.lambda$startFactoryChildServiceSynchronously$7([Ljava/lang/Throwable;Ljava/util/concurrent/CountDownLatch;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
@@ -300,7 +299,6 @@ com/vmware/xenon/common/StatefulService.queueRequest(Lcom/vmware/xenon/common/Op
 com/vmware/xenon/common/ServiceResourceTracker.updateCacheMissStats()V
 org/bouncycastle/util/Properties$1.run()Ljava/lang/Object;
 com/vmware/xenon/services/common/FieldInfoCache.trimFieldInfos(Lorg/apache/lucene/index/FieldInfos;)V
-com/vmware/xenon/common/StatelessService.logWarning(Ljava/lang/String;[Ljava/lang/Object;)V
 com/vmware/xenon/common/ServiceSubscriptionState$ServiceSubscriber.create(Z)Lcom/vmware/xenon/common/ServiceSubscriptionState$ServiceSubscriber;
 org/bouncycastle/jcajce/provider/asymmetric/GM$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 com/vmware/xenon/common/LogFormatter$LogItem.toString()Ljava/lang/String;
@@ -619,7 +617,6 @@ com/vmware/xenon/common/Operation.createPatch(Lcom/vmware/xenon/common/Service;L
 com/vmware/xenon/common/OperationQueue.toCollection()Ljava/util/Collection;
 com/vmware/xenon/common/config/ConfigurationSource.buildKey(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 com/vmware/xenon/common/Operation.setContentType(Ljava/lang/String;)Lcom/vmware/xenon/common/Operation;
-com/vmware/xenon/common/NodeSelectorService$SelectAndForwardRequest$ForwardingOption.values()[Lcom/vmware/xenon/common/NodeSelectorService$SelectAndForwardRequest$ForwardingOption;
 org/bouncycastle/jcajce/provider/drbg/DRBG$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 com/vmware/xenon/common/UriUtils.buildForwardToQueryPageUri(Ljava/net/URI;Ljava/lang/String;)Ljava/net/URI;
 com/vmware/xenon/common/StatefulService.getStateType()Ljava/lang/Class;
@@ -744,11 +741,9 @@ com/fasterxml/jackson/databind/introspect/AnnotatedClassResolver.createPrimordia
 com/esotericsoftware/kryo/serializers/DefaultArraySerializers$StringArraySerializer.write(Lcom/esotericsoftware/kryo/Kryo;Lcom/esotericsoftware/kryo/io/Output;[Ljava/lang/String;)V
 com/fasterxml/jackson/annotation/JsonFormat$Features.empty()Lcom/fasterxml/jackson/annotation/JsonFormat$Features;
 com/vmware/xenon/services/common/LuceneIndexDocumentHelper.addIndexableFieldsToDocument(Ljava/lang/Object;Lcom/vmware/xenon/common/ServiceDocumentDescription;)V
-com/vmware/xenon/common/StatelessService.lambda$logWarning$12(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
 com/vmware/xenon/common/StatefulService.queueRequestInternal(Lcom/vmware/xenon/common/Operation;)Z
-com/esotericsoftware/kryo/util/ObjectMap.putStash(Ljava/lang/Object;Ljava/lang/Object;)V
 com/vmware/xenon/common/ServiceHost.broadcastRequest(Ljava/lang/String;Ljava/lang/String;ZLcom/vmware/xenon/common/Operation;Ljava/util/Collection;)V
-com/fasterxml/jackson/databind/annotation/JsonSerialize$Inclusion.values()[Lcom/fasterxml/jackson/databind/annotation/JsonSerialize$Inclusion;
+com/esotericsoftware/kryo/util/ObjectMap.putStash(Ljava/lang/Object;Ljava/lang/Object;)V
 com/vmware/xenon/services/common/LuceneDocumentIndexService.applyFileLimitRefreshWriter(Z)V
 com/vmware/xenon/common/OperationTracker.removeServiceStartCompletions(Ljava/lang/String;)Ljava/util/SortedSet;
 com/vmware/xenon/services/common/QueryTaskService.lambda$collectBroadcastQueryResults$2(Lcom/vmware/xenon/common/ServiceDocumentQueryResult;)Ljava/lang/Long;
@@ -770,8 +765,8 @@ com/vmware/xenon/common/ServiceHost.getInitialPeerHosts()Ljava/util/List;
 com/vmware/xenon/common/StatefulService.checkAndNestAuthupdateCompletionStage(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/xenon/common/DeferredResult.thenCompose(Ljava/util/function/Function;)Lcom/vmware/xenon/common/DeferredResult;
 com/vmware/xenon/common/ServiceHost.isTracingEnabled()Z
-com/vmware/xenon/services/common/QueryFilter$Conjunction$TermIterator.hasNext()Z
 com/vmware/xenon/common/FactoryService.lambda$null$1(Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
+com/vmware/xenon/services/common/QueryFilter$Conjunction$TermIterator.hasNext()Z
 com/vmware/xenon/common/ServiceStatUtils.getOrCreateStat(Lcom/vmware/xenon/common/Service;Ljava/lang/String;ZLjava/util/function/Supplier;)Lcom/vmware/xenon/common/ServiceStats$ServiceStat;
 org/bouncycastle/jcajce/provider/symmetric/Grain128$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 org/bouncycastle/util/Properties.isOverrideSet(Ljava/lang/String;)Z
@@ -817,7 +812,6 @@ com/vmware/xenon/common/DeferredResult.completed(Ljava/lang/Object;)Lcom/vmware/
 com/vmware/xenon/common/OperationSequence.setProxyCompletion()V
 com/vmware/xenon/common/OperationContext.setAuthorizationContext(Lcom/vmware/xenon/common/Operation$AuthorizationContext;)V
 com/vmware/xenon/services/common/QueryFilter.createDisjunctiveNormalForm(Lcom/vmware/xenon/services/common/QueryTask$Query;Ljava/util/ArrayList;Z)V
-com/fasterxml/jackson/databind/annotation/JsonSerialize$Typing.values()[Lcom/fasterxml/jackson/databind/annotation/JsonSerialize$Typing;
 com/vmware/xenon/common/OperationSequence.access$100(Lcom/vmware/xenon/common/OperationSequence;)Z
 com/fasterxml/jackson/core/JsonFactory$Feature.getMask()I
 com/vmware/xenon/common/OperationProcessingChain$Filter.init()V
@@ -967,7 +961,6 @@ com/vmware/xenon/common/serialization/KryoSerializers$KryoForDocumentThreadLocal
 com/vmware/xenon/common/logging/StackAwareLogRecord.setStackElement(Ljava/lang/StackTraceElement;)V
 com/esotericsoftware/kryo/serializers/DefaultSerializers$EnumSetSerializer.copy(Lcom/esotericsoftware/kryo/Kryo;Ljava/lang/Object;)Ljava/lang/Object;
 com/vmware/xenon/common/serialization/KryoSerializers.getBuffer(I)[B
-com/vmware/xenon/common/ServiceErrorResponseConstructorAccess.newInstance()Ljava/lang/Object;
 com/esotericsoftware/kryo/serializers/FieldSerializer.newMatchingCachedField(Ljava/lang/reflect/Field;ILjava/lang/Class;Ljava/lang/reflect/Type;[Ljava/lang/Class;)Lcom/esotericsoftware/kryo/serializers/FieldSerializer$CachedField;
 com/vmware/xenon/common/OperationTracker.trackStartOperation(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/xenon/common/SynchronizationTaskService.validateTransition(Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/SynchronizationTaskService$State;Lcom/vmware/xenon/common/SynchronizationTaskService$State;)Z
@@ -1159,6 +1152,7 @@ com/vmware/xenon/common/Utils.log(Ljava/util/logging/Logger;Ljava/lang/Integer;L
 com/vmware/xenon/services/common/NodeGroupUtils.checkConvergence(Lcom/vmware/xenon/common/ServiceHost;Lcom/vmware/xenon/services/common/NodeGroupService$NodeGroupState;Lcom/vmware/xenon/common/Operation;)V
 com/vmware/xenon/services/common/Lucene60FieldInfosFormatWithCache.getIndexOptions(Lorg/apache/lucene/store/IndexInput;B)Lorg/apache/lucene/index/IndexOptions;
 com/vmware/xenon/services/common/FieldInfoCache.handleMaintenance()V
+com/vmware/xenon/common/Operation.disableFailureLogging(Z)Lcom/vmware/xenon/common/Operation;
 com/vmware/xenon/common/StatelessService.handleRequest(Lcom/vmware/xenon/common/Operation;)V
 com/esotericsoftware/kryo/serializers/FieldSerializerGenericsUtil.newCachedFieldOfGenericType(Ljava/lang/reflect/Field;I[Ljava/lang/Class;Ljava/lang/reflect/Type;)Lcom/esotericsoftware/kryo/serializers/FieldSerializer$CachedField;
 com/vmware/xenon/common/ServiceHost.startSubscriptionService(Lcom/vmware/xenon/common/Operation;Ljava/util/function/Consumer;Lcom/vmware/xenon/common/ServiceSubscriptionState$ServiceSubscriber;Z)Ljava/net/URI;
@@ -1230,6 +1224,7 @@ com/vmware/xenon/common/StatelessService.setInitialState(Ljava/lang/Object;Ljava
 com/fasterxml/jackson/dataformat/yaml/YAMLGenerator$Feature.enabledByDefault()Z
 com/vmware/xenon/common/StatefulService.checkForBody(Lcom/vmware/xenon/common/Operation;)Z
 com/esotericsoftware/kryo/Kryo.writeClassAndObject(Lcom/esotericsoftware/kryo/io/Output;Ljava/lang/Object;)V
+com/vmware/xenon/services/common/LuceneDocumentIndexService.createWriterWithLuceneDirectory(Lorg/apache/lucene/store/Directory;Z)Lorg/apache/lucene/index/IndexWriter;
 org/bouncycastle/jcajce/provider/symmetric/Shacal2$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 com/esotericsoftware/kryo/factories/ReflectionSerializerFactory.makeSerializer(Lcom/esotericsoftware/kryo/Kryo;Ljava/lang/Class;Ljava/lang/Class;)Lcom/esotericsoftware/kryo/Serializer;
 com/vmware/xenon/services/common/Lucene60FieldInfosFormatWithCache.getDocValuesType(Lorg/apache/lucene/store/IndexInput;B)Lorg/apache/lucene/index/DocValuesType;
@@ -1270,7 +1265,6 @@ com/vmware/xenon/common/StatefulService.getState(Lcom/vmware/xenon/common/Operat
 com/fasterxml/jackson/core/JsonParser$Feature.values()[Lcom/fasterxml/jackson/core/JsonParser$Feature;
 com/vmware/xenon/common/ServiceHost.startService(Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/Service;)Lcom/vmware/xenon/common/ServiceHost;
 org/bouncycastle/jcajce/provider/asymmetric/DH.access$000()Ljava/util/Map;
-com/vmware/xenon/common/ServiceHost.getTracer()Lio/opentracing/Tracer;
 com/vmware/xenon/common/Operation.getInstrumentationContext()Lcom/vmware/xenon/common/Operation$InstrumentationContext;
 com/vmware/xenon/common/ServiceHost.startFactory(Ljava/util/function/Supplier;Ljava/lang/String;)Lcom/vmware/xenon/common/ServiceHost;
 com/vmware/xenon/common/StatefulService.setMaintenanceIntervalMicros(J)V
@@ -1313,6 +1307,7 @@ com/vmware/xenon/common/FactoryService.handleRequest(Lcom/vmware/xenon/common/Op
 com/vmware/xenon/common/StatefulService.allocateExtraContext()V
 org/bouncycastle/util/Strings.toLowerCase(Ljava/lang/String;)Ljava/lang/String;
 com/vmware/xenon/common/ServiceHost.getServiceResourceTracker()Lcom/vmware/xenon/common/ServiceResourceTracker;
+com/vmware/xenon/common/StatefulService.failRequest(Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/xenon/common/test/TestContext.complete()V
 com/vmware/xenon/common/UriUtils.buildUriQuery([Ljava/lang/String;)Ljava/lang/String;
 com/esotericsoftware/kryo/io/Input.setBuffer([BII)V
@@ -1347,9 +1342,9 @@ com/esotericsoftware/kryo/serializers/MapSerializer.read(Lcom/esotericsoftware/k
 com/vmware/xenon/services/common/FieldInfoCache.equals(Lorg/apache/lucene/index/FieldInfo;Lorg/apache/lucene/index/FieldInfo;)Z
 com/vmware/xenon/common/DeferredResult.thenAccept(Ljava/util/function/Consumer;)Lcom/vmware/xenon/common/DeferredResult;
 com/fasterxml/jackson/core/JsonFactory.setCodec(Lcom/fasterxml/jackson/core/ObjectCodec;)Lcom/fasterxml/jackson/core/JsonFactory;
+com/vmware/xenon/common/ServiceSynchronizationTracker.close()V
 com/vmware/xenon/common/StatefulService.processCompletionStagePublishAndComplete(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/xenon/services/common/LuceneDocumentIndexService.processQueryResults(Lcom/vmware/xenon/services/common/QueryTask$QuerySpecification;Ljava/util/EnumSet;ILorg/apache/lucene/search/IndexSearcher;Lcom/vmware/xenon/common/ServiceDocumentQueryResult;[Lorg/apache/lucene/search/ScoreDoc;JLjava/lang/String;Z)Lorg/apache/lucene/search/ScoreDoc;
-com/vmware/xenon/common/StatefulService.log(Ljava/util/logging/Level;Ljava/util/function/Supplier;)V
 com/vmware/xenon/common/FactoryService.getDocumentTemplate()Lcom/vmware/xenon/common/ServiceDocument;
 com/vmware/xenon/common/RequestRouter.register(Lcom/vmware/xenon/common/Service$Action;Ljava/util/function/Predicate;Ljava/util/function/Consumer;Ljava/lang/String;)V
 org/bouncycastle/jcajce/provider/asymmetric/RSA$Mappings.addDigestSignature(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;Ljava/lang/String;Ljava/lang/String;Lorg/bouncycastle/asn1/ASN1ObjectIdentifier;)V
@@ -1384,6 +1379,7 @@ com/esotericsoftware/kryo/serializers/VersionFieldSerializer.read(Lcom/esoterics
 com/vmware/xenon/common/OperationProcessingChain$OperationProcessingContext.getService()Lcom/vmware/xenon/common/Service;
 com/vmware/xenon/common/ServiceHost.performNodeSelectorChangeMaintenance(Lcom/vmware/xenon/common/Operation;JLcom/vmware/xenon/common/ServiceHost$MaintenanceStage;ZJ)V
 com/vmware/xenon/common/OperationTracker.hasPendingServiceAvailableCompletions(Ljava/lang/String;)Z
+com/vmware/xenon/common/Operation.createDelete(Lcom/vmware/xenon/common/ServiceHost;Ljava/lang/String;)Lcom/vmware/xenon/common/Operation;
 com/vmware/xenon/common/Utils.buildServicePath(Ljava/lang/Class;)Ljava/lang/String;
 com/vmware/xenon/common/AuthorizationFilter.processRequest(Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/OperationProcessingChain$OperationProcessingContext;)Lcom/vmware/xenon/common/OperationProcessingChain$FilterReturnCode;
 org/bouncycastle/jcajce/provider/symmetric/AES.lookup(Ljava/lang/String;)Ljava/lang/Class;
@@ -1415,6 +1411,7 @@ com/vmware/xenon/common/ServiceSynchronizationTracker.lambda$performNodeSelector
 com/vmware/xenon/common/OperationTracker.checkOperationExpiration(JLjava/util/Iterator;)V
 com/vmware/xenon/services/common/QueryTaskService.handleStart(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/xenon/common/DeferredResult.lambda$thenCompose$7(Lcom/vmware/xenon/common/DeferredResult;)Ljava/util/concurrent/CompletionStage;
+com/fasterxml/jackson/annotation/JsonInclude$Include.values()[Lcom/fasterxml/jackson/annotation/JsonInclude$Include;
 com/vmware/xenon/common/ServiceMaintenanceTracker.lambda$performServiceMaintenance$1([JLcom/vmware/xenon/common/Service;Ljava/lang/String;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 org/bouncycastle/jcajce/provider/digest/MD5$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 com/vmware/xenon/services/common/LuceneDocumentIndexService.createPaginatedQuerySearcher(JLorg/apache/lucene/index/IndexWriter;Z)Lorg/apache/lucene/search/IndexSearcher;
@@ -1493,6 +1490,7 @@ com/vmware/xenon/common/ServiceResourceTracker.hasServiceSoftState(Lcom/vmware/x
 org/bouncycastle/jcajce/provider/drbg/DRBG.findSource()[Ljava/lang/Object;
 com/vmware/xenon/common/ServiceStatUtils.getPerActionDurationName(Lcom/vmware/xenon/common/Service$Action;)Ljava/lang/String;
 org/bouncycastle/jcajce/provider/symmetric/Twofish$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
+com/vmware/xenon/common/StatefulService.failRequest(Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;Z)V
 com/vmware/xenon/common/config/ConfigurationSource.getProperty(Ljava/lang/String;)Ljava/lang/String;
 com/vmware/xenon/common/StatefulService.handleRequestStageExecutingServiceHandler(Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/Service$OperationProcessingStage;Z)Z
 com/vmware/xenon/services/common/LuceneDocumentIndexService.lambda$updateLinkInfoCache$14(JLjava/lang/String;Ljava/lang/Long;)Ljava/lang/Long;
@@ -1533,7 +1531,6 @@ com/vmware/xenon/common/FactoryService.getUri()Ljava/net/URI;
 com/vmware/xenon/common/ServiceHost.getClient()Lcom/vmware/xenon/common/ServiceClient;
 com/vmware/xenon/common/ServiceHost.addPrivilegedService(Ljava/lang/Class;)V
 com/esotericsoftware/kryo/serializers/FieldSerializerAnnotationsUtil.processAnnotatedFields(Lcom/esotericsoftware/kryo/serializers/FieldSerializer;)V
-com/vmware/xenon/services/common/LuceneDocumentIndexService.initializeInstance()V
 org/bouncycastle/jcajce/provider/symmetric/SipHash$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 com/vmware/xenon/services/common/NodeGroupUtils.hasMembershipQuorum(Lcom/vmware/xenon/common/ServiceHost;Lcom/vmware/xenon/services/common/NodeGroupService$NodeGroupState;)Z
 com/vmware/xenon/services/common/ServiceHostLogService.getDefaultLogFilePath(Ljava/lang/String;)Ljava/lang/String;
@@ -1615,7 +1612,6 @@ com/vmware/xenon/services/common/LuceneDocumentIndexService.getLatestVersion(Lor
 com/fasterxml/jackson/databind/cfg/ConfigOverride.empty()Lcom/fasterxml/jackson/databind/cfg/ConfigOverride;
 com/vmware/xenon/services/common/NodeGroupUtils.isNodeGroupAvailable(Lcom/vmware/xenon/common/ServiceHost;Lcom/vmware/xenon/services/common/NodeGroupService$NodeGroupState;)Z
 com/vmware/xenon/services/common/LuceneDocumentIndexService.documentNeedsNewSearcher(Ljava/lang/String;Ljava/util/Set;IJZ)Z
-com/vmware/xenon/services/common/LuceneDocumentIndexService.createCodec()Lorg/apache/lucene/codecs/Codec;
 com/vmware/xenon/services/common/FieldInfoCache$FieldInfoKey.equals(Ljava/lang/Object;)Z
 org/bouncycastle/jcajce/provider/symmetric/XTEA$Mappings.configure(Lorg/bouncycastle/jcajce/provider/config/ConfigurableProvider;)V
 com/fasterxml/jackson/databind/introspect/VisibilityChecker$Std.defaultInstance()Lcom/fasterxml/jackson/databind/introspect/VisibilityChecker$Std;

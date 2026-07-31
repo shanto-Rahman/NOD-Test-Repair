@@ -359,6 +359,7 @@ io/yawp/driver/appengine/AppengineQueryDriver.prepareQueryAncestor(Lio/yawp/repo
 io/yawp/driver/appengine/AppengineQueryDriver.createFilter(Lio/yawp/repository/query/QueryBuilder;Lio/yawp/repository/query/condition/BaseCondition;)Lcom/google/appengine/api/datastore/Query$Filter;
 io/yawp/repository/Namespace.set(Ljava/lang/Class;)V
 io/yawp/repository/Repository.saveInternalAsync(Ljava/lang/Object;Z)Lio/yawp/repository/FutureObject;
+flakesync/Constants.getConcurrentMethodsFilepath(Ljava/lang/String;)Ljava/nio/file/Path;
 io/yawp/driver/appengine/pipes/flow/drops/FlowDropsTask.init()V
 io/yawp/repository/query/QueryBuilder.executeQuery()Ljava/util/List;
 io/yawp/driver/appengine/AppenginePersistenceDriver.setEntityProperty(Lio/yawp/repository/models/ObjectHolder;Lcom/google/appengine/api/datastore/Entity;Lio/yawp/repository/models/FieldModel;)V
@@ -404,6 +405,7 @@ io/yawp/repository/models/FieldModel.getField()Ljava/lang/reflect/Field;
 io/yawp/driver/appengine/AppengineQueryDriver.fetch(Lio/yawp/repository/IdRef;)Ljava/lang/Object;
 org/quartz/core/ErrorLogger.triggerFinalized(Lorg/quartz/Trigger;)V
 io/yawp/repository/pipes/SinkMarker.setId(Lio/yawp/repository/IdRef;)V
+org/quartz/impl/SchedulerRepository.remove(Ljava/lang/String;)Z
 org/quartz/SimpleTrigger.getNextFireTime()Ljava/util/Date;
 io/yawp/repository/models/FieldModel.isListOfIds()Z
 org/quartz/simpl/RAMJobStore.setMisfireThreshold(J)V
@@ -414,6 +416,7 @@ io/yawp/repository/query/condition/SimpleCondition.normalizeIdRefs()V
 io/yawp/repository/query/QueryBuilder.limit(I)Lio/yawp/repository/query/QueryBuilder;
 org/quartz/simpl/SimpleJobFactory.newJob(Lorg/quartz/spi/TriggerFiredBundle;)Lorg/quartz/Job;
 org/quartz/spi/TriggerFiredBundle.getCalendar()Lorg/quartz/Calendar;
+org/quartz/core/QuartzScheduler.unBind()V
 org/quartz/core/QuartzScheduler.shutdownPlugins()V
 org/quartz/core/QuartzSchedulerResources.setThreadPool(Lorg/quartz/spi/ThreadPool;)V
 io/yawp/repository/query/QueryBuilder.sortList(Ljava/util/List;)V

@@ -11,7 +11,6 @@ com/vmware/admiral/compute/pks/PKSEndpointFactoryService.createServiceInstance()
 com/vmware/photon/controller/model/tasks/ProvisionSecurityGroupTaskService$SubStage.values()[Lcom/vmware/photon/controller/model/tasks/ProvisionSecurityGroupTaskService$SubStage;
 com/vmware/admiral/compute/container/ContainerHostDataCollectionService.lambda$updateResourcePool$9(ZZLjava/lang/Long;Ljava/lang/Long;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/photon/controller/model/query/QueryUtils$QueryByPages.getResultLimit()I
-com/vmware/admiral/compute/container/CompositeComponentRegistry.registerComponent(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;)V
 com/vmware/admiral/common/util/ServiceUtils.getDefaultTaskExpirationTimeInMicros()J
 com/vmware/admiral/compute/cluster/ClusterService.lambda$patchUnderlyingPlacementZone$5(Ljava/lang/String;Lcom/vmware/admiral/compute/ElasticPlacementZoneConfigurationService$ElasticPlacementZoneConfigurationState;)Lcom/vmware/xenon/common/DeferredResult;
 com/vmware/admiral/compute/container/GroupResourcePlacementService.createGroupResourcePlacementQueryTask(Lcom/vmware/admiral/compute/container/GroupResourcePlacementService$GroupResourcePlacementState;)Lcom/vmware/xenon/services/common/QueryTask;
@@ -75,7 +74,6 @@ com/vmware/photon/controller/model/query/QueryUtils$QueryByPages.lambda$handleQu
 com/vmware/admiral/service/common/ServiceTaskCallback.getFinishedResponse()Lcom/vmware/admiral/service/common/ServiceTaskCallback$ServiceTaskCallbackResponse;
 com/vmware/admiral/service/test/MockDockerHostAdapterService.queryVolumesByHost(Lcom/vmware/admiral/adapter/common/AdapterRequest;Ljava/util/function/Consumer;)V
 com/vmware/admiral/common/util/ServiceDocumentQuery.lambda$query$1(Ljava/util/function/Consumer;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
-com/vmware/admiral/compute/cluster/ClusterServiceTest.createComputeState(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostType;Lcom/vmware/photon/controller/model/resources/ComputeService$PowerState;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;)Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;
 com/vmware/admiral/service/test/MockDockerHostAdapterService.lambda$handleRequest$2(Lcom/vmware/admiral/compute/container/HostVolumeListDataCollection$VolumeListCallback;Lcom/vmware/admiral/adapter/common/AdapterRequest;Lcom/vmware/xenon/common/Operation;Ljava/util/List;)V
 com/vmware/admiral/host/HostInitServiceHelper.handleEventTopicDeclarators(Lcom/vmware/xenon/common/Service;Lcom/vmware/xenon/common/ServiceHost;)V
 com/vmware/photon/controller/model/util/StartServicesHelper$ServiceMetadata.lambda$factoryService$2(Ljava/lang/Class;Ljava/util/function/Supplier;Ljava/lang/Class;)Lcom/vmware/photon/controller/model/util/StartServicesHelper$ServiceMetadata;
@@ -102,9 +100,7 @@ com/vmware/photon/controller/model/tasks/ProvisionNetworkTaskService$SubStage.va
 com/vmware/admiral/compute/container/ContainerHostDataCollectionService.updateHostStats(Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;)V
 com/vmware/admiral/common/util/ConfigurationUtil.lambda$getConfigProperty$0(Ljava/util/function/Consumer;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/admiral/compute/container/HostContainerListDataCollection.getDocumentTemplate()Lcom/vmware/xenon/common/ServiceDocument;
-com/vmware/admiral/compute/cluster/ClusterServiceTest.buildProjectLink(Ljava/lang/String;)Ljava/lang/String;
 com/vmware/admiral/common/util/OperationUtil.extractProjectFromHeader(Lcom/vmware/xenon/common/Operation;)Ljava/lang/String;
-com/vmware/admiral/compute/cluster/ClusterServiceTest.createContainerHostSpec(Ljava/util/List;Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostType;Ljava/lang/String;Ljava/lang/String;)Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostSpec;
 com/vmware/admiral/service/common/CommonInitialBootService.buildUniqueProjectNamesInstance()Lcom/vmware/admiral/service/common/UniquePropertiesService$UniquePropertiesState;
 com/vmware/admiral/adapter/common/AdapterRequest.validate()V
 com/vmware/admiral/compute/container/PortBinding.fromDockerPortMapping(Lcom/vmware/admiral/adapter/docker/util/DockerPortMapping;)Lcom/vmware/admiral/compute/container/PortBinding;
@@ -114,10 +110,8 @@ com/vmware/photon/controller/model/security/ssl/SslTrustCertificateServiceUtils.
 com/vmware/admiral/compute/container/CompositeComponentRegistry.getEntry(Ljava/util/function/Predicate;)Lcom/vmware/admiral/compute/container/CompositeComponentRegistry$RegistryEntry;
 com/vmware/photon/controller/model/resources/util/PhotonModelUtils.mergeLists(Ljava/util/List;Ljava/util/List;)Lorg/apache/commons/lang3/tuple/Pair;
 com/vmware/admiral/compute/PlacementCapacityUpdateTaskService.lambda$updateResourcePool$13(Lcom/vmware/admiral/compute/PlacementCapacityUpdateTaskService$PlacementCapacityUpdateTaskState;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
-com/vmware/admiral/service/common/AbstractTaskStatefulService.lambda$failTask$22(Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/photon/controller/model/resources/ResourcePoolService.handlePut(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/admiral/service/test/MockDockerHostAdapterService.lambda$handleRequest$1(Lcom/vmware/admiral/compute/container/HostNetworkListDataCollection$NetworkListCallback;Lcom/vmware/admiral/adapter/common/AdapterRequest;Lcom/vmware/xenon/common/Operation;Ljava/util/List;)V
-com/vmware/admiral/compute/cluster/ClusterServiceTest.createCluster(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostSpec;)Lcom/vmware/admiral/compute/cluster/ClusterService$ClusterDto;
 com/vmware/photon/controller/model/security/ssl/ServerX509TrustManager.schedulePeriodicCertificatesReload()V
 com/vmware/admiral/compute/container/GroupResourcePlacementService.validateStateOnStart(Lcom/vmware/admiral/compute/container/GroupResourcePlacementService$GroupResourcePlacementState;Lcom/vmware/xenon/common/Operation;Ljava/util/function/Consumer;)V
 com/vmware/photon/controller/model/security/ssl/SslTrustCertificateServiceUtils.lambda$null$0(Lcom/vmware/xenon/common/ServiceHost;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
@@ -174,8 +168,6 @@ com/vmware/admiral/compute/PlacementZoneUtil.isSchedulerPlacementZone(Lcom/vmwar
 com/vmware/photon/controller/model/security/ssl/SslTrustCertificateServiceUtils.subscribe(Lcom/vmware/xenon/common/ServiceHost;Ljava/util/function/Consumer;)V
 com/vmware/photon/controller/model/tasks/ProvisionComputeTaskService$ProvisionComputeTaskState$SubStage.values()[Lcom/vmware/photon/controller/model/tasks/ProvisionComputeTaskService$ProvisionComputeTaskState$SubStage;
 com/vmware/admiral/compute/container/GroupResourcePlacementService.lambda$getOtherPlacementsInResourcePoolAndValidate$8(Lcom/vmware/xenon/common/Operation;Ljava/util/List;JLcom/vmware/admiral/compute/container/GroupResourcePlacementService$GroupResourcePlacementState;Ljava/util/function/Consumer;Lcom/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult;)V
-com/vmware/admiral/compute/container/CompositeComponentRegistry.registerComponent(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Class;)V
-com/vmware/admiral/service/common/AbstractTaskStatefulService.getServiceErrorResponse(Ljava/lang/Throwable;)Lcom/vmware/xenon/common/ServiceErrorResponse;
 com/vmware/admiral/service/common/AbstractTaskStatefulService.autoMergeState(Lcom/vmware/xenon/common/Operation;Lcom/vmware/admiral/service/common/TaskServiceDocument;Lcom/vmware/admiral/service/common/TaskServiceDocument;)V
 com/vmware/admiral/common/DeploymentProfileConfig.isTest()Z
 com/vmware/admiral/compute/ContainerHostService.fetchSslTrustAliasProperty(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostSpec;Ljava/lang/Runnable;)V
@@ -230,7 +222,6 @@ com/vmware/photon/controller/model/adapterapi/NetworkInstanceRequest$InstanceReq
 com/vmware/admiral/common/util/ValidationUtils.validateContainerName(Ljava/lang/String;)V
 com/vmware/admiral/compute/container/HostNetworkListDataCollection.getDocumentTemplate()Lcom/vmware/xenon/common/ServiceDocument;
 com/vmware/admiral/service/common/AbstractInitialBootService.initInstance(Lcom/vmware/xenon/common/ServiceDocument;ZLjava/util/function/Consumer;)V
-com/vmware/admiral/compute/cluster/ClusterServiceTest.testPatchSingleHostClusterWithPublicAddress()V
 com/vmware/admiral/compute/ContainerHostService.verifyPlacementZoneIsEmpty(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostSpec;Lcom/vmware/xenon/common/Operation;Ljava/lang/Runnable;)V
 com/vmware/admiral/compute/ContainerHostService.lambda$storeHost$8(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostSpec;Lcom/vmware/xenon/common/Operation;)V
 com/vmware/admiral/compute/container/GroupResourcePlacementService.buildResourcePool(Ljava/lang/String;)Lcom/vmware/photon/controller/model/resources/ResourcePoolService$ResourcePoolState;
@@ -238,7 +229,6 @@ com/vmware/admiral/compute/EpzComputeEnumerationTaskService.handleStartedStagePa
 com/vmware/photon/controller/model/security/util/CertificateUtil.getTrustManagers(Ljava/security/KeyStore;)[Ljavax/net/ssl/TrustManager;
 com/vmware/photon/controller/model/resources/ComputeDescriptionService.validateState(Lcom/vmware/photon/controller/model/resources/ComputeDescriptionService$ComputeDescription;)V
 com/vmware/admiral/compute/EpzComputeEnumerationTaskService.queryComputesToAssign(Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;)V
-com/vmware/admiral/common/test/BaseTestCase.waitForServiceAvailability(Lcom/vmware/xenon/common/ServiceHost;[Ljava/lang/String;)V
 com/vmware/admiral/common/util/ServiceDocumentQuery.processResults(Lcom/vmware/xenon/services/common/QueryTask;Ljava/util/function/Consumer;)V
 com/vmware/admiral/common/util/ServiceDocumentQuery.processQueryResult(Lcom/vmware/xenon/services/common/QueryTask;Ljava/util/function/Consumer;)V
 com/vmware/admiral/compute/EndpointCertificateUtil.validateSslTrust(Lcom/vmware/xenon/common/Service;Lcom/vmware/admiral/compute/HostSpec;Lcom/vmware/xenon/common/Operation;Ljava/lang/Runnable;)V
@@ -363,7 +353,6 @@ com/vmware/admiral/service/common/AbstractCallbackServiceHandler.handleStartedSt
 com/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult.getCount()J
 com/vmware/photon/controller/model/resources/SubnetRangeService.getDocumentTemplate()Lcom/vmware/xenon/common/ServiceDocument;
 com/vmware/photon/controller/model/util/StartServicesHelper$ServiceMetadata.initLink()Ljava/lang/String;
-com/vmware/admiral/compute/cluster/ClusterServiceTest.createComputeState(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostType;Lcom/vmware/photon/controller/model/resources/ComputeService$PowerState;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;
 com/vmware/admiral/compute/container/HostContainerListDataCollection.patchHostState(Ljava/lang/String;Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;)V
 com/vmware/admiral/compute/ContainerHostService.lambda$verifyPlacementZoneIsEmpty$21(Lcom/vmware/xenon/common/Operation;Ljava/util/concurrent/atomic/AtomicBoolean;Ljava/lang/Runnable;Lcom/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult;)V
 com/vmware/admiral/common/util/ServiceDocumentQuery.lambda$getNextPageLinks$4(Ljava/util/function/Consumer;ILcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
@@ -467,7 +456,6 @@ com/vmware/photon/controller/model/support/LifecycleState.values()[Lcom/vmware/p
 com/vmware/admiral/host/HostInitServiceHelper.populateServicesForHealthCheck(Lcom/vmware/xenon/common/ServiceHost;Lcom/vmware/xenon/common/Service;Ljava/lang/Class;Ljava/util/Set;Z)V
 com/vmware/admiral/compute/EpzComputeEnumerationTaskService.lambda$retrieveResourcePoolState$4(Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/admiral/common/util/QueryUtil.addTenantGroupAndUserClause(Ljava/util/Collection;)Lcom/vmware/xenon/services/common/QueryTask$Query;
-com/vmware/admiral/common/util/ServiceDocumentQuery.error(Ljava/lang/Throwable;)Lcom/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult;
 com/vmware/admiral/compute/container/ContainerHostDataCollectionService.updateResourcePool(Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;Ljava/util/Collection;ZZ)V
 com/vmware/photon/controller/model/resources/ResourcePoolService.handleCreate(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/photon/controller/model/resources/EndpointService.getDocumentTemplate()Lcom/vmware/xenon/common/ServiceDocument;
@@ -609,7 +597,6 @@ com/vmware/admiral/service/common/AbstractTaskStatefulService.sendRequest(Lcom/v
 com/vmware/admiral/compute/container/ContainerHostDataCollectionService.getDefaultHostAdapter(Lcom/vmware/xenon/common/ServiceHost;)Ljava/net/URI;
 com/vmware/photon/controller/model/resources/ComputeService.handlePatch(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/admiral/compute/container/ContainerDescriptionFactoryService.createServiceInstance()Lcom/vmware/xenon/common/Service;
-com/vmware/admiral/common/test/BaseTestCase.waitForServiceAvailability([Ljava/lang/String;)V
 com/vmware/admiral/compute/cluster/ClusterServiceTest.patchCluster(Lcom/vmware/admiral/compute/cluster/ClusterService$ClusterDto;)Lcom/vmware/admiral/compute/cluster/ClusterService$ClusterDto;
 com/vmware/admiral/common/util/OperationUtil.createForcedPost(Lcom/vmware/xenon/common/Service;Ljava/lang/String;)Lcom/vmware/xenon/common/Operation;
 com/vmware/admiral/compute/PlacementCapacityUpdateTaskService.lambda$null$7(Ljava/lang/Object;)Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;
@@ -620,7 +607,6 @@ com/vmware/admiral/compute/container/HostNetworkListDataCollection.inspectExisti
 com/vmware/admiral/compute/kubernetes/service/ServiceEntityFactoryHandler.createServiceInstance()Lcom/vmware/xenon/common/Service;
 com/vmware/admiral/compute/ContainerHostService.storeVchHost(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostSpec;Lcom/vmware/xenon/common/Operation;)V
 com/vmware/admiral/compute/cluster/ClusterService.lambda$addContainerHost$25(Lcom/vmware/xenon/common/Operation;)Lcom/vmware/xenon/common/DeferredResult;
-com/vmware/admiral/service/common/AbstractTaskStatefulService.failTask(Ljava/lang/String;Ljava/lang/Throwable;Z)V
 com/vmware/admiral/compute/PlacementCapacityUpdateTaskService.lambda$retrieveAndUpdatePlacements$14(Lcom/vmware/admiral/compute/PlacementCapacityUpdateTaskService$PlacementCapacityUpdateTaskState;Ljava/util/List;Lcom/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult;)V
 com/vmware/admiral/host/ComputeInitialBootService.handlePost(Lcom/vmware/xenon/common/Operation;)V
 com/vmware/admiral/compute/ContainerHostService.checkForDefaultHostDescription(Ljava/lang/String;Ljava/lang/String;)V
@@ -637,11 +623,9 @@ com/vmware/admiral/common/util/AssertUtil.assertNotNullOrEmpty(Ljava/lang/String
 com/vmware/admiral/compute/EpzComputeEnumerationTaskService.lambda$null$5(Lcom/vmware/xenon/common/ServiceDocumentQueryResult;Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;)V
 com/vmware/admiral/image/service/FavoriteImagesService.buildDefaultFavoriteImages(Lcom/vmware/xenon/common/ServiceHost;)Ljava/util/List;
 com/vmware/photon/controller/model/resources/ResourceUtils.mergeResourceStateWithPatch(Lcom/vmware/photon/controller/model/resources/ResourceState;Lcom/vmware/photon/controller/model/resources/ResourceState;)Z
-com/vmware/admiral/service/common/AbstractTaskStatefulService.lambda$failTask$20(Ljava/lang/String;Ljava/lang/Throwable;)Ljava/lang/String;
 com/vmware/photon/controller/model/tasks/SshCommandTaskService$1.createServiceInstance()Lcom/vmware/xenon/common/Service;
 com/vmware/admiral/compute/PlacementCapacityUpdateTaskService.getComputeStats(Lcom/vmware/admiral/compute/PlacementCapacityUpdateTaskService$PlacementCapacityUpdateTaskState;Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;Lcom/vmware/photon/controller/model/resources/ComputeDescriptionService$ComputeDescription;)Lcom/vmware/admiral/compute/PlacementCapacityUpdateTaskService$ComputeStats;
 com/vmware/admiral/service/test/BaseMockAdapterService.patchTaskStage(Lcom/vmware/admiral/adapter/common/AdapterRequest;Lcom/vmware/xenon/common/ServiceErrorResponse;Lcom/vmware/admiral/service/common/ServiceTaskCallback$ServiceTaskCallbackResponse;)V
-com/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult.getException()Ljava/lang/Throwable;
 com/vmware/admiral/service/common/ResourceNamePrefixService.validateStateOnStart(Lcom/vmware/admiral/service/common/ResourceNamePrefixService$ResourceNamePrefixState;)V
 com/vmware/photon/controller/model/query/QueryUtils$QueryTemplate.queryLinks(Ljava/util/function/Consumer;)Lcom/vmware/xenon/common/DeferredResult;
 com/vmware/admiral/compute/cluster/ClusterService.getInfoFromHostsWithinOnePlacementZone(Ljava/lang/String;Lcom/vmware/admiral/compute/ElasticPlacementZoneConfigurationService$ElasticPlacementZoneConfigurationState;)Lcom/vmware/xenon/common/DeferredResult;
@@ -670,7 +654,6 @@ com/vmware/admiral/compute/ElasticPlacementZoneConfigurationService.handlePost(L
 com/vmware/admiral/compute/ContainerHostService.verifyPlacementZoneType(Lcom/vmware/admiral/compute/ContainerHostService$ContainerHostSpec;Lcom/vmware/xenon/common/Operation;Lcom/vmware/admiral/compute/PlacementZoneConstants$PlacementZoneType;Ljava/lang/Runnable;)V
 com/vmware/admiral/compute/container/CompositeComponentRegistry.lambda$stateFactoryPrefix$1(Ljava/lang/String;Lcom/vmware/admiral/compute/container/CompositeComponentRegistry$RegistryEntry;)Z
 com/vmware/admiral/compute/kubernetes/KubernetesEntityDataCollection.buildDefaultStateInstance()Lcom/vmware/xenon/common/ServiceDocument;
-com/vmware/admiral/compute/cluster/ClusterServiceTest.setUp()V
 com/vmware/photon/controller/model/monitoring/InMemoryResourceMetricService.getDocumentTemplate()Lcom/vmware/xenon/common/ServiceDocument;
 com/vmware/admiral/compute/cluster/ClusterService.lambda$null$19(Lcom/vmware/photon/controller/model/adapters/util/Pair;Lcom/vmware/photon/controller/model/resources/ComputeService$ComputeState;)Lcom/vmware/photon/controller/model/adapters/util/Pair;
 com/vmware/admiral/compute/EpzComputeEnumerationTaskService.lambda$null$3(Lcom/vmware/xenon/common/Operation;Lcom/vmware/admiral/compute/EpzComputeEnumerationTaskService$EpzComputeEnumerationTaskState;)V
@@ -694,7 +677,6 @@ com/vmware/admiral/service/common/AbstractInitialBootService.initInstances(Lcom/
 com/vmware/admiral/compute/kubernetes/entities/deployments/DeploymentConditionType.values()[Lcom/vmware/admiral/compute/kubernetes/entities/deployments/DeploymentConditionType;
 com/vmware/admiral/compute/ContainerHostService.lambda$doStoreHost$19(Lcom/vmware/xenon/common/Operation;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/admiral/compute/cluster/ClusterServiceTest.lambda$createCluster$1(Ljava/util/ArrayList;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
-com/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult.access$002(Lcom/vmware/admiral/common/util/ServiceDocumentQuery$ServiceDocumentQueryElementResult;Ljava/lang/Throwable;)Ljava/lang/Throwable;
 com/vmware/photon/controller/model/tasks/PhotonModelTaskServices.lambda$startServices$11()Lcom/vmware/xenon/common/FactoryService;
 com/vmware/admiral/compute/container/volume/ContainerVolumeService$ContainerVolumeState$PowerState.values()[Lcom/vmware/admiral/compute/container/volume/ContainerVolumeService$ContainerVolumeState$PowerState;
 com/vmware/admiral/compute/container/HostVolumeListDataCollection.lambda$null$0(Ljava/util/List;Lcom/vmware/admiral/compute/container/HostVolumeListDataCollection$VolumeListCallback;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
@@ -745,7 +727,6 @@ com/vmware/admiral/service/common/AbstractInitialBootService.lambda$createDefaul
 com/vmware/admiral/compute/ContainerHostService.lambda$null$23(Ljava/lang/String;Lcom/vmware/xenon/common/Operation;Ljava/lang/Throwable;)V
 com/vmware/admiral/service/common/ServiceTaskCallback.createEmpty()Lcom/vmware/admiral/service/common/ServiceTaskCallback;
 com/vmware/photon/controller/model/resources/ComputeDescriptionService.validateBootAdapterReference(Lcom/vmware/photon/controller/model/resources/ComputeDescriptionService$ComputeDescription;)V
-com/vmware/admiral/service/common/AbstractTaskStatefulService.failTask(Ljava/lang/String;Ljava/lang/Throwable;)V
 com/vmware/admiral/common/test/BaseTestCase.setFinalStatic(Ljava/lang/reflect/Field;Ljava/lang/Object;)V
 com/vmware/admiral/common/util/ConfigurationUtil.getConfigProperty(Lcom/vmware/xenon/common/Service;Ljava/lang/String;Ljava/util/function/Consumer;)V
 com/vmware/admiral/service/common/AbstractCallbackServiceHandler.validateStateOnStart(Lcom/vmware/admiral/service/common/TaskServiceDocument;Lcom/vmware/xenon/common/Operation;)Z

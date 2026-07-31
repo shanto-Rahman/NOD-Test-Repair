@@ -161,6 +161,7 @@ org/quartz/impl/StdScheduler.shutdown(Z)V
 org/quartz/SimpleTrigger.setEndTime(Ljava/util/Date;)V
 org/quartz/impl/StdScheduler.getSchedulerName()Ljava/lang/String;
 org/quartz/JobDataMap.put(Ljava/lang/String;J)V
+flakesync/Constants.getConcurrentMethodsFilepath(Ljava/lang/String;)Ljava/nio/file/Path;
 org/quartz/simpl/InitThreadContextClassLoadHelper.initialize()V
 org/quartz/core/QuartzSchedulerResources.setName(Ljava/lang/String;)V
 org/quartz/SimpleTrigger.setStartTime(Ljava/util/Date;)V
@@ -177,10 +178,12 @@ org/quartz/JobDataMap.put(Ljava/lang/String;I)V
 org/quartz/impl/StdScheduler.scheduleJob(Lorg/quartz/JobDetail;Lorg/quartz/Trigger;)Ljava/util/Date;
 org/quartz/core/QuartzScheduler.notifyJobListenersToBeExecuted(Lorg/quartz/JobExecutionContext;)V
 org/quartz/core/ErrorLogger.triggerFinalized(Lorg/quartz/Trigger;)V
+org/quartz/impl/SchedulerRepository.remove(Ljava/lang/String;)Z
 org/quartz/SimpleTrigger.getNextFireTime()Ljava/util/Date;
 org/quartz/simpl/RAMJobStore.setMisfireThreshold(J)V
 org/quartz/simpl/SimpleJobFactory.newJob(Lorg/quartz/spi/TriggerFiredBundle;)Lorg/quartz/Job;
 org/quartz/spi/TriggerFiredBundle.getCalendar()Lorg/quartz/Calendar;
+org/quartz/core/QuartzScheduler.unBind()V
 org/quartz/core/QuartzScheduler.shutdownPlugins()V
 org/quartz/core/QuartzSchedulerResources.setThreadPool(Lorg/quartz/spi/ThreadPool;)V
 org/quartz/core/QuartzScheduler.scheduleJob(Lorg/quartz/core/SchedulingContext;Lorg/quartz/JobDetail;Lorg/quartz/Trigger;)Ljava/util/Date;
