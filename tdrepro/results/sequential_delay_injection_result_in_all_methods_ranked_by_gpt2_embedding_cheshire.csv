@@ -1,0 +1,85 @@
+slug,module,test,method_id,line_number,actual_line,log_file,class_name,method_name,total_time_seconds,iteration_count,failure_detected
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,0,47,"		if( !isFin() ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario2-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,77.96,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,0,47,"		if( !isFin() ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario2-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.81,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario5,0,47,"		if( !isFin() ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario5-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.43,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario8,0,47,"		if( !isFin() ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.88,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario8,0,47,"		if( !isFin() ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.75,1,1
+flaxsearch/luwak,luwak,uk.co.flax.luwak.matchers.TestPartitionMatcher.testParallelSlowLog,0,155,"            if (matchHolder != null)
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/uk.co.flax.luwak.matchers.TestPartitionMatcher#testParallelSlowLog-con-after-changedCode-1_3_4.txt,uk.co.flax.luwak.CandidateMatcher,getMatches,669.84,4,1
+qos-ch/logback,logback-classic,ch.qos.logback.classic.net.SMTPAppender_GreenTest#testCustomBufferSize,no_test_failure,NA,NA,NA,NA,NA,22592.62,515,0
+qos-ch/logback,logback-classic,ch.qos.logback.classic.net.SMTPAppender_GreenTest#testCustomEvaluator,no_test_failure,NA,NA,NA,NA,NA,22532.52,515,0
+qos-ch/logback,logback-core,ch.qos.logback.core.FileAppenderResilienceTest.smoke,0,64,"    // doAppend() method.
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/ch.qos.logback.core.FileAppenderResilienceTest#smoke-con-after-changedCode-1_0_4.txt,ch.qos.logback.core.UnsynchronizedAppenderBase,doAppend,80.16,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario3,4,419,"			}
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario3-con-after-changedCode-5_46_4.txt,org.java_websocket.client.WebSocketClient,run,715.0,53,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario5,4,419,"			}
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario5-con-after-changedCode-5_46_4.txt,org.java_websocket.client.WebSocketClient,run,716.68,53,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario6,4,419,"			}
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario6-con-after-changedCode-5_46_4.txt,org.java_websocket.client.WebSocketClient,run,716.79,53,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario3,4,419,"			}
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario3-con-after-changedCode-5_46_4.txt,org.java_websocket.client.WebSocketClient,run,718.98,53,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario4,4,419,"			}
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario4-con-after-changedCode-5_46_4.txt,org.java_websocket.client.WebSocketClient,run,716.82,53,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario5,4,419,"			}
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario5-con-after-changedCode-5_46_4.txt,org.java_websocket.client.WebSocketClient,run,717.51,53,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario6,4,419,"			}
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario6-con-after-changedCode-5_46_4.txt,org.java_websocket.client.WebSocketClient,run,767.79,53,1
+davidmoten/rxjava2-extras,.,com.github.davidmoten.rx2.internal.flowable.FlowableServerSocketTest.testLoad,0,298,"            if (maxRetries.isPresent()) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/com.github.davidmoten.rx2.internal.flowable.FlowableServerSocketTest#testLoad-con-after-changedCode-1_0_4.txt,com.github.davidmoten.rx2.RetryWhen$Builder,build,237.25,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario0,0,47,"		if( !isFin() ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario0-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.31,1,1
+javadelight/delight-nashorn-sandbox,.,delight.nashornsandbox.TestGetFunction.test,1,54,"      result = operation.executeScriptEngineOperation(scriptEngine);
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/delight.nashornsandbox.TestGetFunction#test-con-after-changedCode-2_2_4.txt,delight.nashornsandbox.internal.JsEvaluator,run,146.49,9,1
+kagkarlsson/db-scheduler,.,com.github.kagkarlsson.scheduler.compatibility.HsqlCompatibilityTest.test_compatibility,2,45,"        if (task == null) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/com.github.kagkarlsson.scheduler.compatibility.HsqlCompatibilityTest#test_compatibility-con-after-changedCode-3_0_4.txt,com.github.kagkarlsson.scheduler.TaskResolver,resolve,686.22,39,1
+doanduyhai/Achilles,integration-test,info.archinnov.achilles.test.integration.tests.ClusteredEntityIT.should_persist_with_ttl,0,57,"        try {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/info.archinnov.achilles.test.integration.tests.ClusteredEntityIT#should_persist_with_ttl-con-after-changedCode-1_0_4.txt,info.archinnov.achilles.embedded.AchillesInitializer,initializeFromParameters,145.14,1,1
+doanduyhai/Achilles,integration-test,info.archinnov.achilles.test.integration.tests.ClusteredEntityIT.should_update_with_ttl,0,57,"        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME);
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/info.archinnov.achilles.test.integration.tests.ClusteredEntityIT#should_update_with_ttl-con-after-changedCode-1_0_4.txt,info.archinnov.achilles.embedded.AchillesInitializer,initializeFromParameters,119.95,1,1
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest.readSendsWindowUpdateHttp2,9,423,"      while (byteCount > 0) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/com.squareup.okhttp.internal.spdy.SpdyConnectionTest#readSendsWindowUpdateHttp2-con-after-changedCode-10_1_4.txt,com.squareup.okhttp.internal.spdy.SpdyStream$SpdyDataSource,receive,21376.07,126,1
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest.postFailsWithFixedLengthRequestForSmallRequest,10,357,"        }
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithFixedLengthRequestForSmallRequest-con-after-changedCode-11_58_4.txt,com.squareup.okhttp.mockwebserver.MockWebServer,serveConnection,5449.56,290,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario0,0,145,"          	try {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario0-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,125.09,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario1,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario1-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,80.78,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario2,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario2-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,81.12,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario4,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario4-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,81.23,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario7,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario7-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,81.2,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario8,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario8-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,80.56,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectBlockingScenario9,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario9-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,80.9,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario0,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario0-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,81.0,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario1,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario1-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,87.08,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario2,4,421,"		} catch ( IOException e ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario2-con-after-changedCode-5_48_4.txt,org.java_websocket.client.WebSocketClient,run,772.09,55,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario7,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario7-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,80.88,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario8,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario8-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,81.01,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue256Test.runReconnectScenario9,0,145,"          	log.trace(""Connection lost timer deactivated"");
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue256Test#runReconnectScenario9-con-after-changedCode-1_0_4.txt,org.java_websocket.AbstractWebSocket,startConnectionLostTimer,81.31,1,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue713Test.testIssue,0,63,"		if( inputFrame.isRSV1() || inputFrame.isRSV2() || inputFrame.isRSV3() ) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue713Test#testIssue-con-after-changedCode-1_0_4.txt,org.java_websocket.extensions.DefaultExtension,isFrameValid,60.83,1,1
+doanduyhai/Achilles,integration-test,info.archinnov.achilles.test.integration.tests.ClusteredEntityIT#should_persist_with_ttl,no_test_failure,NA,NA,NA,NA,NA,2434.99,94,1
+doanduyhai/Achilles,integration-test,info.archinnov.achilles.test.integration.tests.ClusteredEntityIT#should_update_with_ttl,no_test_failure,NA,NA,NA,NA,NA,2533.84,94,1
+apache/httpcore,httpcore,org.apache.http.pool.TestConnPool#testLeaseTimeout,no_test_failure,NA,NA,NA,NA,NA,1511.66,145,1
+TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue677Test#testIssue,no_test_failure,NA,NA,NA,NA,NA,2583.36,238,0
+jknack/handlebars.java,handlebars-humanize,com.github.jknack.handlebars.HumanizeHelperTest#naturalTime,no_test_failure,NA,NA,NA,NA,NA,1114.98,85,1
+zxing/zxing,core,com.google.zxing.pdf417.decoder.ec.ErrorCorrectionTestCase#testTooManyErrors,no_test_failure,NA,NA,NA,NA,NA,5396.21,19,1
+undertow-io/undertow,core,io.undertow.server.handlers.proxy.LoadBalancingProxyTestCase.testLoadSharedWithServerShutdown,5,68,"        if (key == null) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/io.undertow.server.handlers.proxy.LoadBalancingProxyTestCase#testLoadSharedWithServerShutdown-con-after-changedCode-6_0_4.txt,io.undertow.util.AbstractAttachable,putAttachment,666.16,16,1
+undertow-io/undertow,core,io.undertow.server.security.DigestAuthentication2069TestCase.testDigestSuccess,9,42,"        if (key == null) {
+",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/io.undertow.server.security.DigestAuthentication2069TestCase#testDigestSuccess-con-after-changedCode-10_0_4.txt,io.undertow.util.AbstractAttachable,getAttachment,965.57,25,1
