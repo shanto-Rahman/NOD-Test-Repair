@@ -44,9 +44,9 @@ while read line
         echo "python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list}"
         #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "embeddingOnly" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         #python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gemini" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
-        python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list} #> ${id}_log.txt
+        python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list} ${id} #> ${id}_log.txt
         echo "I am here"
         #python3 barebone_llm.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
-        exit
+        #exit
 
     done < $1

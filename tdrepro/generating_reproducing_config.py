@@ -1024,7 +1024,7 @@ def initialize_environment(seed_value):
     set_seed(seed_value)  # Set the seed for reproducibility
     setup_logging()  # Setup standardized logging
 
-def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, seconds, test_failure_detected): 
+def save_result(test_id, slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, seconds, test_failure_detected): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
     file_path = "results/tdrepro.csv"
@@ -1032,10 +1032,11 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_f
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
         if write_header:
-            writer.writerow(["proj_name","sha","module","test_name","line_to_inject_delay", "cot_count", "time_to_run_tdrepro", "failure_detected?"])
+            writer.writerow(["test_id", "proj_name","sha","module","test_name","line_to_inject_delay", "cot_count", "time_to_run_tdrepro", "failure_detected?"])
 
         if test_failure_reproduced == "Failure reproduced.":
             writer.writerow([
+                test_id,
                 slug,
                 sha,
                 module,
@@ -1047,6 +1048,7 @@ def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_f
             ])
         else:
             writer.writerow([
+                test_id,
                 slug,
                 sha,
                 module,
@@ -1067,6 +1069,7 @@ if __name__ == "__main__":
     test = sys.argv[8] 
     library_meth_file = sys.argv[9] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
     proj_meth_notin_lib_file = sys.argv[10] #conc_executed_methods/classified/org.apache.hadoop.hbase.stargate.client.TestRemoteAdmin.testDeleteTable-ResultMethods-library-methods.txt
+    test_id = sys.argv[11]
     initialize_environment(42)
 
     start_time = time.time()
@@ -1077,4 +1080,4 @@ if __name__ == "__main__":
     #print("duration=", duration)
     #minutes, seconds = divmod(duration, 60)
 
-    save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, duration_in_seconds, test_failure_detected)
+    save_result(test_id, slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, duration_in_seconds, test_failure_detected)
