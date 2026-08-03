@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, AutoModel
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, AutoModel, BitsAndBytesConfig
 import torch
 from transformers import BigBirdTokenizer, BigBirdForSequenceClassification
 from transformers import BigBirdModel
@@ -80,11 +80,34 @@ def qwen_model_define():
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
+    #model = AutoModel.from_pretrained(
+    #    model_name,
+    #    device_map="auto",
+    #    torch_dtype=torch.bfloat16,   # or torch.float16
+    #    low_cpu_mem_usage=True,
+    #).eval()
+    if torch.cuda.is_available():
+        compute_dtype = (
+            torch.bfloat16
+            if torch.cuda.is_bf16_supported()
+            else torch.float16
+        )
+    else:
+        compute_dtype = torch.float32
+
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=compute_dtype,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True,
+    )
+
     model = AutoModel.from_pretrained(
         model_name,
-        device_map="auto",
-        torch_dtype=torch.bfloat16,   # or torch.float16
+        quantization_config=quantization_config,
+        device_map={"": 0},  # Entire quantized model on GPU 0
         low_cpu_mem_usage=True,
+        torch_dtype=compute_dtype,
     ).eval()
 
     return model_name, tok, model
@@ -149,7 +172,7 @@ def get_qwen_embeddings(code: str,
 
 from transformers import AutoTokenizer, AutoModel
 
-def llama3_model_define():
+'''def llama3_model_define():
     model_name = "meta-llama/Meta-Llama-3-8B"
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
@@ -162,6 +185,39 @@ def llama3_model_define():
         torch_dtype="bfloat16",      # or torch.float16 if BF16 not available
         low_cpu_mem_usage=True,
         trust_remote_code=False,
+    ).eval()
+
+    return model_name, tokenizer, model'''
+
+def llama3_model_define():
+    model_name = "meta-llama/Meta-Llama-3-8B"
+
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name,
+        use_fast=True,
+    )
+
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    compute_dtype = (
+        torch.bfloat16
+        if torch.cuda.is_bf16_supported()
+        else torch.float16
+    )
+
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=compute_dtype,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True,
+    )
+
+    model = AutoModel.from_pretrained(
+        model_name,
+        quantization_config=quantization_config,
+        device_map={"": 0},   # put the complete quantized model on GPU 0
+        low_cpu_mem_usage=True,
     ).eval()
 
     return model_name, tokenizer, model
@@ -398,9 +454,17 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, fail_log_df, ll
 
     # Generate embeddings
     if llm != "tf-idf":
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model = model.to(device)
-        model.eval()
+        if hasattr(model, "hf_device_map"):
+            # Model is managed by Accelerate through device_map="auto".
+            # Do not move the model.
+            device = model.get_input_embeddings().weight.device
+            print("Model device map:", model.hf_device_map)
+            print("Input device:", device)
+
+        #device = torch.device("cuda")
+        ##device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #model = model.to(device)
+        #model.eval()
         
     # Get code snippets
     test_code = test_df.iloc[0]['test_code']
