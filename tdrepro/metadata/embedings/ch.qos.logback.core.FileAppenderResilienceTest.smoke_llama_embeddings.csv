@@ -1,0 +1,291 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,addStatus,(Lch/qos/logback/core/status/Status;)V,5,8,62.5%,"public void addStatus(Status status) {
+    if (context == null) {
+      if (noContextWarning++ == 0) {
+        System.out.println(""LOGBACK: No context given for "" + this);
+      }
+      return;
+    }
+    StatusManager sm = context.getStatusManager();
+    if (sm != null) {
+      sm.add(status);
+    }
+  }",148-159,0.6673827,0.52705514,0.52705514
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,write,([BII)V,8,10,80.0%,"public void write(byte b[], int off, int len) {
+    if (isPresumedInError()) {
+      if (!recoveryCoordinator.isTooSoon()) {
+        attemptRecovery();
+      }
+      return; // return regardless of the success of the recovery attempt
+    }
+
+    try {
+      os.write(b, off, len);
+      postSuccessfulWrite();
+    } catch (IOException e) {
+      postIOFailure(e);
+    }
+  }",43-57,0.6685072,0.5227177,0.5227177
+ch.qos.logback.core.util.EnvUtil,isJDK_N_OrHigher,(I)Z,9,11,81.8%,"static private boolean isJDK_N_OrHigher(int n) {
+     List<String> versionList = new ArrayList<String>();
+     // this code should work at least until JDK 10 (assuming n parameter is
+     // always 6 or more)
+     for (int i = 0; i < 5; i++) {
+       versionList.add(""1."" + (n + i));
+     }
+
+     String javaVersion = System.getProperty(""java.version"");
+     if (javaVersion == null) {
+       return false;
+     }
+     for (String v : versionList) {
+       if (javaVersion.startsWith(v))
+         return true;
+     }
+     return false;
+   }",25-42,0.5907165,0.5221447,0.5221447
+ch.qos.logback.core.UnsynchronizedAppenderBase,doAppend,(Ljava/lang/Object;)V,7,15,46.7%,"public void doAppend(E eventObject) {
+    // WARNING: The guard check MUST be the first statement in the
+    // doAppend() method.
+      
+    // prevent re-entry.
+    if (Boolean.TRUE.equals(guard.get())) {
+      return;
+    }
+
+    try {
+      guard.set(Boolean.TRUE);
+
+      if (!this.started) {
+        if (statusRepeatCount++ < ALLOWED_REPEATS) {
+          addStatus(new WarnStatus(
+              ""Attempted to append to non started appender ["" + name + ""]."",
+              this));
+        }
+        return;
+      }
+
+      if (getFilterChainDecision(eventObject) == FilterReply.DENY) {
+        return;
+      }
+
+      // ok, we now invoke derived class' implementation of append
+      this.append(eventObject);
+
+    } catch (Exception e) {
+      if (exceptionCount++ < ALLOWED_REPEATS) {
+        addError(""Appender ["" + name + ""] failed to append."", e);
+      }
+    } finally {
+      guard.set(Boolean.FALSE);
+    }
+  }",62-97,0.66687286,0.506274,0.506274
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,postSuccessfulWrite,()V,6,6,100.0%,"private void postSuccessfulWrite() {
+    if (recoveryCoordinator != null) {
+      recoveryCoordinator = null;
+      statusCount = 0;
+      addStatus(new InfoStatus(""Recovered from IO failure on ""
+          + getDescription(), this));
+    }
+  }",91-98,0.7309567,0.49875963,0.49875963
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,postIOFailure,(Ljava/io/IOException;)V,6,6,100.0%,"void postIOFailure(IOException e) {
+    addStatusIfCountNotOverLimit(new ErrorStatus(""IO failure while writing to ""
+        + getDescription(), this, e));
+    presumedClean = false;
+    if (recoveryCoordinator == null) {
+      recoveryCoordinator = new RecoveryCoordinator();
+    }
+  }",100-107,0.7147288,0.49186987,0.49186987
+ch.qos.logback.core.recovery.ResilientFileOutputStream,openNewOutputStream,()Ljava/io/OutputStream;,2,2,100.0%,"@Override
+  OutputStream openNewOutputStream() throws IOException {
+    // see LOGBACK-765
+    fos = new FileOutputStream(file, true);
+    return new BufferedOutputStream(fos);
+  }",49-54,0.64651453,0.49175718,0.49175718
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,attemptRecovery,()V,7,12,58.3%,"void attemptRecovery() {
+    try {
+      close();
+    } catch (IOException e) {
+    }
+
+    addStatusIfCountNotOverLimit(new InfoStatus(
+        ""Attempting to recover from IO failure on "" + getDescription(), this));
+
+    // subsequent writes must always be in append mode
+    try {
+      os = openNewOutputStream();
+      presumedClean = true;
+    } catch (IOException e) {
+      addStatusIfCountNotOverLimit(new ErrorStatus(""Failed to open ""
+          + getDescription(), this, e));
+    }
+  }",116-133,0.70422786,0.48446277,0.48446277
+ch.qos.logback.core.OutputStreamAppender,subAppend,(Ljava/lang/Object;)V,7,12,58.3%,"protected void subAppend(E event) {
+    if (!isStarted()) {
+      return;
+    }
+    try {
+      // this step avoids LBCLASSIC-139
+      if (event instanceof DeferredProcessingAware) {
+        ((DeferredProcessingAware) event).prepareForDeferredProcessing();
+      }
+      // the synchronization prevents the OutputStream from being closed while we
+      // are writing. It also prevents multiple threads from entering the same
+      // converter. Converters assume that they are in a synchronized block.
+      synchronized (lock) {
+        writeOut(event);
+      }
+    } catch (IOException ioe) {
+      // as soon as an exception occurs, move to non-started state
+      // and add a single ErrorStatus to the SM.
+      this.started = false;
+      addStatus(new ErrorStatus(""IO failure in appender"", this, ioe));
+    }
+  }",199-220,0.63679504,0.4810518,0.4810518
+ch.qos.logback.core.spi.FilterAttachableImpl,getFilterChainDecision,(Ljava/lang/Object;)Lch/qos/logback/core/spi/FilterReply;,2,6,33.3%,"public FilterReply getFilterChainDecision(E event) {
+    for (Filter<E> f : filterList) {
+      final FilterReply r = f.decide(event);
+      if (r == FilterReply.DENY || r == FilterReply.ACCEPT) {
+        return r;
+      }
+    }
+    return FilterReply.NEUTRAL;
+  }",50-58,0.62233174,0.46445847,0.46445847
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,isPresumedInError,()Z,1,1,100.0%,"private boolean isPresumedInError() {
+    // existence of recoveryCoordinator indicates failed state
+    return (recoveryCoordinator != null && !presumedClean);
+  }",38-41,0.6831675,0.46352464,0.46352464
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,flush,()V,7,7,100.0%,"@Override
+  public void flush() {
+    if (os != null) {
+      try {
+        os.flush();
+        postSuccessfulWrite();
+      } catch (IOException e) {
+        postIOFailure(e);
+      }
+    }
+  }",75-85,0.6614288,0.45005822,0.45005822
+ch.qos.logback.core.recovery.ResilientFileOutputStream,getChannel,()Ljava/nio/channels/FileChannel;,2,3,66.7%,"public FileChannel getChannel() {
+    if (os == null) {
+      return null;
+    }
+    return fos.getChannel();
+  }",33-38,0.60485405,0.44797513,0.44797513
+ch.qos.logback.core.OutputStreamAppender,writeOut,(Ljava/lang/Object;)V,2,2,100.0%,"protected void writeOut(E event) throws IOException {
+    this.encoder.doEncode(event);
+  }",187-189,0.5406221,0.44793272,0.44793272
+ch.qos.logback.core.FileAppender,writeOut,(Ljava/lang/Object;)V,3,4,75.0%,"@Override
+  protected void writeOut(E event) throws IOException {
+    if (prudent) {
+      safeWrite(event);
+    } else {
+      super.writeOut(event);
+    }
+  }",201-208,0.65930176,0.444812,0.444812
+ch.qos.logback.core.encoder.EchoEncoder,doEncode,(Ljava/lang/Object;)V,4,4,100.0%,"public void doEncode(E event) throws IOException {
+    String val = event + CoreConstants.LINE_SEPARATOR;
+    outputStream.write(val.getBytes());
+    // necessary if ResilientFileOutputStream is buffered
+    outputStream.flush();
+  }",26-31,0.59607655,0.43590403,0.43590403
+ch.qos.logback.core.OutputStreamAppender,append,(Ljava/lang/Object;)V,3,4,75.0%,"@Override
+  protected void append(E eventObject) {
+    if (!isStarted()) {
+      return;
+    }
+
+    subAppend(eventObject);
+  }",97-104,0.67357826,0.42578351,0.42578351
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,close,()V,1,3,33.3%,"@Override
+  public void close() throws IOException {
+    if (os != null) {
+      os.close();
+    }
+  }",109-114,0.62338305,0.42186707,0.42186707
+ch.qos.logback.core.BasicStatusManager,add,(Lch/qos/logback/core/status/Status;)V,9,10,90.0%,"public void add(Status newStatus) {
+    // LBCORE-72: fire event before the count check
+    fireStatusAddEvent(newStatus);
+
+    count++;
+    if (newStatus.getLevel() > level) {
+      level = newStatus.getLevel();
+    }
+
+    synchronized (statusListLock) {
+      if (statusList.size() < MAX_HEADER_COUNT) {
+        statusList.add(newStatus);
+      } else {
+        tailBuffer.add(newStatus);
+      }
+    }
+
+  }",57-74,0.65745616,0.41665453,0.41665453
+ch.qos.logback.core.recovery.RecoveryCoordinator,getCurrentTime,()J,2,3,66.7%,"private long getCurrentTime() {
+    if(currentTime != UNSET) {
+      return currentTime;
+    }
+    return System.currentTimeMillis();
+  }",41-46,0.66695523,0.40942177,0.40942177
+ch.qos.logback.core.recovery.RecoveryCoordinator,isTooSoon,()Z,5,5,100.0%,"public boolean isTooSoon() {
+    long now = getCurrentTime();
+    if(now > next) {
+      next = now + getBackoffCoefficient();
+      return false;
+    } else {
+      return true;
+    }
+  }",27-35,0.7374593,0.40814573,0.40814573
+ch.qos.logback.core.recovery.RecoveryCoordinator,getBackoffCoefficient,()J,4,4,100.0%,"private long getBackoffCoefficient() {
+    long currentCoeff = backOffCoefficient;
+    if(backOffCoefficient < BACKOFF_COEFFICIENT_MAX) {
+      backOffCoefficient*=4;
+    }
+    return currentCoeff;
+  }",48-54,0.78615284,0.4077521,0.4077521
+ch.qos.logback.core.OutputStreamAppender,getOutputStream,()Ljava/io/OutputStream;,1,1,100.0%,"public OutputStream getOutputStream() {
+    return outputStream;
+  }",60-62,0.57409626,0.40380412,0.40380412
+ch.qos.logback.core.recovery.ResilientOutputStreamBase,addStatusIfCountNotOverLimit,(Lch/qos/logback/core/status/Status;)V,8,8,100.0%,"void addStatusIfCountNotOverLimit(Status s) {
+    ++statusCount;
+    if (statusCount < STATUS_COUNT_LIMIT) {
+      addStatus(s);
+    }
+
+    if (statusCount == STATUS_COUNT_LIMIT) {
+      addStatus(s);
+      addStatus(new InfoStatus(""Will supress future messages regarding ""
+          + getDescription(), this));
+    }
+  }",135-146,0.66392326,0.3976389,0.3976389
+ch.qos.logback.core.ContextBase,getStatusManager,()Lch/qos/logback/core/status/StatusManager;,1,1,100.0%,"public StatusManager getStatusManager() {
+    return sm;
+  }",45-47,0.5705738,0.39407146,0.39407146
+ch.qos.logback.core.BasicStatusManager,fireStatusAddEvent,(Lch/qos/logback/core/status/Status;)V,6,6,100.0%,"private void fireStatusAddEvent(Status status) {
+    synchronized (statusListenerListLock) {
+      for (StatusListener sl : statusListenerList) {
+        sl.addStatusEvent(status);
+      }
+    }
+  }",84-90,0.5823675,0.39392513,0.39392513
+ch.qos.logback.core.status.OnPrintStreamStatusListenerBase,addStatusEvent,(Lch/qos/logback/core/status/Status;)V,2,4,50.0%,"public void addStatusEvent(Status status) {
+    if (!isStarted)
+      return;
+    print(status);
+  }",47-51,0.63824713,0.39190605,0.39190605
+ch.qos.logback.core.recovery.ResilientFileOutputStream,getDescription,()Ljava/lang/String;,1,1,100.0%,"@Override
+  String getDescription() {
+    return ""file [""+file+""]"";
+  }",44-47,0.55215895,0.3882724,0.3882724
+ch.qos.logback.core.UnsynchronizedAppenderBase,getFilterChainDecision,(Ljava/lang/Object;)Lch/qos/logback/core/spi/FilterReply;,1,1,100.0%,"public FilterReply getFilterChainDecision(E event) {
+    return fai.getFilterChainDecision(event);
+  }",136-138,0.5608077,0.37367928,0.37367928
+ch.qos.logback.core.UnsynchronizedAppenderBase,isStarted,()Z,1,1,100.0%,"public boolean isStarted() {
+    return started;
+  }",116-118,0.5952561,0.365427,0.365427
+ch.qos.logback.core.util.EnvUtil,isJDK5,()Z,1,1,100.0%,"static public boolean isJDK5() {
+    return isJDK_N_OrHigher(5);
+  }",44-46,0.48982668,0.36451736,0.36451736
+ch.qos.logback.core.status.StatusBase,getLevel,()I,1,1,100.0%,"public int getLevel() {
+    return level;
+  }",73-75,0.571383,0.32772666,0.32772666

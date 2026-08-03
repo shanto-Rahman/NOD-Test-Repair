@@ -1,0 +1,96 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+delight.nashornsandbox.internal.JsEvaluator,run,()V,5,10,50.0%,"@Override
+  public void run() {
+    try {
+      threadMonitor.setThreadToMonitor(Thread.currentThread());
+      result = operation.executeScriptEngineOperation(scriptEngine);
+    } 
+    catch (final RuntimeException e) {
+      // InterruptedException means script was successfully interrupted,
+      // so no exception should be propagated
+      if(!(e.getCause() instanceof InterruptedException)) {
+        exception = e;
+      }
+    }
+    catch (final Exception e) {
+      exception = e;
+    } 
+    finally {
+      threadMonitor.scriptFinished();
+      threadMonitor.stopMonitor();
+    }
+  }",50-70,0.70279396,0.51539594,0.51539594
+delight.nashornsandbox.internal.EvaluateOperation,executeScriptEngineOperation,(Ljavax/script/ScriptEngine;)Ljava/lang/Object;,4,9,44.4%,"@Override
+    public Object executeScriptEngineOperation(ScriptEngine scriptEngine) throws ScriptException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(""--- Running JS ---"");
+            LOG.debug(js);
+            LOG.debug(""--- JS END ---"");
+        }
+       
+        if (bindings != null) {
+            return scriptEngine.eval(js, bindings);
+        } else if (scriptContext != null) {
+            return scriptEngine.eval(js, scriptContext);
+        } else {
+            return scriptEngine.eval(js);
+        }
+    }",34-49,0.7676494,0.5104325,0.5104325
+delight.nashornsandbox.internal.ThreadMonitor,isCpuTimeExided,(J)Z,2,3,66.7%,"private boolean isCpuTimeExided(final long runtime) {
+		if (maxCPUTime == 0) {
+			return false;
+		}
+		return runtime > maxCPUTime;
+	}",144-149,0.72386014,0.46360445,0.46360445
+delight.nashornsandbox.internal.ThreadMonitor,getCheckInterval,(J)J,3,5,60.0%,"private long getCheckInterval(final long runtime) {
+		if (maxCPUTime == 0) {
+			return 10;
+		}
+		if (maxMemory == 0) {
+			return Math.max((maxCPUTime - runtime) / MILI_TO_NANO, 5);
+		}
+		return Math.min((maxCPUTime - runtime) / MILI_TO_NANO, 10);
+	}",134-142,0.64958215,0.43567374,0.43567374
+delight.nashornsandbox.internal.ThreadMonitor,isMemoryExided,(J)Z,2,3,66.7%,"private boolean isMemoryExided(final long memory) {
+		if (maxMemory == 0) {
+			return false;
+		}
+		return memory > maxMemory;
+	}",151-156,0.67589366,0.434366,0.434366
+delight.nashornsandbox.internal.ThreadMonitor,getCurrentMemory,()J,2,3,66.7%,"private long getCurrentMemory() {
+		if (maxMemory == 0 || memoryCouter != null) {
+			return memoryCouter.getThreadAllocatedBytes(threadToMonitor.getId());
+		}
+		return 0L;
+	}",163-168,0.66418284,0.39211255,0.39211255
+delight.nashornsandbox.internal.SandboxClassFilter,exposeToScripts,(Ljava/lang/String;)Z,1,1,100.0%,"@Override
+  public boolean exposeToScripts(final String className) {
+    return stringCache.contains(className);
+  }",23-26,0.6111703,0.378204,0.378204
+delight.nashornsandbox.internal.ThreadMonitor,scriptFinished,()V,2,2,100.0%,"public void scriptFinished() {
+		scriptFinished.set(false);
+	}",185-187,0.6550443,0.347474,0.347474
+delight.nashornsandbox.internal.ThreadMonitor,reset,()V,6,6,100.0%,"private void reset() {
+		stop.set(false);
+		scriptFinished.set(false);
+		scriptKilled.set(false);
+		cpuLimitExceeded.set(false);
+		threadToMonitor = null;
+	}",73-79,0.6959312,0.3252291,0.3252291
+delight.nashornsandbox.internal.ThreadMonitor,getCPUTime,()J,1,1,100.0%,"private long getCPUTime() {
+		return threadBean.getThreadCpuTime(threadToMonitor.getId());
+	}",170-172,0.64529765,0.31892204,0.31892204
+delight.nashornsandbox.internal.ThreadMonitor,setThreadToMonitor,(Ljava/lang/Thread;)V,4,4,100.0%,"public void setThreadToMonitor(final Thread t) {
+		reset();
+		threadToMonitor = t;
+		notifyMonitorThread();
+	}",179-183,0.6643922,0.30830485,0.30830485
+delight.nashornsandbox.internal.ThreadMonitor,notifyMonitorThread,()V,4,4,100.0%,"private void notifyMonitorThread() {
+		synchronized (monitor) {
+			monitor.notifyAll();
+		}
+	}",201-205,0.62570083,0.30554762,0.30554762
+delight.nashornsandbox.internal.ThreadMonitor,stopMonitor,()V,3,3,100.0%,"public void stopMonitor() {
+		stop.set(true);
+		notifyMonitorThread();
+	}",174-177,0.6258302,0.26916844,0.26916844

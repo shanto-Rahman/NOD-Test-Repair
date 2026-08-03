@@ -1,0 +1,256 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+uk.co.flax.luwak.matchers.ParallelMatcher,finish,(JI)V,15,19,78.9%,"@Override
+    public void finish(long buildTime, int queryCount) {
+        try {
+            //noinspection ForLoopReplaceableByForEach
+            for (int i = 0; i < futures.size(); i++) {
+                queue.put(END);
+            }
+
+            for (Future<CandidateMatcher<T>> future : futures) {
+                Matches<T> matches = future.get().getMatches();
+                for (DocumentMatches<T> docMatches : matches) {
+                    for (T match : docMatches) {
+                        this.addMatch(match);
+                    }
+                }
+                for (MatchError error : matches.getErrors()) {
+                    this.reportError(error);
+                }
+                this.slowlog.addAll(matches.getSlowLog());
+            }
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(""Interrupted during match"", e);
+        }
+        super.finish(buildTime, queryCount);
+    }",93-118,0.8189373,0.53330743,0.53330743
+uk.co.flax.luwak.matchers.ParallelMatcher$MatcherWorker,call,()Luk/co/flax/luwak/CandidateMatcher;,5,9,55.6%,"@Override
+        public CandidateMatcher<T> call() {
+            MatcherTask task;
+            try {
+                while ((task = queue.take()) != END) {
+                    try {
+                        matcher.matchQuery(task.id, task.matchQuery, task.metadata);
+                    } catch (IOException e) {
+                        matcher.reportError(new MatchError(task.id, e));
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(""Interrupted during match"", e);
+            }
+            return matcher;
+        }",129-144,0.7765138,0.5304361,0.5304361
+uk.co.flax.luwak.QueryIndex$QueryCollector,needsScores,()Z,1,1,100.0%,"default boolean needsScores() {
+            return false;
+        }",209-211,0.5076487,0.52148956,0.52148956
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,needsScores,()Z,1,1,100.0%,"default boolean needsScores() {
+            return false;
+        }",209-211,0.5076487,0.52148956,0.52148956
+uk.co.flax.luwak.QueryIndex,search,(Luk/co/flax/luwak/QueryIndex$QueryBuilder;Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,13,13,100.0%,"long search(final Query query, QueryCollector matcher) throws IOException {
+        QueryBuilder builder = termFilter -> query;
+        return search(builder, matcher);
+    }",90-93,0.71538585,0.5129409,0.5129409
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector$MatchLeafCollector,setScorer,(Lorg/apache/lucene/search/Scorer;)V,2,2,100.0%,"@Override
+            public void setScorer(Scorer scorer) throws IOException {
+                MatchCollector.this.scorer = scorer;
+            }",95-98,0.66171324,0.49137855,0.49137855
+uk.co.flax.luwak.matchers.ParallelMatcher,setSlowLogLimit,(J)V,4,4,100.0%,"@Override
+    public void setSlowLogLimit(long t) {
+        for (MatcherWorker mw : workers) {
+            mw.setSlowLogLimit(t);
+        }
+    }",86-91,0.75518495,0.48799917,0.48799917
+uk.co.flax.luwak.matchers.ParallelMatcher$MatcherWorker,setSlowLogLimit,(J)V,2,2,100.0%,"@Override
+    public void setSlowLogLimit(long t) {
+        for (MatcherWorker mw : workers) {
+            mw.setSlowLogLimit(t);
+        }
+    }",86-91,0.75518495,0.48799917,0.48799917
+uk.co.flax.luwak.SlowLog,setLimit,(J)V,2,2,100.0%,"public void setLimit(long limit) {
+        this.limit = limit;
+    }",35-37,0.6299104,0.47167188,0.47167188
+uk.co.flax.luwak.Monitor$StandardQueryCollector,matchQuery,(Ljava/lang/String;Luk/co/flax/luwak/QueryCacheEntry;Luk/co/flax/luwak/QueryIndex$DataValues;)V,5,8,62.5%,"@Override
+        public void matchQuery(String id, QueryCacheEntry query, QueryIndex.DataValues dataValues) throws IOException {
+            if (query == null)
+                return;
+            try {
+                queryCount++;
+                matcher.matchQuery(id, query.matchQuery, query.metadata);
+            }
+            catch (Exception e) {
+                matcher.reportError(new MatchError(id, e));
+            }
+        }",556-567,0.7902082,0.47093147,0.47093147
+uk.co.flax.luwak.matchers.ParallelMatcher,doMatchQuery,(Ljava/lang/String;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,3,5,60.0%,"@Override
+    protected void doMatchQuery(String queryId, Query matchQuery, Map<String, String> metadata) throws IOException {
+        try {
+            queue.put(new MatcherTask(queryId, matchQuery, metadata));
+        } catch (InterruptedException e) {
+            throw new IOException(""Interrupted during match"", e);
+        }
+    }",72-79,0.75873613,0.46735567,0.46735567
+uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,4,4,100.0%,"public void addQuery(String query, long time) {
+        if (time < limit)
+            return;
+        slowQueries.add(new Entry(query, time));
+    }",54-58,0.74125254,0.45727858,0.45727858
+uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
+        CandidateMatcher<T> matcher = factory.createMatcher(docs);
+        matcher.setSlowLogLimit(slowLogLimit);
+        match(matcher);
+        return matcher.getMatches();
+    }",445-450,0.76851505,0.4505344,0.4505344
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%,public abstract LeafReader getIndexReader() throws IOException;,145-145,0.5530894,0.4505102,0.4505102
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,setScorer,(Lorg/apache/lucene/search/Scorer;)V,2,2,100.0%,"@Override
+        public void setScorer(Scorer scorer) throws IOException {
+            this.dataValues.scorer = scorer;
+        }",241-244,0.6490016,0.4471081,0.4471081
+uk.co.flax.luwak.CandidateMatcher,setSlowLogLimit,(J)V,2,2,100.0%,"public void setSlowLogLimit(long t) {
+        this.slowlog.setLimit(t);
+    }",130-132,0.6950823,0.44643188,0.44643188
+uk.co.flax.luwak.matchers.CollectingMatcher,doMatchQuery,(Ljava/lang/String;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,7,7,100.0%,"@Override
+    protected void doMatchQuery(final String queryId, Query matchQuery, Map<String, String> metadata) throws IOException {
+
+        MatchCollector coll = buildMatchCollector(queryId);
+
+        long t = System.nanoTime();
+        IndexSearcher searcher = docs.getSearcher();
+        searcher.search(matchQuery, coll);
+        t = System.nanoTime() - t;
+        this.slowlog.addQuery(queryId, t);
+
+    }",44-55,0.7918926,0.43853173,0.43853173
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector,getLeafCollector,(Lorg/apache/lucene/index/LeafReaderContext;)Lorg/apache/lucene/search/LeafCollector;,1,1,100.0%,"@Override
+        public LeafCollector getLeafCollector(LeafReaderContext leafReaderContext) throws IOException {
+            return new MatchLeafCollector();
+        }",83-86,0.69087446,0.4358786,0.4358786
+uk.co.flax.luwak.CandidateMatcher,addMatch,(Ljava/lang/String;Ljava/lang/String;Luk/co/flax/luwak/QueryMatch;)V,3,3,100.0%,"private void addMatch(String queryId, String docId, T match) {
+        MatchHolder<T> docMatches = matches.computeIfAbsent(docId, k -> new MatchHolder<>());
+        docMatches.matches.compute(queryId, (key, oldValue) -> {
+            if (oldValue != null) {
+                return resolve(match, oldValue);
+            }
+            return match;
+        });
+    }",81-89,0.7250858,0.43300936,0.43300936
+uk.co.flax.luwak.CandidateMatcher,addMatch,(Luk/co/flax/luwak/QueryMatch;)V,2,2,100.0%,"private void addMatch(String queryId, String docId, T match) {
+        MatchHolder<T> docMatches = matches.computeIfAbsent(docId, k -> new MatchHolder<>());
+        docMatches.matches.compute(queryId, (key, oldValue) -> {
+            if (oldValue != null) {
+                return resolve(match, oldValue);
+            }
+            return match;
+        });
+    }",81-89,0.7250858,0.43300936,0.43300936
+uk.co.flax.luwak.SlowLog,getLimit,()J,1,1,100.0%,"public long getLimit() {
+        return limit;
+    }",42-44,0.590454,0.4274908,0.4274908
+uk.co.flax.luwak.CandidateMatcher,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%,"public LeafReader getIndexReader() throws IOException {
+        return docs.getIndexReader();
+    }",168-170,0.61116076,0.42370766,0.42370766
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery$1,scorer,(Lorg/apache/lucene/index/LeafReaderContext;)Lorg/apache/lucene/search/Scorer;,1,1,100.0%,"@Override
+            public Scorer scorer(LeafReaderContext leafReaderContext) throws IOException {
+                return innerWeight.scorer(leafReaderContext);
+            }",90-93,0.6370595,0.42226034,0.42226034
+uk.co.flax.luwak.CandidateMatcher,matchQuery,(Ljava/lang/String;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,3,3,100.0%,"public final void matchQuery(String queryId, Query matchQuery, Map<String, String> metadata) throws IOException {
+        presearcherHits.add(queryId);
+        doMatchQuery(queryId, new ForceNoBulkScoringQuery(matchQuery), metadata);
+    }",66-69,0.75070775,0.42155275,0.42155275
+uk.co.flax.luwak.matchers.SimpleMatcher,buildMatchCollector,(Ljava/lang/String;)Luk/co/flax/luwak/matchers/CollectingMatcher$MatchCollector;,1,1,100.0%,"@Override
+    protected MatchCollector buildMatchCollector(String queryId) {
+        return new SimpleMatchCollector(queryId);
+    }",43-46,0.72665405,0.41881105,0.41881105
+uk.co.flax.luwak.matchers.SimpleMatcher$SimpleMatchCollector,needsScores,()Z,1,1,100.0%,"@Override
+        public boolean needsScores() {
+            return false;
+        }",57-60,0.54253364,0.416529,0.416529
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery$1,getValueForNormalization,()F,1,1,100.0%,"@Override
+            public float getValueForNormalization() throws IOException {
+                return innerWeight.getValueForNormalization();
+            }",80-83,0.6411399,0.4152687,0.4152687
+uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector$MatchLeafCollector,collect,(I)V,4,4,100.0%,"@Override
+            public void collect(int doc) throws IOException {
+                match = doMatch(queryId, docs.resolveDocId(doc), scorer);
+                if (match != null)
+                    addMatch(match);
+            }",100-105,0.6948936,0.41402563,0.41402563
+uk.co.flax.luwak.matchers.SimpleMatcher,doMatch,(Ljava/lang/String;Ljava/lang/String;Lorg/apache/lucene/search/Scorer;)Luk/co/flax/luwak/QueryMatch;,1,1,100.0%,"@Override
+    protected QueryMatch doMatch(String queryId, String docId, Scorer scorer) throws IOException {
+        return new QueryMatch(queryId, docId);
+    }",37-40,0.6942115,0.3955174,0.3955174
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery,rewrite,(Lorg/apache/lucene/index/IndexReader;)Lorg/apache/lucene/search/Query;,3,4,75.0%,"@Override
+    public Query rewrite(IndexReader reader) throws IOException {
+        Query rewritten = inner.rewrite(reader);
+        if (rewritten != inner)
+            return new ForceNoBulkScoringQuery(rewritten);
+        return super.rewrite(reader);
+    }",39-45,0.638928,0.39300716,0.39300716
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery,createWeight,(Lorg/apache/lucene/search/IndexSearcher;Z)Lorg/apache/lucene/search/Weight;,2,2,100.0%,"@Override
+    public Weight createWeight(IndexSearcher searcher, boolean needsScores) throws IOException {
+
+        final Weight innerWeight = inner.createWeight(searcher, needsScores);
+
+        return new Weight(ForceNoBulkScoringQuery.this) {
+            @Override
+            public void extractTerms(Set<Term> set) {
+                innerWeight.extractTerms(set);
+            }
+
+            @Override
+            public Explanation explain(LeafReaderContext leafReaderContext, int i) throws IOException {
+                return innerWeight.explain(leafReaderContext, i);
+            }
+
+            @Override
+            public float getValueForNormalization() throws IOException {
+                return innerWeight.getValueForNormalization();
+            }
+
+            @Override
+            public void normalize(float v, float v1) {
+                innerWeight.normalize(v, v1);
+            }
+
+            @Override
+            public Scorer scorer(LeafReaderContext leafReaderContext) throws IOException {
+                return innerWeight.scorer(leafReaderContext);
+            }
+        };
+    }",64-95,0.60165775,0.38597947,0.38597947
+uk.co.flax.luwak.presearcher.MatchAllPresearcher,buildQuery,(Lorg/apache/lucene/index/LeafReader;Luk/co/flax/luwak/QueryTermFilter;)Lorg/apache/lucene/search/Query;,1,1,100.0%,"@Override
+    public Query buildQuery(LeafReader reader, QueryTermFilter queryTermFilter) {
+        return new MatchAllDocsQuery();
+    }",38-41,0.6613709,0.38380432,0.38380432
+uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,buildQuery,(Luk/co/flax/luwak/QueryTermFilter;)Lorg/apache/lucene/search/Query;,1,1,100.0%,"@Override
+        public Query buildQuery(QueryTermFilter termFilter) throws IOException {
+            return presearcher.buildQuery(batchIndexReader, termFilter);
+        }",473-476,0.72560287,0.38294482,0.38294482
+uk.co.flax.luwak.util.ForceNoBulkScoringQuery$1,normalize,(FF)V,2,2,100.0%,"@Override
+            public void normalize(float v, float v1) {
+                innerWeight.normalize(v, v1);
+            }",85-88,0.5193926,0.37954086,0.37954086
+uk.co.flax.luwak.InputDocument,getId,()Ljava/lang/String;,1,1,100.0%,"public String getId() {
+        return id;
+    }",72-74,0.48793858,0.3625936,0.3625936
+uk.co.flax.luwak.QueryMatch,getQueryId,()Ljava/lang/String;,1,1,100.0%,"public String getQueryId() {
+        return queryId;
+    }",49-51,0.580158,0.3609773,0.3609773
+uk.co.flax.luwak.QueryMatch,getDocId,()Ljava/lang/String;,1,1,100.0%,"public String getDocId() {
+        return docId;
+    }",56-58,0.5508946,0.35932955,0.35932955
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,doSetNextReader,(Lorg/apache/lucene/index/LeafReaderContext;)V,4,4,100.0%,"@Override
+        public void doSetNextReader(LeafReaderContext context) throws IOException {
+            this.dataValues.hash = context.reader().getBinaryDocValues(Monitor.FIELDS.hash);
+            this.dataValues.id = context.reader().getSortedDocValues(Monitor.FIELDS.id);
+            this.dataValues.mq = context.reader().getBinaryDocValues(Monitor.FIELDS.mq);
+        }",255-260,0.63123316,0.32675338,0.32675338
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,resolveDocId,(I)Ljava/lang/String;,2,2,100.0%,public abstract String resolveDocId(int docId);,152-152,0.5331423,0.3253523,0.3253523
+uk.co.flax.luwak.QueryIndex$MonitorQueryCollector,collect,(I)V,6,6,100.0%,"@Override
+        public void collect(int doc) throws IOException {
+            BytesRef hash = dataValues.hash.get(doc);
+            BytesRef id = dataValues.id.get(doc);
+            QueryCacheEntry query = queries.get(hash);
+            dataValues.doc = doc;
+            matcher.matchQuery(id.utf8ToString(), query, dataValues);
+        }",246-253,0.6097275,0.32289952,0.32289952
