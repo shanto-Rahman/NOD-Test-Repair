@@ -145,3 +145,10 @@ apache/dubbo,dubbo-rpc/dubbo-rpc-dubbo,org.apache.dubbo.rpc.protocol.dubbo.Dubbo
 ",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.apache.dubbo.rpc.protocol.dubbo.DubboProtocolTest#testNonSerializedParameter-con-after-changedCode-1_0_4.txt,org.apache.dubbo.remoting.exchange.codec.ExchangeCodec,encodeRequest,118.6,1,1^M
 flaxsearch/luwak,luwak,uk.co.flax.luwak.matchers.TestParallelMatcher.testParallelSlowLog,0,41,"        Query rewritten = inner.rewrite(reader);
 ",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/uk.co.flax.luwak.matchers.TestParallelMatcher#testParallelSlowLog-con-after-changedCode-1_0_4.txt,uk.co.flax.luwak.util.ForceNoBulkScoringQuery,rewrite,110.46,1,1^M
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#receiveGoAway,no_test_failure,NA,NA,NA,NA,NA,5311.17,179,0
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#readSendsWindowUpdate,no_test_failure,NA,NA,NA,NA,NA,29023.67,187,1
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest#pushPromiseStream,no_test_failure,NA,NA,NA,NA,NA,5092.21,149,1
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithFixedLengthRequestForLargeRequest,no_test_failure,NA,NA,NA,NA,NA,3284.22,252,0
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithChunkedRequestForSmallRequest,no_test_failure,NA,NA,NA,NA,NA,4511.78,342,1
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#serverShutdownOutput,no_test_failure,NA,NA,NA,NA,NA,2121.55,126,0
+square/okhttp,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest#postFailsWithChunkedRequestForLargeRequest,no_test_failure,NA,NA,NA,NA,NA,2983.5,207,0
