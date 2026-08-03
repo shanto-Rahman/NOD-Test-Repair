@@ -1,0 +1,1977 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+io.yawp.driver.appengine.AppengineEnvironmentDriver,isProduction,()Z,1,1,100.0%,"@Override
+    public boolean isProduction() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Production;
+    }",11-14,0.767607,0.6558262,0.6558262
+io.yawp.repository.pipes.Pipe,init,(Ljava/lang/Class;Ljava/lang/Class;)V,5,5,100.0%,"public final void init(Class<T> sourceClazz, Class<S> sinkClazz) {
+        this.sourceClazz = sourceClazz;
+        this.sinkClazz = sinkClazz;
+        this.sourcePump = new IdPump<>(sourceClazz, BATCH_SIZE);
+        this.sinkPump = new IdPump<>(sinkClazz, BATCH_SIZE);
+    }",51-56,0.8453249,0.62587655,0.62587655
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,worksQuery,()Lio/yawp/repository/query/QueryBuilder;,5,6,83.3%,"private QueryBuilder<Work> worksQuery() {
+        long timestamp = System.currentTimeMillis() - ELAPSED_TIME_MILLES;
+
+        QueryBuilder<Work> q = yawp(Work.class).where(""timestamp"", ""<="", timestamp);
+        if (cursor != null) {
+            q.setCursor(cursor);
+        }
+        q.limit(BATCH_SIZE);
+        return q;
+    }",94-103,0.8326023,0.62058985,0.62058985
+io.yawp.driver.api.DriverFactory,lookup,()Lio/yawp/driver/api/Driver;,1,1,100.0%,"private static Driver lookup() {
+        return ServiceLookup.lookup(Driver.class);
+    }",21-23,0.77869934,0.60860634,0.60860634
+io.yawp.repository.models.FieldModel,isSaveAsText,()Z,1,1,100.0%,"public boolean isSaveAsText() {
+        return field.getAnnotation(io.yawp.repository.annotations.Text.class) != null;
+    }",82-84,0.80576175,0.5997641,0.5997641
+io.yawp.repository.query.condition.SimpleCondition,isEqualOperator,()Z,1,1,100.0%,"public boolean isEqualOperator() {
+        return this.whereOperator == WhereOperator.EQUAL;
+    }",56-58,0.7586337,0.5991036,0.5991036
+io.yawp.testing.appengine.TestingTaskQueueCallback,execute,(Lcom/google/appengine/api/urlfetch/URLFetchServicePb$URLFetchRequest;)I,1,1,100.0%,"@Override
+    public int execute(URLFetchServicePb.URLFetchRequest req) {
+        return super.execute(req);
+    }",8-11,0.76671743,0.59847814,0.59847814
+io.yawp.repository.pipes.RepositoryPipes,flux,(Lio/yawp/repository/Repository;Ljava/lang/Object;)V,4,10,40.0%,"public static void flux(Repository r, Object source) {
+        logger.finer(""flux"");
+
+        Class<?> endpointClazz = source.getClass();
+
+        if (!isPipeSource(r, endpointClazz)) {
+            return;
+        }
+
+        for (Class<? extends Pipe> pipeClazz : r.getEndpointFeatures(endpointClazz).getPipes()) {
+            Pipe pipe = Pipe.newInstance(r, pipeClazz);
+            r.driver().pipes().flux(pipe, source);
+        }
+
+        logger.finer(""done"");
+    }",17-32,0.8699728,0.5861185,0.5861185
+io.yawp.repository.IdRef,isActionOrCollection,(Lio/yawp/repository/Repository;Lio/yawp/commons/http/HttpVerb;[Ljava/lang/String;I)Z,6,10,60.0%,"private static boolean isActionOrCollection(Repository r, HttpVerb verb, String[] parts, int i) {
+        if (i < parts.length - 2) {
+            return false;
+        }
+
+        if (i == parts.length - 1) {
+            return true;
+        }
+
+        if (!isString(parts[parts.length - 1])) {
+            return false;
+        }
+
+        String endpointPath = ""/"" + parts[parts.length - 2];
+        String possibleAction = parts[parts.length - 1];
+
+        ActionKey actionKey = new ActionKey(verb, possibleAction, true);
+        return r.getFeatures().hasCustomAction(endpointPath, actionKey);
+    }",217-235,0.76502323,0.58142424,0.58142424
+io.yawp.repository.features.Feature,setRepository,(Lio/yawp/repository/Repository;)V,3,3,100.0%,"public void setRepository(Repository yawp) {
+        this.yawp = yawp;
+        this.requestContext = yawp.getRequestContext();
+    }",21-24,0.8110495,0.58117056,0.58117056
+io.yawp.driver.appengine.pipes.flow.Payload,getSourceMarker,()Lio/yawp/repository/pipes/SourceMarker;,3,3,100.0%,"public SourceMarker getSourceMarker() {
+        if (sourceMarker == null) {
+            sourceMarker = JsonUtils.from(yawp(), sourceMarkerJson, SourceMarker.class);
+        }
+        return sourceMarker;
+    }",103-108,0.8508501,0.5803956,0.5803956
+io.yawp.driver.appengine.AppengineQueryDriver,getFilterOperator,(Lio/yawp/repository/query/condition/WhereOperator;)Lcom/google/appengine/api/datastore/Query$FilterOperator;,2,9,22.2%,"private FilterOperator getFilterOperator(WhereOperator whereOperator) {
+        switch (whereOperator) {
+            case EQUAL:
+                return FilterOperator.EQUAL;
+            case GREATER_THAN:
+                return FilterOperator.GREATER_THAN;
+            case GREATER_THAN_OR_EQUAL:
+                return FilterOperator.GREATER_THAN_OR_EQUAL;
+            case IN:
+                return FilterOperator.IN;
+            case LESS_THAN:
+                return FilterOperator.LESS_THAN;
+            case LESS_THAN_OR_EQUAL:
+                return FilterOperator.LESS_THAN_OR_EQUAL;
+            case NOT_EQUAL:
+                return FilterOperator.NOT_EQUAL;
+            default:
+                throw new RuntimeException(""Invalid where operator: "" + whereOperator);
+        }
+    }",305-324,0.58375096,0.5800104,0.5800104
+io.yawp.repository.Repository,setFeatures,(Lio/yawp/repository/features/RepositoryFeatures;)Lio/yawp/repository/Repository;,2,2,100.0%,"@Override
+    public Repository setFeatures(RepositoryFeatures repositoryFeatures) {
+        this.repositoryFeatures = repositoryFeatures;
+        return this;
+    }",66-70,0.78151566,0.578529,0.578529
+io.yawp.repository.IdRef,equals,(Ljava/lang/Object;)Z,15,28,53.6%,"@Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        IdRef<?> other = (IdRef<?>) obj;
+        if (clazz == null) {
+            if (other.clazz != null)
+                return false;
+        } else if (!clazz.equals(other.clazz))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (parentId == null) {
+            if (other.parentId != null)
+                return false;
+        } else if (!parentId.equals(other.parentId))
+            return false;
+        return true;
+    }",291-321,0.6439575,0.57458425,0.57458425
+io.yawp.driver.appengine.FutureEntityToObject,notFoundAsNull,(Ljava/util/concurrent/ExecutionException;)Ljava/lang/Object;,2,3,66.7%,"private T notFoundAsNull(ExecutionException e) throws ExecutionException {
+        if (e.getCause() != null && EntityNotFoundException.class.isInstance(e.getCause())) {
+            return null;
+        }
+        throw e;
+    }",55-60,0.84339666,0.5704403,0.5704403
+io.yawp.repository.query.condition.WhereOperator,toOperator,(Ljava/lang/String;)Lio/yawp/repository/query/condition/WhereOperator;,8,15,53.3%,"public static WhereOperator toOperator(String operator) {
+        if (operator.equals(""="")) {
+            return EQUAL;
+        }
+        if (operator.equals("">"")) {
+            return GREATER_THAN;
+        }
+        if (operator.equals("">="")) {
+            return GREATER_THAN_OR_EQUAL;
+        }
+        if (operator.equalsIgnoreCase(""in"")) {
+            return IN;
+        }
+        if (operator.equals(""<"")) {
+            return LESS_THAN;
+        }
+        if (operator.equals(""<="")) {
+            return LESS_THAN_OR_EQUAL;
+        }
+        if (operator.equals(""!="")) {
+            return NOT_EQUAL;
+        }
+        throw new RuntimeException(""invalid filter operator "" + operator);
+    }",112-135,0.65357375,0.569921,0.569921
+io.yawp.driver.appengine.pipes.flow.Work,execute,(Ljava/lang/Object;Lio/yawp/repository/pipes/SinkMarker;)V,9,10,90.0%,"public <T, S> void execute(Object sink, SinkMarker sinkMarker) {
+        log();
+
+        Pipe<T, S> pipe = newPipeInstance();
+
+        if (sinkMarker.isPresent()) {
+            pipe.reflux((T) sinkMarker.getSource(), (S) sink);
+        }
+
+        if (payload.isPresent()) {
+            pipe.flux((T) payload.getSource(), (S) sink);
+            rememberSourceInSinkMarker(sinkMarker);
+        }
+
+        sinkMarker.setPresent(payload.isPresent());
+        sinkMarker.setVersion(payload.getSourceMarker().getVersion());
+    }",44-60,0.90720785,0.5688665,0.5688665
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,logSave,(Lio/yawp/repository/IdRef;)V,2,2,100.0%,"private void logSave(IdRef<?> sinkId) {
+        logger.info(String.format(""join-task - saving sinkId: %s"", sinkId.getUri()));
+    }",94-96,0.85099125,0.56736207,0.56736207
+io.yawp.driver.appengine.pipes.flow.Work,log,()V,2,2,100.0%,"private void log() {
+        logger.info(String.format(""join-work - pipe: %s, sourceId: %s, version: %d"", payload.getPipeClazz().getName(), payload.getSourceId().getUri(), payload.getSourceMarker().getVersion()));
+    }",62-64,0.84762317,0.56586117,0.56586117
+io.yawp.driver.appengine.pipes.flow.Payload,getSinkId,()Lio/yawp/repository/IdRef;,3,3,100.0%,"public IdRef<?> getSinkId() {
+        if (sinkId == null) {
+            sinkId = IdRef.parse(yawp(), sinkUri);
+        }
+        return sinkId;
+    }",91-96,0.86063987,0.5645781,0.5645781
+io.yawp.driver.appengine.AppengineTransationDriver,beginX,()Lio/yawp/driver/api/TransactionDriver;,3,7,42.9%,"@Override
+    public TransactionDriver beginX() {
+        logger.finer(""begin X"");
+        if (!environment.isProduction()) {
+            return this;
+        }
+
+        TransactionOptions options = TransactionOptions.Builder.withXG(true);
+        tx = datastore().beginTransaction(options);
+        logger.finer(""done"");
+        return this;
+    }",40-51,0.81375957,0.5641994,0.5641994
+io.yawp.testing.appengine.AsyncHelper,getCountTasks,()I,7,7,100.0%,"private static int getCountTasks() {
+        LocalTaskQueue localTaskQueue = LocalTaskQueueTestConfig.getLocalTaskQueue();
+
+        Map<String, QueueStateInfo> queueStateInfo = localTaskQueue.getQueueStateInfo();
+
+        int count = 0;
+
+        for (String key : queueStateInfo.keySet()) {
+            count += queueStateInfo.get(key).getCountTasks();
+        }
+
+        return count;
+    }",29-41,0.91033596,0.5630055,0.5630055
+io.yawp.repository.query.condition.Condition,c,(Ljava/lang/String;Lio/yawp/repository/query/condition/WhereOperator;Ljava/lang/Object;)Lio/yawp/repository/query/condition/BaseCondition;,1,1,100.0%,"public static BaseCondition c(String field, String operator, Object comparison) {
+        return c(field, WhereOperator.toOperator(operator), comparison);
+    }",7-9,0.75542986,0.56180406,0.56180406
+io.yawp.repository.query.condition.Condition,c,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Lio/yawp/repository/query/condition/BaseCondition;,1,1,100.0%,"public static BaseCondition c(String field, String operator, Object comparison) {
+        return c(field, WhereOperator.toOperator(operator), comparison);
+    }",7-9,0.75542986,0.56180406,0.56180406
+io.yawp.repository.Repository,saveWithHooks,(Ljava/lang/Object;)Ljava/lang/Object;,7,7,100.0%,"@Override
+    public <T> T saveWithHooks(T object) {
+        logger.finer(""save object, hooks: true"");
+
+        namespace.set(object.getClass());
+        try {
+            RepositoryHooks.beforeSave(this, object);
+            saveInternal(object);
+            RepositoryHooks.afterSave(this, object);
+        } finally {
+            namespace.reset();
+        }
+        return object;
+    }",92-105,0.8305505,0.5617119,0.5617119
+io.yawp.repository.pipes.Pipe,newInstance,(Lio/yawp/repository/Repository;Ljava/lang/Class;)Lio/yawp/repository/pipes/Pipe;,6,8,75.0%,"public static Pipe newInstance(Repository r, Class<? extends Pipe> pipeClazz) {
+        try {
+            Class<?> sourceClazz = ReflectionUtils.getFeatureEndpointClazz(pipeClazz);
+            Class<?> sinkClazz = ReflectionUtils.getFeatureTypeArgumentAt(pipeClazz, 1);
+
+            Pipe pipe = pipeClazz.newInstance();
+            pipe.setRepository(r);
+            pipe.init(sourceClazz, sinkClazz);
+            return pipe;
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }",37-49,0.8358458,0.5596163,0.5596163
+io.yawp.driver.appengine.pipes.flow.Work,createSinkMarkerId,()Lio/yawp/repository/IdRef;,6,8,75.0%,"public IdRef<SinkMarker> createSinkMarkerId() {
+        IdRef<?> sourceId = payload.getSourceId();
+        IdRef<?> sinkId = payload.getSinkId();
+
+        IdRef<SinkMarker> sinkMarkerId;
+        if (sourceId.getId() != null) {
+            sinkMarkerId = IdRef.create(yawp(), SinkMarker.class, sourceId.getId());
+            sinkMarkerId.setParentId(sinkId.createChildId(sourceId.getClazz(), sourceId.getId()));
+        } else {
+            sinkMarkerId = IdRef.create(yawp(), SinkMarker.class, sourceId.getName());
+            sinkMarkerId.setParentId(sinkId.createChildId(sourceId.getClazz(), sourceId.getName()));
+        }
+
+        return sinkMarkerId;
+    }",74-88,0.8660387,0.5586339,0.5586339
+io.yawp.repository.IdRef,parse,(Lio/yawp/repository/Repository;Ljava/lang/String;)Lio/yawp/repository/IdRef;,1,1,100.0%,"@SuppressWarnings(""unchecked"")
+    public static <TT> IdRef<TT> parse(Repository r, HttpVerb verb, String path) {
+        if (StringUtils.isBlank(path)) {
+            return null;
+        }
+
+        String[] parts = path.substring(1).split(""/"");
+
+        if (parts.length < 2) {
+            return null;
+        }
+
+        IdRef<TT> lastIdRef = null;
+
+        for (int i = 0; i < parts.length; i += 2) {
+            if (isActionOrCollection(r, verb, parts, i)) {
+                break;
+            }
+
+            String endpointPath = ""/"" + parts[i];
+
+            IdRef<TT> currentIdRef;
+
+            if (!isString(parts[i + 1])) {
+                Long asLong = Long.valueOf(parts[i + 1]);
+                currentIdRef = (IdRef<TT>) create(r, getIdRefClazz(r, endpointPath), asLong);
+            } else {
+                String asString = parts[i + 1];
+                currentIdRef = (IdRef<TT>) create(r, getIdRefClazz(r, endpointPath), asString);
+            }
+
+            currentIdRef.setParentId(lastIdRef);
+            lastIdRef = currentIdRef;
+
+            validateParentId(currentIdRef, path);
+        }
+
+        return lastIdRef;
+    }",142-180,0.8004359,0.55846727,0.55846727
+io.yawp.repository.IdRef,parse,(Lio/yawp/repository/Repository;Lio/yawp/commons/http/HttpVerb;Ljava/lang/String;)Lio/yawp/repository/IdRef;,16,20,80.0%,"@SuppressWarnings(""unchecked"")
+    public static <TT> IdRef<TT> parse(Repository r, HttpVerb verb, String path) {
+        if (StringUtils.isBlank(path)) {
+            return null;
+        }
+
+        String[] parts = path.substring(1).split(""/"");
+
+        if (parts.length < 2) {
+            return null;
+        }
+
+        IdRef<TT> lastIdRef = null;
+
+        for (int i = 0; i < parts.length; i += 2) {
+            if (isActionOrCollection(r, verb, parts, i)) {
+                break;
+            }
+
+            String endpointPath = ""/"" + parts[i];
+
+            IdRef<TT> currentIdRef;
+
+            if (!isString(parts[i + 1])) {
+                Long asLong = Long.valueOf(parts[i + 1]);
+                currentIdRef = (IdRef<TT>) create(r, getIdRefClazz(r, endpointPath), asLong);
+            } else {
+                String asString = parts[i + 1];
+                currentIdRef = (IdRef<TT>) create(r, getIdRefClazz(r, endpointPath), asString);
+            }
+
+            currentIdRef.setParentId(lastIdRef);
+            lastIdRef = currentIdRef;
+
+            validateParentId(currentIdRef, path);
+        }
+
+        return lastIdRef;
+    }",142-180,0.8004359,0.55846727,0.55846727
+io.yawp.repository.FutureObject,setObject,()V,2,2,100.0%,"private void setObject() throws InterruptedException, ExecutionException {
+        this.object = (T) futureObject.get();
+    }",73-75,0.8112842,0.55533165,0.55533165
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,commitIfChanged,()V,10,12,83.3%,"private void commitIfChanged() {
+        if (sinksToSave.isEmpty()) {
+            r.rollback();
+            return;
+        }
+
+        for (IdRef<SinkMarker> id : sinkMarkersToSave) {
+            async.save(getSinkMarkerFromCache(id));
+        }
+
+        for (IdRef<?> sinkId : sinksToSave) {
+            logSave(sinkId);
+            // TODO: support pipes at async repoistory operations
+            r.saveWithHooks(sinkCache.get(sinkId));
+        }
+
+        // TODO: destroy empty sinks?
+        r.commit();
+    }",74-92,0.8919547,0.5536147,0.5536147
+io.yawp.repository.Repository,fluxPipes,(Ljava/lang/Object;)V,2,2,100.0%,"private void fluxPipes(Object object) {
+        RepositoryPipes.flux(this, object);
+    }",207-209,0.79780304,0.55198836,0.55198836
+io.yawp.driver.appengine.AppenginePersistenceDriver,save,(Ljava/lang/Object;)V,9,9,100.0%,"@Override
+    public void save(Object object) {
+        logger.finer(""loading endpoint model"");
+        ObjectHolder objectHolder = new ObjectHolder(object);
+
+        logger.finer(""creating entity"");
+        Entity entity = createEntity(objectHolder);
+        toEntity(objectHolder, entity);
+
+        logger.finer(""saving entity"");
+        saveEntity(objectHolder, entity);
+
+        logger.finer(""done"");
+    }",49-62,0.83065856,0.5516117,0.5516117
+io.yawp.driver.api.DriverFactory,getDriver,(Lio/yawp/repository/Repository;)Lio/yawp/driver/api/Driver;,3,3,100.0%,"public static Driver getDriver(Repository r) {
+        Driver driver = lookup();
+        driver.init(r);
+        return driver;
+    }",10-14,0.79572326,0.55115354,0.55115354
+io.yawp.driver.appengine.IdRefToKey,toIdRef,(Lio/yawp/repository/Repository;Lcom/google/appengine/api/datastore/Key;Lio/yawp/repository/models/ObjectModel;)Lio/yawp/repository/IdRef;,6,9,66.7%,"public static IdRef<?> toIdRef(Repository r, Key key, ObjectModel model) {
+        Class<?> objectClass = model.getClazz();
+
+        IdRef<?> idRef;
+
+        if (model.isIdShuffled()) {
+            idRef = getIdRefFromShuffledKey(r, key, objectClass);
+        } else if (key.getName() != null) {
+            idRef = IdRef.create(r, objectClass, key.getName());
+        } else {
+            idRef = IdRef.create(r, objectClass, key.getId());
+        }
+
+        if (key.getParent() != null) {
+            idRef.setParentId(toIdRef(r, key.getParent(), createParentModel(r, key)));
+        }
+        return idRef;
+    }",32-49,0.8370777,0.5494164,0.5494164
+io.yawp.repository.pipes.RepositoryPipes,updateExisting,(Lio/yawp/repository/Repository;Ljava/lang/Object;)V,6,12,50.0%,"public static void updateExisting(Repository r, Object object) {
+        logger.finer(""updating existing"");
+
+        Class<?> endpointClazz = object.getClass();
+
+        if (!isPipeSourceOrSink(r, endpointClazz)) {
+            return;
+        }
+
+        Object oldObject;
+
+        try {
+            // TODO: Pipes - Think about... Shield may have already loaded this object.
+            oldObject = fetchOldObject(object);
+        } catch (NoResultException e) {
+            return;
+        }
+
+        refluxOld(r, endpointClazz, object, oldObject);
+        reflowSink(r, endpointClazz, object, oldObject);
+
+        logger.finer(""done"");
+    }",59-81,0.830428,0.54786927,0.54786927
+io.yawp.repository.features.Feature,id,(Ljava/lang/Class;Ljava/lang/Long;)Lio/yawp/repository/IdRef;,1,1,100.0%,"public <T> IdRef<T> id(Class<T> clazz, Long id) {
+        return IdRef.create(yawp, clazz, id);
+    }",48-50,0.82060146,0.54728603,0.54728603
+io.yawp.driver.appengine.IdRefToKey,createKey,(Lio/yawp/repository/IdRef;Lcom/google/appengine/api/datastore/Key;Ljava/lang/String;)Lcom/google/appengine/api/datastore/Key;,3,5,60.0%,"private static Key createKey(IdRef<?> id, Key parent, String kind) {
+        if (id.isShuffled()) {
+            return createShuffledKey(id, parent, kind);
+        }
+
+        if (id.getId() == null) {
+            return KeyFactory.createKey(parent, kind, id.getName());
+        }
+
+        return KeyFactory.createKey(parent, kind, id.getId());
+    }",51-61,0.8127605,0.5467853,0.5467853
+io.yawp.repository.Repository,driver,()Lio/yawp/driver/api/Driver;,4,4,100.0%,"@Override
+    public Driver driver() {
+        if (driver != null) {
+            return driver;
+        }
+        driver = DriverFactory.getDriver(this);
+        return driver;
+    }",78-85,0.7525195,0.54598653,0.54598653
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,getSinkMarkerFromCache,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/pipes/SinkMarker;,9,9,100.0%,"private SinkMarker getSinkMarkerFromCache(IdRef<SinkMarker> sinkMarkerId) {
+        SinkMarker sinkMarker = sinkMarkerCache.get(sinkMarkerId).get();
+        if (sinkMarker == null) {
+            sinkMarker = new SinkMarker();
+            sinkMarker.setId(sinkMarkerId);
+            sinkMarker.setParentId(sinkMarkerId.getParentId());
+            sinkMarker.setVersion(0L);
+            sinkMarker.setPresent(false);
+            sinkMarkerCache.put(sinkMarkerId, new FutureObject<>(sinkMarker));
+        }
+        return sinkMarker;
+    }",146-157,0.9053348,0.5457735,0.5457735
+io.yawp.driver.appengine.pipes.flow.Work,newPipeInstance,()Lio/yawp/repository/pipes/Pipe;,1,1,100.0%,"private <T, S> Pipe<T, S> newPipeInstance() {
+        return Pipe.newInstance(yawp(), payload.getPipeClazz());
+    }",70-72,0.8793458,0.5456891,0.5456891
+io.yawp.repository.query.condition.SimpleCondition,init,(Lio/yawp/repository/Repository;Ljava/lang/Class;)V,5,5,100.0%,"@Override
+    public void init(Repository r, Class<?> clazz) {
+        this.r = r;
+        this.clazz = clazz;
+        this.model = new ObjectModel(clazz);
+        normalizeIdRefs();
+    }",36-42,0.7371415,0.54287845,0.54287845
+io.yawp.driver.appengine.AppenginePersistenceDriver,saveEntity,(Lio/yawp/repository/models/ObjectHolder;Lcom/google/appengine/api/datastore/Entity;)V,3,3,100.0%,"private void saveEntity(ObjectHolder objectHolder, Entity entity) {
+        Key key = datastore().put(entity);
+        objectHolder.setId(IdRefToKey.toIdRef(r, key, objectHolder.getModel()));
+    }",102-105,0.870569,0.5374779,0.5374779
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsNamespaceFanoutTask,enqueuePipeDropsTask,(Lcom/google/appengine/api/datastore/Entity;)V,5,6,83.3%,"private void enqueuePipeDropsTask(Entity entity) {
+        String ns = null;
+        if (entity.getKey().getId() == 0) {
+            ns = entity.getKey().getName();
+        }
+
+        Queue queue = QueueHelper.getDefaultQueue();
+        queue.add(TaskOptions.Builder.withPayload(new FlowDropsTask(ns)));
+    }",62-70,0.88926387,0.53458,0.53458
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,join,(Ljava/util/List;)V,4,4,100.0%,"private void join(List<Work> worksList) {
+        WorksExecutor works = new WorksExecutor(r, worksList);
+        works.execute();
+        works.destroy();
+    }",68-72,0.8624227,0.53451884,0.53451884
+io.yawp.driver.appengine.AppengineQueryDriver,createFilter,(Lio/yawp/repository/query/QueryBuilder;Lio/yawp/repository/query/condition/BaseCondition;)Lcom/google/appengine/api/datastore/Query$Filter;,2,5,40.0%,"private Filter createFilter(QueryBuilder<?> builder, BaseCondition condition) throws FalsePredicateException {
+        if (condition instanceof SimpleCondition) {
+            return createSimpleFilter(builder, (SimpleCondition) condition);
+        }
+        if (condition instanceof JoinedCondition) {
+            return createJoinedFilter(builder, (JoinedCondition) condition);
+        }
+        throw new RuntimeException(""Invalid condition class: "" + condition.getClass());
+    }",179-187,0.8084308,0.5345038,0.5345038
+io.yawp.driver.appengine.AppenginePersistenceDriver,asyncDatastore,()Lcom/google/appengine/api/datastore/AsyncDatastoreService;,3,3,100.0%,"private AsyncDatastoreService asyncDatastore() {
+        if (asyncDs == null) {
+            asyncDs = DatastoreServiceFactory.getAsyncDatastoreService();
+        }
+        return asyncDs;
+    }",42-47,0.8335632,0.5344996,0.5344996
+io.yawp.repository.pipes.RepositoryPipes,isPipeSource,(Lio/yawp/repository/Repository;Ljava/lang/Class;)Z,1,1,100.0%,"public static boolean isPipeSource(Repository r, Class<?> endpointClazz) {
+        return r.getFeatures() != null && r.getEndpointFeatures(endpointClazz).getPipes().size() != 0;
+    }",127-129,0.8526017,0.5343174,0.5343174
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,fetchOrCreateSink,(Lio/yawp/repository/IdRef;)Ljava/lang/Object;,6,10,60.0%,"private Object fetchOrCreateSink(IdRef<?> sinkId) {
+        try {
+            return sinkId.fetch();
+        } catch (NoResultException e) {
+            try {
+                Object sink = sinkId.getClazz().newInstance();
+                ObjectHolder objectHolder = new ObjectHolder(sink);
+                objectHolder.setId(sinkId);
+                if (sinkId.getParentClazz() != null) {
+                    objectHolder.setParentId(sinkId.getParentId());
+                }
+                return sink;
+            } catch (InstantiationException | IllegalAccessException e1) {
+                throw new RuntimeException(e);
+            }
+        }
+    }",123-139,0.8771392,0.5327089,0.5327089
+io.yawp.driver.appengine.pipes.flow.Payload,getPipeClazz,()Ljava/lang/Class;,3,3,100.0%,"public Class<? extends Pipe> getPipeClazz() {
+        if (pipeClazz == null) {
+            pipeClazz = (Class<? extends Pipe>) ReflectionUtils.clazzForName(pipeClazzName);
+        }
+        return pipeClazz;
+    }",52-57,0.8372607,0.5323584,0.5323584
+io.yawp.driver.appengine.pipes.flow.Payload,getSource,()Ljava/lang/Object;,3,3,100.0%,"public Object getSource() {
+        if (source == null) {
+            source = JsonUtils.from(yawp(), sourceJson, ReflectionUtils.getFeatureEndpointClazz(getPipeClazz()));
+        }
+        return source;
+    }",72-77,0.8514328,0.5322898,0.5322898
+io.yawp.driver.appengine.AppenginePersistenceDriver,datastore,()Lcom/google/appengine/api/datastore/DatastoreService;,3,3,100.0%,"private DatastoreService datastore() {
+        if (ds == null) {
+            ds = DatastoreServiceFactory.getDatastoreService();
+        }
+        return ds;
+    }",35-40,0.72546023,0.5293479,0.5293479
+io.yawp.driver.appengine.AppengineQueryDriver,datastore,()Lcom/google/appengine/api/datastore/DatastoreService;,3,3,100.0%,"private DatastoreService datastore() {
+        if (ds == null) {
+            ds = DatastoreServiceFactory.getDatastoreService();
+        }
+        return ds;
+    }",38-43,0.72546023,0.5293479,0.5293479
+io.yawp.repository.Yawp,init,()V,6,6,100.0%,"private static void init() {
+        if (yawp.get() != null) {
+            return;
+        }
+        if (features == null) {
+            safeLoadFeaturesFromConfig();
+        }
+        yawp.set(Repository.r().setFeatures(features));
+    }",51-59,0.84623367,0.5293128,0.5293128
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,putSinkMarkerOnCache,(Lio/yawp/repository/IdRef;)V,3,3,100.0%,"private void putSinkMarkerOnCache(IdRef<SinkMarker> sinkMarkerId) {
+        FutureObject<SinkMarker> futureSinkMarker = async.fetch(sinkMarkerId);
+        sinkMarkerCache.put(sinkMarkerId, futureSinkMarker);
+    }",141-144,0.89752257,0.52848125,0.52848125
+io.yawp.driver.appengine.AppenginePersistenceDriver,destroyAsync,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/FutureObject;,2,2,100.0%,"@Override
+    public FutureObject<Void> destroyAsync(IdRef<?> id) {
+        Future<Void> future = asyncDatastore().delete(IdRefToKey.toKey(r, id));
+        return new FutureObject<>(r, future);
+    }",77-81,0.8640104,0.5283912,0.5283912
+io.yawp.driver.appengine.AppengineQueryDriver,fetch,(Lio/yawp/repository/IdRef;)Ljava/lang/Object;,5,5,100.0%,"@SuppressWarnings(""unchecked"")
+    @Override
+    public <T> T fetch(IdRef<T> id) {
+        try {
+            Key key = IdRefToKey.toKey(r, id);
+            Entity entity = datastore().get(key);
+            return (T) toObject.convert(id.getModel(), entity);
+        } catch (EntityNotFoundException e) {
+            return null;
+        }
+    }",84-94,0.8385111,0.52813923,0.52813923
+io.yawp.driver.appengine.AppengineDriver,persistence,()Lio/yawp/driver/api/PersistenceDriver;,1,1,100.0%,"@Override
+    public PersistenceDriver persistence() {
+        return new AppenginePersistenceDriver(r);
+    }",20-23,0.7760565,0.52783394,0.52783394
+io.yawp.repository.IdRef,create,(Lio/yawp/repository/Repository;Ljava/lang/Class;Ljava/lang/Long;)Lio/yawp/repository/IdRef;,1,1,100.0%,"public static <TT> IdRef<TT> create(Repository r, Class<TT> clazz, Long id) {
+        return new IdRef<>(r, clazz, id);
+    }",126-128,0.7613572,0.5272938,0.5272938
+io.yawp.driver.appengine.AppenginePersistenceDriver,saveAsync,(Ljava/lang/Object;)Lio/yawp/repository/FutureObject;,4,4,100.0%,"@Override
+    public <T> FutureObject<T> saveAsync(Object object) {
+        ObjectHolder objectHolder = new ObjectHolder(object);
+        Entity entity = createEntity(objectHolder);
+        toEntity(objectHolder, entity);
+        return saveEntityAsync(objectHolder, entity);
+    }",64-70,0.8547361,0.5269818,0.5269818
+io.yawp.repository.Repository,query,(Ljava/lang/Class;)Lio/yawp/repository/query/QueryBuilder;,1,1,100.0%,"@Override
+    public <T> QueryBuilder<T> query(Class<T> clazz) {
+        return QueryBuilder.q(clazz, this);
+    }",243-246,0.74898344,0.5246441,0.5246441
+io.yawp.driver.appengine.AppengineQueryDriver,fetchAsync,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/FutureObject;,3,3,100.0%,"@Override
+    public <T> FutureObject<T> fetchAsync(IdRef<T> id) {
+        Key key = IdRefToKey.toKey(r, id);
+        Future<Entity> futureEntity = asyncDatastore().get(key);
+        return new FutureObject<>(r, new FutureEntityToObject(r, id.getClazz(), futureEntity));
+    }",96-101,0.86536765,0.5239479,0.5239479
+io.yawp.repository.pipes.SinkMarker,setId,(Lio/yawp/repository/IdRef;)V,2,2,100.0%,"public void setId(IdRef<SinkMarker> id) {
+        this.id = id;
+    }",34-36,0.77174765,0.5238873,0.5238873
+io.yawp.commons.utils.ServiceLookup,lookup,(Ljava/lang/Class;)Ljava/lang/Object;,5,7,71.4%,"public static <T> T lookup(Class<T> clazz) {
+        try {
+            Class serviceClazz;
+            if (!cache.containsKey(clazz)) {
+                serviceClazz = findServiceClazz(clazz);
+                cache.put(clazz, serviceClazz);
+            } else {
+                serviceClazz = cache.get(clazz);
+            }
+            return (T) serviceClazz.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }",17-30,0.7899996,0.5238035,0.5238035
+io.yawp.driver.appengine.IdRefToKey,convertWithinRightNamespace,(Lio/yawp/repository/Repository;Ljava/lang/Class;Lio/yawp/repository/IdRef;)Lcom/google/appengine/api/datastore/Key;,5,5,100.0%,"private static Key convertWithinRightNamespace(Repository r, Class<?> clazz, IdRef<?> id) {
+        r.namespace().set(clazz);
+        try {
+            Key parent = id.getParentId() == null ? null : toKey(r, id.getParentId());
+            String kind = KindResolver.getKindFromClass(id.getClazz());
+            return createKey(id, parent, kind);
+
+        } finally {
+            r.namespace().reset();
+        }
+    }",20-30,0.82709444,0.5236254,0.5236254
+io.yawp.driver.appengine.AppengineQueryDriver,getActualFieldName,(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/String;,5,7,71.4%,"private <T> String getActualFieldName(String fieldName, Class<T> clazz) {
+        Field field = ReflectionUtils.getFieldRecursively(clazz, fieldName);
+        FieldModel fieldModel = new FieldModel(field);
+
+        if (fieldModel.isId()) {
+            return Entity.KEY_RESERVED_PROPERTY;
+        }
+
+        if (fieldModel.isIndexNormalizable()) {
+            return NORMALIZED_FIELD_PREFIX + fieldName;
+        }
+
+        return fieldName;
+    }",245-258,0.80876917,0.52189493,0.52189493
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,execute,()V,4,4,100.0%,"private void execute() {
+        List<Work> works = worksQuery().list();
+        fanout(works);
+        fanin(works);
+    }",54-58,0.8878224,0.51997286,0.51997286
+io.yawp.driver.appengine.FutureEntityToObject,get,()Ljava/lang/Object;,2,3,66.7%,"@Override
+    public T get() throws ExecutionException, InterruptedException {
+        try {
+            return super.get();
+        } catch (ExecutionException e) {
+            return notFoundAsNull(e);
+        }
+    }",37-44,0.7641758,0.519344,0.519344
+io.yawp.repository.hooks.RepositoryHooks,invokeHooks,(Lio/yawp/repository/Repository;Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/String;)V,2,4,50.0%,"private static void invokeHooks(Repository r, Class<?> targetClazz, Object argument, String methodName) {
+        for (Class<? extends Hook> hookClazz : r.getEndpointFeatures(targetClazz).getHooks()) {
+            invokeHookMethod(r, hookClazz, methodName, argument);
+        }
+    }",39-43,0.81801236,0.51869255,0.51869255
+io.yawp.repository.query.QueryBuilder,q,(Ljava/lang/Class;Lio/yawp/repository/Repository;)Lio/yawp/repository/query/QueryBuilder;,1,1,100.0%,"public static <T> QueryBuilder<T> q(Class<T> clazz, Repository r) {
+        return new QueryBuilder<>(clazz, r);
+    }",41-43,0.754434,0.5167469,0.5167469
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsNamespaceFanoutTask,init,()V,2,2,100.0%,"private void init() {
+        this.datastore = DatastoreServiceFactory.getDatastoreService();
+    }",32-34,0.76967317,0.51665056,0.51665056
+io.yawp.repository.models.ObjectModel,getParentField,()Ljava/lang/reflect/Field;,1,1,100.0%,"public Field getParentField() {
+        return ReflectionUtils.getFieldWithAnnotation(clazz, ParentId.class);
+    }",35-37,0.82086825,0.51642084,0.51642084
+io.yawp.testing.EndpointTestCaseBase,awaitAsync,(JLjava/util/concurrent/TimeUnit;)V,2,2,100.0%,"protected void awaitAsync(long timeout, TimeUnit unit) {
+        helper.awaitAsync(timeout, unit);
+    }",333-335,0.787564,0.51591825,0.51591825
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,init,()V,2,2,100.0%,"private void init() {
+        this.r = yawp().namespace(ns);
+    }",50-52,0.7562671,0.51502734,0.51502734
+io.yawp.repository.pipes.SinkMarker,setSourceJson,(Ljava/lang/Class;Ljava/lang/String;)V,4,4,100.0%,"public void setSourceJson(Class<?> endpointClazz, String sourceJson) {
+        this.sourceClazzName = endpointClazz.getName();
+        this.sourceJson = sourceJson;
+        this.source = null;
+    }",75-79,0.8116087,0.5147058,0.5147058
+io.yawp.driver.appengine.AppengineQueryDriver,configureFetchOptions,(Lio/yawp/repository/query/QueryBuilder;)Lcom/google/appengine/api/datastore/FetchOptions;,5,6,83.3%,"private FetchOptions configureFetchOptions(QueryBuilder<?> builder) {
+        FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+
+        if (builder.getLimit() != null) {
+            fetchOptions.limit(builder.getLimit());
+        }
+        if (builder.getCursor() != null) {
+            fetchOptions.startCursor(Cursor.fromWebSafeString(builder.getCursor()));
+        }
+        return fetchOptions;
+    }",111-121,0.86974573,0.5145372,0.5145372
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,getFromCacheOrFetchOrCreateSink,(Lio/yawp/repository/IdRef;)Ljava/lang/Object;,5,5,100.0%,"private Object getFromCacheOrFetchOrCreateSink(IdRef<?> sinkId) {
+        if (sinkCache.containsKey(sinkId)) {
+            return sinkCache.get(sinkId);
+        }
+
+        Object sink = fetchOrCreateSink(sinkId);
+        sinkCache.put(sinkId, sink);
+        return sink;
+    }",113-121,0.8987154,0.5144323,0.5144323
+io.yawp.commons.utils.JsonUtils,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/reflect/Type;)Ljava/lang/Object;,1,1,100.0%,"public static Object from(Repository r, String json, Type type) {
+        return jsonUtils.from(r, json, type);
+    }",33-35,0.7187742,0.5143939,0.5143939
+io.yawp.commons.utils.JsonUtils,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"public static Object from(Repository r, String json, Type type) {
+        return jsonUtils.from(r, json, type);
+    }",33-35,0.7187742,0.5143939,0.5143939
+io.yawp.repository.FutureObject,get,()Ljava/lang/Object;,7,11,63.6%,"public T get() {
+
+        if (resolved) {
+            return object;
+        }
+
+        try {
+            if (futureIdRef != null) {
+                setObjectId();
+            } else {
+                setObject();
+            }
+
+            if (enableHooks) {
+                RepositoryHooks.afterSave(r, object);
+            }
+
+            this.resolved = true;
+            return object;
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }",43-66,0.78421736,0.51438445,0.51438445
+io.yawp.repository.query.QueryBuilder,from,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/query/QueryBuilder;,3,5,60.0%,"public QueryBuilder<T> from(IdRef<?> parentId) {
+        if (parentId == null) {
+            this.parentId = null;
+            return this;
+        }
+
+        this.parentId = parentId;
+        return this;
+    }",72-80,0.73970145,0.5140621,0.5140621
+io.yawp.repository.Repository,saveAsync,(Ljava/lang/Object;)Lio/yawp/repository/FutureObject;,4,4,100.0%,"protected <T> FutureObject<T> saveAsync(T object) {
+        namespace.set(object.getClass());
+        try {
+            FutureObject<T> future = saveInternalAsync(object, false);
+            return future;
+        } finally {
+            namespace.reset();
+        }
+    }",151-159,0.84195364,0.51393163,0.51393163
+io.yawp.driver.appengine.AppenginePersistenceDriver,saveEntityAsync,(Lio/yawp/repository/models/ObjectHolder;Lcom/google/appengine/api/datastore/Entity;)Lio/yawp/repository/FutureObject;,2,2,100.0%,"@SuppressWarnings(""unchecked"")
+    private <T> FutureObject<T> saveEntityAsync(ObjectHolder objectHolder, Entity entity) {
+        Future<Key> futureKey = asyncDatastore().put(entity);
+        return new FutureObject<>(r, new FutureKeyToIdRef(r, futureKey, objectHolder.getModel()), (T) objectHolder.getObject());
+    }",107-111,0.8706457,0.51281637,0.51281637
+io.yawp.repository.query.condition.SimpleCondition,getWhereOperator,()Lio/yawp/repository/query/condition/WhereOperator;,1,1,100.0%,"public WhereOperator getWhereOperator() {
+        return this.whereOperator;
+    }",48-50,0.80702627,0.5120045,0.5120045
+io.yawp.repository.Namespace,set,(Ljava/lang/Class;)V,3,3,100.0%,"public void set(Class<?> clazz) {
+        previousNs = driver.get();
+        configureNs(clazz.isAnnotationPresent(Global.class) ? GLOBAL : ns);
+    }",25-28,0.8424003,0.5105674,0.5105674
+io.yawp.commons.utils.ReflectionUtils,getFieldWithAnnotation,(Ljava/lang/Class;Ljava/lang/Class;)Ljava/lang/reflect/Field;,8,9,88.9%,"public static Field getFieldWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotationClass) {
+        Field theField = null;
+        for (Field field : ReflectionUtils.getFieldsRecursively(clazz)) {
+            if (field.isAnnotationPresent(annotationClass)) {
+                if (theField != null) {
+                    throw new RuntimeException(""You can have at most one field annotated with the "" + annotationClass.getSimpleName()
+                            + "" class."");
+                }
+                theField = field;
+                theField.setAccessible(true);
+            }
+        }
+
+        return theField;
+    }",118-132,0.74524933,0.50993335,0.50993335
+io.yawp.repository.models.ObjectHolder,getId,()Lio/yawp/repository/IdRef;,3,6,50.0%,"public IdRef<?> getId() {
+        Field field = model.getIdField();
+
+        if (!model.isIdRef(field)) {
+            throw new RuntimeException(""@Id must be "" + IdRef.class.getSimpleName());
+        }
+
+        try {
+
+            return (IdRef<?>) field.get(object);
+
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }",36-50,0.80594486,0.5097423,0.5097423
+io.yawp.driver.appengine.EntityToObjectConverter,convert,(Lio/yawp/repository/models/ObjectModel;Lcom/google/appengine/api/datastore/Entity;)Ljava/lang/Object;,11,12,91.7%,"public Object convert(ObjectModel model, Entity entity) {
+        Object object = model.createInstance();
+
+        ObjectHolder objectHolder = new ObjectHolder(object);
+        objectHolder.setId(IdRefToKey.toIdRef(r, entity.getKey(), model));
+
+        List<FieldModel> fieldModels = objectHolder.getModel().getFieldModels();
+
+        for (FieldModel fieldModel : fieldModels) {
+            if (fieldModel.isId()) {
+                continue;
+            }
+
+            if (fieldModel.isTransient()) {
+                continue;
+            }
+
+            safeSetObjectProperty(entity, object, fieldModel);
+        }
+
+        return object;
+    }",29-50,0.8486383,0.50939953,0.50939953
+io.yawp.repository.query.QueryBuilder,sortList,(Ljava/util/List;)V,2,4,50.0%,"public void sortList(List<?> objects) {
+        if (!hasPostOrder()) {
+            return;
+        }
+
+        Collections.sort(objects, new Comparator<Object>() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                for (QueryOrder order : postOrders) {
+                    int compare = order.compare(o1, o2);
+
+                    if (compare == 0) {
+                        continue;
+                    }
+
+                    return compare;
+                }
+                return 0;
+            }
+        });
+    }",276-296,0.7524011,0.5093789,0.5093789
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,executeIfLastVersion,(Lio/yawp/driver/appengine/pipes/flow/Work;)V,8,9,88.9%,"private void executeIfLastVersion(Work work) {
+        IdRef<SinkMarker> sinkMarkerId = work.createSinkMarkerId();
+        SinkMarker sinkMarker = getSinkMarkerFromCache(sinkMarkerId);
+
+        if (sinkMarker.getVersion() >= work.getSourceVersion()) {
+            return;
+        }
+
+        Object sink = getFromCacheOrFetchOrCreateSink(work.getSinkId());
+        work.execute(sink, sinkMarker);
+
+        sinksToSave.add(work.getSinkId());
+        sinkMarkersToSave.add(sinkMarkerId);
+    }",98-111,0.91858083,0.50921285,0.50921285
+io.yawp.repository.IdRef,createChildId,(Ljava/lang/Class;Ljava/lang/Long;)Lio/yawp/repository/IdRef;,3,3,100.0%,"public <TT> IdRef<TT> createChildId(Class<TT> clazz, Long id) {
+        IdRef<TT> idRef = new IdRef<>(r, clazz, id);
+        idRef.setParentId(this);
+        return idRef;
+    }",103-107,0.8420949,0.50896436,0.50896436
+io.yawp.driver.appengine.AppenginePersistenceDriver,createEntity,(Lio/yawp/repository/models/ObjectHolder;)Lcom/google/appengine/api/datastore/Entity;,4,4,100.0%,"private Entity createEntity(ObjectHolder objectHolder) {
+        IdRef<?> id = objectHolder.getId();
+
+        if (id == null) {
+            return createEntityWithNewKey(objectHolder);
+        }
+
+        return new Entity(IdRefToKey.toKey(r, id));
+    }",83-91,0.8545364,0.5088801,0.5088801
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsNamespaceFanoutTask,getNamespaces,()Lcom/google/appengine/api/datastore/QueryResultList;,6,7,85.7%,"private QueryResultList<Entity> getNamespaces() {
+        FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+        fetchOptions.limit(BATCH_SIZE);
+
+        if (cursor != null) {
+            fetchOptions.startCursor(Cursor.fromWebSafeString(cursor));
+        }
+
+        Query q = new Query(NAMESPACE_METADATA_KIND);
+        q.setKeysOnly();
+
+        return datastore.prepare(q).asQueryResultList(fetchOptions);
+    }",48-60,0.8383615,0.5085692,0.5085692
+io.yawp.commons.utils.kind.DefaultKindResolver,getKind,(Ljava/lang/Class;)Ljava/lang/String;,5,6,83.3%,"@Override
+    public String getKind(Class<?> clazz) {
+        Endpoint endpoint = clazz.getAnnotation(Endpoint.class);
+        if (!endpoint.kind().isEmpty()) {
+            return endpoint.kind();
+        }
+        if (!endpoint.path().isEmpty()) {
+            return endpoint.path().substring(1).replaceAll(""-"", ""_"");
+        }
+        return clazz.getSimpleName();
+    }",7-17,0.7899756,0.50856715,0.50856715
+io.yawp.driver.appengine.AppengineQueryDriver,ids,(Lio/yawp/repository/query/QueryBuilder;)Ljava/util/List;,4,8,50.0%,"@SuppressWarnings(""unchecked"")
+    @Override
+    public <T> List<IdRef<T>> ids(QueryBuilder<?> builder) {
+        try {
+            QueryResultList<Entity> queryResult = generateResults(builder, true);
+            List<IdRef<T>> ids = new ArrayList<>();
+
+            for (Entity entity : queryResult) {
+                ids.add((IdRef<T>) IdRefToKey.toIdRef(r, entity.getKey(), builder.getModel()));
+            }
+
+            return ids;
+        } catch (FalsePredicateException e) {
+            return Collections.emptyList();
+        }
+    }",67-82,0.8347822,0.5068774,0.5068774
+io.yawp.driver.appengine.AppengineTransationDriver,commit,()V,3,7,42.9%,"@Override
+    public void commit() {
+        logger.finer(""commit"");
+        if (tx == null) {
+            return;
+        }
+
+        tx.commit();
+        tx = null;
+        logger.finer(""done"");
+    }",70-80,0.71665585,0.5064622,0.5064622
+io.yawp.repository.hooks.RepositoryHooks,afterSave,(Lio/yawp/repository/Repository;Ljava/lang/Object;)V,2,2,100.0%,"public static void afterSave(Repository r, Object object) {
+        invokeHooks(r, object.getClass(), object, ""afterSave"");
+    }",23-25,0.81875813,0.5064399,0.5064399
+io.yawp.repository.features.EndpointFeatures,getClazz,()Ljava/lang/Class;,1,1,100.0%,"public Class<T> getClazz() {
+        return this.clazz;
+    }",45-47,0.7605654,0.5046691,0.5046691
+io.yawp.repository.Repository,destroyAsync,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/FutureObject;,4,4,100.0%,"protected FutureObject<Void> destroyAsync(IdRef<?> id) {
+        namespace.set(id.getClazz());
+        try {
+            FutureObject<Void> future = destroyInternalAsync(id);
+            return future;
+        } finally {
+            namespace.reset();
+        }
+    }",260-268,0.83616835,0.504267,0.504267
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,fanin,(Ljava/util/List;)V,5,5,100.0%,"private void fanin(List<Work> works) {
+        Map<String, List<Work>> worksBySinkGroup = splitWorks(works);
+
+        for (String sinkGroupUri : worksBySinkGroup.keySet()) {
+            join(worksBySinkGroup.get(sinkGroupUri));
+        }
+    }",60-66,0.88751364,0.5042445,0.5042445
+io.yawp.testing.appengine.AsyncHelper,awaitAsync,(JLjava/util/concurrent/TimeUnit;)V,6,7,85.7%,"public synchronized static void awaitAsync(long timeout, TimeUnit unit) {
+        long limit = System.currentTimeMillis() + unit.toMillis(timeout);
+
+        while (true) {
+            if (System.currentTimeMillis() > limit) {
+                throw new RuntimeException(""await timout"");
+            }
+            if (getCountTasks() == 0) {
+                break;
+            }
+            Thread.yield();
+        }
+    }",15-27,0.7615103,0.50372756,0.50372756
+io.yawp.driver.appengine.AppengineDriver,init,(Lio/yawp/repository/Repository;)V,2,2,100.0%,"@Override
+    public void init(Repository r) {
+        this.r = r;
+    }",10-13,0.6419432,0.50312,0.50312
+io.yawp.repository.features.Feature,yawp,(Ljava/lang/Class;)Lio/yawp/repository/query/QueryBuilder;,1,1,100.0%,"public <T> QueryBuilder<T> yawp(Class<T> clazz) {
+        return yawp.query(clazz);
+    }",26-28,0.8262838,0.50280523,0.50280523
+io.yawp.repository.Repository,fetchAsync,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/FutureObject;,3,3,100.0%,"@Override
+    public <T> FutureObject<T> fetchAsync(IdRef<T> id) {
+        namespace.set(id.getClazz());
+        try {
+            return driver().query().fetchAsync(id);
+        } finally {
+            namespace.reset();
+        }
+    }",130-138,0.8617239,0.5027725,0.5027725
+io.yawp.driver.appengine.AppengineQueryDriver,prepareQueryWhere,(Lio/yawp/repository/query/QueryBuilder;Lcom/google/appengine/api/datastore/Query;)V,4,4,100.0%,"private void prepareQueryWhere(QueryBuilder<?> builder, Query q) throws FalsePredicateException {
+        BaseCondition condition = builder.getCondition();
+        if (condition != null && condition.hasPreFilter()) {
+            q.setFilter(createFilter(builder, condition));
+        }
+    }",154-159,0.84390277,0.5023738,0.5023738
+io.yawp.repository.pipes.RepositoryPipes,isPipeSink,(Lio/yawp/repository/Repository;Ljava/lang/Class;)Z,1,1,100.0%,"public static boolean isPipeSink(Repository r, Class<?> endpointClazz) {
+        return r.getEndpointFeatures(endpointClazz).getPipesSink().size() != 0;
+    }",131-133,0.8635369,0.50229365,0.50229365
+io.yawp.driver.appengine.IdRefToKey,toKey,(Lio/yawp/repository/Repository;Lio/yawp/repository/IdRef;)Lcom/google/appengine/api/datastore/Key;,1,1,100.0%,"public static Key toKey(Repository r, IdRef<?> id) {
+        return convertWithinRightNamespace(r, id.getClazz(), id);
+    }",16-18,0.81719315,0.50159514,0.50159514
+io.yawp.repository.models.ObjectModel,getIdField,()Ljava/lang/reflect/Field;,1,1,100.0%,"public Field getIdField() {
+        return ReflectionUtils.getFieldWithAnnotation(clazz, Id.class);
+    }",31-33,0.8168651,0.50118184,0.50118184
+io.yawp.repository.query.QueryBuilder,limit,(I)Lio/yawp/repository/query/QueryBuilder;,2,2,100.0%,"public QueryBuilder<T> limit(int limit) {
+        this.limit = limit;
+        return this;
+    }",107-110,0.7372966,0.5003463,0.5003463
+io.yawp.repository.hooks.RepositoryHooks,beforeSave,(Lio/yawp/repository/Repository;Ljava/lang/Object;)V,2,2,100.0%,"public static void beforeSave(Repository r, Object object) {
+        invokeHooks(r, object.getClass(), object, ""beforeSave"");
+    }",19-21,0.8148519,0.50023913,0.50023913
+io.yawp.repository.models.FieldModel,getIndex,()Lio/yawp/repository/annotations/Index;,1,1,100.0%,"private Index getIndex() {
+        return field.getAnnotation(Index.class);
+    }",90-92,0.81332666,0.500023,0.500023
+io.yawp.commons.utils.ReflectionUtils,isBaseClass,(Ljava/lang/Class;)Z,1,1,100.0%,"public static boolean isBaseClass(Class<?> clazz) {
+        return Object.class.equals(clazz) || clazz.isPrimitive() || clazz.isEnum() || clazz.isArray();
+    }",57-59,0.7354647,0.49972236,0.49972236
+io.yawp.repository.pipes.RepositoryPipes,fetchOldObject,(Ljava/lang/Object;)Ljava/lang/Object;,1,4,25.0%,"private static Object fetchOldObject(Object object) {
+        ObjectHolder objectHolder = new ObjectHolder(object);
+
+        if (objectHolder.getId() == null) {
+            throw new NoResultException();
+        }
+
+        return objectHolder.getId().fetch();
+    }",113-121,0.84588027,0.49963254,0.49963254
+io.yawp.driver.appengine.AppengineQueryDriver,prepareQueryAncestor,(Lio/yawp/repository/query/QueryBuilder;Lcom/google/appengine/api/datastore/Query;)V,3,5,60.0%,"private void prepareQueryAncestor(QueryBuilder<?> builder, Query q) {
+        IdRef<?> parentId = builder.getParentId();
+        if (parentId == null) {
+            return;
+        }
+        q.setAncestor(IdRefToKey.toKey(r, parentId));
+    }",161-167,0.8339721,0.49962193,0.49962193
+io.yawp.repository.query.QueryBuilder,where,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Lio/yawp/repository/query/QueryBuilder;,1,1,100.0%,"public QueryBuilder<T> where(String field, String operator, Object value) {
+        return where(Condition.c(field, operator, value));
+    }",53-55,0.7215095,0.4986208,0.4986208
+io.yawp.repository.query.QueryBuilder,where,(Lio/yawp/repository/query/condition/BaseCondition;)Lio/yawp/repository/query/QueryBuilder;,4,5,80.0%,"public QueryBuilder<T> where(String field, String operator, Object value) {
+        return where(Condition.c(field, operator, value));
+    }",53-55,0.7215095,0.4986208,0.4986208
+io.yawp.repository.Repository,getFeatures,()Lio/yawp/repository/features/RepositoryFeatures;,1,1,100.0%,"@Override
+    public RepositoryFeatures getFeatures() {
+        return repositoryFeatures;
+    }",308-311,0.7198452,0.49822384,0.49822384
+io.yawp.repository.query.condition.SimpleCondition,normalizeIdRefs,()V,4,6,66.7%,"private void normalizeIdRefs() {
+        if (isIdField()) {
+            if (whereValue instanceof String) {
+                whereValue = IdRef.parse(r, (String) whereValue);
+
+            } else if (whereValue instanceof List) {
+                whereValue = convertToIdRefs((List<?>) whereValue);
+            }
+        }
+    }",97-106,0.8365133,0.49783823,0.49783823
+io.yawp.driver.appengine.AppengineDriver,transaction,()Lio/yawp/driver/api/TransactionDriver;,1,1,100.0%,"@Override
+    public TransactionDriver transaction() {
+        return new AppengineTransationDriver(new AppengineEnvironmentDriver());
+    }",35-38,0.8218596,0.49709183,0.49709183
+io.yawp.driver.appengine.AppenginePersistenceDriver,toEntity,(Lio/yawp/repository/models/ObjectHolder;Lcom/google/appengine/api/datastore/Entity;)V,9,9,100.0%,"public void toEntity(ObjectHolder objectHolder, Entity entity) {
+        List<FieldModel> fieldModels = objectHolder.getModel().getFieldModels();
+
+        for (FieldModel fieldModel : fieldModels) {
+            if (fieldModel.isId()) {
+                continue;
+            }
+
+            if (fieldModel.isTransient()) {
+                continue;
+            }
+
+            setEntityProperty(objectHolder, entity, fieldModel);
+        }
+    }",113-127,0.84740853,0.49700177,0.49700177
+io.yawp.driver.appengine.pipes.flow.CacheHelper,getSinkGroupUri,(Lio/yawp/repository/IdRef;)Ljava/lang/String;,3,4,75.0%,"public static String getSinkGroupUri(IdRef<?> sinkId) {
+        IdRef<?> sinkGroupId = sinkId;
+        while (sinkGroupId.getParentId() != null) {
+            sinkGroupId = sinkGroupId.getParentId();
+        }
+        return sinkGroupId.getUri();
+    }",33-39,0.8506409,0.4959286,0.4959286
+io.yawp.repository.Yawp,yawp,()Lio/yawp/repository/Repository;,2,2,100.0%,"public static <T> QueryBuilder<T> yawp(Class<T> clazz) {
+        init();
+        return yawp.get().query(clazz);
+    }",23-26,0.8238726,0.49586594,0.49586594
+io.yawp.repository.Yawp,yawp,(Ljava/lang/Class;)Lio/yawp/repository/query/QueryBuilder;,2,2,100.0%,"public static <T> QueryBuilder<T> yawp(Class<T> clazz) {
+        init();
+        return yawp.get().query(clazz);
+    }",23-26,0.8238726,0.49586594,0.49586594
+io.yawp.driver.appengine.AppenginePersistenceDriver,setEntityProperty,(Lio/yawp/repository/models/ObjectHolder;Lcom/google/appengine/api/datastore/Entity;Lio/yawp/repository/models/FieldModel;)V,7,10,70.0%,"private void setEntityProperty(ObjectHolder objectHolder, Entity entity, FieldModel fieldModel) {
+        Object value = getFieldValue(fieldModel, objectHolder);
+
+        if (!fieldModel.hasIndex()) {
+            entity.setUnindexedProperty(fieldModel.getName(), value);
+            return;
+        }
+
+        if (fieldModel.isIndexNormalizable()) {
+            entity.setProperty(NORMALIZED_FIELD_PREFIX + fieldModel.getName(), normalizeValue(value));
+            entity.setUnindexedProperty(fieldModel.getName(), value);
+            return;
+        }
+
+        entity.setProperty(fieldModel.getName(), value);
+    }",129-144,0.8450328,0.4957025,0.4957025
+io.yawp.driver.appengine.EntityToObjectConverter,setObjectProperty,(Ljava/lang/Object;Lcom/google/appengine/api/datastore/Entity;Lio/yawp/repository/models/FieldModel;Ljava/lang/reflect/Field;)V,13,27,48.1%,"private <T> void setObjectProperty(T object, Entity entity, FieldModel fieldModel, Field field) throws IllegalAccessException {
+        Object value = entity.getProperty(field.getName());
+
+        if (value == null) {
+            field.set(object, null);
+            return;
+        }
+
+        if (fieldModel.isEnum()) {
+            setEnumProperty(object, field, value);
+            return;
+        }
+
+        if (fieldModel.isSaveAsJson()) {
+            setJsonProperty(r, object, field, value);
+            return;
+        }
+
+        if (fieldModel.isSaveAsLazyJson()) {
+            setLazyJsonProperty(object, field, value);
+            return;
+        }
+
+        if (fieldModel.isInt()) {
+            setIntProperty(object, field, value);
+            return;
+        }
+
+        if (fieldModel.isIdRef()) {
+            setIdRefProperty(r, object, field, value);
+            return;
+        }
+
+        if (fieldModel.isSaveAsText()) {
+            setTextProperty(object, field, value);
+            return;
+        }
+
+        if (fieldModel.isListOfIds()) {
+            setListOfIdsProperty(object, field, value);
+            return;
+        }
+
+        field.set(object, value);
+    }",60-104,0.8215556,0.49561745,0.49561745
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,splitWorks,(Ljava/util/List;)Ljava/util/Map;,8,8,100.0%,"private Map<String, List<Work>> splitWorks(List<Work> works) {
+        Map<String, List<Work>> worksBySinkGroup = new HashMap<>();
+        for (Work work : works) {
+            String sinkGroupUri = CacheHelper.getSinkGroupUri(work.getSinkId());
+
+            if (!worksBySinkGroup.containsKey(sinkGroupUri)) {
+                worksBySinkGroup.put(sinkGroupUri, new LinkedList<Work>());
+            }
+
+            worksBySinkGroup.get(sinkGroupUri).add(work);
+        }
+        return worksBySinkGroup;
+    }",74-86,0.87994844,0.49505872,0.49505872
+io.yawp.driver.appengine.AppengineQueryDriver,prepareQuery,(Lio/yawp/repository/query/QueryBuilder;Z)Lcom/google/appengine/api/datastore/PreparedQuery;,7,7,100.0%,"private PreparedQuery prepareQuery(QueryBuilder<?> builder, boolean keysOnly) throws FalsePredicateException {
+        Query q = new Query(builder.getModel().getKind());
+
+        if (keysOnly) {
+            q.setKeysOnly();
+        }
+
+        prepareQueryAncestor(builder, q);
+        prepareQueryWhere(builder, q);
+        prepareQueryOrder(builder, q);
+
+        return datastore().prepare(q);
+    }",129-141,0.84437513,0.49491578,0.49491578
+io.yawp.driver.appengine.AppengineQueryDriver,generateResults,(Lio/yawp/repository/query/QueryBuilder;Z)Lcom/google/appengine/api/datastore/QueryResultList;,3,3,100.0%,"private QueryResultList<Entity> generateResults(QueryBuilder<?> builder, boolean keysOnly) throws FalsePredicateException {
+        QueryResultList<Entity> queryResult = prepareQuery(builder, keysOnly).asQueryResultList(configureFetchOptions(builder));
+        setCursor(builder, queryResult);
+        return queryResult;
+    }",105-109,0.8748484,0.4949106,0.4949106
+io.yawp.repository.AsyncRepository,fetch,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/FutureObject;,1,1,100.0%,"public <T> FutureObject<T> fetch(IdRef<T> id) {
+        return r.fetchAsync(id);
+    }",23-25,0.8345934,0.49480677,0.49480677
+io.yawp.repository.features.EndpointFeatures,getPipesSink,()Ljava/util/List;,1,1,100.0%,"public List<Class<? extends Pipe>> getPipesSink() {
+        return pipesSink;
+    }",95-97,0.7880498,0.49438688,0.49438688
+io.yawp.repository.pipes.RepositoryPipes,isPipeSourceOrSink,(Lio/yawp/repository/Repository;Ljava/lang/Class;)Z,1,1,100.0%,"public static boolean isPipeSourceOrSink(Repository r, Class<?> endpointClazz) {
+        return isPipeSource(r, endpointClazz) || isPipeSink(r, endpointClazz);
+    }",123-125,0.8304663,0.49410653,0.49410653
+io.yawp.driver.appengine.AppengineQueryDriver,createSimpleFilter,(Lio/yawp/repository/query/QueryBuilder;Lio/yawp/repository/query/condition/SimpleCondition;)Lcom/google/appengine/api/datastore/Query$Filter;,8,9,88.9%,"private Filter createSimpleFilter(QueryBuilder<?> builder, SimpleCondition condition) throws FalsePredicateException {
+        String field = condition.getField();
+        Class<?> clazz = builder.getModel().getClazz();
+        Object whereValue = condition.getWhereValue();
+        WhereOperator whereOperator = condition.getWhereOperator();
+
+        String actualFieldName = getActualFieldName(field, clazz);
+        Object actualValue = getActualFieldValue(field, clazz, whereValue);
+
+        if (whereOperator == WhereOperator.IN && listSize(whereValue) == 0) {
+            throw new FalsePredicateException();
+        }
+
+        return new FilterPredicate(actualFieldName, getFilterOperator(whereOperator), actualValue);
+    }",189-203,0.8241619,0.49319732,0.49319732
+io.yawp.repository.IdRef,validateParentId,(Lio/yawp/repository/IdRef;Ljava/lang/String;)V,3,8,37.5%,"private static void validateParentId(IdRef<?> id, String path) {
+        Class<?> parentClazz = id.getParentClazz();
+        if (parentClazz == null) {
+            return;
+        }
+
+        if (id.getParentId() == null) {
+            throw new RuntimeException(""Invalid parent structure for id: "" + path);
+        }
+
+        if (!parentClazz.equals(id.getParentId().getClazz())) {
+            throw new RuntimeException(""Invalid parent structure for id: "" + path);
+        }
+    }",198-211,0.76402426,0.4926706,0.4926706
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,fanout,(Ljava/util/List;)V,2,3,66.7%,"private void fanout(List<Work> result) {
+        if (result.size() >= BATCH_SIZE) {
+            enqueueNextBatch(worksQuery().getCursor());
+        }
+    }",88-92,0.8939363,0.49224174,0.49224174
+io.yawp.repository.query.QueryBuilder,fetch,(Lio/yawp/repository/IdRef;)Ljava/lang/Object;,1,1,100.0%,"public T fetch(IdRef<?> idRef) {
+        return whereById(""="", idRef).only();
+    }",314-316,0.85073674,0.49169105,0.49169105
+io.yawp.repository.Repository,saveInternal,(Ljava/lang/Object;)V,8,10,80.0%,"private void saveInternal(Object object) {
+        boolean newTransaction = beginTransactionForPipesOnSave(object);
+        try {
+            updateExistingPipes(object);
+            driver().persistence().save(object);
+            fluxPipes(object);
+            if (newTransaction) {
+                commit();
+            }
+        } finally {
+            if (newTransaction && isTransationInProgress()) {
+                rollback();
+            }
+        }
+
+        logger.finer(""saved"");
+    }",161-177,0.8807213,0.49136192,0.49136192
+io.yawp.repository.query.condition.SimpleCondition,isRefField,()Z,1,1,100.0%,"private boolean isRefField() {
+        return field.indexOf(""->"") != -1;
+    }",78-80,0.74243313,0.49132895,0.49132895
+io.yawp.driver.appengine.AppengineQueryDriver,objects,(Lio/yawp/repository/query/QueryBuilder;)Ljava/util/List;,6,8,75.0%,"@SuppressWarnings(""unchecked"")
+    @Override
+    public <T> List<T> objects(QueryBuilder<?> builder) {
+        try {
+            QueryResultList<Entity> queryResult = generateResults(builder, false);
+
+            List<T> objects = new ArrayList<>();
+
+            for (Entity entity : queryResult) {
+                objects.add((T) toObject.convert(builder.getModel(), entity));
+            }
+
+            return objects;
+        } catch (FalsePredicateException e) {
+            return Collections.emptyList();
+        }
+    }",49-65,0.8053432,0.49096996,0.49096996
+io.yawp.repository.Repository,async,()Lio/yawp/repository/AsyncRepository;,1,1,100.0%,"@Override
+    public AsyncRepository async() {
+        return new AsyncRepository(this);
+    }",87-90,0.7225354,0.49095136,0.49095136
+io.yawp.commons.utils.ReflectionUtils,getFieldRecursively,(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/reflect/Field;,3,7,42.9%,"public static Field getFieldRecursively(Class<?> clazz, String fieldName) {
+        Class<?> baseClazz = clazz;
+        while (clazz != null) {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException ex) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new RuntimeException(""Field '"" + fieldName + ""'not found in entity "" + baseClazz, new NoSuchFieldException(fieldName));
+    }",36-46,0.71564424,0.49063605,0.49063605
+io.yawp.repository.models.ObjectHolder,setId,(Lio/yawp/repository/IdRef;)V,4,6,66.7%,"public void setId(IdRef<?> id) {
+        Field idField = model.getIdField();
+        try {
+            idField.set(object, id);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }",27-34,0.7917485,0.49057144,0.49057144
+io.yawp.driver.appengine.EntityToObjectConverter,safeSetObjectProperty,(Lcom/google/appengine/api/datastore/Entity;Ljava/lang/Object;Lio/yawp/repository/models/FieldModel;)V,3,5,60.0%,"private <T> void safeSetObjectProperty(Entity entity, T object, FieldModel fieldModel) {
+        try {
+            setObjectProperty(object, entity, fieldModel, fieldModel.getField());
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }",52-58,0.8181684,0.4892286,0.4892286
+io.yawp.driver.appengine.EntityToObjectConverter,setJsonProperty,(Lio/yawp/repository/Repository;Ljava/lang/Object;Ljava/lang/reflect/Field;Ljava/lang/Object;)V,3,3,100.0%,"private <T> void setJsonProperty(Repository r, T object, Field field, Object value) throws IllegalAccessException {
+        String json = ((Text) value).getValue();
+        field.set(object, JsonUtils.from(r, json, field.getGenericType()));
+    }",118-121,0.78103745,0.48871723,0.48871723
+io.yawp.repository.Repository,saveInternalAsync,(Ljava/lang/Object;Z)Lio/yawp/repository/FutureObject;,3,3,100.0%,"private <T> FutureObject<T> saveInternalAsync(T object, boolean enableHooks) {
+        FutureObject<T> futureObject = driver().persistence().saveAsync(object);
+        futureObject.setEnableHooks(enableHooks);
+        return futureObject;
+    }",219-223,0.8896209,0.4880398,0.4880398
+io.yawp.repository.query.QueryBuilder,isQueryById,()Z,3,4,75.0%,"private boolean isQueryById() {
+        if (condition == null || !(condition instanceof SimpleCondition)) {
+            return false;
+        }
+
+        SimpleCondition c = (SimpleCondition) condition;
+        return c.isIdField() && c.isEqualOperator();
+    }",267-274,0.8016044,0.48782593,0.48782593
+io.yawp.testing.appengine.AppengineTestHelper,awaitAsync,(JLjava/util/concurrent/TimeUnit;)V,2,2,100.0%,"@Override
+    public void awaitAsync(long timeout, TimeUnit unit) {
+        AsyncHelper.awaitAsync(timeout, unit);
+    }",52-55,0.7460193,0.48613805,0.48613805
+io.yawp.repository.features.RepositoryFeatures,getByPath,(Ljava/lang/String;)Lio/yawp/repository/features/EndpointFeatures;,3,4,75.0%,"public EndpointFeatures<?> getByPath(String endpointPath) {
+        Class<?> clazz = paths.get(endpointPath);
+        if (clazz == null) {
+            throw new EndpointNotFoundException(endpointPath);
+        }
+        return getByClazz(clazz);
+    }",81-87,0.8000705,0.48608583,0.48608583
+io.yawp.repository.Repository,destroyInternalAsync,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/FutureObject;,2,2,100.0%,"private FutureObject<Void> destroyInternalAsync(IdRef<?> id) {
+        FutureObject<Void> futureObject = driver().persistence().destroyAsync(id);
+        return futureObject;
+    }",286-289,0.86564916,0.4855481,0.4855481
+io.yawp.repository.AsyncRepository,save,(Ljava/lang/Object;)Lio/yawp/repository/FutureObject;,1,1,100.0%,"public <T> FutureObject<T> save(T object) {
+        return r.saveAsync(object);
+    }",11-13,0.8294889,0.48533368,0.48533368
+io.yawp.repository.models.FieldModel,hasIndex,()Z,1,1,100.0%,"public boolean hasIndex() {
+        return field.getAnnotation(Index.class) != null;
+    }",46-48,0.7783491,0.48368514,0.48368514
+io.yawp.commons.utils.ReflectionUtils,clazzForName,(Ljava/lang/String;)Ljava/lang/Class;,1,3,33.3%,"public static Class<?> clazzForName(String clazzName) {
+        try {
+            return Class.forName(clazzName, true, Thread.currentThread().getContextClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }",173-179,0.74571395,0.48358193,0.48358193
+io.yawp.repository.pipes.SinkMarker,setParentId,(Lio/yawp/repository/IdRef;)V,2,2,100.0%,"public void setParentId(IdRef<?> parentId) {
+        this.parentId = parentId;
+    }",42-44,0.78697026,0.48311946,0.48311946
+io.yawp.repository.IdRef,setParentId,(Lio/yawp/repository/IdRef;)V,2,2,100.0%,"public void setParentId(IdRef<?> parentId) {
+        this.parentId = parentId;
+    }",48-50,0.78697026,0.48311946,0.48311946
+io.yawp.driver.appengine.AppenginePersistenceDriver,getFieldValue,(Lio/yawp/repository/models/FieldModel;Lio/yawp/repository/models/ObjectHolder;)Ljava/lang/Object;,13,20,65.0%,"private Object getFieldValue(FieldModel fieldModel, ObjectHolder objectHolder) {
+        Object value = fieldModel.getValue(objectHolder.getObject());
+
+        if (value == null) {
+            return null;
+        }
+
+        if (fieldModel.isEnum(value)) {
+            return value.toString();
+        }
+
+        if (fieldModel.isSaveAsJson()) {
+            return new Text(JsonUtils.to(value));
+        }
+
+        if (fieldModel.isSaveAsLazyJson()) {
+            String json = ((LazyJson) value).getJson();
+            if (json == null) {
+                return null;
+            }
+            return new Text(json);
+        }
+
+        if (fieldModel.isIdRef()) {
+            IdRef<?> idRef = (IdRef<?>) value;
+            return idRef.getUri();
+        }
+
+        if (fieldModel.isSaveAsText()) {
+            return new Text(value.toString());
+        }
+
+        if (fieldModel.isListOfIds()) {
+            return convertToListOfUris((List<IdRef<?>>) value);
+        }
+
+        return value;
+    }",146-183,0.83387554,0.48153883,0.48153883
+io.yawp.repository.query.QueryBuilder,ids,()Ljava/util/List;,5,6,83.3%,"public List<IdRef<T>> ids() {
+        if (hasPostFilter() || hasPostOrder()) {
+            throw new RuntimeException(""ids() cannot be used with post query filter or order. You may need to add @Index to your model attributes."");
+        }
+
+        r.namespace().set(getClazz());
+        try {
+            List<IdRef<T>> ids = r.driver().query().ids(this);
+
+
+            return ids;
+        } finally {
+            r.namespace().reset();
+        }
+    }",328-342,0.7995563,0.48099363,0.48099363
+io.yawp.driver.appengine.AppengineDriver,query,()Lio/yawp/driver/api/QueryDriver;,1,1,100.0%,"@Override
+    public QueryDriver query() {
+        return new AppengineQueryDriver(r);
+    }",25-28,0.7607868,0.48092794,0.48092794
+io.yawp.repository.Repository,updateExistingPipes,(Ljava/lang/Object;)V,2,2,100.0%,"private void updateExistingPipes(Object object) {
+        RepositoryPipes.updateExisting(this, object);
+    }",215-217,0.84255743,0.4808901,0.4808901
+io.yawp.commons.utils.json.gson.IdRefJsonSerializerDeserializer,deserialize,(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lio/yawp/repository/IdRef;,2,2,100.0%,"@Override
+    public IdRef<?> deserialize(JsonElement json, Type type, JsonDeserializationContext ctx) throws JsonParseException {
+        String path = json.getAsJsonPrimitive().getAsString();
+        return IdRef.parse(yawp(), null, path);
+    }",17-21,0.74568236,0.4798123,0.4798123
+io.yawp.repository.IdRef,getParentId,()Lio/yawp/repository/IdRef;,1,1,100.0%,"@SuppressWarnings(""unchecked"")
+    public <TT> IdRef<TT> getParentId() {
+        return (IdRef<TT>) parentId;
+    }",89-92,0.78752387,0.47886884,0.47886884
+io.yawp.repository.IdRef,hashCode,()I,7,7,100.0%,"@Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((clazz == null) ? 0 : clazz.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((parentId == null) ? 0 : parentId.hashCode());
+        return result;
+    }",280-289,0.4848528,0.47863674,0.47863674
+io.yawp.repository.models.ObjectModel,getKind,()Ljava/lang/String;,1,1,100.0%,"public String getKind() {
+        return KindResolver.getKindFromClass(clazz);
+    }",23-25,0.8144775,0.47820038,0.47820038
+io.yawp.repository.models.ObjectModel,createInstance,()Ljava/lang/Object;,3,11,27.3%,"@SuppressWarnings(""unchecked"")
+    public <T> T createInstance() {
+        try {
+            Constructor<T> defaultConstructor = (Constructor<T>) clazz.getDeclaredConstructor(new Class<?>[]{});
+            defaultConstructor.setAccessible(true);
+            return defaultConstructor.newInstance();
+
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(""An exception was thrown when calling the default constructor of the class "" + clazz.getSimpleName()
+                    + "": "", e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(""The class "" + clazz.getSimpleName()
+                    + "" must have a default constructor and cannot be an non-static inner class."", e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(""The class "" + clazz.getSimpleName() + "" must cannot be abstract."", e);
+        } catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
+            throw new RuntimeException(""Unexpected error: "", e);
+        }
+    }",117-135,0.6239955,0.47765067,0.47765067
+io.yawp.repository.models.FieldModel,isEnum,()Z,1,1,100.0%,"public boolean isEnum(Object value) {
+        return value != null && value instanceof Enum<?>;
+    }",58-60,0.6429584,0.4774302,0.4774302
+io.yawp.repository.models.FieldModel,isEnum,(Ljava/lang/Object;)Z,1,1,100.0%,"public boolean isEnum(Object value) {
+        return value != null && value instanceof Enum<?>;
+    }",58-60,0.6429584,0.4774302,0.4774302
+io.yawp.repository.AsyncRepository,destroy,(Lio/yawp/repository/IdRef;)Lio/yawp/repository/FutureObject;,1,1,100.0%,"public <T> FutureObject<Void> destroy(IdRef<?> id) {
+        return r.destroyAsync(id);
+    }",19-21,0.83415174,0.47689724,0.47689724
+io.yawp.driver.appengine.AppengineQueryDriver,asyncDatastore,()Lcom/google/appengine/api/datastore/AsyncDatastoreService;,1,1,100.0%,"private AsyncDatastoreService asyncDatastore() {
+        return DatastoreServiceFactory.getAsyncDatastoreService();
+    }",45-47,0.7902857,0.4765495,0.4765495
+io.yawp.repository.query.QueryBuilder,executeQuery,()Ljava/util/List;,2,2,100.0%,"private List<T> executeQuery() {
+        List<T> objects = r.driver().query().objects(this);
+        return postFilter(objects);
+    }",242-245,0.83686256,0.47653902,0.47653902
+io.yawp.driver.appengine.AppengineQueryDriver,getActualFieldValue,(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;,9,15,60.0%,"public <T> Object getActualFieldValue(String fieldName, Class<T> clazz, Object value) {
+        Field field = ReflectionUtils.getFieldRecursively(clazz, fieldName);
+        FieldModel fieldModel = new FieldModel(field);
+
+        if (fieldModel.isCollection(value)) {
+            return getActualListFieldValue(fieldName, clazz, (Collection<?>) value);
+        }
+
+        if (fieldModel.isId()) {
+            return getActualKeyFieldValue(value);
+        }
+
+        if (fieldModel.isEnum(value)) {
+            return value.toString();
+        }
+
+        if (fieldModel.isIndexNormalizable()) {
+            return normalizeValue(value);
+        }
+
+        if (value instanceof IdRef) {
+            return ((IdRef<?>) value).getUri();
+        }
+
+        if (fieldModel.isDate() && value instanceof String) {
+            return DateUtils.toTimestamp((String) value);
+        }
+
+        return value;
+    }",260-289,0.81527233,0.4764561,0.4764561
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,execute,()V,6,7,85.7%,"public void execute() {
+        try {
+            r.beginX();
+            cacheSinkMarkers();
+            executeWorks();
+            commitIfChanged();
+        } finally {
+            if (r.isTransationInProgress()) {
+                r.rollback();
+            }
+        }
+    }",43-54,0.8384702,0.4761126,0.4761126
+io.yawp.repository.features.EndpointFeatures,getPipes,()Ljava/util/Set;,1,1,100.0%,"public Set<Class<? extends Pipe>> getPipes() {
+        return pipes;
+    }",91-93,0.71454597,0.47573346,0.47573346
+io.yawp.repository.models.ObjectModel,getFieldModel,(Ljava/lang/String;)Lio/yawp/repository/models/FieldModel;,1,1,100.0%,"public FieldModel getFieldModel(String fieldName) {
+        return new FieldModel(ReflectionUtils.getFieldRecursively(clazz, fieldName));
+    }",109-111,0.8191125,0.4756259,0.4756259
+io.yawp.repository.query.condition.SimpleCondition,hasPreFilter,()Z,3,4,75.0%,"@Override
+    public boolean hasPreFilter() {
+        if (isRefField()) {
+            return false;
+        }
+        FieldModel fieldModel = model.getFieldModel(field);
+        return fieldModel.hasIndex() || fieldModel.isId();
+    }",64-71,0.829211,0.47498292,0.47498292
+io.yawp.repository.models.ObjectModel,getParentClazz,()Ljava/lang/Class;,3,4,75.0%,"public Class<?> getParentClazz() {
+        Field parentField = getParentField();
+        if (parentField == null) {
+            return null;
+        }
+        return ReflectionUtils.getIdRefEndpointClazz(parentField);
+    }",47-53,0.7957361,0.47488588,0.47488588
+io.yawp.repository.query.QueryBuilder,executeQueryById,()Ljava/lang/Object;,3,3,100.0%,"@SuppressWarnings(""unchecked"")
+    private T executeQueryById() {
+        SimpleCondition c = (SimpleCondition) condition;
+        IdRef<T> id = (IdRef<T>) c.getWhereValue();
+
+        return r.driver().query().fetch(id);
+    }",259-265,0.84972227,0.47470424,0.47470424
+io.yawp.repository.FutureObject,setEnableHooks,(Z)V,2,2,100.0%,"public void setEnableHooks(boolean enableHooks) {
+        this.enableHooks = enableHooks;
+    }",39-41,0.8149278,0.4742222,0.4742222
+io.yawp.repository.features.EndpointFeatures,getEndpointPath,()Ljava/lang/String;,2,2,100.0%,"public String getEndpointPath() {
+        Endpoint endpoint = clazz.getAnnotation(Endpoint.class);
+        return endpoint.path();
+    }",53-56,0.80975115,0.47415584,0.47415584
+io.yawp.driver.appengine.AppengineNamespaceDriver,get,()Ljava/lang/String;,1,1,100.0%,"@Override
+    public String get() {
+        return NamespaceManager.get();
+    }",9-12,0.6612589,0.4735915,0.4735915
+io.yawp.repository.IdRef,getUri,()Ljava/lang/String;,7,7,100.0%,"public String getUri() {
+        StringBuilder sb = new StringBuilder();
+        if (parentId != null) {
+            sb.append(parentId.toString());
+        }
+        sb.append(r.getFeatures().getByClazz(clazz).getEndpointPath());
+        sb.append(""/"");
+        sb.append(id != null ? id : name);
+        return sb.toString();
+    }",343-352,0.81491315,0.47347727,0.47347727
+io.yawp.repository.Repository,getEndpointFeatures,(Ljava/lang/Class;)Lio/yawp/repository/features/EndpointFeatures;,1,1,100.0%,"@Override
+    @SuppressWarnings(""unchecked"")
+    public <T> EndpointFeatures<T> getEndpointFeatures(Class<T> endpoint) {
+        return (EndpointFeatures<T>) repositoryFeatures.getByClazz(endpoint);
+    }",297-301,0.8282387,0.47347498,0.47347498
+io.yawp.commons.utils.json.gson.GsonJsonUtils,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/reflect/Type;)Ljava/lang/Object;,2,2,100.0%,"@Override
+    public Object from(Repository r, String json, Type type) {
+        JsonElement jsonElement = new JsonParser().parse(json);
+        return gson.fromJson(jsonElement, type);
+    }",34-38,0.74467963,0.473462,0.473462
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsNamespaceFanoutTask,fanout,()V,6,7,85.7%,"private void fanout() {
+        QueryResultList<Entity> entities = getNamespaces();
+
+        if (entities.size() >= BATCH_SIZE) {
+            enqueueNextBatch(entities.getCursor().toWebSafeString());
+        }
+
+        for (Entity entity : entities) {
+            enqueuePipeDropsTask(entity);
+        }
+    }",36-46,0.8948874,0.4688756,0.4688756
+io.yawp.repository.models.ObjectModel,isIdRef,(Ljava/lang/reflect/Field;)Z,1,1,100.0%,"public boolean isIdRef(Field field) {
+        return IdRef.class.isAssignableFrom(field.getType());
+    }",43-45,0.8143942,0.468649,0.468649
+io.yawp.repository.Repository,namespace,(Ljava/lang/String;)Lio/yawp/repository/Repository;,2,2,100.0%,"@Override
+    public Repository namespace(String ns) {
+        namespace.setNs(ns);
+        return this;
+    }",50-54,0.7391803,0.46846414,0.46846414
+io.yawp.repository.Repository,namespace,()Lio/yawp/repository/Namespace;,1,1,100.0%,"@Override
+    public Repository namespace(String ns) {
+        namespace.setNs(ns);
+        return this;
+    }",50-54,0.7391803,0.46846414,0.46846414
+io.yawp.repository.models.FieldModel,isCollection,(Ljava/lang/Object;)Z,1,1,100.0%,"public boolean isCollection(Object value) {
+        return Collection.class.isInstance(value);
+    }",62-64,0.77092505,0.4682231,0.4682231
+io.yawp.driver.appengine.pipes.utils.QueueHelper,getDefaultQueue,()Lcom/google/appengine/api/taskqueue/Queue;,1,1,100.0%,"public static Queue getDefaultQueue() {
+        return QueueFactory.getDefaultQueue();
+    }",12-14,0.799266,0.4676271,0.4676271
+io.yawp.repository.models.FieldModel,isInt,()Z,1,1,100.0%,"public boolean isInt() {
+        return Integer.class.isAssignableFrom(field.getType()) || field.getType().getName().equals(""int"");
+    }",102-104,0.80084383,0.46687293,0.46687293
+io.yawp.testing.EndpointTestCaseBase,tearDownHelper,()V,2,2,100.0%,"@After
+    public void tearDownHelper() {
+        helper.tearDown();
+    }",66-69,0.779496,0.46580476,0.46580476
+io.yawp.commons.utils.ReflectionUtils,isJavaClass,(Ljava/lang/Class;)Z,1,1,100.0%,"public static boolean isJavaClass(Class<?> clazz) {
+        return isBaseClass(clazz) || clazz.getPackage().getName().startsWith(""java."") || clazz.getPackage().getName().startsWith(""javax."");
+    }",61-63,0.77949864,0.46557695,0.46557695
+io.yawp.repository.models.ObjectModel,getFieldModels,()Ljava/util/List;,6,6,100.0%,"public List<FieldModel> getFieldModels() {
+        List<Field> fields = ReflectionUtils.getFieldsRecursively(clazz);
+
+        List<FieldModel> fieldModels = new ArrayList<>();
+
+        for (Field field : fields) {
+            fieldModels.add(new FieldModel(field));
+        }
+
+        return fieldModels;
+    }",97-107,0.814476,0.4641524,0.4641524
+io.yawp.repository.pipes.SinkMarker,setVersion,(J)V,2,2,100.0%,"public void setVersion(long version) {
+        this.version = version;
+    }",50-52,0.7240424,0.46348044,0.46348044
+io.yawp.repository.query.QueryBuilder,whereById,(Ljava/lang/String;Lio/yawp/repository/IdRef;)Lio/yawp/repository/query/QueryBuilder;,1,1,100.0%,"public QueryBuilder<T> whereById(String operator, IdRef<?> id) {
+        return from(id.getParentId()).where(model.getIdField().getName(), operator, id);
+    }",310-312,0.81306714,0.4634257,0.4634257
+io.yawp.driver.appengine.AppengineQueryDriver,setCursor,(Lio/yawp/repository/query/QueryBuilder;Lcom/google/appengine/api/datastore/QueryResultList;)V,3,3,100.0%,"private void setCursor(QueryBuilder<?> builder, QueryResultList<Entity> queryResult) {
+        if (queryResult.getCursor() != null) {
+            builder.setCursor(queryResult.getCursor().toWebSafeString());
+        }
+    }",123-127,0.85576206,0.46334267,0.46334267
+io.yawp.driver.appengine.AppengineDriver,namespace,()Lio/yawp/driver/api/NamespaceDriver;,1,1,100.0%,"@Override
+    public NamespaceDriver namespace() {
+        return new AppengineNamespaceDriver();
+    }",30-33,0.74060285,0.4627809,0.4627809
+io.yawp.commons.utils.ReflectionUtils,getFieldsRecursively,(Ljava/lang/Class;)Ljava/util/List;,5,5,100.0%,"public static List<Field> getFieldsRecursively(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>();
+        while (!isJavaClass(clazz)) {
+            fields.addAll(ReflectionUtils.getImmediateFields(clazz));
+            clazz = clazz.getSuperclass();
+        }
+        return fields;
+    }",48-55,0.78111804,0.4627096,0.4627096
+io.yawp.repository.models.FieldModel,isIdRef,()Z,1,1,100.0%,"public boolean isIdRef() {
+        return IdRef.class.isAssignableFrom(field.getType());
+    }",70-72,0.81450737,0.46215713,0.46215713
+io.yawp.repository.features.EndpointFeatures,getHooks,()Ljava/util/Set;,1,1,100.0%,"public Set<Class<? extends Hook>> getHooks() {
+        return hooks;
+    }",83-85,0.73892474,0.46037674,0.46037674
+io.yawp.repository.models.FieldModel,getValue,(Ljava/lang/Object;)Ljava/lang/Object;,1,3,33.3%,"public Object getValue(Object object) {
+        try {
+            return field.get(object);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }",34-40,0.68164814,0.4601606,0.4601606
+io.yawp.repository.query.QueryBuilder,getCursor,()Ljava/lang/String;,1,1,100.0%,"public String getCursor() {
+        return this.cursor;
+    }",121-123,0.6939959,0.45793593,0.45793593
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,destroy,()V,4,4,100.0%,"public void destroy() {
+        for (Work work : works) {
+            async.destroy(work.getId());
+        }
+    }",56-60,0.82106704,0.4575584,0.4575584
+io.yawp.repository.query.QueryBuilder,only,()Ljava/lang/Object;,7,8,87.5%,"public T only() throws NoResultException, MoreThanOneResultException {
+        r.namespace().set(getClazz());
+        try {
+            T object;
+
+            if (isQueryById()) {
+                object = executeQueryById();
+            } else {
+                object = executeQueryOnly();
+            }
+
+            if (object == null) {
+                throw new NoResultException();
+            }
+
+            return object;
+        } finally {
+            r.namespace().reset();
+        }
+    }",210-229,0.83125484,0.45639718,0.45639718
+io.yawp.repository.Namespace,setNs,(Ljava/lang/String;)V,2,2,100.0%,"public void setNs(String ns) {
+        this.ns = ns;
+    }",40-42,0.7046933,0.4560628,0.4560628
+io.yawp.repository.features.RepositoryFeatures,getByClazz,(Ljava/lang/Class;)Lio/yawp/repository/features/EndpointFeatures;,1,1,100.0%,"public EndpointFeatures<?> getByClazz(Class<?> clazz) {
+        return endpoints.get(clazz);
+    }",77-79,0.7712023,0.45306277,0.45306277
+io.yawp.repository.IdRef,isString,(Ljava/lang/String;)Z,2,4,50.0%,"private static boolean isString(String s) {
+        try {
+            Long.valueOf(s);
+            return false;
+        } catch (NumberFormatException e) {
+            return true;
+        }
+    }",237-244,0.62394536,0.45064744,0.45064744
+io.yawp.commons.utils.ReflectionUtils,getGenericTypeArgumentAt,(Ljava/lang/reflect/Type;I)Ljava/lang/reflect/Type;,3,4,75.0%,"public static Type getGenericTypeArgumentAt(Type type, int index) {
+        Type[] parameters = getGenericTypeArguments(type);
+        if (parameters.length <= index) {
+            return null;
+        }
+        return parameters[index];
+    }",83-89,0.68399334,0.44909376,0.44909376
+io.yawp.repository.Repository,beginTransactionForPipesOnSave,(Ljava/lang/Object;)Z,4,4,100.0%,"private boolean beginTransactionForPipesOnSave(Object object) {
+        Class<?> endpointClazz = object.getClass();
+
+        if (!RepositoryPipes.isPipeSourceOrSink(this, endpointClazz)) {
+            return false;
+        }
+
+        return beginTransactionForPipes();
+    }",179-187,0.87568307,0.44876373,0.44876373
+io.yawp.repository.Repository,getRequestContext,()Lio/yawp/commons/http/RequestContext;,1,1,100.0%,"@Override
+    public RequestContext getRequestContext() {
+        return requestContext;
+    }",367-370,0.6738596,0.44854796,0.44854796
+io.yawp.repository.Repository,commit,()V,4,5,80.0%,"@Override
+    public void commit() {
+        if (tx == null) {
+            throw new RuntimeException(""No transaction in progress"");
+        }
+        try {
+            tx.commit();
+        } finally {
+            tx = null;
+        }
+    }",345-355,0.6392489,0.44846302,0.44846302
+io.yawp.repository.Namespace,configureNs,(Ljava/lang/String;)V,2,3,66.7%,"private void configureNs(String ns) {
+        if (ns != null) {
+            driver.set(ns);
+        }
+    }",30-34,0.7633927,0.44758734,0.44758734
+io.yawp.commons.utils.kind.KindResolver,getKindFromClass,(Ljava/lang/Class;)Ljava/lang/String;,1,1,100.0%,"public static String getKindFromClass(Class<?> clazz) {
+        return kindResolver.getKind(clazz);
+    }",31-33,0.77970695,0.4468699,0.4468699
+io.yawp.repository.query.QueryBuilder,hasPostOrder,()Z,1,1,100.0%,"private boolean hasPostOrder() {
+        return postOrders.size() != 0;
+    }",302-304,0.74932253,0.44555557,0.44555557
+io.yawp.driver.appengine.AppengineNamespaceDriver,set,(Ljava/lang/String;)V,2,2,100.0%,"@Override
+    public void set(String ns) {
+        NamespaceManager.set(ns);
+    }",14-17,0.6776566,0.4448232,0.4448232
+io.yawp.repository.models.FieldModel,isListOfIds,()Z,2,4,50.0%,"public boolean isListOfIds() {
+        if (!isList()) {
+            return false;
+        }
+
+        Class<?> listGenericClazz = ReflectionUtils.getListGenericType(field.getGenericType());
+        return IdRef.class.isAssignableFrom(listGenericClazz);
+    }",122-129,0.8176931,0.44476867,0.44476867
+io.yawp.repository.IdRef,getModel,()Lio/yawp/repository/models/ObjectModel;,1,1,100.0%,"public ObjectModel getModel() {
+        return new ObjectModel(clazz);
+    }",85-87,0.7269856,0.44387162,0.44387162
+io.yawp.driver.appengine.AppengineQueryDriver,prepareQueryOrder,(Lio/yawp/repository/query/QueryBuilder;Lcom/google/appengine/api/datastore/Query;)V,2,7,28.6%,"private void prepareQueryOrder(QueryBuilder<?> builder, Query q) {
+        if (builder.getPreOrders().isEmpty()) {
+            return;
+        }
+
+        for (QueryOrder order : builder.getPreOrders()) {
+            String string = getActualFieldName(order.getProperty(), builder.getModel().getClazz());
+            q.addSort(string, getSortDirection(order));
+        }
+    }",143-152,0.84684885,0.443557,0.443557
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,executeWorks,()V,4,4,100.0%,"private void executeWorks() {
+        for (Work work : works) {
+            executeIfLastVersion(work);
+        }
+    }",62-66,0.8498671,0.44217855,0.44217855
+io.yawp.repository.models.FieldModel,isDate,()Z,1,1,100.0%,"public boolean isDate() {
+        return Date.class.isAssignableFrom(field.getType());
+    }",110-112,0.788141,0.44054192,0.44054192
+io.yawp.driver.appengine.pipes.flow.Work,getId,()Lio/yawp/repository/IdRef;,1,1,100.0%,"public IdRef<Work> getId() {
+        return id;
+    }",98-100,0.74816656,0.4404836,0.4404836
+io.yawp.repository.models.FieldModel,isTransient,()Z,1,1,100.0%,"public boolean isTransient() {
+        return Modifier.isTransient(field.getModifiers()) || field.isAnnotationPresent(Transient.class);
+    }",131-133,0.8054444,0.43987066,0.43987066
+io.yawp.commons.utils.ReflectionUtils,getImmediateFields,(Ljava/lang/Class;)Ljava/util/List;,5,5,100.0%,"public static List<Field> getImmediateFields(Class<?> clazz) {
+        List<Field> finalFields = new ArrayList<>();
+        for (Field field : clazz.getDeclaredFields()) {
+            if (!Modifier.isStatic(field.getModifiers()) && !field.isSynthetic()) {
+                finalFields.add(field);
+            }
+        }
+        return finalFields;
+    }",12-20,0.76289225,0.43683913,0.43683913
+io.yawp.commons.utils.ReflectionUtils,getFeatureEndpointClazz,(Ljava/lang/Class;)Ljava/lang/Class;,1,1,100.0%,"public static Class<?> getFeatureEndpointClazz(Class<?> clazz) {
+        return getFeatureTypeArgumentAt(clazz, 0);
+    }",65-67,0.7823655,0.43493503,0.43493503
+io.yawp.repository.IdRef,fetch,(Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"public T fetch() {
+        return fetch(clazz);
+    }",52-54,0.7417325,0.43492368,0.43492368
+io.yawp.repository.IdRef,fetch,()Ljava/lang/Object;,1,1,100.0%,"public T fetch() {
+        return fetch(clazz);
+    }",52-54,0.7417325,0.43492368,0.43492368
+io.yawp.repository.IdRef,getIdRefClazz,(Lio/yawp/repository/Repository;Ljava/lang/String;)Ljava/lang/Class;,1,1,100.0%,"private static Class<?> getIdRefClazz(Repository r, String endpointPath) {
+        return r.getFeatures().getByPath(endpointPath).getClazz();
+    }",213-215,0.8220113,0.43324858,0.43324858
+io.yawp.repository.query.QueryBuilder,postFilter,(Ljava/util/List;)Ljava/util/List;,2,3,66.7%,"private List<T> postFilter(List<T> objects) {
+        if (!hasPostFilter()) {
+            return objects;
+        }
+        return condition.applyPostFilter(objects);
+
+    }",247-253,0.8261318,0.4332043,0.4332043
+io.yawp.driver.appengine.pipes.flow.Work,rememberSourceInSinkMarker,(Lio/yawp/repository/pipes/SinkMarker;)V,2,2,100.0%,"private void rememberSourceInSinkMarker(SinkMarker sinkMarker) {
+        sinkMarker.setSourceJson(ReflectionUtils.getFeatureEndpointClazz(payload.getPipeClazz()), payload.getSourceJson());
+    }",66-68,0.88438666,0.43300974,0.43300974
+io.yawp.repository.query.QueryBuilder,getClazz,()Ljava/lang/Class;,1,1,100.0%,"protected Class<T> getClazz() {
+        return clazz;
+    }",306-308,0.6952062,0.4322062,0.4322062
+io.yawp.repository.query.QueryBuilder,hasPostFilter,()Z,1,1,100.0%,"private boolean hasPostFilter() {
+        return condition != null && condition.hasPostFilter();
+    }",255-257,0.79969907,0.43207484,0.43207484
+io.yawp.driver.appengine.FutureEntityToObject,convertException,(Ljava/lang/Throwable;)Ljava/lang/Throwable;,1,1,100.0%,"@Override
+    protected Throwable convertException(Throwable t) {
+        return t;
+    }",32-35,0.58089703,0.4320481,0.4320481
+io.yawp.repository.query.QueryBuilder,executeQueryList,()Ljava/util/List;,3,3,100.0%,"public List<T> executeQueryList() {
+        r.namespace().set(getClazz());
+        try {
+            return executeQuery();
+        } finally {
+            r.namespace().reset();
+        }
+    }",173-180,0.83830416,0.4301975,0.4301975
+io.yawp.repository.query.QueryBuilder,getCondition,()Lio/yawp/repository/query/condition/BaseCondition;,1,1,100.0%,"public BaseCondition getCondition() {
+        return condition;
+    }",161-163,0.75545466,0.43000597,0.43000597
+io.yawp.repository.query.QueryBuilder,getPreOrders,()Ljava/util/List;,1,1,100.0%,"public List<QueryOrder> getPreOrders() {
+        return preOrders;
+    }",157-159,0.8098843,0.42973575,0.42973575
+io.yawp.repository.query.QueryBuilder,setCursor,(Ljava/lang/String;)V,2,2,100.0%,"public void setCursor(String cursor) {
+        this.cursor = cursor;
+    }",125-127,0.71084154,0.42958087,0.42958087
+io.yawp.driver.appengine.pipes.flow.Payload,getSourceJson,()Ljava/lang/String;,1,1,100.0%,"public String getSourceJson() {
+        return sourceJson;
+    }",63-65,0.73102033,0.4279338,0.4279338
+io.yawp.driver.appengine.pipes.flow.Work,getSourceVersion,()Ljava/lang/Long;,1,1,100.0%,"public Long getSourceVersion() {
+        return payload.getSourceMarker().getVersion();
+    }",94-96,0.839705,0.4275879,0.4275879
+io.yawp.commons.utils.ReflectionUtils,getGenericTypeArguments,(Ljava/lang/reflect/Type;)[Ljava/lang/reflect/Type;,3,4,75.0%,"private static Type[] getGenericTypeArguments(Type type) {
+        if (!(type instanceof ParameterizedType)) {
+            return new Type[]{};
+        }
+        ParameterizedType parameterizedType = (ParameterizedType) type;
+        return parameterizedType.getActualTypeArguments();
+    }",91-97,0.6831612,0.42594922,0.42594922
+io.yawp.repository.models.FieldModel,isSaveAsJson,()Z,1,1,100.0%,"public boolean isSaveAsJson() {
+        return field.getAnnotation(Json.class) != null;
+    }",78-80,0.7981888,0.42304963,0.42304963
+io.yawp.repository.models.FieldModel,isList,()Z,1,1,100.0%,"public boolean isList() {
+        return List.class.isAssignableFrom(field.getType());
+    }",118-120,0.79187274,0.42206,0.42206
+io.yawp.repository.Repository,r,()Lio/yawp/repository/Repository;,1,1,100.0%,"public static Repository r() {
+        return new Repository();
+    }",42-44,0.5905211,0.41976243,0.41976243
+io.yawp.repository.Namespace,reset,()V,2,2,100.0%,"public void reset() {
+        driver.set(previousNs);
+    }",36-38,0.7527425,0.41942126,0.41942126
+io.yawp.repository.models.FieldModel,isString,()Z,1,1,100.0%,"private boolean isString() {
+        return String.class.isAssignableFrom(field.getType());
+    }",114-116,0.7712882,0.41933513,0.41933513
+io.yawp.repository.models.FieldModel,isId,()Z,1,1,100.0%,"public boolean isId() {
+        return field.isAnnotationPresent(Id.class);
+    }",42-44,0.78163433,0.41928354,0.41928354
+io.yawp.repository.IdRef,toString,()Ljava/lang/String;,2,3,66.7%,"@Override
+    public String toString() {
+        if (r == null) {
+            return ""empty id"";
+        }
+        return getUri();
+    }",335-341,0.62484443,0.41922313,0.41922313
+io.yawp.repository.models.FieldModel,isSaveAsLazyJson,()Z,1,1,100.0%,"public boolean isSaveAsLazyJson() {
+		return LazyJson.class.isAssignableFrom(field.getType());
+	}",86-88,0.8428023,0.41899985,0.41899985
+io.yawp.driver.appengine.pipes.flow.Work,getSinkId,()Lio/yawp/repository/IdRef;,1,1,100.0%,"public IdRef<?> getSinkId() {
+        return payload.getSinkId();
+    }",102-104,0.8317157,0.4170336,0.4170336
+io.yawp.repository.models.FieldModel,isIndexNormalizable,()Z,2,3,66.7%,"public boolean isIndexNormalizable() {
+        if (!hasIndex()) {
+            throw new RuntimeException(""You must add @Index annotation the the field '"" + field.getName()
+                    + ""' if you want to use it as a index in where statements."");
+        }
+        return getIndex().normalize() && isString();
+    }",50-56,0.68716514,0.41628498,0.41628498
+io.yawp.repository.Repository,isTransationInProgress,()Z,1,1,100.0%,"@Override
+    public boolean isTransationInProgress() {
+        return tx != null;
+    }",357-360,0.6764351,0.41579783,0.41579783
+io.yawp.repository.Repository,beginX,()V,2,2,100.0%,"@Override
+    public void beginX() {
+        tx = driver().transaction().beginX();
+    }",328-331,0.74993855,0.41448832,0.41448832
+io.yawp.commons.utils.json.JsonUtilsBase,from,(Lio/yawp/repository/Repository;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;,1,1,100.0%,"public abstract Object from(Repository r, String json, Type type);",21-21,0.64848465,0.41421705,0.41421705
+io.yawp.commons.utils.ReflectionUtils,getFeatureTypeArgumentAt,(Ljava/lang/Class;I)Ljava/lang/Class;,3,4,75.0%,"public static Class<?> getFeatureTypeArgumentAt(Class<?> clazz, int index) {
+        Type superClassGenericType = getGenericTypeArgumentAt(clazz.getGenericSuperclass(), index);
+
+        if (superClassGenericType instanceof TypeVariable) {
+            return (Class<?>) getGenericTypeBound(clazz, ((TypeVariable) superClassGenericType).getName());
+        }
+
+        return (Class<?>) superClassGenericType;
+    }",69-77,0.74379706,0.41378257,0.41378257
+io.yawp.repository.query.condition.SimpleCondition,getWhereValue,()Ljava/lang/Object;,1,1,100.0%,"public Object getWhereValue() {
+        return whereValue;
+    }",52-54,0.75064254,0.41346443,0.41346443
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsNamespaceFanoutTask,run,()V,3,3,100.0%,"@Override
+    public void run() {
+        init();
+        fanout();
+    }",26-30,0.6422733,0.4132027,0.4132027
+io.yawp.repository.IdRef,getClazz,()Ljava/lang/Class;,1,1,100.0%,"public Class<T> getClazz() {
+        return clazz;
+    }",77-79,0.71195173,0.4121854,0.4121854
+io.yawp.repository.models.ObjectHolder,getModel,()Lio/yawp/repository/models/ObjectModel;,1,1,100.0%,"public ObjectModel getModel() {
+        return model;
+    }",19-21,0.6596631,0.41173786,0.41173786
+io.yawp.repository.query.QueryBuilder,getModel,()Lio/yawp/repository/models/ObjectModel;,1,1,100.0%,"public ObjectModel getModel() {
+        return model;
+    }",169-171,0.6596631,0.41173786,0.41173786
+io.yawp.testing.appengine.AppengineTestHelper,tearDown,()V,2,2,100.0%,"@Override
+    public void tearDown() {
+        helper.tearDown();
+    }",47-50,0.65086067,0.41034982,0.41034982
+io.yawp.repository.pipes.SinkMarker,setPresent,(Z)V,2,2,100.0%,"public void setPresent(boolean present) {
+        this.present = present;
+    }",58-60,0.6827151,0.40838084,0.40838084
+io.yawp.repository.models.FieldModel,getField,()Ljava/lang/reflect/Field;,1,1,100.0%,"public Field getField() {
+        return field;
+    }",26-28,0.65561914,0.4068189,0.4068189
+io.yawp.repository.query.QueryBuilder,getParentId,()Lio/yawp/repository/IdRef;,1,1,100.0%,"public IdRef<?> getParentId() {
+        return parentId;
+    }",117-119,0.71452624,0.40323827,0.40323827
+io.yawp.repository.IdRef,getParentClazz,()Ljava/lang/Class;,1,1,100.0%,"public Class<?> getParentClazz() {
+        return model.getParentClazz();
+    }",81-83,0.74683416,0.40298855,0.40298855
+io.yawp.repository.pipes.SourceMarker,getVersion,()Ljava/lang/Long;,1,1,100.0%,"public Long getVersion() {
+        return version;
+    }",35-37,0.6478026,0.40293968,0.40293968
+io.yawp.repository.pipes.SinkMarker,getVersion,()Ljava/lang/Long;,1,1,100.0%,"public Long getVersion() {
+        return version;
+    }",46-48,0.6478026,0.40293968,0.40293968
+io.yawp.driver.appengine.pipes.flow.Payload,getSourceId,()Lio/yawp/repository/IdRef;,1,1,100.0%,"public IdRef<?> getSourceId() {
+        return new ObjectHolder(getSource()).getId();
+    }",127-129,0.8068321,0.40279615,0.40279615
+io.yawp.repository.models.ObjectModel,getClazz,()Ljava/lang/Class;,1,1,100.0%,"public Class<?> getClazz() {
+        return clazz;
+    }",27-29,0.68240607,0.3975533,0.3975533
+io.yawp.repository.query.QueryBuilder,list,()Ljava/util/List;,3,3,100.0%,"public List<T> list() {
+        List<T> list = executeQueryList();
+        sortList(list);
+        return list;
+    }",182-186,0.7759775,0.3966735,0.3966735
+io.yawp.repository.Repository,beginTransactionForPipes,()Z,2,4,50.0%,"private boolean beginTransactionForPipes() {
+        if (isTransationInProgress()) {
+            return false;
+        }
+        begin();
+        return true;
+    }",199-205,0.7769977,0.39511764,0.39511764
+io.yawp.repository.IdRef,isShuffled,()Z,1,1,100.0%,"public boolean isShuffled() {
+        return model.isIdShuffled();
+    }",265-267,0.75550294,0.3950644,0.3950644
+io.yawp.repository.models.ObjectHolder,getObject,()Ljava/lang/Object;,1,1,100.0%,"public Object getObject() {
+        return object;
+    }",23-25,0.6243111,0.38466683,0.38466683
+io.yawp.repository.models.FieldModel,getName,()Ljava/lang/String;,1,1,100.0%,"public String getName() {
+        return field.getName();
+    }",30-32,0.6447458,0.381498,0.381498
+io.yawp.repository.query.condition.SimpleCondition,isIdField,()Z,1,1,100.0%,"public boolean isIdField() {
+        return field.equals(model.getIdField().getName());
+    }",60-62,0.8072725,0.37995166,0.37995166
+io.yawp.driver.appengine.pipes.flow.WorksExecutor,cacheSinkMarkers,()V,4,4,100.0%,"private void cacheSinkMarkers() {
+        for (Work work : works) {
+            putSinkMarkerOnCache(work.createSinkMarkerId());
+        }
+    }",68-72,0.8636483,0.37910736,0.37910736
+io.yawp.repository.query.condition.SimpleCondition,getField,()Ljava/lang/String;,1,1,100.0%,"public String getField() {
+        return field;
+    }",44-46,0.5877937,0.37905467,0.37905467
+io.yawp.repository.query.QueryBuilder,getLimit,()Ljava/lang/Integer;,1,1,100.0%,"public Integer getLimit() {
+        return limit;
+    }",153-155,0.67388916,0.37871766,0.37871766
+io.yawp.repository.IdRef,getId,()Ljava/lang/Long;,1,1,100.0%,"public Long getId() {
+        return id;
+    }",261-263,0.6014303,0.37725222,0.37725222
+io.yawp.repository.models.ObjectModel,isIdShuffled,()Z,1,1,100.0%,"public boolean isIdShuffled() {
+        return getIdField().getAnnotation(Id.class).shuffle();
+    }",113-115,0.80263245,0.37467495,0.37467495
+io.yawp.repository.query.condition.SimpleCondition,hasPostFilter,()Z,1,1,100.0%,"@Override
+    public boolean hasPostFilter() {
+        return !hasPreFilter();
+    }",73-76,0.74164367,0.34478137,0.34478137
+io.yawp.repository.pipes.SinkMarker,isPresent,()Z,1,1,100.0%,"public boolean isPresent() {
+        return present;
+    }",54-56,0.6399474,0.33671933,0.33671933
+io.yawp.driver.appengine.pipes.flow.Payload,isPresent,()Z,1,1,100.0%,"public boolean isPresent() {
+        return present;
+    }",115-117,0.6399474,0.33671933,0.33671933
+io.yawp.driver.appengine.pipes.flow.drops.FlowDropsTask,run,()V,3,3,100.0%,"@Override
+    public void run() {
+        init();
+        execute();
+    }",44-48,0.5708079,0.3238284,0.3238284

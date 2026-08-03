@@ -1,0 +1,410 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+com.github.davidmoten.rx2.RetryWhen,delay,(JLjava/util/concurrent/TimeUnit;)Lcom/github/davidmoten/rx2/RetryWhen$Builder;,1,1,100.0%,"private static Function<ErrorAndDuration, Flowable<ErrorAndDuration>> delay(final Scheduler scheduler) {
+        return new Function<ErrorAndDuration, Flowable<ErrorAndDuration>>() {
+            @Override
+            public Flowable<ErrorAndDuration> apply(ErrorAndDuration e) {
+                if (e.durationMs() == NO_MORE_DELAYS)
+                    return Flowable.error(e.throwable());
+                else
+                    return Flowable.timer(e.durationMs(), TimeUnit.MILLISECONDS, scheduler)
+                            .map(com.github.davidmoten.rx2.Functions.constant(e));
+            }
+        };
+    }",127-138,0.87294745,0.65739167,0.65739167
+com.github.davidmoten.rx2.RetryWhen,delay,(Lio/reactivex/Scheduler;)Lio/reactivex/functions/Function;,1,1,100.0%,"private static Function<ErrorAndDuration, Flowable<ErrorAndDuration>> delay(final Scheduler scheduler) {
+        return new Function<ErrorAndDuration, Flowable<ErrorAndDuration>>() {
+            @Override
+            public Flowable<ErrorAndDuration> apply(ErrorAndDuration e) {
+                if (e.durationMs() == NO_MORE_DELAYS)
+                    return Flowable.error(e.throwable());
+                else
+                    return Flowable.timer(e.durationMs(), TimeUnit.MILLISECONDS, scheduler)
+                            .map(com.github.davidmoten.rx2.Functions.constant(e));
+            }
+        };
+    }",127-138,0.87294745,0.65739167,0.65739167
+com.github.davidmoten.rx2.RetryWhen$Builder,delay,(Ljava/lang/Long;Ljava/util/concurrent/TimeUnit;)Lcom/github/davidmoten/rx2/RetryWhen$Builder;,2,2,100.0%,"private static Function<ErrorAndDuration, Flowable<ErrorAndDuration>> delay(final Scheduler scheduler) {
+        return new Function<ErrorAndDuration, Flowable<ErrorAndDuration>>() {
+            @Override
+            public Flowable<ErrorAndDuration> apply(ErrorAndDuration e) {
+                if (e.durationMs() == NO_MORE_DELAYS)
+                    return Flowable.error(e.throwable());
+                else
+                    return Flowable.timer(e.durationMs(), TimeUnit.MILLISECONDS, scheduler)
+                            .map(com.github.davidmoten.rx2.Functions.constant(e));
+            }
+        };
+    }",127-138,0.87294745,0.65739167,0.65739167
+com.github.davidmoten.rx2.RetryWhen$1,apply,(Lio/reactivex/Flowable;)Lio/reactivex/Flowable;,5,5,100.0%,"@SuppressWarnings(""unchecked"")
+            @Override
+            public Flowable<Object> apply(Flowable<? extends Throwable> errors) {
+                // TODO remove this cast when rxjava 2.0.3 released because
+                // signature of retryWhen
+                // will be fixed
+                return (Flowable<Object>) (Flowable<?>) errors
+                        // zip with delays, use -1 to signal completion
+                        .zipWith(delays.concatWith(Flowable.just(NO_MORE_DELAYS)), TO_ERROR_AND_DURATION)
+                        // check retry and non-retry exceptions
+                        .flatMap(checkExceptions)
+                        // perform user action (for example log that a
+                        // delay is happening)
+                        .doOnNext(callActionExceptForLast(action))
+                        // delay the time in ErrorAndDuration
+                        .flatMap(delay(scheduler));
+            }",61-77,0.8664342,0.6235494,0.6235494
+com.github.davidmoten.rx2.RetryWhen$Builder$1,apply,(Ljava/lang/Long;)Ljava/lang/Long;,1,1,100.0%,"@SuppressWarnings(""unchecked"")
+            @Override
+            public Flowable<Object> apply(Flowable<? extends Throwable> errors) {
+                // TODO remove this cast when rxjava 2.0.3 released because
+                // signature of retryWhen
+                // will be fixed
+                return (Flowable<Object>) (Flowable<?>) errors
+                        // zip with delays, use -1 to signal completion
+                        .zipWith(delays.concatWith(Flowable.just(NO_MORE_DELAYS)), TO_ERROR_AND_DURATION)
+                        // check retry and non-retry exceptions
+                        .flatMap(checkExceptions)
+                        // perform user action (for example log that a
+                        // delay is happening)
+                        .doOnNext(callActionExceptForLast(action))
+                        // delay the time in ErrorAndDuration
+                        .flatMap(delay(scheduler));
+            }",61-77,0.8664342,0.6235494,0.6235494
+com.github.davidmoten.rx2.Bytes,collect,()Lio/reactivex/functions/Function;,1,1,100.0%,"public static Single<byte[]> collect(Flowable<byte[]> source) {
+        return source.collect(BosCreatorHolder.INSTANCE, BosCollectorHolder.INSTANCE).map(BosToArrayHolder.INSTANCE);
+    }",139-141,0.8121251,0.6147901,0.6147901
+com.github.davidmoten.rx2.Bytes,collect,(Lio/reactivex/Flowable;)Lio/reactivex/Single;,1,1,100.0%,"public static Single<byte[]> collect(Flowable<byte[]> source) {
+        return source.collect(BosCreatorHolder.INSTANCE, BosCollectorHolder.INSTANCE).map(BosToArrayHolder.INSTANCE);
+    }",139-141,0.8121251,0.6147901,0.6147901
+com.github.davidmoten.rx2.RetryWhen,createNotificationHandler,(Lio/reactivex/Flowable;Lio/reactivex/Scheduler;Lio/reactivex/functions/Consumer;Lio/reactivex/functions/Function;)Lio/reactivex/functions/Function;,1,1,100.0%,"private static Function<Flowable<? extends Throwable>, Flowable<Object>> createNotificationHandler(
+            final Flowable<Long> delays, final Scheduler scheduler, final Consumer<? super ErrorAndDuration> action,
+            final Function<ErrorAndDuration, Flowable<ErrorAndDuration>> checkExceptions) {
+        return new Function<Flowable<? extends Throwable>, Flowable<Object>>() {
+
+            @SuppressWarnings(""unchecked"")
+            @Override
+            public Flowable<Object> apply(Flowable<? extends Throwable> errors) {
+                // TODO remove this cast when rxjava 2.0.3 released because
+                // signature of retryWhen
+                // will be fixed
+                return (Flowable<Object>) (Flowable<?>) errors
+                        // zip with delays, use -1 to signal completion
+                        .zipWith(delays.concatWith(Flowable.just(NO_MORE_DELAYS)), TO_ERROR_AND_DURATION)
+                        // check retry and non-retry exceptions
+                        .flatMap(checkExceptions)
+                        // perform user action (for example log that a
+                        // delay is happening)
+                        .doOnNext(callActionExceptForLast(action))
+                        // delay the time in ErrorAndDuration
+                        .flatMap(delay(scheduler));
+            }
+        };
+    }",56-79,0.8898133,0.6033013,0.6033013
+com.github.davidmoten.rx2.Consumers,close,()Lio/reactivex/functions/Consumer;,1,1,100.0%,"@SuppressWarnings(""unchecked"")
+    public static <T extends Closeable> Consumer<T> close() {
+        return (Consumer<T>) CloseHolder.INSTANCE;
+    }",32-35,0.83505166,0.5873038,0.5873038
+com.github.davidmoten.rx2.RetryWhen,createExceptionChecker,(Ljava/util/List;Ljava/util/List;Lio/reactivex/functions/Predicate;)Lio/reactivex/functions/Function;,1,1,100.0%,"private static Function<ErrorAndDuration, Flowable<ErrorAndDuration>> createExceptionChecker(
+            final List<Class<? extends Throwable>> retryExceptions,
+            final List<Class<? extends Throwable>> failExceptions,
+            final Predicate<? super Throwable> exceptionPredicate) {
+        return new Function<ErrorAndDuration, Flowable<ErrorAndDuration>>() {
+
+            @Override
+            public Flowable<ErrorAndDuration> apply(ErrorAndDuration e) throws Exception {
+                if (!exceptionPredicate.test(e.throwable()))
+                    return Flowable.error(e.throwable());
+                for (Class<? extends Throwable> cls : failExceptions) {
+                    if (e.throwable().getClass().isAssignableFrom(cls))
+                        return Flowable.error(e.throwable());
+                }
+                if (retryExceptions.size() > 0) {
+                    for (Class<? extends Throwable> cls : retryExceptions) {
+                        if (e.throwable().getClass().isAssignableFrom(cls))
+                            return Flowable.just(e);
+                    }
+                    return Flowable.error(e.throwable());
+                } else {
+                    return Flowable.just(e);
+                }
+            }
+        };
+    }",93-118,0.8763441,0.58471483,0.58471483
+com.github.davidmoten.rx2.Consumers,doNothing,()Lio/reactivex/functions/Consumer;,1,1,100.0%,"@SuppressWarnings(""unchecked"")
+    public static <T> Consumer<T> doNothing() {
+        return (Consumer<T>) DoNothingHolder.INSTANCE;
+    }",66-69,0.82950926,0.580616,0.580616
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket$2,call,()Ljava/net/ServerSocket;,1,1,100.0%,"@Override
+            public ServerSocket call() throws Exception {
+                return createServerSocket(serverSocketFactory, acceptTimeoutMs);
+            }",50-53,0.86214364,0.57930136,0.57930136
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket$5,call,()Ljava/io/InputStream;,1,1,100.0%,"@Override
+            public ServerSocket call() throws Exception {
+                return createServerSocket(serverSocketFactory, acceptTimeoutMs);
+            }",50-53,0.86214364,0.57930136,0.57930136
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket,acceptConnection,(JILjava/net/ServerSocket;Lio/reactivex/Emitter;Lio/reactivex/functions/Action;Lio/reactivex/functions/Predicate;)V,9,15,60.0%,"private static void acceptConnection(long timeoutMs, int bufferSize, ServerSocket ss,
+            Emitter<Flowable<byte[]>> emitter, Action preAcceptAction, Predicate<? super Socket> acceptSocket) {
+        Socket socket;
+        while (true) {
+            try {
+                preAcceptAction.run();
+                socket = ss.accept();
+                if (!acceptSocket.test(socket)) {
+                    closeQuietly(socket);
+                } else {
+                    emitter.onNext(createSocketFlowable(socket, timeoutMs, bufferSize));
+                    break;
+                }
+            } catch (SocketTimeoutException e) {
+                // timed out so will loop around again
+            } catch (Throwable e) {
+                // if the server socket has been closed then this is most likely
+                // an unsubscribe so we don't try to report an error which would
+                // just end up in RxJavaPlugins.onError as a stack trace in the
+                // console.
+                if (e instanceof SocketException && (""Socket closed"".equals(e.getMessage())
+                        || ""Socket operation on nonsocket: configureBlocking"".equals(e.getMessage()))) {
+                    break;
+                } else {
+                    // unknown problem
+                    emitter.onError(e);
+                    break;
+                }
+            }
+        }
+    }",86-116,0.8585596,0.5787263,0.5787263
+com.github.davidmoten.rx2.RetryWhen$Builder,build,()Lio/reactivex/functions/Function;,3,4,75.0%,"public Function<Flowable<? extends Throwable>, Flowable<Object>> build() {
+            Preconditions.checkNotNull(delays);
+            if (maxRetries.isPresent()) {
+                delays = delays.take(maxRetries.get());
+            }
+            return notificationHandler(delays, scheduler.get(), action, retryExceptions, failExceptions,
+                    exceptionPredicate);
+        }",296-303,0.872387,0.57709193,0.57709193
+com.github.davidmoten.rx2.RetryWhen,callActionExceptForLast,(Lio/reactivex/functions/Consumer;)Lio/reactivex/functions/Consumer;,1,1,100.0%,"private static Consumer<ErrorAndDuration> callActionExceptForLast(final Consumer<? super ErrorAndDuration> action) {
+        return new Consumer<ErrorAndDuration>() {
+            @Override
+            public void accept(ErrorAndDuration e) throws Exception {
+                if (e.durationMs() != NO_MORE_DELAYS) {
+                    action.accept(e);
+                }
+            }
+        };
+    }",81-90,0.87677324,0.5747154,0.5747154
+com.github.davidmoten.rx2.Bytes$1,accept,(Lio/reactivex/Emitter;)V,7,8,87.5%,"@Override
+            public void accept(Emitter<byte[]> emitter) throws Exception {
+                byte[] buffer = new byte[bufferSize];
+                int count = is.read(buffer);
+                if (count == -1) {
+                    emitter.onComplete();
+                } else if (count < bufferSize) {
+                    emitter.onNext(Arrays.copyOf(buffer, count));
+                } else {
+                    emitter.onNext(buffer);
+                }
+            }",44-55,0.8849724,0.57004684,0.57004684
+com.github.davidmoten.rx2.Bytes$BosCollectorHolder$1,accept,(Ljava/io/ByteArrayOutputStream;[B)V,2,2,100.0%,"@Override
+            public void accept(Emitter<byte[]> emitter) throws Exception {
+                byte[] buffer = new byte[bufferSize];
+                int count = is.read(buffer);
+                if (count == -1) {
+                    emitter.onComplete();
+                } else if (count < bufferSize) {
+                    emitter.onNext(Arrays.copyOf(buffer, count));
+                } else {
+                    emitter.onNext(buffer);
+                }
+            }",44-55,0.8849724,0.57004684,0.57004684
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket,createServerSocket,(Ljava/util/concurrent/Callable;J)Ljava/net/ServerSocket;,3,3,100.0%,"private static ServerSocket createServerSocket(Callable<? extends ServerSocket> serverSocketCreator, long timeoutMs)
+            throws Exception {
+        ServerSocket s = serverSocketCreator.call();
+        s.setSoTimeout((int) timeoutMs);
+        return s;
+    }",57-62,0.84801996,0.5613568,0.5613568
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket,createServerSocketFlowable,(Ljava/net/ServerSocket;JILio/reactivex/functions/Action;Lio/reactivex/functions/Predicate;)Lio/reactivex/Flowable;,1,1,100.0%,"private static Flowable<Flowable<byte[]>> createServerSocketFlowable(final ServerSocket serverSocket,
+            final long timeoutMs, final int bufferSize, final Action preAcceptAction,
+            final Predicate<? super Socket> acceptSocket) {
+        return Flowable.generate( //
+                new Consumer<Emitter<Flowable<byte[]>>>() {
+                    @Override
+                    public void accept(Emitter<Flowable<byte[]>> emitter) throws Exception {
+                        acceptConnection(timeoutMs, bufferSize, serverSocket, emitter, preAcceptAction, acceptSocket);
+                    }
+                });
+    }",74-84,0.88617754,0.55965996,0.55965996
+com.github.davidmoten.rx2.RetryWhen,notificationHandler,(Lio/reactivex/Flowable;Lio/reactivex/Scheduler;Lio/reactivex/functions/Consumer;Ljava/util/List;Ljava/util/List;Lio/reactivex/functions/Predicate;)Lio/reactivex/functions/Function;,2,2,100.0%,"private static Function<Flowable<? extends Throwable>, Flowable<Object>> notificationHandler(
+            final Flowable<Long> delays, final Scheduler scheduler, final Consumer<? super ErrorAndDuration> action,
+            final List<Class<? extends Throwable>> retryExceptions,
+            final List<Class<? extends Throwable>> failExceptions,
+            final Predicate<? super Throwable> exceptionPredicate) {
+
+        final Function<ErrorAndDuration, Flowable<ErrorAndDuration>> checkExceptions = createExceptionChecker(
+                retryExceptions, failExceptions, exceptionPredicate);
+
+        return createNotificationHandler(delays, scheduler, action, checkExceptions);
+    }",44-54,0.8424225,0.55623364,0.55623364
+com.github.davidmoten.rx2.SchedulerHelper,blockUntilWorkFinished,(Lio/reactivex/Scheduler;IJLjava/util/concurrent/TimeUnit;)V,8,11,72.7%,"public static void blockUntilWorkFinished(Scheduler scheduler, int numThreads, long timeout, TimeUnit unit) {
+        final CountDownLatch latch = new CountDownLatch(numThreads);
+        for (int i = 1; i <= numThreads; i++) {
+            final Worker worker = scheduler.createWorker();
+            worker.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    worker.dispose();
+                    latch.countDown();
+                }
+            });
+        }
+        try {
+            boolean finished = latch.await(timeout, unit);
+            if (!finished) {
+                throw new RuntimeException(""timeout occured waiting for work to finish"");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }",31-51,0.84270394,0.55208874,0.55208874
+com.github.davidmoten.rx2.SchedulerHelper,blockUntilWorkFinished,(Lio/reactivex/Scheduler;I)V,2,2,100.0%,"public static void blockUntilWorkFinished(Scheduler scheduler, int numThreads, long timeout, TimeUnit unit) {
+        final CountDownLatch latch = new CountDownLatch(numThreads);
+        for (int i = 1; i <= numThreads; i++) {
+            final Worker worker = scheduler.createWorker();
+            worker.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    worker.dispose();
+                    latch.countDown();
+                }
+            });
+        }
+        try {
+            boolean finished = latch.await(timeout, unit);
+            if (!finished) {
+                throw new RuntimeException(""timeout occured waiting for work to finish"");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }",31-51,0.84270394,0.55208874,0.55208874
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket,createSocketFlowable,(Ljava/net/Socket;JI)Lio/reactivex/Flowable;,3,3,100.0%,"private static Flowable<byte[]> createSocketFlowable(final Socket socket, long timeoutMs, final int bufferSize) {
+        setTimeout(socket, timeoutMs);
+        return Flowable.using( //
+                new Callable<InputStream>() {
+                    @Override
+                    public InputStream call() throws Exception {
+                        return socket.getInputStream();
+                    }
+                }, //
+                new Function<InputStream, Flowable<byte[]>>() {
+                    @Override
+                    public Flowable<byte[]> apply(InputStream is) {
+                        return Bytes.from(is, bufferSize);
+                    }
+                }, //
+                Consumers.close(), //
+                true);
+    }",127-144,0.8930182,0.5471202,0.5471202
+com.github.davidmoten.rx2.Bytes,from,(Ljava/io/InputStream;I)Lio/reactivex/Flowable;,1,1,100.0%,"public static Flowable<byte[]> from(final InputStream is, final int bufferSize) {
+        return Flowable.generate(new Consumer<Emitter<byte[]>>() {
+            @Override
+            public void accept(Emitter<byte[]> emitter) throws Exception {
+                byte[] buffer = new byte[bufferSize];
+                int count = is.read(buffer);
+                if (count == -1) {
+                    emitter.onComplete();
+                } else if (count < bufferSize) {
+                    emitter.onNext(Arrays.copyOf(buffer, count));
+                } else {
+                    emitter.onNext(buffer);
+                }
+            }
+        });
+    }",42-57,0.88030845,0.5454007,0.5454007
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket$4,accept,(Lio/reactivex/Emitter;)V,2,2,100.0%,"@Override
+                    public void accept(ServerSocket ss) throws Exception {
+                        ss.close();
+                    }",39-42,0.8303166,0.5363903,0.5363903
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket$1,accept,(Ljava/net/ServerSocket;)V,2,2,100.0%,"@Override
+                    public void accept(ServerSocket ss) throws Exception {
+                        ss.close();
+                    }",39-42,0.8303166,0.5363903,0.5363903
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket$6,apply,(Ljava/io/InputStream;)Lio/reactivex/Flowable;,1,1,100.0%,"@Override
+            public Flowable<Flowable<byte[]>> apply(ServerSocket serverSocket) {
+                return createServerSocketFlowable(serverSocket, timeoutMs, bufferSize, preAcceptAction, acceptSocket);
+            }",67-70,0.8692803,0.5291481,0.5291481
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket$3,apply,(Ljava/net/ServerSocket;)Lio/reactivex/Flowable;,1,1,100.0%,"@Override
+            public Flowable<Flowable<byte[]>> apply(ServerSocket serverSocket) {
+                return createServerSocketFlowable(serverSocket, timeoutMs, bufferSize, preAcceptAction, acceptSocket);
+            }",67-70,0.8692803,0.5291481,0.5291481
+com.github.davidmoten.rx2.Consumers,printStackTrace,()Lio/reactivex/functions/Consumer;,1,1,100.0%,"public static Consumer<Throwable> printStackTrace() {
+        // TODO make holder
+        return new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable e) throws Exception {
+                e.printStackTrace();
+            }
+        };
+    }",56-64,0.8301889,0.51602614,0.51602614
+com.github.davidmoten.rx2.Bytes$BosToArrayHolder$1,apply,(Ljava/io/ByteArrayOutputStream;)[B,1,1,100.0%,"@Override
+            public Flowable<byte[]> apply(InputStream is) {
+                return from(is, size);
+            }",73-76,0.8651186,0.5097364,0.5097364
+com.github.davidmoten.rx2.Bytes$6,apply,(Lio/reactivex/Flowable;)Lio/reactivex/Single;,1,1,100.0%,"@Override
+            public Flowable<byte[]> apply(InputStream is) {
+                return from(is, size);
+            }",73-76,0.8651186,0.5097364,0.5097364
+com.github.davidmoten.rx2.IO$2,call,()Ljava/net/ServerSocket;,3,3,100.0%,"@Override
+            public ServerSocket call() throws IOException {
+                return new ServerSocket(port);
+            }",24-27,0.8146243,0.50967443,0.50967443
+com.github.davidmoten.rx2.internal.flowable.FlowableServerSocket,setTimeout,(Ljava/net/Socket;J)V,3,5,60.0%,"private static void setTimeout(Socket socket, long timeoutMs) {
+        try {
+            socket.setSoTimeout((int) timeoutMs);
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        }
+    }",146-152,0.8230685,0.508913,0.508913
+com.github.davidmoten.rx2.RetryWhen$Builder,toMillis,(Ljava/util/concurrent/TimeUnit;)Lio/reactivex/functions/Function;,1,1,100.0%,"private static Function<Long, Long> toMillis(final TimeUnit unit) {
+            return new Function<Long, Long>() {
+
+                @Override
+                public Long apply(Long t) {
+                    return unit.toMillis(t);
+                }
+            };
+        }",243-251,0.82354367,0.5085125,0.5085125
+com.github.davidmoten.rx2.Actions$DoNothingHolder$1,run,()V,1,1,100.0%,"@Override
+            public void run() throws Exception {
+                b.set(true);
+            }",17-20,0.7948619,0.50711155,0.50711155
+com.github.davidmoten.rx2.Consumers$5,accept,(Ljava/lang/Integer;)V,2,2,100.0%,"@Override
+            public void accept(long t) throws Exception {
+                list.add(t);
+            }",24-27,0.8215734,0.49623793,0.49623793
+com.github.davidmoten.rx2.Consumers$2,accept,(Ljava/lang/Object;)V,2,2,100.0%,"@Override
+            public void accept(long t) throws Exception {
+                list.add(t);
+            }",24-27,0.8215734,0.49623793,0.49623793
+com.github.davidmoten.rx2.Consumers$CloseHolder$1,accept,(Ljava/io/Closeable;)V,2,2,100.0%,"@Override
+            public void accept(long t) throws Exception {
+                list.add(t);
+            }",24-27,0.8215734,0.49623793,0.49623793
+com.github.davidmoten.rx2.Consumers$6,accept,(Ljava/lang/Object;)V,2,2,100.0%,"@Override
+            public void accept(long t) throws Exception {
+                list.add(t);
+            }",24-27,0.8215734,0.49623793,0.49623793
+com.github.davidmoten.rx2.Consumers,increment,(Ljava/util/concurrent/atomic/AtomicInteger;)Lio/reactivex/functions/Consumer;,1,1,100.0%,"public static Consumer<Object> increment(final AtomicInteger value) {
+        return new Consumer<Object>() {
+            @Override
+            public void accept(Object t) throws Exception {
+                value.incrementAndGet();
+            }
+        };
+    }",47-54,0.83085954,0.48765582,0.48765582
+com.github.davidmoten.rx2.SchedulerHelper$1,run,()V,3,3,100.0%,"@Override
+                public void run() {
+                    worker.dispose();
+                    latch.countDown();
+                }",36-40,0.833617,0.4774075,0.4774075
+com.github.davidmoten.rx2.Bytes$BosCreatorHolder$1,call,()Ljava/io/ByteArrayOutputStream;,1,1,100.0%,"@Override
+            public InputStream call() throws FileNotFoundException {
+                return new BufferedInputStream(new FileInputStream(file), size);
+            }",66-69,0.79288626,0.47215217,0.47215217

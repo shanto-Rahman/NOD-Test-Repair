@@ -1,0 +1,553 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+com.github.kagkarlsson.scheduler.task.ExecutionOperations,reschedule,(Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete;Ljava/time/Instant;)V,3,4,75.0%,"public void reschedule(ExecutionComplete completed, Instant nextExecutionTime) {
+		if (completed.getResult() == ExecutionComplete.Result.OK) {
+			taskRepository.reschedule(execution, nextExecutionTime, completed.getTimeDone(), execution.lastFailure, 0);
+		} else {
+			taskRepository.reschedule(execution, nextExecutionTime, execution.lastSuccess, completed.getTimeDone(), execution.consecutiveFailures + 1);
+		}
+
+	}",36-43,0.86250734,0.5701285,0.5701285
+com.github.kagkarlsson.scheduler.Scheduler,stop,()V,12,17,70.6%,"public void stop() {
+		if (schedulerState.isShuttingDown()) {
+			LOG.warn(""Multiple calls to 'stop()'. Scheduler is already stopping."");
+			return;
+		}
+
+		schedulerState.setIsShuttingDown();
+
+		LOG.info(""Shutting down Scheduler."");
+		if (!ExecutorUtils.shutdownNowAndAwaitTermination(dueExecutor, Duration.ofSeconds(5))) {
+			LOG.warn(""Failed to shutdown due-executor properly."");
+		}
+		if (!ExecutorUtils.shutdownNowAndAwaitTermination(detectDeadExecutor, Duration.ofSeconds(5))) {
+			LOG.warn(""Failed to shutdown detect-dead-executor properly."");
+		}
+		if (!ExecutorUtils.shutdownNowAndAwaitTermination(updateHeartbeatExecutor, Duration.ofSeconds(5))) {
+			LOG.warn(""Failed to shutdown update-heartbeat-executor properly."");
+		}
+
+		LOG.info(""Letting running executions finish. Will wait up to {}."", SHUTDOWN_WAIT);
+		if (ExecutorUtils.shutdownAndAwaitTermination(executorService, SHUTDOWN_WAIT)) {
+			LOG.info(""Scheduler stopped."");
+		} else {
+			LOG.warn(""Scheduler stopped, but some tasks did not complete. Was currently running the following executions:\n{}"",
+					new ArrayList<>(currentlyProcessing.keySet()).stream().map(Execution::toString).collect(Collectors.joining(""\n"")));
+		}
+	}",113-139,0.8106191,0.54016244,0.54016244
+com.github.kagkarlsson.scheduler.Scheduler$RunUntilShutdown,run,()V,9,14,64.3%,"@Override
+		public void run() {
+			final Optional<Task> task = taskResolver.resolve(execution.taskInstance.getTaskName());
+			if (!task.isPresent()) {
+				LOG.error(""Failed to find implementation for task with name '{}'. If there are a high number of executions, this may block other executions and must be fixed."", execution.taskInstance.getTaskName());
+				return;
+			}
+
+			try {
+				LOG.debug(""Executing "" + execution);
+				CompletionHandler completion = task.get().execute(execution.taskInstance, new ExecutionContext(schedulerState, execution, Scheduler.this));
+				LOG.debug(""Execution done"");
+				complete(completion, execution);
+
+			} catch (RuntimeException unhandledException) {
+				LOG.warn(""Unhandled exception during execution. Treating as failure."", unhandledException);
+				failure(task.get().getFailureHandler(), execution, unhandledException);
+
+			} catch (Throwable unhandledError) {
+				LOG.error(""Error during execution. Treating as failure."", unhandledError);
+				failure(task.get().getFailureHandler(), execution, unhandledError);
+			}
+		}",303-325,0.74949825,0.5240437,0.5240437
+com.github.kagkarlsson.scheduler.Scheduler$ExecuteTask,run,()V,8,16,50.0%,"@Override
+		public void run() {
+			final Optional<Task> task = taskResolver.resolve(execution.taskInstance.getTaskName());
+			if (!task.isPresent()) {
+				LOG.error(""Failed to find implementation for task with name '{}'. If there are a high number of executions, this may block other executions and must be fixed."", execution.taskInstance.getTaskName());
+				return;
+			}
+
+			try {
+				LOG.debug(""Executing "" + execution);
+				CompletionHandler completion = task.get().execute(execution.taskInstance, new ExecutionContext(schedulerState, execution, Scheduler.this));
+				LOG.debug(""Execution done"");
+				complete(completion, execution);
+
+			} catch (RuntimeException unhandledException) {
+				LOG.warn(""Unhandled exception during execution. Treating as failure."", unhandledException);
+				failure(task.get().getFailureHandler(), execution, unhandledException);
+
+			} catch (Throwable unhandledError) {
+				LOG.error(""Error during execution. Treating as failure."", unhandledError);
+				failure(task.get().getFailureHandler(), execution, unhandledError);
+			}
+		}",303-325,0.74949825,0.5240437,0.5240437
+com.github.kagkarlsson.scheduler.Scheduler$ExecuteTask,complete,(Lcom/github/kagkarlsson/scheduler/task/CompletionHandler;Lcom/github/kagkarlsson/scheduler/task/Execution;)V,3,7,42.9%,"private void complete(CompletionHandler completion, Execution execution) {
+			try {
+				completion.complete(ExecutionComplete.success(execution, clock.now()), new ExecutionOperations(taskRepository, execution));
+			} catch (Throwable e) {
+				statsRegistry.registerUnexpectedError();
+				LOG.error(""Failed while completing execution {}. Execution will likely remain scheduled and locked/picked. "" +
+						""The execution should be detected as dead in {}, and handled according to the tasks DeadExecutionHandler."", execution, getMaxAgeBeforeConsideredDead(), e);
+			}
+		}",327-335,0.7003026,0.5146282,0.5146282
+com.github.kagkarlsson.scheduler.task.ExecutionComplete,success,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete;,1,1,100.0%,"public static ExecutionComplete success(Execution execution, Instant timeDone) {
+		return new ExecutionComplete(execution, timeDone, Result.OK, null);
+	}",37-39,0.7138474,0.5098468,0.5098468
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,createIfNotExists,(Lcom/github/kagkarlsson/scheduler/task/Execution;)Z,6,13,46.2%,"@Override
+	@SuppressWarnings({""unchecked""})
+	public boolean createIfNotExists(Execution execution) {
+		try {
+			Optional<Execution> existingExecution = getExecution(execution.taskInstance);
+			if (existingExecution.isPresent()) {
+				LOG.debug(""Execution not created, it already exists. Due: {}"", existingExecution.get().executionTime);
+				return false;
+			}
+
+			jdbcRunner.execute(
+					""insert into "" + tableName + ""(task_name, task_instance, task_data, execution_time, picked, version) values(?, ?, ?, ?, ?, ?)"",
+					(PreparedStatement p) -> {
+						p.setString(1, execution.taskInstance.getTaskName());
+						p.setString(2, execution.taskInstance.getId());
+						p.setObject(3, serializer.serialize(execution.taskInstance.getData()));
+						p.setTimestamp(4, Timestamp.from(execution.executionTime));
+						p.setBoolean(5, false);
+						p.setLong(6, 1L);
+					});
+			return true;
+
+		} catch (SQLRuntimeException e) {
+			LOG.debug(""Exception when inserting execution. Assuming it to be a constraint violation."", e);
+			Optional<Execution> existingExecution = getExecution(execution.taskInstance);
+			if (!existingExecution.isPresent()) {
+				throw new RuntimeException(""Failed to add new execution."", e);
+			}
+			LOG.debug(""Execution not created, another thread created it."");
+			return false;
+		}
+	}",68-99,0.77407736,0.5000719,0.5000719
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,pick,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)Ljava/util/Optional;,7,12,58.3%,"@Override
+	@SuppressWarnings({""unchecked""})
+	public Optional<Execution> pick(Execution e, Instant timePicked) {
+		final int updated = jdbcRunner.execute(
+				""update "" + tableName + "" set picked = ?, picked_by = ?, last_heartbeat = ?, version = version + 1 "" +
+						""where picked = ? "" +
+						""and task_name = ? "" +
+						""and task_instance = ? "" +
+						""and version = ?"",
+				ps -> {
+					ps.setBoolean(1, true);
+					ps.setString(2, truncate(schedulerSchedulerName.getName(), 50));
+					ps.setTimestamp(3, Timestamp.from(timePicked));
+					ps.setBoolean(4, false);
+					ps.setString(5, e.taskInstance.getTaskName());
+					ps.setString(6, e.taskInstance.getId());
+					ps.setLong(7, e.version);
+				});
+
+		if (updated == 0) {
+			LOG.trace(""Failed to pick execution. It must have been picked by another scheduler."", e);
+			return Optional.empty();
+		} else if (updated == 1) {
+			final Optional<Execution> pickedExecution = getExecution(e.taskInstance);
+			if (!pickedExecution.isPresent()) {
+				throw new IllegalStateException(""Unable to find picked execution. Must have been deleted by another thread. Indicates a bug."");
+			} else if (!pickedExecution.get().isPicked()) {
+				throw new IllegalStateException(""Picked execution does not have expected state in database: "" + pickedExecution.get());
+			}
+			return pickedExecution;
+		} else {
+			throw new IllegalStateException(""Updated multiple rows when picking single execution. Should never happen since name and id is primary key. Execution: "" + e);
+		}
+	}",206-239,0.6785923,0.4968614,0.4968614
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,remove,(Lcom/github/kagkarlsson/scheduler/task/Execution;)V,3,4,75.0%,"@Override
+	public void remove(Execution execution) {
+
+		final int removed = jdbcRunner.execute(""delete from "" + tableName + "" where task_name = ? and task_instance = ? and version = ?"",
+				ps -> {
+					ps.setString(1, execution.taskInstance.getTaskName());
+					ps.setString(2, execution.taskInstance.getId());
+					ps.setLong(3, execution.version);
+				}
+		);
+
+		if (removed != 1) {
+			throw new RuntimeException(""Expected one execution to be removed, but removed "" + removed + "". Indicates a bug."");
+		}
+	}",141-155,0.65694684,0.4883576,0.4883576
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,updateHeartbeat,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;)V,6,7,85.7%,"@Override
+	public void updateHeartbeat(Execution e, Instant newHeartbeat) {
+
+		final int updated = jdbcRunner.execute(
+				""update "" + tableName + "" set last_heartbeat = ? "" +
+						""where task_name = ? "" +
+						""and task_instance = ? "" +
+						""and version = ?"",
+				ps -> {
+					ps.setTimestamp(1, Timestamp.from(newHeartbeat));
+					ps.setString(2, e.taskInstance.getTaskName());
+					ps.setString(3, e.taskInstance.getId());
+					ps.setLong(4, e.version);
+				});
+
+		if (updated == 0) {
+			LOG.trace(""Did not update heartbeat. Execution must have been removed or rescheduled."", e);
+		} else {
+			if (updated > 1) {
+				throw new IllegalStateException(""Updated multiple rows updating heartbeat for execution. Should never happen since name and id is primary key. Execution: "" + e);
+			}
+			LOG.debug(""Updated heartbeat for execution: "" + e);
+		}
+	}",253-276,0.6580736,0.488343,0.488343
+com.github.kagkarlsson.scheduler.Scheduler,releaseExecutor,(Lcom/github/kagkarlsson/scheduler/task/Execution;)V,3,5,60.0%,"private void releaseExecutor(Execution execution) {
+		executorsSemaphore.release();
+		if (currentlyProcessing.remove(execution) == null) {
+			LOG.error(""Released execution was not found in collection of executions currently being processed. Should never happen."");
+			statsRegistry.registerUnexpectedError();
+		}
+	}",234-240,0.7492658,0.48593605,0.48593605
+com.github.kagkarlsson.scheduler.ExecutorUtils,shutdownAndAwaitTermination,(Ljava/util/concurrent/ExecutorService;Ljava/time/Duration;)Z,2,2,100.0%,"public static boolean shutdownAndAwaitTermination(ExecutorService executorService, Duration timeout) {
+		executorService.shutdown();
+		return awaitTermination(executorService, timeout);
+	}",36-39,0.7480211,0.48414505,0.48414505
+com.github.kagkarlsson.scheduler.ExecutorUtils,awaitTermination,(Ljava/util/concurrent/ExecutorService;Ljava/time/Duration;)Z,1,4,25.0%,"private static boolean awaitTermination(ExecutorService executor, Duration timeout) {
+		try {
+			return executor.awaitTermination(timeout.toMillis(), TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			LOG.warn(""Interrupted while waiting for termination of executor."", e);
+			return false;
+		}
+	}",41-48,0.6787529,0.48332775,0.48332775
+com.github.kagkarlsson.scheduler.Scheduler,detectDeadExecutions,()V,7,8,87.5%,"@SuppressWarnings({""rawtypes"",""unchecked""})
+	protected void detectDeadExecutions() {
+		LOG.debug(""Checking for dead executions."");
+		Instant now = clock.now();
+		final Instant oldAgeLimit = now.minus(getMaxAgeBeforeConsideredDead());
+		List<Execution> oldExecutions = taskRepository.getOldExecutions(oldAgeLimit);
+
+		if (!oldExecutions.isEmpty()) {
+			oldExecutions.forEach(execution -> {
+
+				LOG.info(""Found dead execution. Delegating handling to task. Execution: "" + execution);
+				try {
+
+					Optional<Task> task = taskResolver.resolve(execution.taskInstance.getTaskName());
+					if (task.isPresent()) {
+						task.get().getDeadExecutionHandler().deadExecution(execution, new ExecutionOperations(taskRepository, execution));
+					} else {
+						LOG.error(""Failed to find implementation for task with name '{}' for detected dead execution. Either delete the execution from the databaser, or add an implementation for it."", execution.taskInstance.getTaskName());
+					}
+
+				} catch (Throwable e) {
+					LOG.error(""Failed while handling dead execution {}. Will be tried again later."", execution, e);
+					statsRegistry.registerUnexpectedError();
+				}
+			});
+		} else {
+			LOG.trace(""No dead executions found."");
+		}
+	}",242-270,0.762143,0.47235447,0.47235447
+com.github.kagkarlsson.scheduler.Scheduler,schedule,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;Ljava/time/Instant;)V,2,2,100.0%,"@Override
+	public <T> void schedule(TaskInstance<T> taskInstance, Instant executionTime) {
+		this.delegate.schedule(taskInstance, executionTime);
+	}",141-144,0.7915091,0.46994442,0.46994442
+com.github.kagkarlsson.scheduler.Scheduler,executeDue,()V,16,23,69.6%,"protected void executeDue() {
+		if (executorsSemaphore.availablePermits() <= 0) {
+			return;
+		}
+
+		Instant now = clock.now();
+		List<Execution> dueExecutions = taskRepository.getDue(now);
+
+		int count = 0;
+		LOG.trace(""Found {} taskinstances due for execution"", dueExecutions.size());
+		for (Execution e : dueExecutions) {
+			if (schedulerState.isShuttingDown()) {
+				LOG.info(""Scheduler has been shutdown. Skipping {} due executions."", dueExecutions.size() - count);
+				return;
+			}
+
+			final Optional<Execution> pickedExecution;
+			try {
+				pickedExecution = aquireExecutorAndPickExecution(e);
+			} catch (NoAvailableExecutors ex) {
+				LOG.debug(""No available executors. Skipping {} due executions."", dueExecutions.size() - count);
+				return;
+			}
+
+			if (pickedExecution.isPresent()) {
+				CompletableFuture
+						.runAsync(new ExecuteTask(pickedExecution.get()), executorService)
+						.thenRun(() -> releaseExecutor(pickedExecution.get()));
+			} else {
+				LOG.debug(""Execution picked by another scheduler. Continuing to next due execution."");
+			}
+			count++;
+		}
+	}",178-211,0.78885764,0.46968716,0.46968716
+com.github.kagkarlsson.scheduler.SchedulerClient$StandardSchedulerClient,notifyListeners,(Lcom/github/kagkarlsson/scheduler/ClientEvent$EventType;Lcom/github/kagkarlsson/scheduler/task/TaskInstanceId;Ljava/time/Instant;)V,3,5,60.0%,"private void notifyListeners(ClientEvent.EventType eventType, TaskInstanceId taskInstanceId, Instant executionTime) {
+			try {
+				schedulerClientEventListener.newEvent(new ClientEvent(new ClientEvent.ClientEventContext(eventType, taskInstanceId, executionTime)));
+			} catch (Exception e) {
+				LOG.error(""Error when notifying SchedulerClientEventListener."", e);
+			}
+		}",147-153,0.7517105,0.46798402,0.46798402
+com.github.kagkarlsson.scheduler.task.helper.RecurringTask,execute,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;Lcom/github/kagkarlsson/scheduler/task/ExecutionContext;)Lcom/github/kagkarlsson/scheduler/task/CompletionHandler;,2,2,100.0%,"@Override
+	public CompletionHandler<T> execute(TaskInstance<T> taskInstance, ExecutionContext executionContext) {
+		executeRecurringly(taskInstance, executionContext);
+		return onComplete;
+	}",47-51,0.7906369,0.46017724,0.46017724
+com.github.kagkarlsson.scheduler.ExecutorUtils$PrefixingDefaultThreadFactory,newThread,(Ljava/lang/Runnable;)Ljava/lang/Thread;,3,3,100.0%,"@Override
+		public Thread newThread(Runnable r) {
+			final Thread thread = defaultThreadFactory.newThread(r);
+			thread.setName(prefix + thread.getName());
+			return thread;
+		}",64-69,0.7568649,0.4599405,0.4599405
+com.github.kagkarlsson.scheduler.Scheduler,updateHeartbeats,()V,7,7,100.0%,"void updateHeartbeats() {
+		if (currentlyProcessing.isEmpty()) {
+			LOG.trace(""No executions to update heartbeats for. Skipping."");
+			return;
+		}
+
+		LOG.debug(""Updating heartbeats for {} executions being processed."", currentlyProcessing.size());
+		Instant now = clock.now();
+		new ArrayList<>(currentlyProcessing.keySet()).forEach(execution -> {
+			LOG.trace(""Updating heartbeat for execution: "" + execution);
+			try {
+				taskRepository.updateHeartbeat(execution, now);
+			} catch (Throwable e) {
+				LOG.error(""Failed while updating heartbeat for execution {}. Will try again later."", execution, e);
+				statsRegistry.registerUnexpectedError();
+			}
+		});
+	}",272-289,0.7352272,0.458463,0.458463
+com.github.kagkarlsson.scheduler.Waiter,doWait,()V,11,13,84.6%,"public void doWait() throws InterruptedException {
+		final long millis = duration.toMillis();
+		if (millis > 0) {
+			Instant waitUntil = clock.now().plusMillis(millis);
+
+			while (clock.now().isBefore(waitUntil)) {
+				synchronized (lock) {
+					woken = false;
+					LOG.debug(""Waiter start wait."");
+					lock.wait(millis);
+					if (woken) {
+						LOG.debug(""Waiter woken, it had {}ms left to wait."", (waitUntil.toEpochMilli() - clock.now().toEpochMilli()));
+						break;
+					}
+				}
+			}
+		}
+	}",46-63,0.7938404,0.453931,0.453931
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,reschedule,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;Ljava/time/Instant;Ljava/time/Instant;I)Z,1,1,100.0%,"@Override
+	public boolean reschedule(Execution execution, Instant nextExecutionTime, Instant lastSuccess, Instant lastFailure, int consecutiveFailures) {
+		return rescheduleInternal(execution, nextExecutionTime, null, lastSuccess, lastFailure, consecutiveFailures);
+	}",157-160,0.697797,0.44480407,0.44480407
+com.github.kagkarlsson.scheduler.TaskResolver,resolve,(Ljava/lang/String;)Ljava/util/Optional;,3,4,75.0%,"public Optional<Task> resolve(String taskName) {
+        Task task = taskMap.get(taskName);
+        if (task == null) {
+            LOG.warn(""Found execution with unknown task-name '{}'"", taskName);
+        }
+        return Optional.ofNullable(task);
+    }",43-49,0.6614502,0.44463643,0.44463643
+com.github.kagkarlsson.scheduler.JdbcTaskRepository$ExecutionResultSetConsumer,map,(Ljava/sql/ResultSet;)Ljava/lang/Void;,21,23,91.3%,"@Override
+		public List<Execution> map(ResultSet resultSet) throws SQLException {
+			this.delegate.map(resultSet);
+			return this.executions;
+		}",322-326,0.73455477,0.44456357,0.44456357
+com.github.kagkarlsson.scheduler.JdbcTaskRepository$ExecutionResultSetMapper,map,(Ljava/sql/ResultSet;)Ljava/util/List;,2,2,100.0%,"@Override
+		public List<Execution> map(ResultSet resultSet) throws SQLException {
+			this.delegate.map(resultSet);
+			return this.executions;
+		}",322-326,0.73455477,0.44456357,0.44456357
+com.github.kagkarlsson.scheduler.ExecutorUtils,shutdownNowAndAwaitTermination,(Ljava/util/concurrent/ExecutorService;Ljava/time/Duration;)Z,2,2,100.0%,"public static boolean shutdownNowAndAwaitTermination(ExecutorService executor, Duration timeout) {
+		executor.shutdownNow();
+		return awaitTermination(executor, timeout);
+	}",31-34,0.7420001,0.4409873,0.4409873
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,rescheduleInternal,(Lcom/github/kagkarlsson/scheduler/task/Execution;Ljava/time/Instant;Lcom/github/kagkarlsson/scheduler/JdbcTaskRepository$NewData;Ljava/time/Instant;Ljava/time/Instant;I)Z,3,4,75.0%,"private boolean rescheduleInternal(Execution execution, Instant nextExecutionTime, NewData newData, Instant lastSuccess, Instant lastFailure, int consecutiveFailures) {
+		final int updated = jdbcRunner.execute(
+				""update "" + tableName + "" set "" +
+						""picked = ?, "" +
+						""picked_by = ?, "" +
+						""last_heartbeat = ?, "" +
+						""last_success = ?, "" +
+						""last_failure = ?, "" +
+						""consecutive_failures = ?, "" +
+						""execution_time = ?, "" +
+						(newData != null ? ""task_data = ?, "" : """") +
+						""version = version + 1 "" +
+						""where task_name = ? "" +
+						""and task_instance = ? "" +
+						""and version = ?"",
+				ps -> {
+					int index = 1;
+					ps.setBoolean(index++, false);
+					ps.setString(index++, null);
+					ps.setTimestamp(index++, null);
+					ps.setTimestamp(index++, ofNullable(lastSuccess).map(Timestamp::from).orElse(null));
+					ps.setTimestamp(index++, ofNullable(lastFailure).map(Timestamp::from).orElse(null));
+					ps.setInt(index++, consecutiveFailures);
+					ps.setTimestamp(index++, Timestamp.from(nextExecutionTime));
+					if (newData != null) {
+						// may cause datbase-specific problems, might have to use setNull instead
+						ps.setObject(index++, serializer.serialize(newData.data));
+					}
+					ps.setString(index++, execution.taskInstance.getTaskName());
+					ps.setString(index++, execution.taskInstance.getId());
+					ps.setLong(index++, execution.version);
+				});
+
+		if (updated != 1) {
+			throw new RuntimeException(""Expected one execution to be updated, but updated "" + updated + "". Indicates a bug."");
+		}
+		return updated > 0;
+	}",167-204,0.7225164,0.43477175,0.43477175
+com.github.kagkarlsson.scheduler.task.helper.OneTimeTask,execute,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;Lcom/github/kagkarlsson/scheduler/task/ExecutionContext;)Lcom/github/kagkarlsson/scheduler/task/CompletionHandler;,2,2,100.0%,"@Override
+    public CompletionHandler<T> execute(TaskInstance<T> taskInstance, ExecutionContext executionContext) {
+        executeOnce(taskInstance, executionContext);
+        return new OnCompleteRemove<>();
+    }",35-39,0.66910183,0.43452266,0.43452266
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getOldExecutions,(Ljava/time/Instant;)Ljava/util/List;,1,1,100.0%,"@Override
+	public List<Execution> getOldExecutions(Instant olderThan) {
+		return jdbcRunner.query(
+				""select * from "" + tableName + "" where picked = ? and last_heartbeat <= ? order by last_heartbeat asc"",
+				(PreparedStatement p) -> {
+					p.setBoolean(1, true);
+					p.setTimestamp(2, Timestamp.from(olderThan));
+				},
+				new ExecutionResultSetMapper()
+		);
+	}",241-251,0.7277961,0.4197991,0.4197991
+com.github.kagkarlsson.scheduler.Scheduler,aquireExecutorAndPickExecution,(Lcom/github/kagkarlsson/scheduler/task/Execution;)Ljava/util/Optional;,5,10,50.0%,"private Optional<Execution> aquireExecutorAndPickExecution(Execution execution) {
+		if (executorsSemaphore.tryAcquire()) {
+			try {
+				final Optional<Execution> pickedExecution = taskRepository.pick(execution, clock.now());
+
+				if (!pickedExecution.isPresent()) {
+					executorsSemaphore.release();
+				} else {
+					currentlyProcessing.put(pickedExecution.get(), new CurrentlyExecuting(pickedExecution.get(), clock));
+				}
+				return pickedExecution;
+
+			} catch (Throwable t) {
+				executorsSemaphore.release();
+				throw t;
+			}
+		} else {
+			throw new NoAvailableExecutors();
+		}
+	}",213-232,0.80841106,0.41794255,0.41794255
+com.github.kagkarlsson.scheduler.task.TaskInstance,hashCode,()I,3,3,100.0%,"@Override
+    public int hashCode() {
+        int result = taskName.hashCode();
+        result = 31 * result + id.hashCode();
+        return result;
+    }",68-73,0.47464663,0.4175382,0.4175382
+com.github.kagkarlsson.scheduler.task.Execution,toString,()Ljava/lang/String;,3,3,100.0%,"@Override
+	public String toString() {
+		return ""Execution: "" +
+				""task="" + taskInstance.getTaskName() +
+				"", id="" + taskInstance.getId() +
+				"", executionTime="" + executionTime +
+				"", picked="" + picked +
+				"", pickedBy="" + pickedBy +
+				"", lastHeartbeat="" + lastHeartbeat +
+				"", version="" + version;
+	}",74-84,0.714221,0.40999964,0.40999964
+com.github.kagkarlsson.scheduler.task.Task,instance,(Ljava/lang/String;)Lcom/github/kagkarlsson/scheduler/task/TaskInstance;,1,1,100.0%,"public TaskInstance<T> instance(String id) {
+		return new TaskInstance<>(this.name, id);
+	}",39-41,0.67931426,0.40763313,0.40763313
+com.github.kagkarlsson.scheduler.task.ExecutionOperations,stop,()V,2,2,100.0%,"public void stop() {
+		taskRepository.remove(execution);
+	}",32-34,0.79178226,0.40693617,0.40693617
+com.github.kagkarlsson.scheduler.task.Execution,hashCode,()I,1,1,100.0%,"@Override
+	public int hashCode() {
+		return Objects.hash(executionTime, taskInstance);
+	}",68-71,0.74706626,0.40408975,0.40408975
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,memoize,(Ljava/util/function/Supplier;)Ljava/util/function/Supplier;,1,1,100.0%,"private static <T> Supplier<T> memoize(Supplier<T> original) {
+        return new Supplier<T>() {
+            Supplier<T> delegate = this::firstTime;
+            boolean initialized;
+            public T get() {
+                return delegate.get();
+            }
+            private synchronized T firstTime() {
+                if(!initialized) {
+                    T value = original.get();
+                    delegate = () -> value;
+                    initialized = true;
+                }
+                return delegate.get();
+            }
+        };
+    }",374-390,0.56845605,0.3997457,0.3997457
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getDue,(Ljava/time/Instant;I)Ljava/util/List;,1,1,100.0%,"@Override
+	public List<Execution> getDue(Instant now) {
+		return getDue(now, MAX_RESULTS);
+	}",101-104,0.7189244,0.39412218,0.39412218
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getDue,(Ljava/time/Instant;)Ljava/util/List;,1,1,100.0%,"@Override
+	public List<Execution> getDue(Instant now) {
+		return getDue(now, MAX_RESULTS);
+	}",101-104,0.7189244,0.39412218,0.39412218
+com.github.kagkarlsson.scheduler.task.CompletionHandler$OnCompleteReschedule,complete,(Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete;Lcom/github/kagkarlsson/scheduler/task/ExecutionOperations;)V,4,4,100.0%,"void complete(ExecutionComplete executionComplete, ExecutionOperations<T> executionOperations);",26-26,0.5749923,0.37962815,0.37962815
+com.github.kagkarlsson.scheduler.task.CompletionHandler$OnCompleteRemove,complete,(Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete;Lcom/github/kagkarlsson/scheduler/task/ExecutionOperations;)V,2,2,100.0%,"void complete(ExecutionComplete executionComplete, ExecutionOperations<T> executionOperations);",26-26,0.5749923,0.37962815,0.37962815
+com.github.kagkarlsson.scheduler.SchedulerState$SettableSchedulerState,setIsShuttingDown,()V,2,2,100.0%,"public void setIsShuttingDown() {
+			this.isShuttingDown = true;
+		}",39-41,0.7308893,0.37890607,0.37890607
+com.github.kagkarlsson.scheduler.task.schedule.FixedDelay,getNextExecutionTime,(Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete;)Ljava/time/Instant;,1,1,100.0%,"@Override
+	public Instant getNextExecutionTime(ExecutionComplete executionComplete) {
+		return executionComplete.getTimeDone().plus(duration);
+	}",56-59,0.7829288,0.37325528,0.37325528
+com.github.kagkarlsson.scheduler.SchedulerClient$StandardSchedulerClient,schedule,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;Ljava/time/Instant;)V,4,4,100.0%,"<T> void schedule(TaskInstance<T> taskInstance, Instant executionTime);",35-35,0.5564635,0.3596816,0.3596816
+com.github.kagkarlsson.scheduler.SchedulerState$SettableSchedulerState,setStarted,()V,2,2,100.0%,"public void setStarted() {
+			this.isStarted = true;
+		}",43-45,0.6865877,0.3575368,0.3575368
+com.github.kagkarlsson.scheduler.StringUtils,truncate,(Ljava/lang/String;I)Ljava/lang/String;,3,5,60.0%,"public static String truncate(String s, int length) {
+        if (s == null) {
+            return null;
+        }
+
+        if (s.length() > length) {
+            return s.substring(0, length);
+        } else {
+            return s;
+        }
+    }",20-30,0.35480213,0.34824222,0.34824222
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Lcom/github/kagkarlsson/scheduler/task/TaskInstance;)Ljava/util/Optional;,1,1,100.0%,"public Optional<Execution> getExecution(TaskInstance taskInstance) {
+		return getExecution(taskInstance.getTaskName(), taskInstance.getId());
+	}",291-293,0.7082608,0.34150067,0.34150067
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getExecution,(Ljava/lang/String;Ljava/lang/String;)Ljava/util/Optional;,3,4,75.0%,"public Optional<Execution> getExecution(TaskInstance taskInstance) {
+		return getExecution(taskInstance.getTaskName(), taskInstance.getId());
+	}",291-293,0.7082608,0.34150067,0.34150067
+com.github.kagkarlsson.scheduler.task.TaskInstance,getData,()Ljava/lang/Object;,1,1,100.0%,"public T getData() {
+        return dataSupplier.get();
+    }",53-55,0.5932088,0.33758855,0.33758855
+com.github.kagkarlsson.scheduler.task.ExecutionComplete,getTimeDone,()Ljava/time/Instant;,1,1,100.0%,"public Instant getTimeDone() {
+		return timeDone;
+	}",49-51,0.6977996,0.33280337,0.33280337
+com.github.kagkarlsson.scheduler.SystemClock,now,()Ljava/time/Instant;,1,1,100.0%,"@Override
+	public Instant now() {
+		return Instant.now();
+	}",22-25,0.5880278,0.32277313,0.32277313
+com.github.kagkarlsson.scheduler.task.ExecutionComplete,getExecution,()Lcom/github/kagkarlsson/scheduler/task/Execution;,1,1,100.0%,"public Execution getExecution() {
+		return execution;
+	}",45-47,0.6626566,0.32111615,0.32111615
+com.github.kagkarlsson.scheduler.Scheduler,getMaxAgeBeforeConsideredDead,()Ljava/time/Duration;,1,1,100.0%,"private Duration getMaxAgeBeforeConsideredDead() {
+		return heartbeatInterval.multipliedBy(4);
+	}",291-293,0.74474615,0.3082475,0.3082475
+com.github.kagkarlsson.scheduler.task.ExecutionComplete,getResult,()Lcom/github/kagkarlsson/scheduler/task/ExecutionComplete$Result;,1,1,100.0%,"public Result getResult() {
+		return result;
+	}",53-55,0.60114896,0.29905874,0.29905874
+com.github.kagkarlsson.scheduler.task.TaskInstance,getTaskName,()Ljava/lang/String;,1,1,100.0%,"public String getTaskName() {
+        return taskName;
+    }",44-46,0.53876716,0.27472362,0.27472362
+com.github.kagkarlsson.scheduler.SchedulerClientEventListener$1,newEvent,(Lcom/github/kagkarlsson/scheduler/ClientEvent;)V,1,1,100.0%,void newEvent(ClientEvent event);,20-20,0.5223639,0.25980097,0.25980097
+com.github.kagkarlsson.scheduler.task.TaskInstance,getId,()Ljava/lang/String;,1,1,100.0%,"@Override
+    public String getId() {
+        return id;
+    }",48-51,0.3403734,0.25119415,0.25119415
+com.github.kagkarlsson.scheduler.Serializer$1,serialize,(Ljava/lang/Object;)[B,2,8,25.0%,byte[] serialize(Object data);,22-22,0.37225747,0.22626278,0.22626278
+com.github.kagkarlsson.scheduler.task.Execution,isPicked,()Z,1,1,100.0%,"public boolean isPicked() {
+		return picked;
+	}",54-56,0.53240716,0.22019145,0.22019145
+com.github.kagkarlsson.scheduler.SchedulerName$Hostname,getName,()Ljava/lang/String;,1,1,100.0%,String getName();,26-26,0.43523043,0.21669438,0.21669438
+com.github.kagkarlsson.scheduler.SchedulerState$SettableSchedulerState,isShuttingDown,()Z,1,1,100.0%,boolean isShuttingDown();,20-20,0.5339681,0.19800326,0.19800326

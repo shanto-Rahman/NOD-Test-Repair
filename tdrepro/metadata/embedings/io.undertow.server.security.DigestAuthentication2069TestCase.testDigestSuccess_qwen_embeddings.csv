@@ -1,0 +1,2479 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+io.undertow.security.impl.DigestAuthenticationMechanism,handleDigestHeader,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$AuthenticationMechanismOutcome;,25,59,42.4%,"public AuthenticationMechanismOutcome handleDigestHeader(HttpServerExchange exchange, final SecurityContext securityContext) {
+        DigestContext context = exchange.getAttachment(DigestContext.ATTACHMENT_KEY);
+        Map<DigestAuthorizationToken, String> parsedHeader = context.getParsedHeader();
+        // Step 1 - Verify the set of tokens received to ensure valid values.
+        Set<DigestAuthorizationToken> mandatoryTokens = new HashSet<DigestAuthorizationToken>(MANDATORY_REQUEST_TOKENS);
+        if (supportedAlgorithms.contains(DigestAlgorithm.MD5) == false) {
+            // If we don't support MD5 then the client must choose an algorithm as we can not fall back to MD5.
+            mandatoryTokens.add(DigestAuthorizationToken.ALGORITHM);
+        }
+        if (supportedQops.isEmpty() == false && supportedQops.contains(DigestQop.AUTH) == false) {
+            // If we do not support auth then we are mandating auth-int so force the client to send a QOP
+            mandatoryTokens.add(DigestAuthorizationToken.MESSAGE_QOP);
+        }
+
+        DigestQop qop = null;
+        // This check is early as is increases the list of mandatory tokens.
+        if (parsedHeader.containsKey(DigestAuthorizationToken.MESSAGE_QOP)) {
+            qop = DigestQop.forName(parsedHeader.get(DigestAuthorizationToken.MESSAGE_QOP));
+            if (qop == null || supportedQops.contains(qop) == false) {
+                // We are also ensuring the client is not trying to force a qop that has been disabled.
+                REQUEST_LOGGER.invalidTokenReceived(DigestAuthorizationToken.MESSAGE_QOP.getName(),
+                        parsedHeader.get(DigestAuthorizationToken.MESSAGE_QOP));
+                // TODO - This actually needs to result in a HTTP 400 Bad Request response and not a new challenge.
+                return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+            }
+            context.setQop(qop);
+            mandatoryTokens.add(DigestAuthorizationToken.CNONCE);
+            mandatoryTokens.add(DigestAuthorizationToken.NONCE_COUNT);
+        }
+
+        // Check all mandatory tokens are present.
+        mandatoryTokens.removeAll(parsedHeader.keySet());
+        if (mandatoryTokens.size() > 0) {
+            for (DigestAuthorizationToken currentToken : mandatoryTokens) {
+                // TODO - Need a better check and possible concatenate the list of tokens - however
+                // even having one missing token is not something we should routinely expect.
+                REQUEST_LOGGER.missingAuthorizationToken(currentToken.getName());
+            }
+            // TODO - This actually needs to result in a HTTP 400 Bad Request response and not a new challenge.
+            return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+        }
+
+        // Perform some validation of the remaining tokens.
+        if (realmName.equals(parsedHeader.get(DigestAuthorizationToken.REALM)) == false) {
+            REQUEST_LOGGER.invalidTokenReceived(DigestAuthorizationToken.REALM.getName(),
+                    parsedHeader.get(DigestAuthorizationToken.REALM));
+            // TODO - This actually needs to result in a HTTP 400 Bad Request response and not a new challenge.
+            return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+        }
+
+        // TODO - Validate the URI
+
+        if (parsedHeader.containsKey(DigestAuthorizationToken.OPAQUE)) {
+            if (OPAQUE_VALUE.equals(parsedHeader.get(DigestAuthorizationToken.OPAQUE)) == false) {
+                REQUEST_LOGGER.invalidTokenReceived(DigestAuthorizationToken.OPAQUE.getName(),
+                        parsedHeader.get(DigestAuthorizationToken.OPAQUE));
+                return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+            }
+        }
+
+        DigestAlgorithm algorithm;
+        if (parsedHeader.containsKey(DigestAuthorizationToken.ALGORITHM)) {
+            algorithm = DigestAlgorithm.forName(parsedHeader.get(DigestAuthorizationToken.ALGORITHM));
+            if (algorithm == null || supportedAlgorithms.contains(algorithm) == false) {
+                // We are also ensuring the client is not trying to force an algorithm that has been disabled.
+                REQUEST_LOGGER.invalidTokenReceived(DigestAuthorizationToken.ALGORITHM.getName(),
+                        parsedHeader.get(DigestAuthorizationToken.ALGORITHM));
+                // TODO - This actually needs to result in a HTTP 400 Bad Request response and not a new challenge.
+                return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+            }
+        } else {
+            // We know this is safe as the algorithm token was made mandatory
+            // if MD5 is not supported.
+            algorithm = DigestAlgorithm.MD5;
+        }
+
+        try {
+            context.setAlgorithm(algorithm);
+        } catch (NoSuchAlgorithmException e) {
+            /*
+             * This should not be possible in a properly configured installation.
+             */
+            REQUEST_LOGGER.exceptionProcessingRequest(e);
+            return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+        }
+
+        final String userName = parsedHeader.get(DigestAuthorizationToken.USERNAME);
+        final IdentityManager identityManager = securityContext.getIdentityManager();
+        final Account account;
+
+        if (algorithm.isSession()) {
+            /* This can follow one of the following: -
+             *   1 - New session so use DigestCredentialImpl with the IdentityManager to
+             *       create a new session key.
+             *   2 - Obtain the existing session key from the session store and validate it, just use
+             *       IdentityManager to validate account is still active and the current role assignment.
+             */
+            throw new IllegalStateException(""Not yet implemented."");
+        } else {
+            final DigestCredential credential = new DigestCredentialImpl(context);
+            account = identityManager.verify(userName, credential);
+        }
+
+        if (account == null) {
+            // Authentication has failed, this could either be caused by the user not-existing or it
+            // could be caused due to an invalid hash.
+            securityContext.authenticationFailed(MESSAGES.authenticationFailed(userName), mechanismName);
+            return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+        }
+
+        // Step 3 - Verify that the nonce was eligible to be used.
+        if (validateNonceUse(context, parsedHeader, exchange) == false) {
+            // TODO - This is the right place to make use of the decision but the check needs to be much much sooner
+            // otherwise a failure server
+            // side could leave a packet that could be 're-played' after the failed auth.
+            // The username and password verification passed but for some reason we do not like the nonce.
+            context.markStale();
+            // We do not mark as a failure on the security context as this is not quite a failure, a client with a cached nonce
+            // can easily hit this point.
+            return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+        }
+
+        // We have authenticated the remote user.
+
+        sendAuthenticationInfoHeader(exchange);
+        securityContext.authenticationComplete(account, mechanismName, false);
+        return AuthenticationMechanismOutcome.AUTHENTICATED;
+
+        // Step 4 - Set up any QOP related requirements.
+
+        // TODO - Do QOP
+    }",161-292,0.7536705,0.597445,0.597445
+io.undertow.security.impl.DigestAuthenticationMechanism,sendChallenge,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$ChallengeResult;,18,21,85.7%,"@Override
+    public ChallengeResult sendChallenge(final HttpServerExchange exchange, final SecurityContext securityContext) {
+        DigestContext context = exchange.getAttachment(DigestContext.ATTACHMENT_KEY);
+        boolean stale = context == null ? false : context.isStale();
+
+        StringBuilder rb = new StringBuilder(DIGEST_PREFIX);
+        rb.append(Headers.REALM.toString()).append(""=\"""").append(realmName).append(""\"","");
+        rb.append(Headers.DOMAIN.toString()).append(""=\"""").append(domain).append(""\"","");
+        // based on security constraints.
+        rb.append(Headers.NONCE.toString()).append(""=\"""").append(nonceManager.nextNonce(null, exchange)).append(""\"","");
+        // Not currently using OPAQUE as it offers no integrity, used for session data leaves it vulnerable to
+        // session fixation type issues as well.
+        rb.append(Headers.OPAQUE.toString()).append(""=\""00000000000000000000000000000000\"""");
+        if (stale) {
+            rb.append("",stale=true"");
+        }
+        if (supportedAlgorithms.size() > 0) {
+            // This header will need to be repeated once for each algorithm.
+            rb.append("","").append(Headers.ALGORITHM.toString()).append(""=%s"");
+        }
+        if (qopString != null) {
+            rb.append("","").append(Headers.QOP.toString()).append(""=\"""").append(qopString).append(""\"""");
+        }
+
+        String theChallenge = rb.toString();
+        HeaderMap responseHeader = exchange.getResponseHeaders();
+        if (supportedAlgorithms.size() > 0) {
+            for (DigestAlgorithm current : supportedAlgorithms) {
+                responseHeader.add(WWW_AUTHENTICATE, String.format(theChallenge, current.getToken()));
+            }
+        } else {
+            responseHeader.add(WWW_AUTHENTICATE, theChallenge);
+        }
+
+        return new ChallengeResult(true, UNAUTHORIZED);
+    }",398-433,0.92423975,0.5933896,0.5933896
+io.undertow.server.protocol.http.HttpResponseConduit,processWrite,(ILjava/nio/ByteBuffer;)I,48,78,61.5%,"private int processWrite(int state, final ByteBuffer userData) throws IOException {
+        assert state != STATE_BODY;
+        if (state == STATE_BUF_FLUSH) {
+            final ByteBuffer byteBuffer = pooledBuffer.getResource();
+            do {
+                long res = 0;
+                ByteBuffer[] data;
+                if (userData == null) {
+                    data = new ByteBuffer[]{byteBuffer};
+                } else {
+                    data = new ByteBuffer[]{byteBuffer, userData};
+                }
+                res = next.write(data, 0, data.length);
+                if (res == 0) {
+                    return STATE_BUF_FLUSH;
+                }
+            } while (byteBuffer.hasRemaining());
+            pooledBuffer.free();
+            return STATE_BODY;
+        } else if (state != STATE_START) {
+            return processStatefulWrite(state, userData);
+        }
+
+        //merge the cookies into the header map
+        Connectors.flattenCookies(exchange);
+
+        pooledBuffer = pool.allocate();
+        ByteBuffer buffer = pooledBuffer.getResource();
+
+
+        assert buffer.remaining() >= 0x100;
+        exchange.getProtocol().appendTo(buffer);
+        buffer.put((byte) ' ');
+        int code = exchange.getResponseCode();
+        assert 999 >= code && code >= 100;
+        buffer.put((byte) (code / 100 + '0'));
+        buffer.put((byte) (code / 10 % 10 + '0'));
+        buffer.put((byte) (code % 10 + '0'));
+        buffer.put((byte) ' ');
+        String string = StatusCodes.getReason(code);
+        writeString(buffer, string);
+        buffer.put((byte) '\r').put((byte) '\n');
+
+        int remaining = buffer.remaining();
+
+
+        HeaderMap headers = exchange.getResponseHeaders();
+        long fiCookie = headers.fastIterateNonEmpty();
+        while (fiCookie != -1) {
+            HeaderValues headerValues = headers.fiCurrent(fiCookie);
+
+            HttpString header = headerValues.getHeaderName();
+            int headerSize = header.length();
+            int valueIdx = 0;
+            while (valueIdx < headerValues.size()) {
+                remaining -= (headerSize + 2);
+
+                if (remaining < 0) {
+                    this.fiCookie = fiCookie;
+                    this.string = string;
+                    this.headerValues = headerValues;
+                    this.valueIdx = valueIdx;
+                    this.charIndex = 0;
+                    this.state = STATE_HDR_NAME;
+                    buffer.flip();
+                    return processStatefulWrite(STATE_HDR_NAME, userData);
+                }
+                header.appendTo(buffer);
+                buffer.put((byte) ':').put((byte) ' ');
+                string = headerValues.get(valueIdx++);
+
+                remaining -= (string.length() + 2);
+                if (remaining < 2) {//we use 2 here, to make sure we always have room for the final \r\n
+                    this.fiCookie = fiCookie;
+                    this.string = string;
+                    this.headerValues = headerValues;
+                    this.valueIdx = valueIdx;
+                    this.charIndex = 0;
+                    this.state = STATE_HDR_VAL;
+                    buffer.flip();
+                    return processStatefulWrite(STATE_HDR_VAL, userData);
+                }
+                writeString(buffer, string);
+                buffer.put((byte) '\r').put((byte) '\n');
+            }
+            fiCookie = headers.fiNextNonEmpty(fiCookie);
+        }
+        buffer.put((byte) '\r').put((byte) '\n');
+        buffer.flip();
+        do {
+            long res = 0;
+            ByteBuffer[] data;
+            if (userData == null) {
+                data = new ByteBuffer[]{buffer};
+            } else {
+                data = new ByteBuffer[]{buffer, userData};
+            }
+            res = next.write(data, 0, data.length);
+            if (res == 0) {
+                return STATE_BUF_FLUSH;
+            }
+        } while (buffer.hasRemaining());
+        pooledBuffer.free();
+        return STATE_BODY;
+    }",96-200,0.7645183,0.5809902,0.5809902
+io.undertow.server.HttpServerExchange,endExchange,()V,14,43,32.6%,"public void endExchange() {
+        final int state = this.state;
+        if (allAreSet(state, FLAG_REQUEST_TERMINATED | FLAG_RESPONSE_TERMINATED)) {
+            return;
+        }
+        int i = defaultResponseListeners.length - 1;
+        while (i >= 0) {
+            DefaultResponseListener listener = defaultResponseListeners[i];
+            if (listener != null) {
+                defaultResponseListeners[i] = null;
+                try {
+                    if (listener.handleDefaultResponse(this)) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    UndertowLogger.REQUEST_LOGGER.debug(""Exception running default response listener"", e);
+                }
+            }
+            i--;
+        }
+
+        if (blockingHttpExchange != null) {
+            try {
+                //TODO: can we end up in this situation in a IO thread?
+                blockingHttpExchange.close();
+            } catch (IOException e) {
+                UndertowLogger.REQUEST_IO_LOGGER.ioException(e);
+                IoUtils.safeClose(connection);
+            }
+        }
+
+        //417 means that we are rejecting the request
+        //so the client should not actually send any data
+        //TODO: how
+        if (anyAreClear(state, FLAG_REQUEST_TERMINATED)) {
+
+            //not really sure what the best thing to do here is
+            //for now we are just going to drain the channel
+            if (requestChannel == null) {
+                getRequestChannel();
+            }
+            int totalRead = 0;
+            for (; ; ) {
+                try {
+                    long read = Channels.drain(requestChannel, Long.MAX_VALUE);
+                    totalRead += read;
+                    if (read == 0) {
+                        //if the response code is 417 this is a rejected continuation request.
+                        //however there is a chance the client could have sent the data anyway
+                        //so we attempt to drain, and if we have not drained anything then we
+                        //assume the server has not sent any data
+
+                        if (getResponseCode() != 417 || totalRead > 0) {
+                            requestChannel.getReadSetter().set(ChannelListeners.drainListener(Long.MAX_VALUE,
+                                    new ChannelListener<StreamSourceChannel>() {
+                                        @Override
+                                        public void handleEvent(final StreamSourceChannel channel) {
+                                            if (anyAreClear(state, FLAG_RESPONSE_TERMINATED)) {
+                                                closeAndFlushResponse();
+                                            }
+                                        }
+                                    }, new ChannelExceptionHandler<StreamSourceChannel>() {
+                                        @Override
+                                        public void handleException(final StreamSourceChannel channel, final IOException e) {
+                                            UndertowLogger.REQUEST_LOGGER.debug(""Exception draining request stream"", e);
+                                            IoUtils.safeClose(connection);
+                                        }
+                                    }
+                            ));
+                            requestChannel.resumeReads();
+                            return;
+                        } else {
+                            break;
+                        }
+                    } else if (read == -1) {
+                        break;
+                    }
+                } catch (IOException e) {
+                    UndertowLogger.REQUEST_IO_LOGGER.ioException(e);
+                    IoUtils.safeClose(connection);
+                    break;
+                }
+
+            }
+        }
+        if (anyAreClear(state, FLAG_RESPONSE_TERMINATED)) {
+            closeAndFlushResponse();
+        }
+    }",1238-1326,0.6848835,0.57402706,0.57402706
+io.undertow.server.HttpServerExchange$1,run,()V,2,2,100.0%,"@Override
+            public void run() {
+                Connectors.executeRootHandler(handler, HttpServerExchange.this);
+            }",636-639,0.7711304,0.5707507,0.5707507
+io.undertow.server.HttpServerExchange,setResponseCode,(I)V,5,7,71.4%,"public void setResponseCode(final int responseCode) {
+        if (responseCode < 0 || responseCode > 999) {
+            throw new IllegalArgumentException(""Invalid response code"");
+        }
+        int oldVal = state;
+        if (allAreSet(oldVal, FLAG_RESPONSE_SENT)) {
+            throw UndertowMessages.MESSAGES.responseAlreadyStarted();
+        }
+        this.state = oldVal & ~MASK_RESPONSE_CODE | responseCode & MASK_RESPONSE_CODE;
+    }",1096-1105,0.82995677,0.5683795,0.5683795
+io.undertow.server.HttpServerExchange,startResponse,()V,5,6,83.3%,"void startResponse() throws IllegalStateException {
+        int oldVal = state;
+        if (allAreSet(oldVal, FLAG_RESPONSE_SENT)) {
+            throw UndertowMessages.MESSAGES.responseAlreadyStarted();
+        }
+        this.state = oldVal | FLAG_RESPONSE_SENT;
+
+        log.tracef(""Starting to write response for %s"", this);
+    }",1378-1386,0.79183793,0.5667676,0.5667676
+io.undertow.server.HttpServerExchange,setPersistent,(Z)V,3,4,75.0%,"public void setPersistent(final boolean persistent) {
+        if (persistent) {
+            this.state = this.state | FLAG_PERSISTENT;
+        } else {
+            this.state = this.state & ~FLAG_PERSISTENT;
+        }
+    }",563-569,0.7381387,0.5654965,0.5654965
+io.undertow.security.impl.SecurityContextImpl$AuthAttempter,transition,()Lio/undertow/security/impl/SecurityContextImpl$AuthenticationState;,8,12,66.7%,"private AuthenticationState transition() {
+            if (mechanismIterator.hasNext()) {
+                final AuthenticationMechanism mechanism = mechanismIterator.next();
+                AuthenticationMechanismOutcome outcome = mechanism.authenticate(exchange, SecurityContextImpl.this);
+
+                if (outcome == null) {
+                    throw UndertowMessages.MESSAGES.authMechanismOutcomeNull();
+                }
+
+                switch (outcome) {
+                    case AUTHENTICATED:
+                        // TODO - Should verify that the mechanism did register an authenticated Account.
+                        return AuthenticationState.AUTHENTICATED;
+                    case NOT_AUTHENTICATED:
+                        // A mechanism attempted to authenticate but could not complete, this now means that
+                        // authentication is required and challenges need to be sent.
+                        setAuthenticationRequired();
+                        return AuthenticationState.ATTEMPTED;
+                    case NOT_ATTEMPTED:
+                        // Time to try the next mechanism.
+                        return transition();
+                    default:
+                        throw new IllegalStateException();
+                }
+
+            } else {
+                // Reached the end of the mechanisms and no mechanism authenticated for us to reach this point.
+                return AuthenticationState.ATTEMPTED;
+            }
+        }",279-308,0.6874236,0.564576,0.564576
+io.undertow.security.impl.SecurityContextImpl$ChallengeSender,transition,()Lio/undertow/security/impl/SecurityContextImpl$AuthenticationState;,13,17,76.5%,"private AuthenticationState transition() {
+            if (mechanismIterator.hasNext()) {
+                final AuthenticationMechanism mechanism = mechanismIterator.next();
+                AuthenticationMechanismOutcome outcome = mechanism.authenticate(exchange, SecurityContextImpl.this);
+
+                if (outcome == null) {
+                    throw UndertowMessages.MESSAGES.authMechanismOutcomeNull();
+                }
+
+                switch (outcome) {
+                    case AUTHENTICATED:
+                        // TODO - Should verify that the mechanism did register an authenticated Account.
+                        return AuthenticationState.AUTHENTICATED;
+                    case NOT_AUTHENTICATED:
+                        // A mechanism attempted to authenticate but could not complete, this now means that
+                        // authentication is required and challenges need to be sent.
+                        setAuthenticationRequired();
+                        return AuthenticationState.ATTEMPTED;
+                    case NOT_ATTEMPTED:
+                        // Time to try the next mechanism.
+                        return transition();
+                    default:
+                        throw new IllegalStateException();
+                }
+
+            } else {
+                // Reached the end of the mechanisms and no mechanism authenticated for us to reach this point.
+                return AuthenticationState.ATTEMPTED;
+            }
+        }",279-308,0.6874236,0.564576,0.564576
+io.undertow.security.impl.DigestAuthenticationMechanism,authenticate,(Lio/undertow/server/HttpServerExchange;Lio/undertow/security/api/SecurityContext;)Lio/undertow/security/api/AuthenticationMechanism$AuthenticationMechanismOutcome;,12,15,80.0%,"public AuthenticationMechanismOutcome authenticate(final HttpServerExchange exchange,
+                                                       final SecurityContext securityContext) {
+        List<String> authHeaders = exchange.getRequestHeaders().get(AUTHORIZATION);
+        if (authHeaders != null) {
+            for (String current : authHeaders) {
+                if (current.startsWith(DIGEST_PREFIX)) {
+                    String digestChallenge = current.substring(PREFIX_LENGTH);
+
+                    try {
+                        DigestContext context = new DigestContext();
+                        Map<DigestAuthorizationToken, String> parsedHeader = parseHeader(digestChallenge);
+                        context.setMethod(exchange.getRequestMethod().toString());
+                        context.setParsedHeader(parsedHeader);
+                        // Some form of Digest authentication is going to occur so get the DigestContext set on the exchange.
+                        exchange.putAttachment(DigestContext.ATTACHMENT_KEY, context);
+
+                        return handleDigestHeader(exchange, securityContext);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // By this point we had a header we should have been able to verify but for some reason
+                // it was not correctly structured.
+                return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+            }
+        }
+
+        // No suitable header has been found in this request,
+        return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+    }",129-159,0.82652164,0.56452215,0.56452215
+io.undertow.server.protocol.http.HttpRequestParser,handleHeaderValue,(Ljava/nio/ByteBuffer;Lio/undertow/server/protocol/http/ParseState;Lio/undertow/server/HttpServerExchange;)V,46,59,78.0%,"@SuppressWarnings(""unused"")
+    final void handleHeaderValue(ByteBuffer buffer, ParseState state, HttpServerExchange builder) {
+        StringBuilder stringBuilder = state.stringBuilder;
+        if (stringBuilder == null) {
+            stringBuilder = new StringBuilder();
+            state.parseState = 0;
+
+            if (state.mapCount++ > maxHeaders) {
+                throw UndertowMessages.MESSAGES.tooManyHeaders(maxHeaders);
+            }
+        }
+
+
+        int parseState = state.parseState;
+        while (buffer.hasRemaining() && parseState == NORMAL) {
+            final byte next = buffer.get();
+            if (next == '\r') {
+                parseState = BEGIN_LINE_END;
+            } else if (next == '\n') {
+                parseState = LINE_END;
+            } else if (next == ' ' || next == '\t') {
+                parseState = WHITESPACE;
+            } else {
+                stringBuilder.append((char) next);
+            }
+        }
+
+        while (buffer.hasRemaining()) {
+            final byte next = buffer.get();
+            switch (parseState) {
+                case NORMAL: {
+                    if (next == '\r') {
+                        parseState = BEGIN_LINE_END;
+                    } else if (next == '\n') {
+                        parseState = LINE_END;
+                    } else if (next == ' ' || next == '\t') {
+                        parseState = WHITESPACE;
+                    } else {
+                        stringBuilder.append((char) next);
+                    }
+                    break;
+                }
+                case WHITESPACE: {
+                    if (next == '\r') {
+                        parseState = BEGIN_LINE_END;
+                    } else if (next == '\n') {
+                        parseState = LINE_END;
+                    } else if (next == ' ' || next == '\t') {
+                    } else {
+                        if (stringBuilder.length() > 0) {
+                            stringBuilder.append(' ');
+                        }
+                        stringBuilder.append((char) next);
+                        parseState = NORMAL;
+                    }
+                    break;
+                }
+                case LINE_END:
+                case BEGIN_LINE_END: {
+                    if (next == '\n' && parseState == BEGIN_LINE_END) {
+                        parseState = LINE_END;
+                    } else if (next == '\t' ||
+                            next == ' ') {
+                        //this is a continuation
+                        parseState = WHITESPACE;
+                    } else {
+                        //we have a header
+                        HttpString nextStandardHeader = state.nextHeader;
+                        String headerValue = stringBuilder.toString();
+
+                        //TODO: we need to decode this according to RFC-2047 if we have seen a =? symbol
+                        builder.getRequestHeaders().add(nextStandardHeader, headerValue);
+
+                        state.nextHeader = null;
+
+                        state.leftOver = next;
+                        state.stringBuilder.setLength(0);
+                        if (next == '\r') {
+                            parseState = AWAIT_DATA_END;
+                        } else {
+                            state.state = ParseState.HEADER;
+                            state.parseState = 0;
+                            return;
+                        }
+                    }
+                    break;
+                }
+                case AWAIT_DATA_END: {
+                    state.state = ParseState.PARSE_COMPLETE;
+                    return;
+                }
+            }
+        }
+        //we only write to the state if we did not finish parsing
+        state.parseState = parseState;
+        return;
+    }",549-645,0.74574596,0.56396985,0.56396985
+io.undertow.server.protocol.http.ParseState,reset,()V,12,12,100.0%,"public void reset() {
+        this.state = 0;
+        this.parseState = 0;
+        this.current = null;
+        this.currentBytes = null;
+        this.pos = 0;
+        this.leftOver = 0;
+        this.urlDecodeRequired = false;
+        this.stringBuilder.setLength(0);
+        this.nextHeader = null;
+        this.nextQueryParam = null;
+        this.mapCount = 0;
+    }",120-132,0.67718583,0.56007326,0.56007326
+io.undertow.server.protocol.http.HttpRequestParser,handleAfterVersion,(Ljava/nio/ByteBuffer;Lio/undertow/server/protocol/http/ParseState;Lio/undertow/server/HttpServerExchange;)V,11,20,55.0%,"protected void handleAfterVersion(ByteBuffer buffer, ParseState state, HttpServerExchange builder) {
+        boolean newLine = state.leftOver == '\n';
+        while (buffer.hasRemaining()) {
+            final byte next = buffer.get();
+            if (newLine) {
+                if (next == '\n') {
+                    state.state = ParseState.PARSE_COMPLETE;
+                    return;
+                } else {
+                    state.state = ParseState.HEADER;
+                    state.leftOver = next;
+                    return;
+                }
+            } else {
+                if (next == '\n') {
+                    newLine = true;
+                } else if (next != '\r' && next != ' ' && next != '\t') {
+                    state.state = ParseState.HEADER;
+                    state.leftOver = next;
+                    return;
+                }
+            }
+        }
+        if (newLine) {
+            state.leftOver = '\n';
+        }
+    }",647-673,0.695825,0.5594554,0.5594554
+io.undertow.server.protocol.http.HttpTransferEncoding,persistentConnection,(Lio/undertow/server/HttpServerExchange;Ljava/lang/String;)Z,2,8,25.0%,"private static boolean persistentConnection(HttpServerExchange exchange, String connectionHeader) {
+        if (exchange.isHttp11()) {
+            return !(connectionHeader != null && Headers.CLOSE.equalToString(connectionHeader));
+        } else if (exchange.isHttp10()) {
+            if (connectionHeader != null) {
+                if (Headers.KEEP_ALIVE.equals(new HttpString(connectionHeader))) {
+                    return true;
+                }
+            }
+        }
+        log.trace(""Connection not persistent"");
+        return false;
+    }",162-174,0.8369194,0.5590991,0.5590991
+io.undertow.security.impl.SimpleNonceManager,createNonce,([B[B)Ljava/lang/String;,7,7,100.0%,"private String createNonce(final byte[] prefix, final byte[] timeStamp) {
+        byte[] hashedPart = generateHash(prefix, timeStamp);
+        byte[] complete = new byte[9 + timeStamp.length + hashedPart.length];
+        System.arraycopy(prefix, 0, complete, 0, 8);
+        complete[8] = (byte) timeStamp.length;
+        System.arraycopy(timeStamp, 0, complete, 9, timeStamp.length);
+        System.arraycopy(hashedPart, 0, complete, 9 + timeStamp.length, hashedPart.length);
+
+        return FlexBase64.encodeString(complete, false);
+    }",399-408,0.6857954,0.55885637,0.55885637
+io.undertow.util.StatusCodes,getReason,(I)Ljava/lang/String;,3,4,75.0%,"public static final String getReason(final int code) {
+        final Entry result = TABLE[code % SIZE];
+        if (result == null || result.code != code) {
+            return ""Unknown"";
+        } else {
+            return result.reason;
+        }
+    }",169-176,0.6635275,0.55807817,0.55807817
+io.undertow.util.HeaderTokenParser,parseHeader,(Ljava/lang/String;)Ljava/util/Map;,34,39,87.2%,"public Map<E, String> parseHeader(final String header) {
+        char[] headerChars = header.toCharArray();
+
+        // The LinkedHashMap is used so that the parameter order can also be retained.
+        Map<E, String> response = new LinkedHashMap<E, String>();
+
+        SearchingFor searchingFor = SearchingFor.START_OF_NAME;
+        int nameStart = 0;
+        E currentToken = null;
+        int valueStart = 0;
+
+        for (int i = 0; i < headerChars.length; i++) {
+            switch (searchingFor) {
+                case START_OF_NAME:
+                    // Eliminate any white space before the name of the parameter.
+                    if (headerChars[i] != COMMA && Character.isWhitespace(headerChars[i]) == false) {
+                        nameStart = i;
+                        searchingFor = SearchingFor.EQUALS_SIGN;
+                    }
+                    break;
+                case EQUALS_SIGN:
+                    if (headerChars[i] == EQUALS) {
+                        String paramName = String.valueOf(headerChars, nameStart, i - nameStart);
+                        currentToken = expectedTokens.get(paramName);
+                        if (currentToken == null) {
+                            throw MESSAGES.unexpectedTokenInHeader(paramName);
+                        }
+                        searchingFor = SearchingFor.START_OF_VALUE;
+                    }
+                    break;
+                case START_OF_VALUE:
+                    if (Character.isWhitespace(headerChars[i]) == false) {
+                        if (headerChars[i] == QUOTE && currentToken.isAllowQuoted()) {
+                            valueStart = i + 1;
+                            searchingFor = SearchingFor.LAST_QUOTE;
+                        } else {
+                            valueStart = i;
+                            searchingFor = SearchingFor.END_OF_VALUE;
+                        }
+                    }
+                    break;
+                case LAST_QUOTE:
+                    if (headerChars[i] == QUOTE) {
+                        String value = String.valueOf(headerChars, valueStart, i - valueStart);
+                        response.put(currentToken, value);
+
+                        searchingFor = SearchingFor.START_OF_NAME;
+                    }
+                    break;
+                case END_OF_VALUE:
+                    if (headerChars[i] == COMMA || Character.isWhitespace(headerChars[i])) {
+                        String value = String.valueOf(headerChars, valueStart, i - valueStart);
+                        response.put(currentToken, value);
+
+                        searchingFor = SearchingFor.START_OF_NAME;
+                    }
+                    break;
+            }
+        }
+
+        if (searchingFor == SearchingFor.END_OF_VALUE) {
+            // Special case where we reached the end of the array containing the header values.
+            String value = String.valueOf(headerChars, valueStart, headerChars.length - valueStart);
+            response.put(currentToken, value);
+        } else if (searchingFor != SearchingFor.START_OF_NAME) {
+            // Somehow we are still in the middle of searching for a current value.
+            throw MESSAGES.invalidHeader();
+        }
+
+        return response;
+    }",42-112,0.7873368,0.5573149,0.5573149
+io.undertow.server.protocol.http.HttpRequestParser,handle,(Ljava/nio/ByteBuffer;Lio/undertow/server/protocol/http/ParseState;Lio/undertow/server/HttpServerExchange;)V,10,40,25.0%,"public void handle(ByteBuffer buffer, final ParseState currentState, final HttpServerExchange builder) {
+        if (currentState.state == ParseState.VERB) {
+            //fast path, we assume that it will parse fully so we avoid all the if statements
+            handleHttpVerb(buffer, currentState, builder);
+            handlePath(buffer, currentState, builder);
+            handleHttpVersion(buffer, currentState, builder);
+            handleAfterVersion(buffer, currentState, builder);
+            while (currentState.state != ParseState.PARSE_COMPLETE && buffer.hasRemaining()) {
+                handleHeader(buffer, currentState, builder);
+                if (currentState.state == ParseState.HEADER_VALUE) {
+                    handleHeaderValue(buffer, currentState, builder);
+                }
+            }
+            return;
+        }
+        if (currentState.state == ParseState.PATH) {
+            handlePath(buffer, currentState, builder);
+            if (!buffer.hasRemaining()) {
+                return;
+            }
+        }
+
+        if (currentState.state == ParseState.QUERY_PARAMETERS) {
+            handleQueryParameters(buffer, currentState, builder);
+            if (!buffer.hasRemaining()) {
+                return;
+            }
+        }
+
+        if (currentState.state == ParseState.PATH_PARAMETERS) {
+            handlePathParameters(buffer, currentState, builder);
+            if (!buffer.hasRemaining()) {
+                return;
+            }
+        }
+
+        if (currentState.state == ParseState.VERSION) {
+            handleHttpVersion(buffer, currentState, builder);
+            if (!buffer.hasRemaining()) {
+                return;
+            }
+        }
+        if (currentState.state == ParseState.AFTER_VERSION) {
+            handleAfterVersion(buffer, currentState, builder);
+            if (!buffer.hasRemaining()) {
+                return;
+            }
+        }
+        while (currentState.state != ParseState.PARSE_COMPLETE) {
+            if (currentState.state == ParseState.HEADER) {
+                handleHeader(buffer, currentState, builder);
+                if (!buffer.hasRemaining()) {
+                    return;
+                }
+            }
+            if (currentState.state == ParseState.HEADER_VALUE) {
+                handleHeaderValue(buffer, currentState, builder);
+                if (!buffer.hasRemaining()) {
+                    return;
+                }
+            }
+        }
+    }",182-244,0.7934476,0.5551712,0.5551712
+io.undertow.util.HexConverter,convertToHexString,([B)Ljava/lang/String;,7,8,87.5%,"public static String convertToHexString(byte[] toBeConverted) {
+        if (toBeConverted == null) {
+            throw new NullPointerException(""Parameter to be converted can not be null"");
+        }
+
+        char[] converted = new char[toBeConverted.length * 2];
+        for (int i = 0; i < toBeConverted.length; i++) {
+            byte b = toBeConverted[i];
+            converted[i * 2] = HEX_CHARS[b >> 4 & 0x0F];
+            converted[i * 2 + 1] = HEX_CHARS[b & 0x0F];
+        }
+
+        return String.valueOf(converted);
+    }",40-53,0.60431087,0.55410886,0.55410886
+io.undertow.util.HexConverter,convertToHexBytes,([B)[B,7,8,87.5%,"public static byte[] convertToHexBytes(byte[] toBeConverted) {
+        if (toBeConverted == null) {
+            throw new NullPointerException(""Parameter to be converted can not be null"");
+        }
+
+        byte[] converted = new byte[toBeConverted.length * 2];
+        for (int i = 0; i < toBeConverted.length; i++) {
+            byte b = toBeConverted[i];
+            converted[i * 2] = HEX_BYTES[b >> 4 & 0x0F];
+            converted[i * 2 + 1] = HEX_BYTES[b & 0x0F];
+        }
+
+        return converted;
+    }",65-78,0.6061789,0.5525994,0.5525994
+io.undertow.server.AbstractServerConnection$CloseSetter,handleEvent,(Lorg/xnio/StreamConnection;)V,3,8,37.5%,"@Override
+        public void handleEvent(StreamConnection channel) {
+            for (CloseListener l : closeListeners) {
+                try {
+                    l.closed(AbstractServerConnection.this);
+                } catch (Throwable e) {
+                    UndertowLogger.REQUEST_LOGGER.exceptionInvokingCloseListener(l, e);
+                }
+            }
+            ChannelListeners.invokeChannelListener(AbstractServerConnection.this, listener);
+        }",269-279,0.79114616,0.5523071,0.5523071
+io.undertow.server.HttpServerExchange,isHttp11,()Z,1,1,100.0%,"public boolean isHttp11() {
+        return protocol.equals(Protocols.HTTP_1_1);
+    }",304-306,0.86423504,0.55063105,0.55063105
+io.undertow.util.FlexBase64$1,run,()Ljava/lang/reflect/Constructor;,3,3,100.0%,"@Override
+                public Constructor<String> run() throws Exception {
+                    Constructor<String> c;
+                    c = String.class.getDeclaredConstructor(char[].class, boolean.class);
+                    c.setAccessible(true);
+                    return c;
+                }",58-64,0.7137629,0.54893875,0.54893875
+io.undertow.security.impl.DigestAuthenticationMechanism,validateRequest,(Lio/undertow/security/impl/DigestAuthenticationMechanism$DigestContext;[B)Z,7,9,77.8%,"private boolean validateRequest(final DigestContext context, final byte[] ha1) {
+        byte[] ha2;
+        DigestQop qop = context.getQop();
+        // Step 2.2 Calculate H(A2)
+        if (qop == null || qop.equals(DigestQop.AUTH)) {
+            ha2 = createHA2Auth(context, context.getParsedHeader());
+        } else {
+            ha2 = createHA2AuthInt();
+        }
+
+        byte[] requestDigest;
+        if (qop == null) {
+            requestDigest = createRFC2069RequestDigest(ha1, ha2, context);
+        } else {
+            requestDigest = createRFC2617RequestDigest(ha1, ha2, context);
+        }
+
+        byte[] providedResponse = context.getParsedHeader().get(DigestAuthorizationToken.RESPONSE).getBytes(UTF_8);
+
+        return MessageDigest.isEqual(requestDigest, providedResponse);
+    }",294-314,0.8861221,0.5486471,0.5486471
+io.undertow.security.impl.DigestAuthenticationMechanism,validateNonceUse,(Lio/undertow/security/impl/DigestAuthenticationMechanism$DigestContext;Ljava/util/Map;Lio/undertow/server/HttpServerExchange;)Z,5,7,71.4%,"private boolean validateNonceUse(DigestContext context, Map<DigestAuthorizationToken, String> parsedHeader, final HttpServerExchange exchange) {
+        String suppliedNonce = parsedHeader.get(DigestAuthorizationToken.NONCE);
+        int nonceCount = -1;
+        if (parsedHeader.containsKey(DigestAuthorizationToken.NONCE_COUNT)) {
+            String nonceCountHex = parsedHeader.get(DigestAuthorizationToken.NONCE_COUNT);
+
+            nonceCount = Integer.parseInt(nonceCountHex, 16);
+        }
+
+        context.setNonce(suppliedNonce);
+        // TODO - A replay attempt will need an exception.
+        return (nonceManager.validateNonce(suppliedNonce, nonceCount, exchange));
+    }",316-328,0.8913808,0.5455332,0.5455332
+io.undertow.security.handlers.AuthenticationMechanismsHandler,handleRequest,(Lio/undertow/server/HttpServerExchange;)V,7,7,100.0%,"@Override
+    public void handleRequest(final HttpServerExchange exchange) throws Exception {
+        final SecurityContext sc = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        if(sc != null) {
+            for(AuthenticationMechanism mechanism : authenticationMechanisms) {
+                sc.addAuthenticationMechanism(mechanism);
+            }
+        }
+        next.handleRequest(exchange);
+    }",50-59,0.82974017,0.545172,0.545172
+io.undertow.server.protocol.http.HttpTransferEncoding$HttpResponseWrapper,wrap,(Lio/undertow/util/ConduitFactory;Lio/undertow/server/HttpServerExchange;)Lorg/xnio/conduits/StreamSinkConduit;,15,35,42.9%,"public StreamSinkConduit wrap(final ConduitFactory<StreamSinkConduit> factory, final HttpServerExchange exchange) {
+            StreamSinkConduit channel = factory.create();
+            final ConduitListener<StreamSinkConduit> finishListener = terminateResponseListener(exchange);
+            boolean headRequest = exchange.getRequestMethod().equals(Methods.HEAD);
+            if (headRequest) {
+                //if this is a head request we add a head channel underneath the content encoding channel
+                //this will just discard the data
+                //we still go through with the rest of the logic, to make sure all headers are set correctly
+                channel = new HeadStreamSinkConduit(channel, finishListener);
+            }
+
+            final HeaderMap responseHeaders = exchange.getResponseHeaders();
+            // test to see if we're still persistent
+            String connection = responseHeaders.getFirst(Headers.CONNECTION);
+            if(!exchange.isPersistent()) {
+                responseHeaders.put(Headers.CONNECTION, Headers.CLOSE.toString());
+            } else if (exchange.isPersistent() && connection != null) {
+                if (HttpString.tryFromString(connection).equals(Headers.CLOSE)) {
+                    exchange.setPersistent(false);
+                }
+            } else if (exchange.getConnection().getUndertowOptions().get(UndertowOptions.ALWAYS_SET_KEEP_ALIVE, true)) {
+                responseHeaders.put(Headers.CONNECTION, Headers.KEEP_ALIVE.toString());
+            }
+
+            final String contentLengthHeader = responseHeaders.getFirst(Headers.CONTENT_LENGTH);
+            if (contentLengthHeader != null) {
+                try {
+                    final long contentLength = Long.parseLong(contentLengthHeader);
+                    if(headRequest) {
+                        return channel;
+                    }
+                    // fixed-length response
+                    return new FixedLengthStreamSinkConduit(channel, contentLength, true, !exchange.isPersistent(), finishListener);
+                } catch (NumberFormatException e) {
+                    //we just fix it for them
+                    responseHeaders.remove(Headers.CONTENT_LENGTH);
+                }
+            }
+            final String transferEncodingHeader = responseHeaders.getLast(Headers.TRANSFER_ENCODING);
+            if (transferEncodingHeader == null) {
+                if (exchange.isHttp11()) {
+                    responseHeaders.put(Headers.TRANSFER_ENCODING, Headers.CHUNKED.toString());
+
+                    if(headRequest) {
+                        return channel;
+                    }
+                    return new ChunkedStreamSinkConduit(channel, exchange.getConnection().getBufferPool(), true, !exchange.isPersistent(), responseHeaders, finishListener, exchange);
+                } else {
+                    exchange.setPersistent(false);
+                    responseHeaders.put(Headers.CONNECTION, Headers.CLOSE.toString());
+                    if(headRequest) {
+                        return channel;
+                    }
+                    return new FinishableStreamSinkConduit(channel, finishListener);
+                }
+            } else {
+                //moved outside because this is rarely used
+                //and makes the method small enough to be inlined
+                return handleExplicitTransferEncoding(exchange, channel, finishListener, responseHeaders, transferEncodingHeader, headRequest);
+            }
+        }",223-283,0.7985363,0.5414456,0.5414456
+io.undertow.server.Connectors,executeRootHandler,(Lio/undertow/server/HttpHandler;Lio/undertow/server/HttpServerExchange;)V,14,20,70.0%,"public static void executeRootHandler(final HttpHandler handler, final HttpServerExchange exchange) {
+        try {
+            exchange.setInCall(true);
+            handler.handleRequest(exchange);
+            exchange.setInCall(false);
+            if (exchange.isDispatched()) {
+                final Runnable dispatchTask = exchange.getDispatchTask();
+                Executor executor = exchange.getDispatchExecutor();
+                exchange.unDispatch();
+                if (dispatchTask != null) {
+                    executor = executor == null ? exchange.getConnection().getWorker() : executor;
+                    executor.execute(dispatchTask);
+                }
+            } else {
+                exchange.endExchange();
+            }
+        } catch (Throwable t) {
+            exchange.setInCall(false);
+            if (!exchange.isResponseStarted()) {
+                exchange.setResponseCode(500);
+            }
+            UndertowLogger.REQUEST_LOGGER.errorf(t, ""Blocking request failed %s"", exchange);
+            exchange.endExchange();
+        }
+    }",136-160,0.76222163,0.5392699,0.5392699
+io.undertow.util.HttpString,higher,(B)I,1,1,100.0%,"private static int higher(byte b) {
+        return b & (b >= 'a' && b <= 'z' ? 0xDF : 0xFF);
+    }",291-293,0.514794,0.536942,0.536942
+io.undertow.conduits.FixedLengthStreamSinkConduit,exitFlush,(JZ)V,12,12,100.0%,"private void exitFlush(long oldVal, boolean flushed) {
+        long newVal = oldVal;
+        boolean callFinish = false;
+        if ((anyAreSet(oldVal, FLAG_CLOSE_REQUESTED) || (newVal & MASK_COUNT) == 0L) && flushed) {
+            newVal |= FLAG_CLOSE_COMPLETE;
+
+            if (!anyAreSet(oldVal, FLAG_FINISHED_CALLED) && (newVal & MASK_COUNT) == 0L) {
+                newVal |= FLAG_FINISHED_CALLED;
+                callFinish = true;
+            }
+            state = newVal;
+            if (callFinish) {
+                if (finishListener != null) {
+                    finishListener.handleEvent(this);
+                }
+            }
+        }
+    }",233-250,0.74086285,0.5349572,0.5349572
+io.undertow.server.protocol.http.HttpRequestParser,instance,(Lorg/xnio/OptionMap;)Lio/undertow/server/protocol/http/HttpRequestParser;,3,5,60.0%,"public static final HttpRequestParser instance(final OptionMap options) {
+        try {
+            final Class<?> cls = HttpRequestParser.class.getClassLoader().loadClass(HttpRequestParser.class.getName() + ""$$generated"");
+
+            Constructor<?> ctor = cls.getConstructor(OptionMap.class);
+            return (HttpRequestParser) ctor.newInstance(options);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }",170-179,0.78931564,0.5345793,0.5345793
+io.undertow.util.HeaderMap,getEntry,(Lio/undertow/util/HttpString;)Lio/undertow/util/HeaderValues;,10,17,58.8%,"private HeaderValues getEntry(final HttpString headerName) {
+        if (headerName == null) {
+            return null;
+        }
+        final int hc = headerName.hashCode();
+        final int idx = hc & (table.length - 1);
+        final Object o = table[idx];
+        if (o == null) {
+            return null;
+        }
+        HeaderValues headerValues;
+        if (o instanceof HeaderValues) {
+            headerValues = (HeaderValues) o;
+            if (! headerName.equals(headerValues.key)) {
+                return null;
+            }
+            return headerValues;
+        } else {
+            final HeaderValues[] row = (HeaderValues[]) o;
+            for (int i = 0; i < row.length; i++) {
+                headerValues = row[i];
+                if (headerValues != null && headerName.equals(headerValues.key)) { return headerValues; }
+            }
+            return null;
+        }
+    }",43-68,0.69614494,0.53388894,0.53388894
+io.undertow.server.HttpServerExchange,addResponseWrapper,(Lio/undertow/server/ConduitWrapper;)V,5,9,55.6%,"public void addResponseWrapper(final ConduitWrapper<StreamSinkConduit> wrapper) {
+        ConduitWrapper<StreamSinkConduit>[] wrappers = responseWrappers;
+        if (wrappers == null) {
+            throw UndertowMessages.MESSAGES.requestChannelAlreadyProvided();
+        }
+        if (wrappers.length == responseWrapperCount) {
+            responseWrappers = new ConduitWrapper[wrappers.length + 2];
+            System.arraycopy(wrappers, 0, responseWrappers, 0, wrappers.length);
+            wrappers = responseWrappers;
+        }
+        wrappers[responseWrapperCount++] = wrapper;
+    }",1132-1143,0.73322475,0.53140336,0.53140336
+io.undertow.server.protocol.http.HttpReadListener,handleEvent,(Lorg/xnio/channels/StreamSourceChannel;)V,29,44,65.9%,"public void handleEvent(final StreamSourceChannel channel) {
+
+        Pooled<ByteBuffer> existing = connection.getExtraBytes();
+
+        final Pooled<ByteBuffer> pooled = existing == null ? connection.getBufferPool().allocate() : existing;
+        final ByteBuffer buffer = pooled.getResource();
+        boolean free = true;
+
+        try {
+            int res;
+            do {
+                if (existing == null) {
+                    buffer.clear();
+                    try {
+                        res = channel.read(buffer);
+                    } catch (IOException e) {
+                        UndertowLogger.REQUEST_IO_LOGGER.debug(""Error reading request"", e);
+                        IoUtils.safeClose(connection);
+                        return;
+                    }
+                } else {
+                    res = buffer.remaining();
+                }
+
+                if(res <= 0) {
+                    handleFailedRead(channel, res);
+                    return;
+                }
+                if (existing != null) {
+                    existing = null;
+                    connection.setExtraBytes(null);
+                } else {
+                    buffer.flip();
+                }
+                parser.handle(buffer, state, httpServerExchange);
+                if (buffer.hasRemaining()) {
+                    free = false;
+                    connection.setExtraBytes(pooled);
+                }
+                int total = read + res;
+                read = total;
+                if (read > maxRequestSize) {
+                    UndertowLogger.REQUEST_LOGGER.requestHeaderWasTooLarge(connection.getPeerAddress(), maxRequestSize);
+                    IoUtils.safeClose(connection);
+                    return;
+                }
+            } while (!state.isComplete());
+
+            // we remove ourselves as the read listener from the channel;
+            // if the http handler doesn't set any then reads will suspend, which is the right thing to do
+            channel.getReadSetter().set(null);
+            channel.suspendReads();
+
+            final HttpServerExchange httpServerExchange = this.httpServerExchange;
+            httpServerExchange.putAttachment(UndertowOptions.ATTACHMENT_KEY, connection.getUndertowOptions());
+            httpServerExchange.setRequestScheme(connection.getSslSession() != null ? ""https"" : ""http"");
+            this.httpServerExchange = null;
+            HttpTransferEncoding.setupRequest(httpServerExchange);
+            Connectors.executeRootHandler(connection.getRootHandler(), httpServerExchange);
+        } catch (Exception e) {
+            sendBadRequestAndClose(connection.getChannel(), e);
+            return;
+        } finally {
+            if (free) pooled.free();
+        }
+    }",72-137,0.76578295,0.53087693,0.53087693
+io.undertow.security.handlers.NotificationReceiverHandler,handleRequest,(Lio/undertow/server/HttpServerExchange;)V,6,6,100.0%,"@Override
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
+        SecurityContext sc = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        for (NotificationReceiver receiver : receivers) {
+            sc.registerNotificationReceiver(receiver);
+        }
+
+        next.handleRequest(exchange);
+    }",43-51,0.83206606,0.5293581,0.5293581
+io.undertow.server.HttpServerExchange$ExchangeCompleteNextListener,proceed,()V,2,4,50.0%,"@Override
+        public void proceed() {
+            if (--i >= 0) {
+                final ExchangeCompletionListener next = list[i];
+                next.exchangeEvent(exchange, this);
+            }
+        }",1422-1428,0.65963686,0.52915525,0.52915525
+io.undertow.server.protocol.http.HttpTransferEncoding,responseWrapper,()Lio/undertow/server/ConduitWrapper;,1,1,100.0%,"private static ConduitWrapper<StreamSinkConduit> responseWrapper() {
+        return HttpResponseWrapper.INSTANCE;
+    }",176-178,0.73383427,0.52758443,0.52758443
+io.undertow.security.handlers.SecurityInitialHandler,handleRequest,(Lio/undertow/server/HttpServerExchange;)V,5,6,83.3%,"@Override
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
+        SecurityContextImpl newContext = new SecurityContextImpl(exchange, authenticationMode, identityManager);
+        if (programaticMechName != null) {
+            newContext.setProgramaticMechName(programaticMechName);
+        }
+        exchange.putAttachment(SecurityContext.ATTACHMENT_KEY, newContext);
+        next.handleRequest(exchange);
+    }",63-71,0.86639124,0.52470124,0.52470124
+io.undertow.server.protocol.http.HttpRequestParser,httpStrings,()Ljava/util/Map;,11,13,84.6%,"protected static Map<String, HttpString> httpStrings() {
+        final Map<String, HttpString> results = new HashMap<String, HttpString>();
+        final Class[] classs = {Headers.class, Methods.class, Protocols.class};
+
+        for (Class<?> c : classs) {
+            for (Field field : c.getDeclaredFields()) {
+                if (field.getType().equals(HttpString.class)) {
+                    field.setAccessible(true);
+                    HttpString result = null;
+                    try {
+                        result = (HttpString) field.get(null);
+                        results.put(result.toString(), result);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+        return results;
+
+    }",682-702,0.7543488,0.52406436,0.52406436
+io.undertow.util.HeaderMap,fiNextNonEmpty,(J)J,16,29,55.2%,"public long fiNextNonEmpty(long cookie) {
+        if (cookie == -1L) return -1L;
+        final Object[] table = this.table;
+        final int len = table.length;
+        int ri = (int) (cookie >> 32);
+        int ci = (int) cookie;
+        Object item = table[ri];
+        if (item instanceof HeaderValues[]) {
+            final HeaderValues[] row = (HeaderValues[]) item;
+            final int rowLen = row.length;
+            if (++ci >= rowLen) {
+                ri ++; ci = 0;
+            } else if (row[ci] != null && !row[ci].isEmpty()) {
+                return (long)ri << 32L | (ci & 0xffffffffL);
+            }
+        } else {
+            ri ++; ci = 0;
+        }
+        while (ri < len) {
+            item = table[ri];
+            if (item instanceof HeaderValues && !((HeaderValues) item).isEmpty()) {
+                return (long)ri << 32L;
+            } else if (item instanceof HeaderValues[]) {
+                final HeaderValues[] row = (HeaderValues[]) item;
+                final int rowLen = row.length;
+                while (ci < rowLen) {
+                    if (row[ci] != null && !row[ci].isEmpty()) {
+                        return (long)ri << 32L | (ci & 0xffffffffL);
+                    }
+                    ci ++;
+                }
+            }
+            ci = 0;
+            ri ++;
+        }
+        return -1L;
+    }",483-519,0.5567684,0.52223086,0.52223086
+io.undertow.server.protocol.http.HttpOpenListener,handleEvent,(Lorg/xnio/StreamConnection;)V,7,8,87.5%,"public void handleEvent(final StreamConnection channel) {
+        if (UndertowLogger.REQUEST_LOGGER.isTraceEnabled()) {
+            UndertowLogger.REQUEST_LOGGER.tracef(""Opened connection with %s"", channel.getPeerAddress());
+        }
+        HttpServerConnection connection = new HttpServerConnection(channel, bufferPool, rootHandler, undertowOptions, bufferSize);
+        HttpReadListener readListener = new HttpReadListener(connection, parser);
+        readListener.newRequest();
+        channel.getSourceChannel().setReadListener(readListener);
+        readListener.handleEvent(channel.getSourceChannel());
+    }",60-69,0.7986945,0.5201169,0.5201169
+io.undertow.server.protocol.http.HttpTransferEncoding,setupRequest,(Lio/undertow/server/HttpServerExchange;)V,19,25,76.0%,"public static void setupRequest(final HttpServerExchange exchange) {
+        final HeaderMap requestHeaders = exchange.getRequestHeaders();
+        final String connectionHeader = requestHeaders.getFirst(Headers.CONNECTION);
+        final String transferEncodingHeader = requestHeaders.getLast(Headers.TRANSFER_ENCODING);
+        final String contentLengthHeader = requestHeaders.getFirst(Headers.CONTENT_LENGTH);
+
+        final HttpServerConnection connection = (HttpServerConnection) exchange.getConnection();
+        ConduitStreamSinkChannel sinkChannel = connection.getChannel().getSinkChannel();
+        //if we are already using the pipelineing buffer add it to the exchange
+        PipeliningBufferingStreamSinkConduit pipeliningBuffer = connection.getAttachment(PipeliningBufferingStreamSinkConduit.ATTACHMENT_KEY);
+        if (pipeliningBuffer != null) {
+            pipeliningBuffer.setupPipelineBuffer(exchange);
+        }
+        ConduitStreamSourceChannel sourceChannel = connection.getChannel().getSourceChannel();
+        sourceChannel.setConduit(new ReadDataStreamSourceConduit(sourceChannel.getConduit(), connection));
+
+        boolean persistentConnection = persistentConnection(exchange, connectionHeader);
+
+        if (exchange.getRequestMethod().equals(Methods.GET)) {
+            if (persistentConnection
+                    && connection.getExtraBytes() != null
+                    && pipeliningBuffer == null
+                    && connection.getUndertowOptions().get(UndertowOptions.BUFFER_PIPELINED_DATA, false)) {
+                pipeliningBuffer = new PipeliningBufferingStreamSinkConduit(connection.getOriginalSinkConduit(), connection.getBufferPool());
+                connection.putAttachment(PipeliningBufferingStreamSinkConduit.ATTACHMENT_KEY, pipeliningBuffer);
+                pipeliningBuffer.setupPipelineBuffer(exchange);
+            }
+            // no content - immediately start the next request, returning an empty stream for this one
+            Connectors.terminateRequest(exchange);
+        } else {
+            persistentConnection = handleRequestEncoding(exchange, transferEncodingHeader, contentLengthHeader, connection, pipeliningBuffer, persistentConnection);
+        }
+
+        exchange.setPersistent(persistentConnection);
+        sinkChannel.setConduit(new HttpResponseConduit(sinkChannel.getConduit(), connection.getBufferPool(), exchange));
+
+        //now the response wrapper, to add in the appropriate connection control headers
+        exchange.addResponseWrapper(responseWrapper());
+
+    }",66-105,0.82704055,0.5197238,0.5197238
+io.undertow.server.HttpServerExchange$WriteDispatchChannel,isFinished,()Z,1,1,100.0%,"@Override
+        protected boolean isFinished() {
+            return allAreSet(state, FLAG_RESPONSE_TERMINATED);
+        }",1488-1491,0.73475844,0.5193916,0.5193916
+io.undertow.conduits.FixedLengthStreamSinkConduit,enterShutdown,()J,6,8,75.0%,"private long enterShutdown() {
+        long oldVal, newVal;
+        oldVal = state;
+        if (anyAreSet(oldVal, FLAG_CLOSE_REQUESTED | FLAG_CLOSE_COMPLETE)) {
+            // no action necessary
+            return oldVal;
+        }
+        newVal = oldVal | FLAG_CLOSE_REQUESTED;
+        if (anyAreSet(oldVal, MASK_COUNT)) {
+            // error: channel not filled.  set both close flags.
+            newVal |= FLAG_CLOSE_COMPLETE;
+        }
+        state = newVal;
+        return oldVal;
+    }",252-266,0.65475714,0.51870394,0.51870394
+io.undertow.server.protocol.http.HttpRequestParser,handlePath,(Ljava/nio/ByteBuffer;Lio/undertow/server/protocol/http/ParseState;Lio/undertow/server/HttpServerExchange;)V,33,85,38.8%,"@SuppressWarnings(""unused"")
+    final void handlePath(ByteBuffer buffer, ParseState state, HttpServerExchange exchange) {
+        StringBuilder stringBuilder = state.stringBuilder;
+        int parseState = state.parseState;
+        int canonicalPathStart = state.pos;
+        boolean urlDecodeRequired = state.urlDecodeRequired;
+
+        while (buffer.hasRemaining()) {
+            char next = (char) buffer.get();
+            if (next == ' ' || next == '\t') {
+                if (stringBuilder.length() != 0) {
+                    final String path = stringBuilder.toString();
+                    if (parseState < HOST_DONE) {
+                        String decodedPath = decode(path, urlDecodeRequired, state, allowEncodedSlash);
+                        exchange.setRequestPath(decodedPath);
+                        exchange.setRelativePath(decodedPath);
+                        exchange.setRequestURI(path);
+                    } else {
+                        String thePath = decode(path.substring(canonicalPathStart), urlDecodeRequired, state, allowEncodedSlash);
+                        exchange.setRequestPath(thePath);
+                        exchange.setRelativePath(thePath);
+                        exchange.setRequestURI(path, true);
+                    }
+                    exchange.setQueryString("""");
+                    state.state = ParseState.VERSION;
+                    state.stringBuilder.setLength(0);
+                    state.parseState = 0;
+                    state.pos = 0;
+                    state.urlDecodeRequired = false;
+                    return;
+                }
+            } else if (next == '\r' || next == '\n') {
+                throw UndertowMessages.MESSAGES.failedToParsePath();
+            } else if (next == '?' && (parseState == START || parseState == HOST_DONE)) {
+                final String path = stringBuilder.toString();
+                if (parseState < HOST_DONE) {
+                    String decodedPath = decode(path, urlDecodeRequired, state, allowEncodedSlash);
+                    exchange.setRequestPath(decodedPath);
+                    exchange.setRelativePath(decodedPath);
+                    exchange.setRequestURI(path, false);
+                } else {
+                    String thePath = decode(path.substring(canonicalPathStart), urlDecodeRequired, state, allowEncodedSlash);
+                    exchange.setRequestPath(thePath);
+                    exchange.setRelativePath(thePath);
+                    exchange.setRequestURI(path, true);
+                }
+                state.state = ParseState.QUERY_PARAMETERS;
+                state.stringBuilder.setLength(0);
+                state.parseState = 0;
+                state.pos = 0;
+                state.urlDecodeRequired = false;
+                handleQueryParameters(buffer, state, exchange);
+                return;
+            } else if (next == ';' && (parseState == START || parseState == HOST_DONE)) {
+                final String path = stringBuilder.toString();
+                if (parseState < HOST_DONE) {
+                    String decodedPath = decode(path, urlDecodeRequired, state, allowEncodedSlash);
+                    exchange.setRequestPath(decodedPath);
+                    exchange.setRelativePath(decodedPath);
+                    exchange.setRequestURI(path);
+                } else {
+                    String thePath = path.substring(canonicalPathStart);
+                    exchange.setRequestPath(thePath);
+                    exchange.setRelativePath(thePath);
+                    exchange.setRequestURI(path, true);
+                }
+                state.state = ParseState.PATH_PARAMETERS;
+                state.stringBuilder.setLength(0);
+                state.parseState = 0;
+                state.pos = 0;
+                state.urlDecodeRequired = false;
+                handlePathParameters(buffer, state, exchange);
+                return;
+            } else {
+
+                if (decode && (next == '+' || next == '%')) {
+                    urlDecodeRequired = true;
+                } else if (next == ':' && parseState == START) {
+                    parseState = FIRST_COLON;
+                } else if (next == '/' && parseState == FIRST_COLON) {
+                    parseState = FIRST_SLASH;
+                } else if (next == '/' && parseState == FIRST_SLASH) {
+                    parseState = SECOND_SLASH;
+                } else if (next == '/' && parseState == SECOND_SLASH) {
+                    parseState = HOST_DONE;
+                    canonicalPathStart = stringBuilder.length();
+                } else if (parseState == FIRST_COLON || parseState == FIRST_SLASH) {
+                    parseState = START;
+                }
+                stringBuilder.append(next);
+            }
+
+        }
+        state.parseState = parseState;
+        state.pos = canonicalPathStart;
+        state.urlDecodeRequired = urlDecodeRequired;
+    }",270-366,0.8234612,0.5180442,0.5180442
+io.undertow.security.impl.DigestWWWAuthenticateToken,parseHeader,(Ljava/lang/String;)Ljava/util/Map;,1,1,100.0%,"public static Map<DigestWWWAuthenticateToken, String> parseHeader(final String header) {
+        return TOKEN_PARSER.parseHeader(header);
+    }",73-75,0.8382571,0.5148773,0.5148773
+io.undertow.server.HttpServerExchange,invokeExchangeCompleteListeners,()V,5,5,100.0%,"private void invokeExchangeCompleteListeners() {
+        if (exchangeCompletionListenersCount > 0) {
+            int i = exchangeCompletionListenersCount - 1;
+            ExchangeCompletionListener next = exchangeCompleteListeners[i];
+            next.exchangeEvent(this, new ExchangeCompleteNextListener(exchangeCompleteListeners, this, i));
+        }
+    }",1019-1025,0.7822639,0.513679,0.513679
+io.undertow.security.handlers.AuthenticationCallHandler,handleRequest,(Lio/undertow/server/HttpServerExchange;)V,9,9,100.0%,"@Override
+    public void handleRequest(final HttpServerExchange exchange) throws Exception {
+        if(exchange.isInIoThread()) {
+            exchange.dispatch(this);
+            return;
+        }
+        SecurityContext context = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        if (context.authenticate()) {
+            if(!exchange.isComplete()) {
+               next.handleRequest(exchange);
+            }
+        } else {
+            exchange.endExchange();
+        }
+    }",43-57,0.7882391,0.5132827,0.5132827
+io.undertow.security.impl.SimpleNonceManager,verifyUnknownNonce,(Ljava/lang/String;I)Lio/undertow/security/impl/SimpleNonceManager$Nonce;,18,24,75.0%,"private Nonce verifyUnknownNonce(final String nonce, final int nonceCount) {
+        byte[] complete;
+        int offset;
+        int length;
+        try {
+            ByteBuffer decode = FlexBase64.decode(nonce);
+            complete = decode.array();
+            offset = decode.arrayOffset();
+            length = decode.limit() - offset;
+        } catch (IOException e) {
+            throw MESSAGES.invalidBase64Token(e);
+        }
+
+        int timeStampLength = complete[offset + 8];
+        // A sanity check to try and verify the sizes we expect from the arrays are correct.
+        if (hashLength > 0) {
+            int expectedLength = 9 + timeStampLength + hashLength;
+            if (length != expectedLength) {
+                throw MESSAGES.invalidNonceReceived();
+            } else if (timeStampLength + 1 >= length)
+                throw MESSAGES.invalidNonceReceived();
+        }
+
+        byte[] prefix = new byte[8];
+        System.arraycopy(complete, offset, prefix, 0, 8);
+        byte[] timeStampBytes = new byte[timeStampLength];
+        System.arraycopy(complete, offset + 9, timeStampBytes, 0, timeStampBytes.length);
+
+        String expectedNonce = createNonce(prefix, timeStampBytes);
+
+        if (expectedNonce.equals(nonce)) {
+            try {
+                long timeStamp = Long.parseLong(new String(timeStampBytes, UTF_8));
+
+                return new Nonce(expectedNonce, timeStamp, nonceCount);
+            } catch (NumberFormatException dropped) {
+            }
+        }
+
+        return null;
+    }",357-397,0.7066517,0.5132344,0.5132344
+io.undertow.util.FlexBase64$Encoder,complete,([CIIIZ)I,6,8,75.0%,"public int complete(byte[] target, int pos) {
+            if (state > 0) {
+                target[pos++] = ENCODING_TABLE[last];
+                for (int i = state; i < 3; i++) {
+                    target[pos++] = (byte)'=';
+                }
+
+                last = state = 0;
+            }
+            if (wrap) {
+                target[pos++] = 0x0D;
+                target[pos++] = 0x0A;
+            }
+
+            return pos;
+        }",745-760,0.5697399,0.5126975,0.5126975
+io.undertow.security.impl.SimpleNonceManager,addInvalidNonce,(Lio/undertow/security/impl/SimpleNonceManager$Nonce;Lorg/xnio/XnioExecutor;)Z,7,9,77.8%,"private boolean addInvalidNonce(final Nonce nonce, final XnioExecutor executor) {
+        long now = System.currentTimeMillis();
+        long invalidBefore = now - firstUseTimeOut;
+
+        long timeTillInvalid = nonce.timeStamp - invalidBefore;
+        if (timeTillInvalid > 0) {
+            if (invalidNonces.add(nonce.nonce)) {
+                executor.executeAfter(new InvalidNonceCleaner(nonce.nonce), timeTillInvalid, TimeUnit.MILLISECONDS);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            // So close to expiring any record of this nonce being used could have been cleared so
+            // don't take a chance and just say no.
+            return false;
+        }
+    }",323-340,0.6446248,0.51221687,0.51221687
+io.undertow.security.impl.DigestAuthenticationMechanism,createRFC2069RequestDigest,([B[BLio/undertow/security/impl/DigestAuthenticationMechanism$DigestContext;)[B,10,10,100.0%,"private byte[] createRFC2069RequestDigest(final byte[] ha1, final byte[] ha2, final DigestContext context) {
+        final MessageDigest digest = context.getDigest();
+        final Map<DigestAuthorizationToken, String> parsedHeader = context.getParsedHeader();
+
+        byte[] nonce = parsedHeader.get(DigestAuthorizationToken.NONCE).getBytes(UTF_8);
+
+        try {
+            digest.update(ha1);
+            digest.update(COLON);
+            digest.update(nonce);
+            digest.update(COLON);
+            digest.update(ha2);
+
+            return HexConverter.convertToHexBytes(digest.digest());
+        } finally {
+            digest.reset();
+        }
+    }",351-368,0.89030266,0.51208484,0.51208484
+io.undertow.security.impl.SecurityContextImpl,authTransition,()Z,10,11,90.9%,"private boolean authTransition() {
+        if (authTransitionRequired()) {
+            switch (authenticationState) {
+                case NOT_ATTEMPTED:
+                    authenticationState = attemptAuthentication();
+                    break;
+                case ATTEMPTED:
+                    authenticationState = sendChallenges();
+                    break;
+                default:
+                    throw new IllegalStateException(""It should not be possible to reach this."");
+            }
+            return authTransition();
+
+        } else {
+            // Keep in mind this switch statement is only called after a call to authTransitionRequired.
+            switch (authenticationState) {
+                case NOT_ATTEMPTED: // No constraint was set that mandated authentication so not reason to hold up the request.
+                case ATTEMPTED: // Attempted based on incoming request but no a failure so allow the request to proceed.
+                case AUTHENTICATED: // Authentication was a success - no responses sent.
+                    return false;
+                default:
+                    // Remaining option is CHALLENGE_SENT to request processing must end.
+                    return true;
+            }
+        }
+    }",102-128,0.61334646,0.5115838,0.5115838
+io.undertow.server.protocol.http.HttpTransferEncoding$4,handleEvent,(Lorg/xnio/conduits/StreamSinkConduit;)V,2,2,100.0%,"@Override
+                public void handleEvent(FinishableStreamSourceConduit channel) {
+                    Connectors.terminateRequest(exchange);
+                }",153-156,0.74066204,0.5099356,0.5099356
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,getParsedHeader,()Ljava/util/Map;,1,1,100.0%,"Map<DigestAuthorizationToken, String> getParsedHeader() {
+            return parsedHeader;
+        }",547-549,0.8142624,0.5097476,0.5097476
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,setAlgorithm,(Lio/undertow/security/idm/DigestAlgorithm;)V,3,3,100.0%,"void setAlgorithm(DigestAlgorithm algorithm) throws NoSuchAlgorithmException {
+            this.algorithm = algorithm;
+            digest = algorithm.getMessageDigest();
+        }",538-541,0.7553962,0.5090774,0.5090774
+io.undertow.security.handlers.AuthenticationConstraintHandler,handleRequest,(Lio/undertow/server/HttpServerExchange;)V,5,5,100.0%,"@Override
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
+        if (isAuthenticationRequired(exchange)) {
+            SecurityContext context = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+            context.setAuthenticationRequired();
+        }
+
+        next.handleRequest(exchange);
+    }",44-52,0.8485222,0.50850576,0.50850576
+io.undertow.server.HttpServerExchange,terminateRequest,()V,6,9,66.7%,"void terminateRequest() {
+        int oldVal = state;
+        if (allAreSet(oldVal, FLAG_REQUEST_TERMINATED)) {
+            // idempotent
+            return;
+        }
+        if (requestChannel != null) {
+            requestChannel.requestDone();
+        }
+        this.state = oldVal | FLAG_REQUEST_TERMINATED;
+        if (anyAreSet(oldVal, FLAG_RESPONSE_TERMINATED)) {
+            invokeExchangeCompleteListeners();
+        }
+    }",1004-1017,0.76426077,0.50820065,0.50820065
+io.undertow.util.HeaderMap,fastIterateNonEmpty,()J,10,18,55.6%,"public long fastIterateNonEmpty() {
+        final Object[] table = this.table;
+        final int len = table.length;
+        int ri = 0;
+        int ci;
+        while (ri < len) {
+            final Object item = table[ri];
+            if (item != null) {
+                if (item instanceof HeaderValues && !((HeaderValues) item).isEmpty()) {
+                    return (long)ri << 32L;
+                } else {
+                    final HeaderValues[] row = (HeaderValues[]) item;
+                    ci = 0;
+                    final int rowLen = row.length;
+                    while (ci < rowLen) {
+                        if (row[ci] != null && !row[ci].isEmpty()) {
+                            return (long)ri << 32L | (ci & 0xffffffffL);
+                        }
+                        ci ++;
+                    }
+                }
+            }
+            ri++;
+        }
+        return -1L;
+    }",406-431,0.5955643,0.50607693,0.50607693
+io.undertow.util.HeaderMap,fiCurrent,(J)Lio/undertow/util/HeaderValues;,7,11,63.6%,"public HeaderValues fiCurrent(long cookie) {
+        try {
+            final Object[] table = this.table;
+            int ri = (int) (cookie >> 32);
+            int ci = (int) cookie;
+            final Object item = table[ri];
+            if (item instanceof HeaderValues[]) {
+                return ((HeaderValues[])item)[ci];
+            } else if (ci == 0) {
+                return (HeaderValues) item;
+            } else {
+                throw new NoSuchElementException();
+            }
+        } catch (RuntimeException e) {
+            throw new NoSuchElementException();
+        }
+    }",528-544,0.6059158,0.5053123,0.5053123
+io.undertow.util.AbstractAttachable,putAttachment,(Lio/undertow/util/AttachmentKey;Ljava/lang/Object;)Ljava/lang/Object;,2,3,66.7%,"@Override
+    public <T> T putAttachment(final AttachmentKey<T> key, final T value) {
+        if (key == null) {
+            throw UndertowMessages.MESSAGES.argumentCannotBeNull(""key"");
+        }
+        return key.cast(attachments.put(key, key.cast(value)));
+    }",66-72,0.73575383,0.50391304,0.50391304
+io.undertow.security.impl.SecurityContextImpl,authenticationComplete,(Lio/undertow/security/idm/Account;Ljava/lang/String;Z)V,2,2,100.0%,"@Override
+    public void authenticationComplete(Account account, String mechanism, final boolean cachingRequired) {
+        authenticationComplete(account, mechanism, false, cachingRequired);
+    }",229-232,0.6270177,0.50334775,0.50334775
+io.undertow.security.impl.SecurityContextImpl,authenticationComplete,(Lio/undertow/security/idm/Account;Ljava/lang/String;ZZ)V,5,5,100.0%,"@Override
+    public void authenticationComplete(Account account, String mechanism, final boolean cachingRequired) {
+        authenticationComplete(account, mechanism, false, cachingRequired);
+    }",229-232,0.6270177,0.50334775,0.50334775
+io.undertow.security.impl.SecurityContextImpl,authTransitionRequired,()Z,4,4,100.0%,"private boolean authTransitionRequired() {
+        switch (authenticationState) {
+            case NOT_ATTEMPTED:
+                // There has been no attempt to authenticate the current request so do so either if required or if we are set to
+                // be pro-active.
+                return authenticationRequired || authenticationMode == AuthenticationMode.PRO_ACTIVE;
+            case ATTEMPTED:
+                // To be ATTEMPTED we know it was not AUTHENTICATED so if it is required we need to transition to send the
+                // challenges.
+                return authenticationRequired;
+            default:
+                // At this point the state would either be AUTHENTICATED or CHALLENGE_SENT - either of which mean no further
+                // transitions applicable for this request.
+                return false;
+        }
+    }",138-153,0.5074157,0.50332963,0.50332963
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestCredentialImpl,verifyHA1,([B)Z,2,2,100.0%,"@Override
+        public boolean verifyHA1(byte[] ha1) {
+            context.setHa1(ha1); // Cache for subsequent use.
+
+            return validateRequest(context, ha1);
+        }",570-575,0.77133006,0.50149286,0.50149286
+io.undertow.util.HttpString,equals,(Lio/undertow/util/HttpString;)Z,1,1,100.0%,"@Override
+    public boolean equals(final Object other) {
+        return other == this || other instanceof HttpString && equals((HttpString) other);
+    }",268-271,0.6312657,0.5012044,0.5012044
+io.undertow.security.impl.DigestAuthorizationToken,parseHeader,(Ljava/lang/String;)Ljava/util/Map;,1,1,100.0%,"public static Map<DigestAuthorizationToken, String> parseHeader(final String header) {
+        return TOKEN_PARSER.parseHeader(header);
+    }",78-80,0.8222808,0.50047815,0.50047815
+io.undertow.security.impl.DigestAuthenticationMechanism,createHA2Auth,(Lio/undertow/security/impl/DigestAuthenticationMechanism$DigestContext;Ljava/util/Map;)[B,8,8,100.0%,"private byte[] createHA2Auth(final DigestContext context, Map<DigestAuthorizationToken, String> parsedHeader) {
+        byte[] method = context.getMethod().getBytes(UTF_8);
+        byte[] digestUri = parsedHeader.get(DigestAuthorizationToken.DIGEST_URI).getBytes(UTF_8);
+
+        MessageDigest digest = context.getDigest();
+        try {
+            digest.update(method);
+            digest.update(COLON);
+            digest.update(digestUri);
+
+            return HexConverter.convertToHexBytes(digest.digest());
+        } finally {
+            digest.reset();
+        }
+    }",330-344,0.9139273,0.49947596,0.49947596
+io.undertow.server.protocol.http.HttpTransferEncoding,terminateResponseListener,(Lio/undertow/server/HttpServerExchange;)Lio/undertow/conduits/ConduitListener;,1,1,100.0%,"private static ConduitListener<StreamSinkConduit> terminateResponseListener(final HttpServerExchange exchange) {
+        return new ConduitListener<StreamSinkConduit>() {
+            public void handleEvent(final StreamSinkConduit channel) {
+                Connectors.terminateResponse(exchange);
+            }
+        };
+    }",210-216,0.72658145,0.49861223,0.49861223
+io.undertow.util.HeaderMap,getOrCreateEntry,(Lio/undertow/util/HttpString;)Lio/undertow/util/HeaderValues;,12,16,75.0%,"private HeaderValues getOrCreateEntry(final HttpString headerName) {
+        if (headerName == null) {
+            return null;
+        }
+        final int hc = headerName.hashCode();
+        final Object[] table = this.table;
+        final int length = table.length;
+        final int idx = hc & (length - 1);
+        final Object o = table[idx];
+        HeaderValues headerValues;
+        if (o == null) {
+            if (size >= length >> 1) {
+                resize();
+                return getOrCreateEntry(headerName);
+            }
+            headerValues = new HeaderValues(headerName);
+            table[idx] = headerValues;
+            size++;
+            return headerValues;
+        }
+        return getOrCreateNonEmpty(headerName, table, length, idx, o);
+    }",205-226,0.7086619,0.49811834,0.49811834
+io.undertow.util.AbstractAttachable,getAttachment,(Lio/undertow/util/AttachmentKey;)Ljava/lang/Object;,2,3,66.7%,"@Override
+    public <T> T getAttachment(final AttachmentKey<T> key) {
+        if (key == null) {
+            return null;
+        }
+        return key.cast(attachments.get(key));
+    }",40-46,0.6841289,0.49796885,0.49796885
+io.undertow.util.StatusCodes,putCode,(ILjava/lang/String;)V,5,6,83.3%,"private static void putCode(int code, String reason) {
+        Entry e = new Entry(reason, code);
+        int h = code % SIZE;
+        if(TABLE[h] != null) {
+            throw new IllegalArgumentException(""hash collision"");
+        }
+        TABLE[h] = e;
+    }",157-164,0.67825353,0.49743164,0.49743164
+io.undertow.server.protocol.http.HttpResponseConduit,flush,()Z,8,10,80.0%,"public boolean flush() throws IOException {
+        int oldVal = state;
+        int state = oldVal & MASK_STATE;
+        try {
+            if (state != 0) {
+                state = processWrite(state, null);
+                if (state != 0) {
+                    return false;
+                }
+                if (allAreSet(oldVal, FLAG_SHUTDOWN)) {
+                    next.terminateWrites();
+                    // fall out to the flush
+                }
+            }
+            return next.flush();
+        } finally {
+            this.state = oldVal & ~MASK_STATE | state;
+        }
+    }",578-596,0.6471075,0.49474058,0.49474058
+io.undertow.server.HttpServerExchange,getResponseChannel,()Lorg/xnio/channels/StreamSinkChannel;,10,12,83.3%,"public StreamSinkChannel getResponseChannel() {
+        final ConduitWrapper<StreamSinkConduit>[] wrappers = responseWrappers;
+        this.responseWrappers = null;
+        if (wrappers == null) {
+            return null;
+        }
+        final ConduitStreamSinkChannel sinkChannel = connection.getSinkChannel();
+        if (sinkChannel == null) {
+            return null;
+        }
+        final WrapperConduitFactory<StreamSinkConduit> factory = new WrapperConduitFactory<StreamSinkConduit>(wrappers, responseWrapperCount, sinkChannel.getConduit(), this);
+        sinkChannel.setConduit(factory.create());
+        this.responseChannel = new WriteDispatchChannel(sinkChannel);
+        this.startResponse();
+        return responseChannel;
+    }",1047-1062,0.76221734,0.4939319,0.4939319
+io.undertow.security.impl.SimpleNonceManager,getDigest,(Ljava/lang/String;)Ljava/security/MessageDigest;,1,3,33.3%,"private MessageDigest getDigest(final String hashAlg) {
+        try {
+            return MessageDigest.getInstance(hashAlg);
+        } catch (NoSuchAlgorithmException e) {
+            throw MESSAGES.hashAlgorithmNotFound(hashAlg);
+        }
+    }",140-146,0.78024775,0.49364182,0.49364182
+io.undertow.server.HttpServerExchange,addExchangeCompleteListener,(Lio/undertow/server/ExchangeCompletionListener;)V,5,8,62.5%,"public void addExchangeCompleteListener(final ExchangeCompletionListener listener) {
+        final int exchangeCompletionListenersCount = this.exchangeCompletionListenersCount++;
+        ExchangeCompletionListener[] exchangeCompleteListeners = this.exchangeCompleteListeners;
+        if (exchangeCompleteListeners.length == exchangeCompletionListenersCount) {
+            ExchangeCompletionListener[] old = exchangeCompleteListeners;
+            this.exchangeCompleteListeners = exchangeCompleteListeners = new ExchangeCompletionListener[exchangeCompletionListenersCount + 2];
+            System.arraycopy(old, 0, exchangeCompleteListeners, 0, exchangeCompletionListenersCount);
+        }
+        exchangeCompleteListeners[exchangeCompletionListenersCount] = listener;
+    }",743-752,0.733652,0.49347645,0.49347645
+io.undertow.server.HttpServerExchange,closeAndFlushResponse,()V,7,12,58.3%,"private void closeAndFlushResponse() {
+        try {
+            if (isResponseChannelAvailable()) {
+                getResponseHeaders().put(Headers.CONTENT_LENGTH, ""0"");
+                getResponseChannel();
+            }
+            responseChannel.shutdownWrites();
+            if (!responseChannel.flush()) {
+                responseChannel.getWriteSetter().set(ChannelListeners.flushingChannelListener(
+                        new ChannelListener<StreamSinkChannel>() {
+                            @Override
+                            public void handleEvent(final StreamSinkChannel channel) {
+                                channel.suspendWrites();
+                                channel.getWriteSetter().set(null);
+                            }
+                        }, new ChannelExceptionHandler<Channel>() {
+                            @Override
+                            public void handleException(final Channel channel, final IOException exception) {
+                                UndertowLogger.REQUEST_LOGGER.debug(""Exception ending request"", exception);
+                                IoUtils.safeClose(connection);
+                            }
+                        }
+                ));
+                responseChannel.resumeWrites();
+            }
+        } catch (IOException e) {
+            UndertowLogger.REQUEST_IO_LOGGER.ioException(e);
+            IoUtils.safeClose(connection);
+        }
+    }",1328-1357,0.7784537,0.49305746,0.49305746
+io.undertow.security.impl.DigestAuthenticationMechanism,sendAuthenticationInfoHeader,(Lio/undertow/server/HttpServerExchange;)V,12,22,54.5%,"public void sendAuthenticationInfoHeader(final HttpServerExchange exchange) {
+        DigestContext context = exchange.getAttachment(DigestContext.ATTACHMENT_KEY);
+        DigestQop qop = context.getQop();
+        String currentNonce = context.getNonce();
+        String nextNonce = nonceManager.nextNonce(currentNonce, exchange);
+        if (qop != null || nextNonce.equals(currentNonce) == false) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NEXT_NONCE).append(""=\"""").append(nextNonce).append(""\"""");
+            if (qop != null) {
+                Map<DigestAuthorizationToken, String> parsedHeader = context.getParsedHeader();
+                sb.append("","").append(Headers.QOP.toString()).append(""=\"""").append(qop.getToken()).append(""\"""");
+                byte[] ha1 = context.getHa1();
+                byte[] ha2;
+
+                if (qop == DigestQop.AUTH) {
+                    ha2 = createHA2Auth(context);
+                } else {
+                    ha2 = createHA2AuthInt();
+                }
+                String rspauth = new String(createRFC2617RequestDigest(ha1, ha2, context), UTF_8);
+                sb.append("","").append(Headers.RESPONSE_AUTH.toString()).append(""=\"""").append(rspauth).append(""\"""");
+                sb.append("","").append(Headers.CNONCE.toString()).append(""=\"""").append(parsedHeader.get(DigestAuthorizationToken.CNONCE)).append(""\"""");
+                sb.append("","").append(Headers.NONCE_COUNT.toString()).append(""="").append(parsedHeader.get(DigestAuthorizationToken.NONCE_COUNT));
+            }
+
+            HeaderMap responseHeader = exchange.getResponseHeaders();
+            responseHeader.add(AUTHENTICATION_INFO, sb.toString());
+        }
+
+        exchange.removeAttachment(DigestContext.ATTACHMENT_KEY);
+    }",435-465,0.96121055,0.49293303,0.49293303
+io.undertow.server.AbstractServerConnection,getIoThread,()Lorg/xnio/XnioIoThread;,2,3,66.7%,"@Override
+    public XnioIoThread getIoThread() {
+        if(channel == null) {
+            return null;
+        }
+        return channel.getIoThread();
+    }",113-119,0.5930152,0.49285978,0.49285978
+io.undertow.server.protocol.http.HttpReadListener,exchangeEvent,(Lio/undertow/server/HttpServerExchange;Lio/undertow/server/ExchangeCompletionListener$NextListener;)V,11,20,55.0%,"@Override
+    public void exchangeEvent(final HttpServerExchange exchange, final ExchangeCompletionListener.NextListener nextListener) {
+        connection.resetChannel();
+        final HttpServerConnection connection = this.connection;
+        if (exchange.isPersistent() && !exchange.isUpgrade()) {
+            newRequest();
+            StreamConnection channel = connection.getChannel();
+            if (connection.getExtraBytes() == null) {
+                //if we are not pipelining we just register a listener
+                channel.getSourceChannel().getReadSetter().set(this);
+                channel.getSourceChannel().resumeReads();
+            } else {
+                if (channel.getSourceChannel().isReadResumed()) {
+                    channel.getSourceChannel().suspendReads();
+                }
+                if (exchange.isInIoThread()) {
+                    channel.getIoThread().execute(this);
+                } else {
+                    Executor executor = exchange.getDispatchExecutor();
+                    if (executor == null) {
+                        executor = exchange.getConnection().getWorker();
+                    }
+                    executor.execute(this);
+                }
+            }
+        } else if(!exchange.isPersistent()) {
+            IoUtils.safeClose(connection);
+        }
+        nextListener.proceed();
+    }",182-211,0.7458869,0.49128526,0.49128526
+io.undertow.server.protocol.http.HttpOpenListener,setRootHandler,(Lio/undertow/server/HttpHandler;)V,2,2,100.0%,"@Override
+    public void setRootHandler(final HttpHandler rootHandler) {
+        this.rootHandler = rootHandler;
+    }",76-79,0.7180072,0.49016476,0.49016476
+io.undertow.server.HttpServerExchange$WrapperConduitFactory,create,()Lorg/xnio/conduits/Conduit;,3,3,100.0%,"@Override
+        public T create() {
+            if (position == -1) {
+                return first;
+            } else {
+                return wrappers[position--].wrap(this, exchange);
+            }
+        }",1620-1627,0.6280078,0.48994428,0.48994428
+io.undertow.server.HttpServerExchange,terminateResponse,()V,7,8,87.5%,"void terminateResponse() {
+        int oldVal = state;
+        if (allAreSet(oldVal, FLAG_RESPONSE_TERMINATED)) {
+            // idempotent
+            return;
+        }
+        responseChannel.responseDone();
+        this.state = oldVal | FLAG_RESPONSE_TERMINATED;
+        if (anyAreSet(oldVal, FLAG_REQUEST_TERMINATED)) {
+            invokeExchangeCompleteListeners();
+        }
+    }",1217-1228,0.76536167,0.4898336,0.4898336
+io.undertow.server.HttpServerExchange,setProtocol,(Lio/undertow/util/HttpString;)V,2,2,100.0%,"public void setProtocol(final HttpString protocol) {
+        this.protocol = protocol;
+    }",277-279,0.7204107,0.48969072,0.48969072
+io.undertow.server.HttpServerExchange,isUpgrade,()Z,1,1,100.0%,"public boolean isUpgrade() {
+        return getResponseCode() == 101;
+    }",559-561,0.7008406,0.4880075,0.4880075
+io.undertow.conduits.FixedLengthStreamSinkConduit,terminateWrites,()V,4,7,57.1%,"public void terminateWrites() throws IOException {
+        final long val = enterShutdown();
+        if (anyAreSet(val, MASK_COUNT)) {
+            try {
+                throw new FixedLengthUnderflowException((val & MASK_COUNT) + "" bytes remaining"");
+            } finally {
+                next.truncateWrites();
+            }
+        } else if (allAreSet(config, CONF_FLAG_PASS_CLOSE)) {
+            next.terminateWrites();
+        }
+
+    }",196-208,0.7330965,0.48760483,0.48760483
+io.undertow.security.impl.AuthenticationInfoToken,parseHeader,(Ljava/lang/String;)Ljava/util/Map;,1,1,100.0%,"public static Map<AuthenticationInfoToken, String> parseHeader(final String header) {
+        return TOKEN_PARSER.parseHeader(header);
+    }",69-71,0.7991775,0.4868024,0.4868024
+io.undertow.server.protocol.http.HttpServerConnection,getSslSession,()Ljavax/net/ssl/SSLSession;,2,3,66.7%,"public SSLSession getSslSession() {
+        if (channel instanceof SslChannel) {
+            return ((SslChannel) channel).getSslSession();
+        }
+        return null;
+    }",151-156,0.6841795,0.48676455,0.48676455
+io.undertow.server.HttpServerExchange,unDispatch,()V,4,4,100.0%,"public void unDispatch() {
+        state &= ~FLAG_DISPATCHED;
+        dispatchExecutor = null;
+        dispatchTask = null;
+    }",575-579,0.70943105,0.4859411,0.4859411
+io.undertow.security.idm.DigestAlgorithm,getMessageDigest,()Ljava/security/MessageDigest;,1,1,100.0%,"public MessageDigest getMessageDigest() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(digestAlgorithm);
+    }",70-72,0.79831266,0.48450455,0.48450455
+io.undertow.util.HttpString,calcHashCode,([B)I,4,4,100.0%,"private static int calcHashCode(final byte[] bytes) {
+        int hc = 17;
+        for (byte b : bytes) {
+            hc = (hc << 4) + hc + higher(b);
+        }
+        return hc;
+    }",283-289,0.4350235,0.48325643,0.48325643
+io.undertow.util.HeaderMap,getLast,(Lio/undertow/util/HttpString;)Ljava/lang/String;,3,5,60.0%,"public String getLast(HttpString headerName) {
+        if (headerName == null) {
+            return null;
+        }
+        HeaderValues headerValues = getEntry(headerName);
+        if (headerValues == null) return null;
+        return headerValues.getLast();
+    }",318-325,0.77948767,0.4815849,0.4815849
+io.undertow.server.protocol.http.HttpReadListener,newRequest,()V,5,5,100.0%,"public void newRequest() {
+        state.reset();
+        read = 0;
+        httpServerExchange = new HttpServerExchange(connection, maxEntitySize);
+        httpServerExchange.addExchangeCompleteListener(this);
+    }",65-70,0.77277064,0.4811319,0.4811319
+io.undertow.server.AbstractServerConnection,getUndertowOptions,()Lorg/xnio/OptionMap;,1,1,100.0%,"@Override
+    public OptionMap getUndertowOptions() {
+        return undertowOptions;
+    }",167-170,0.65918076,0.48011094,0.48011094
+io.undertow.util.AbstractAttachable,removeAttachment,(Lio/undertow/util/AttachmentKey;)Ljava/lang/Object;,2,3,66.7%,"@Override
+    public <T> T removeAttachment(final AttachmentKey<T> key) {
+        if (key == null) {
+            return null;
+        }
+        return key.cast(attachments.remove(key));
+    }",77-83,0.68107784,0.47899467,0.47899467
+io.undertow.util.HttpString,equalToString,(Ljava/lang/String;)Z,2,7,28.6%,"public boolean equalToString(String headerName) {
+        if(headerName.length() != bytes.length) {
+            return false;
+        }
+
+        final int len = bytes.length;
+        for (int i = 0; i < len; i++) {
+            if (higher(bytes[i]) != higher((byte)headerName.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }",342-354,0.6682766,0.47675097,0.47675097
+io.undertow.util.HttpString,toString,()Ljava/lang/String;,2,3,66.7%,"@Override
+    @SuppressWarnings(""deprecation"")
+    public String toString() {
+        if (string == null) {
+            string = new String(bytes, 0);
+        }
+        return string;
+    }",315-322,0.5785535,0.47621542,0.47621542
+io.undertow.server.HttpServerExchange,isComplete,()Z,1,1,100.0%,"public boolean isComplete() {
+        return allAreSet(state, FLAG_REQUEST_TERMINATED | FLAG_RESPONSE_TERMINATED);
+    }",979-981,0.765687,0.47529012,0.47529012
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,setParsedHeader,(Ljava/util/Map;)V,2,2,100.0%,"void setParsedHeader(Map<DigestAuthorizationToken, String> parsedHeader) {
+            this.parsedHeader = parsedHeader;
+        }",551-553,0.8277437,0.4718364,0.4718364
+io.undertow.server.protocol.http.HttpRequestParser,decode,(Ljava/lang/String;ZLio/undertow/server/protocol/http/ParseState;Z)Ljava/lang/String;,2,3,66.7%,"private String decode(final String value, boolean urlDecodeRequired, ParseState state, final boolean allowEncodedSlash) {
+        if (urlDecodeRequired) {
+            return URLUtils.decode(value, charset, allowEncodedSlash, state.decodeBuffer);
+        } else {
+            return value;
+        }
+    }",447-453,0.73852634,0.47180414,0.47180414
+io.undertow.server.HttpServerExchange,setInCall,(Z)V,4,4,100.0%,"void setInCall(boolean value) {
+        if (value) {
+            state |= FLAG_IN_CALL;
+        } else {
+            state &= ~FLAG_IN_CALL;
+        }
+    }",677-683,0.6373318,0.47041607,0.47041607
+io.undertow.security.impl.SimpleNonceManager,createNewNonce,(Lio/undertow/security/impl/SimpleNonceManager$NonceHolder;)Lio/undertow/security/impl/SimpleNonceManager$Nonce;,6,6,100.0%,"private Nonce createNewNonce(NonceHolder previousNonce) {
+        byte[] prefix = new byte[8];
+        random.nextBytes(prefix);
+        long timeStamp = System.currentTimeMillis();
+        byte[] now = Long.toString(timeStamp).getBytes(UTF_8);
+
+        String nonce = createNonce(prefix, now);
+
+        return new Nonce(nonce, timeStamp, previousNonce);
+    }",221-230,0.76403254,0.4702734,0.4702734
+io.undertow.server.protocol.http.HttpReadListener,handleFailedRead,(Lorg/xnio/channels/StreamSourceChannel;I)V,5,7,71.4%,"private void handleFailedRead(StreamSourceChannel channel, int res) {
+        if (res == 0) {
+            if (!channel.isReadResumed()) {
+                channel.getReadSetter().set(this);
+                channel.resumeReads();
+            }
+        } else if (res == -1) {
+            handleConnectionClose(channel);
+        }
+    }",139-148,0.7124055,0.46995378,0.46995378
+io.undertow.security.impl.SecurityContextImpl,sendChallenges,()Lio/undertow/security/impl/SecurityContextImpl$AuthenticationState;,1,1,100.0%,"private AuthenticationState sendChallenges() {
+        return new ChallengeSender(authMechanisms.iterator(), exchange).transition();
+    }",134-136,0.8069633,0.46983397,0.46983397
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,getQop,()Lio/undertow/security/impl/DigestQop;,1,1,100.0%,"DigestQop getQop() {
+            return qop;
+        }",518-520,0.7587631,0.4685063,0.4685063
+io.undertow.conduits.FixedLengthStreamSinkConduit,isWriteResumed,()Z,1,1,100.0%,"public boolean isWriteResumed() {
+        // not perfect but not provably wrong either...
+        return allAreClear(state, FLAG_CLOSE_COMPLETE) && next.isWriteResumed();
+    }",183-186,0.667694,0.4682265,0.4682265
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,getDigest,()Ljava/security/MessageDigest;,1,1,100.0%,"MessageDigest getDigest()  {
+            return digest;
+        }",543-545,0.66202545,0.4682202,0.4682202
+io.undertow.server.Connectors,flattenCookies,(Lio/undertow/server/HttpServerExchange;)V,3,6,50.0%,"public static void flattenCookies(final HttpServerExchange exchange) {
+        Map<String, Cookie> cookies = exchange.getResponseCookiesInternal();
+        if (cookies != null) {
+            for (Map.Entry<String, Cookie> entry : cookies.entrySet()) {
+                exchange.getResponseHeaders().add(Headers.SET_COOKIE, getCookieString(entry.getValue()));
+            }
+        }
+    }",30-37,0.8057226,0.46794462,0.46794462
+io.undertow.server.HttpServerExchange,setRequestMethod,(Lio/undertow/util/HttpString;)V,2,2,100.0%,"public void setRequestMethod(final HttpString requestMethod) {
+        this.requestMethod = requestMethod;
+    }",322-324,0.7939695,0.46596482,0.46596482
+io.undertow.util.NetworkUtils,formatPossibleIpv6Address,(Ljava/lang/String;)Ljava/lang/String;,3,7,42.9%,"public static String formatPossibleIpv6Address(String address) {
+        if (address == null) {
+            return address;
+        }
+        if (!address.contains("":"")) {
+            return address;
+        }
+        if (address.startsWith(""["") && address.endsWith(""]"")) {
+            return address;
+        }
+        return ""["" + address + ""]"";
+    }",8-19,0.6518088,0.46460325,0.46460325
+io.undertow.server.HttpServerExchange,getResponseCode,()I,1,1,100.0%,"public int getResponseCode() {
+        return state & MASK_RESPONSE_CODE;
+    }",1209-1211,0.74421,0.46417412,0.46417412
+io.undertow.util.FlexBase64$Decoder,nextByte,(IIIZ)I,10,22,45.5%,"private static int nextByte(ByteBuffer buffer, int state, int last, boolean ignoreErrors) throws IOException {
+            return nextByte(buffer.get() & 0xFF, state, last, ignoreErrors);
+        }",834-836,0.57355106,0.46222696,0.46222696
+io.undertow.util.FlexBase64$Decoder,nextByte,(Ljava/lang/Object;IIIZ)I,4,6,66.7%,"private static int nextByte(ByteBuffer buffer, int state, int last, boolean ignoreErrors) throws IOException {
+            return nextByte(buffer.get() & 0xFF, state, last, ignoreErrors);
+        }",834-836,0.57355106,0.46222696,0.46222696
+io.undertow.util.HeaderValues$1,next,()Ljava/lang/String;,6,12,50.0%,"public String next() {
+                try {
+                    final String next;
+                    if (forwards) {
+                        int idx = this.idx;
+                        next = get(idx);
+                        returned = idx;
+                        this.idx = idx + 1;
+                        return next;
+                    } else {
+                        int idx = this.idx - 1;
+                        next = get(idx);
+                        this.idx = returned = idx;
+                    }
+                    return next;
+                } catch (IndexOutOfBoundsException e) {
+                    throw new NoSuchElementException();
+                }
+            }",120-138,0.5854057,0.4618533,0.4618533
+io.undertow.security.handlers.AuthenticationConstraintHandler,isAuthenticationRequired,(Lio/undertow/server/HttpServerExchange;)Z,1,1,100.0%,"protected boolean isAuthenticationRequired(final HttpServerExchange exchange) {
+        return true;
+    }",62-64,0.63510215,0.46181726,0.46181726
+io.undertow.server.AbstractServerConnection,getWorker,()Lorg/xnio/XnioWorker;,1,1,100.0%,"@Override
+    public XnioWorker getWorker() {
+        return channel.getWorker();
+    }",108-111,0.5671325,0.46169677,0.46169677
+io.undertow.security.impl.SecurityContextImpl,attemptAuthentication,()Lio/undertow/security/impl/SecurityContextImpl$AuthenticationState;,1,1,100.0%,"private AuthenticationState attemptAuthentication() {
+        return new AuthAttempter(authMechanisms.iterator(), exchange).transition();
+    }",130-132,0.7947084,0.46169096,0.46169096
+io.undertow.util.AttachmentKey,create,(Ljava/lang/Class;)Lio/undertow/util/AttachmentKey;,1,1,100.0%,"public static <T> AttachmentKey<T> create(final Class<? super T> valueClass) {
+        return new SimpleAttachmentKey(valueClass);
+    }",50-52,0.6747793,0.4611239,0.4611239
+io.undertow.security.impl.SimpleNonceManager,nextNonce,(Ljava/lang/String;Lio/undertow/server/HttpServerExchange;)Ljava/lang/String;,4,32,12.5%,"public String nextNonce(String lastNonce, HttpServerExchange exchange) {
+        if (lastNonce == null) {
+            return createNewNonceString();
+        }
+
+        if (invalidNonces.contains(lastNonce)) {
+            // The nonce supplied has already been used.
+            return createNewNonceString();
+        }
+
+        String nonce = lastNonce;
+        // Loop the forward mappings.
+        synchronized (forwardMapping) {
+            NonceHolder holder = new NonceHolder(lastNonce);
+            while (forwardMapping.containsKey(holder)) {
+                nonce = forwardMapping.get(holder);
+                // The final NonceHolder will then be used if a forwardMapping needs to be set.
+                holder = new NonceHolder(nonce);
+            }
+
+            synchronized (knownNonces) {
+                Nonce value = knownNonces.get(nonce);
+                if (value == null) {
+                    // Not a likely scenario but if this occurs then most likely the nonce mapped to has also expired so we will
+                    // just send a new nonce.
+                    nonce = createNewNonceString();
+                } else {
+                    long now = System.currentTimeMillis();
+                    // The cacheTimePostExpiry is not included here as this is our opportunity to inform the client to use a
+                    // replacement nonce without a stale round trip.
+                    long earliestAccepted = now - firstUseTimeOut;
+                    if (value.timeStamp < earliestAccepted || value.timeStamp > now) {
+                        XnioExecutor executor = exchange.getIoThread();
+                        Nonce replacement = createNewNonce(holder);
+                        if (value.executorKey != null) {
+                            // The outcome doesn't matter - if we have the value we have all we need.
+                            value.executorKey.remove();
+                        }
+
+                        nonce = replacement.nonce;
+                        // Create a record of the forward mapping so if any requests do need to be marked stale they can be
+                        // pointed towards the correct nonce to use.
+                        forwardMapping.put(holder, nonce);
+                        // Bring over any existing session key.
+                        replacement.setSessionKey(value.getSessionKey());
+                        // At this point we will not accept the nonce again so remove it from the list of known nonces but do
+                        // register the replacement.
+                        knownNonces.remove(holder.nonce);
+                        // There are two reasons for registering the replacement 1 - to preserve any session key, 2 - To keep a
+                        // reference to the now invalid key so it
+                        // can be used as a key in a weak hash map.
+                        knownNonces.put(nonce, replacement);
+                        earliestAccepted = now - (overallTimeOut + cacheTimePostExpiry);
+                        long timeTillExpiry = replacement.timeStamp - earliestAccepted;
+                        replacement.executorKey = executor.executeAfter(new KnownNonceCleaner(nonce), timeTillExpiry,
+                                TimeUnit.MILLISECONDS);
+
+                    }
+                }
+            }
+        }
+
+        return nonce;
+    }",152-215,0.58287084,0.4606526,0.4606526
+io.undertow.util.HeaderMap,put,(Lio/undertow/util/HttpString;Ljava/lang/String;)V,6,9,66.7%,"public void put(HttpString headerName, String headerValue) {
+        if (headerName == null) {
+            throw new IllegalArgumentException(""headerName is null"");
+        }
+        if (headerValue == null) {
+            remove(headerName);
+            return;
+        }
+        final HeaderValues headerValues = getOrCreateEntry(headerName);
+        headerValues.clear();
+        headerValues.add(headerValue);
+    }",721-732,0.80578476,0.46047324,0.46047324
+io.undertow.util.HttpString,bytesAreEqual,([B[B)Z,1,1,100.0%,"private static boolean bytesAreEqual(final byte[] a, final byte[] b) {
+        return a.length == b.length && bytesAreEquivalent(a, b);
+    }",295-297,0.5676062,0.45984584,0.45984584
+io.undertow.util.FlexBase64$Encoder,encodeString,([BIIZ)Ljava/lang/String;,31,39,79.5%,"public static String encodeString(byte[] source, boolean wrap) {
+        return Encoder.encodeString(source, 0, source.length, wrap);
+    }",115-117,0.6431177,0.45829785,0.45829785
+io.undertow.util.FlexBase64,encodeString,([BZ)Ljava/lang/String;,1,1,100.0%,"public static String encodeString(byte[] source, boolean wrap) {
+        return Encoder.encodeString(source, 0, source.length, wrap);
+    }",115-117,0.6431177,0.45829785,0.45829785
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestCredentialImpl,getAlgorithm,()Lio/undertow/security/idm/DigestAlgorithm;,1,1,100.0%,"DigestAlgorithm getAlgorithm() {
+            return algorithm;
+        }",534-536,0.6866014,0.45794302,0.45794302
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,getAlgorithm,()Lio/undertow/security/idm/DigestAlgorithm;,1,1,100.0%,"DigestAlgorithm getAlgorithm() {
+            return algorithm;
+        }",534-536,0.6866014,0.45794302,0.45794302
+io.undertow.server.protocol.http.ParseState,isComplete,()Z,1,1,100.0%,"public boolean isComplete() {
+        return state == PARSE_COMPLETE;
+    }",112-114,0.6631937,0.45310897,0.45310897
+io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/Object;II[BII)I,45,59,76.3%,"public static ByteBuffer decode(String source) throws IOException {
+        return Decoder.decode(source);
+    }",192-194,0.588082,0.4517425,0.4517425
+io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/String;)Ljava/nio/ByteBuffer;,5,5,100.0%,"public static ByteBuffer decode(String source) throws IOException {
+        return Decoder.decode(source);
+    }",192-194,0.588082,0.4517425,0.4517425
+io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/String;II[BII)I,1,1,100.0%,"public static ByteBuffer decode(String source) throws IOException {
+        return Decoder.decode(source);
+    }",192-194,0.588082,0.4517425,0.4517425
+io.undertow.util.FlexBase64,decode,(Ljava/lang/String;)Ljava/nio/ByteBuffer;,1,1,100.0%,"public static ByteBuffer decode(String source) throws IOException {
+        return Decoder.decode(source);
+    }",192-194,0.588082,0.4517425,0.4517425
+io.undertow.util.HeaderMap,getFirst,(Lio/undertow/util/HttpString;)Ljava/lang/String;,3,3,100.0%,"public String getFirst(HttpString headerName) {
+        HeaderValues headerValues = getEntry(headerName);
+        if (headerValues == null) return null;
+        return headerValues.getFirst();
+    }",284-288,0.7992896,0.45083264,0.45083264
+io.undertow.util.HeaderMap,addLast,(Lio/undertow/util/HttpString;Ljava/lang/String;)V,4,6,66.7%,"public void addLast(final HttpString headerName, final String headerValue) {
+        if (headerName == null) {
+            throw new IllegalArgumentException(""headerName is null"");
+        }
+        if (headerValue == null) {
+            return;
+        }
+        getOrCreateEntry(headerName).addLast(headerValue);
+    }",694-702,0.7780511,0.45046392,0.45046392
+io.undertow.security.impl.SimpleNonceManager,generateHash,([B[B)[B,4,4,100.0%,"private byte[] generateHash(final byte[] prefix, final byte[] timeStamp) {
+        MessageDigest digest = getDigest(hashAlg);
+
+        digest.update(prefix);
+        digest.update(timeStamp);
+
+        return digest.digest(secret.getBytes(UTF_8));
+    }",410-417,0.79173374,0.45025244,0.45025244
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestCredentialImpl,getRealm,()Ljava/lang/String;,1,1,100.0%,"@Override
+        public String getRealm() {
+            return realmName;
+        }",577-580,0.61833817,0.4497219,0.4497219
+io.undertow.security.impl.SimpleNonceManager,validateNonce,(Ljava/lang/String;ILio/undertow/server/HttpServerExchange;)Z,10,18,55.6%,"@Override
+    public boolean validateNonce(String nonce, int nonceCount, HttpServerExchange exchange) {
+        XnioExecutor executor = exchange.getIoThread();
+        if (nonceCount < 0) {
+            if (invalidNonces.contains(nonce)) {
+                // Without a nonce count the nonce is only useable once.
+                return false;
+            }
+            // Not already known so will drop into first use validation.
+        } else if (knownNonces.containsKey(nonce)) {
+            // At this point we need to validate that the nonce is still within it's time limits,
+            // If a new nonce had been selected then a known nonce would not have been found.
+            // The nonce will also have it's nonce count checked.
+            return validateNonceWithCount(new Nonce(nonce), nonceCount, executor);
+
+        } else if (forwardMapping.containsKey(new NonceHolder(nonce))) {
+            // We could have let this drop through as the next validation would fail anyway but
+            // why waste the time if we already know a replacement nonce has been issued.
+            return false;
+        }
+
+        // This is not a nonce currently known to us so start the validation process.
+        Nonce value = verifyUnknownNonce(nonce, nonceCount);
+        if (value == null) {
+            return false;
+        }
+
+        long now = System.currentTimeMillis();
+        // NOTE - This check is for the first use, overall validity is checked in validateNonceWithCount.
+        long earliestAccepted = now - firstUseTimeOut;
+        if (value.timeStamp < earliestAccepted || value.timeStamp > now) {
+            // The embedded timestamp is either expired or somehow is after now.
+            return false;
+        }
+
+        if (nonceCount < 0) {
+            // Allow a single use but reject all further uses.
+            return addInvalidNonce(value, executor);
+        } else {
+            return validateNonceWithCount(value, nonceCount, executor);
+        }
+    }",236-277,0.50446075,0.44859055,0.44859055
+io.undertow.server.HttpServerExchange,getResponseCookiesInternal,()Ljava/util/Map;,1,1,100.0%,"Map<String, Cookie> getResponseCookiesInternal() {
+        return responseCookies;
+    }",935-937,0.769987,0.4468938,0.4468938
+io.undertow.util.HeaderMap,get,(Lio/undertow/util/HttpString;)Lio/undertow/util/HeaderValues;,1,1,100.0%,"public HeaderValues get(final HttpString headerName) {
+        return getEntry(headerName);
+    }",276-278,0.7799039,0.44664732,0.44664732
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,setNonce,(Ljava/lang/String;)V,2,2,100.0%,"void setNonce(String nonce) {
+            this.nonce = nonce;
+        }",514-516,0.69369656,0.44478154,0.44478154
+io.undertow.server.HttpServerExchange,getConnection,()Lio/undertow/server/ServerConnection;,1,1,100.0%,"public ServerConnection getConnection() {
+        return connection;
+    }",547-549,0.5977029,0.44467247,0.44467247
+io.undertow.server.HttpServerExchange,getRequestMethod,()Lio/undertow/util/HttpString;,1,1,100.0%,"public HttpString getRequestMethod() {
+        return requestMethod;
+    }",313-315,0.73952043,0.4432283,0.4432283
+io.undertow.security.impl.SecurityContextImpl,getIdentityManager,()Lio/undertow/security/idm/IdentityManager;,1,1,100.0%,"@Override
+    public IdentityManager getIdentityManager() {
+        return identityManager;
+    }",198-201,0.65719646,0.44310665,0.44310665
+io.undertow.server.HttpServerExchange,dispatch,(Ljava/util/concurrent/Executor;Lio/undertow/server/HttpHandler;)V,3,3,100.0%,"public void dispatch() {
+        state |= FLAG_DISPATCHED;
+    }",584-586,0.6192415,0.44292104,0.44292104
+io.undertow.server.HttpServerExchange,dispatch,(Ljava/util/concurrent/Executor;Ljava/lang/Runnable;)V,5,9,55.6%,"public void dispatch() {
+        state |= FLAG_DISPATCHED;
+    }",584-586,0.6192415,0.44292104,0.44292104
+io.undertow.server.HttpServerExchange,dispatch,(Lio/undertow/server/HttpHandler;)V,2,2,100.0%,"public void dispatch() {
+        state |= FLAG_DISPATCHED;
+    }",584-586,0.6192415,0.44292104,0.44292104
+io.undertow.server.HttpServerExchange,getRequestHeaders,()Lio/undertow/util/HeaderMap;,1,1,100.0%,"public HeaderMap getRequestHeaders() {
+        return requestHeaders;
+    }",803-805,0.7065958,0.44242322,0.44242322
+io.undertow.server.Connectors,terminateRequest,(Lio/undertow/server/HttpServerExchange;)V,2,2,100.0%,"public static void terminateRequest(final HttpServerExchange exchange) {
+        exchange.terminateRequest();
+    }",39-41,0.6594315,0.44192463,0.44192463
+io.undertow.server.AbstractServerConnection,getBufferPool,()Lorg/xnio/Pool;,1,1,100.0%,"@Override
+    public Pool<ByteBuffer> getBufferPool() {
+        return bufferPool;
+    }",89-92,0.6320417,0.44115108,0.44115108
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,setMethod,(Ljava/lang/String;)V,2,2,100.0%,"void setMethod(String method) {
+            this.method = method;
+        }",498-500,0.67477477,0.4400893,0.4400893
+io.undertow.server.HttpServerExchange,getDispatchExecutor,()Ljava/util/concurrent/Executor;,1,1,100.0%,"public Executor getDispatchExecutor() {
+        return dispatchExecutor;
+    }",662-664,0.67570627,0.43966404,0.43966404
+io.undertow.server.Connectors,terminateResponse,(Lio/undertow/server/HttpServerExchange;)V,2,2,100.0%,"public static void terminateResponse(final HttpServerExchange exchange) {
+        exchange.terminateResponse();
+    }",43-45,0.65509826,0.4394173,0.4394173
+io.undertow.conduits.FixedLengthStreamSinkConduit,flush,()Z,5,6,83.3%,"public boolean flush() throws IOException {
+        long val = state;
+        if (anyAreSet(val, FLAG_CLOSE_COMPLETE)) {
+            return true;
+        }
+        boolean flushed = false;
+        try {
+            return flushed = next.flush();
+        } finally {
+            exitFlush(val, flushed);
+        }
+    }",170-181,0.61614907,0.43908185,0.43908185
+io.undertow.server.HttpServerExchange,isPersistent,()Z,1,1,100.0%,"public boolean isPersistent() {
+        return anyAreSet(state, FLAG_PERSISTENT);
+    }",551-553,0.7708852,0.43830678,0.43830678
+io.undertow.security.impl.SecurityContextImpl,addAuthenticationMechanism,(Lio/undertow/security/api/AuthenticationMechanism;)V,2,2,100.0%,"@Override
+    public void addAuthenticationMechanism(final AuthenticationMechanism handler) {
+        // TODO - Do we want to change this so we can ensure the mechanisms are not modifiable mid request?
+        authMechanisms.add(handler);
+    }",182-186,0.5271269,0.43814495,0.43814495
+io.undertow.server.protocol.http.HttpResponseConduit,writeString,(Ljava/nio/ByteBuffer;Ljava/lang/String;)V,4,4,100.0%,"private static void writeString(ByteBuffer buffer, String string) {
+        int length = string.length();
+        for (int charIndex = 0; charIndex < length; charIndex++) {
+            buffer.put((byte) string.charAt(charIndex));
+        }
+    }",202-207,0.64228666,0.43349072,0.43349072
+io.undertow.security.impl.SecurityContextImpl,sendNoticiation,(Lio/undertow/security/api/SecurityNotification;)V,6,6,100.0%,"private void sendNoticiation(final SecurityNotification notification) {
+        synchronized (notificationReceivers) {
+            for (NotificationReceiver current : notificationReceivers) {
+                current.handleNotification(notification);
+            }
+        }
+    }",247-253,0.72201014,0.43091023,0.43091023
+io.undertow.server.AbstractServerConnection,getRootHandler,()Lio/undertow/server/HttpHandler;,1,1,100.0%,"public HttpHandler getRootHandler() {
+        return rootHandler;
+    }",80-82,0.73003453,0.430183,0.430183
+io.undertow.server.HttpServerExchange,setRequestURI,(Ljava/lang/String;)V,2,2,100.0%,"public void setRequestURI(final String requestURI) {
+        this.requestURI = requestURI;
+    }",363-365,0.7663265,0.42812192,0.42812192
+io.undertow.server.HttpServerExchange,getIoThread,()Lorg/xnio/XnioIoThread;,1,1,100.0%,"public XnioIoThread getIoThread() {
+        return connection.getIoThread();
+    }",1388-1390,0.6435499,0.4275838,0.4275838
+io.undertow.server.HttpServerExchange,setRequestScheme,(Ljava/lang/String;)V,2,2,100.0%,"public void setRequestScheme(final String requestScheme) {
+        this.requestScheme = requestScheme;
+    }",340-342,0.77443653,0.42701897,0.42701897
+io.undertow.server.AbstractServerConnection,getSinkChannel,()Lorg/xnio/conduits/ConduitStreamSinkChannel;,1,1,100.0%,"@Override
+    protected ConduitStreamSinkChannel getSinkChannel() {
+        return channel.getSinkChannel();
+    }",250-253,0.6565224,0.4269077,0.4269077
+io.undertow.server.HttpServerExchange,getResponseHeaders,()Lio/undertow/util/HeaderMap;,1,1,100.0%,"public HeaderMap getResponseHeaders() {
+        return responseHeaders;
+    }",823-825,0.73457754,0.424845,0.424845
+io.undertow.server.HttpServerExchange,getProtocol,()Lio/undertow/util/HttpString;,1,1,100.0%,"public HttpString getProtocol() {
+        return protocol;
+    }",268-270,0.68076223,0.42166436,0.42166436
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,setHa1,([B)V,2,2,100.0%,"void setHa1(byte[] ha1) {
+            this.ha1 = ha1;
+        }",530-532,0.6953456,0.41974872,0.41974872
+io.undertow.server.HttpServerExchange,isInCall,()Z,1,1,100.0%,"boolean isInCall() {
+        return anyAreSet(state, FLAG_IN_CALL);
+    }",673-675,0.71962905,0.4171751,0.4171751
+io.undertow.util.SimpleAttachmentKey,cast,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"public T cast(final Object value) {
+        return valueClass.cast(value);
+    }",31-33,0.6715127,0.4168175,0.4168175
+io.undertow.util.HeaderMap,add,(Lio/undertow/util/HttpString;Ljava/lang/String;)V,2,2,100.0%,"public boolean add(final HttpString httpString) {
+                getOrCreateEntry(httpString);
+                return true;
+            }",635-638,0.753904,0.41679668,0.41679668
+io.undertow.server.AbstractServerConnection,getChannel,()Lorg/xnio/StreamConnection;,1,1,100.0%,"public StreamConnection getChannel() {
+        return channel;
+    }",99-101,0.6264789,0.4153834,0.4153834
+io.undertow.server.HttpServerExchange,isResponseChannelAvailable,()Z,1,1,100.0%,"public boolean isResponseChannelAvailable() {
+        return responseWrappers != null;
+    }",1085-1087,0.6808131,0.41007,0.41007
+io.undertow.security.impl.SecurityContextImpl,registerNotificationReceiver,(Lio/undertow/security/api/NotificationReceiver;)V,4,4,100.0%,"@Override
+    public void registerNotificationReceiver(NotificationReceiver receiver) {
+        synchronized (notificationReceivers) {
+            notificationReceivers.add(receiver);
+        }
+    }",255-260,0.6843344,0.40948415,0.40948415
+io.undertow.server.HttpServerExchange,setRequestPath,(Ljava/lang/String;)V,2,2,100.0%,"public void setRequestPath(final String requestPath) {
+        this.requestPath = requestPath;
+    }",414-416,0.75038767,0.40733832,0.40733832
+io.undertow.security.impl.SecurityContextImpl,setAuthenticationRequired,()V,2,2,100.0%,"@Override
+    public void setAuthenticationRequired() {
+        authenticationRequired = true;
+    }",155-158,0.5915379,0.40532678,0.40532678
+io.undertow.server.HttpServerExchange,isDispatched,()Z,1,1,100.0%,"public boolean isDispatched() {
+        return anyAreSet(state, FLAG_DISPATCHED);
+    }",571-573,0.74443156,0.40462974,0.40462974
+io.undertow.server.HttpServerExchange,setQueryString,(Ljava/lang/String;)V,2,2,100.0%,"public void setQueryString(final String queryString) {
+        this.queryString = queryString;
+    }",461-463,0.67308384,0.40341443,0.40341443
+io.undertow.channels.DetachableStreamSinkChannel,flush,()Z,2,3,66.7%,"@Override
+    public boolean flush() throws IOException {
+        if (isFinished()) {
+            return true;
+        }
+        return delegate.flush();
+    }",112-118,0.4946875,0.39828777,0.39828777
+io.undertow.channels.DetachableStreamSinkChannel,shutdownWrites,()V,3,4,75.0%,"@Override
+    public void shutdownWrites() throws IOException {
+        if (isFinished()) {
+            return;
+        }
+        delegate.shutdownWrites();
+    }",72-78,0.51852214,0.39787316,0.39787316
+io.undertow.server.HttpServerExchange,getDispatchTask,()Ljava/lang/Runnable;,1,1,100.0%,"Runnable getDispatchTask() {
+        return dispatchTask;
+    }",669-671,0.6867858,0.3978333,0.3978333
+io.undertow.util.FlexBase64,createDecoder,()Lio/undertow/util/FlexBase64$Decoder;,1,1,100.0%,"public static Decoder createDecoder() {
+        return new Decoder();
+    }",98-100,0.50674623,0.39377317,0.39377317
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,getNonce,()Ljava/lang/String;,1,1,100.0%,"String getNonce() {
+            return nonce;
+        }",510-512,0.64570916,0.39373446,0.39373446
+io.undertow.security.impl.SecurityContextImpl,authenticate,()Z,1,1,100.0%,"public boolean authenticate() {
+        // TODO - I don't see a need to force single threaded - if this request is from the servlet APIs then the request will
+        // have already been dispatched.
+        return !authTransition();
+    }",96-100,0.3752032,0.3854313,0.3854313
+io.undertow.security.impl.SecurityContextImpl,getAuthenticatedAccount,()Lio/undertow/security/idm/Account;,1,1,100.0%,"@Override
+    public Account getAuthenticatedAccount() {
+        return account;
+    }",193-196,0.56244904,0.383977,0.383977
+io.undertow.security.impl.DigestAuthenticationMechanism$DigestContext,getMethod,()Ljava/lang/String;,1,1,100.0%,"String getMethod() {
+            return method;
+        }",494-496,0.62378925,0.38381264,0.38381264
+io.undertow.server.AbstractServerConnection,getExtraBytes,()Lorg/xnio/Pooled;,1,1,100.0%,"public Pooled<ByteBuffer> getExtraBytes() {
+        return extraBytes;
+    }",180-182,0.6654326,0.38273305,0.38273305
+io.undertow.security.impl.DigestAuthorizationToken,getName,()Ljava/lang/String;,1,1,100.0%,"@Override
+    public String getName() {
+        return name;
+    }",68-71,0.41065672,0.3808376,0.3808376
+io.undertow.security.api.SecurityNotification,getEventType,()Lio/undertow/security/api/SecurityNotification$EventType;,1,1,100.0%,"public EventType getEventType() {
+        return eventType;
+    }",52-54,0.59057856,0.37983736,0.37983736
+io.undertow.server.HttpServerExchange$WriteDispatchChannel,responseDone,()V,4,5,80.0%,"public void responseDone() {
+            delegate.getCloseSetter().set(null);
+            delegate.getWriteSetter().set(null);
+            if (delegate.isWriteResumed()) {
+                delegate.suspendWrites();
+            }
+        }",1528-1534,0.73459876,0.37437457,0.37437457
+io.undertow.server.HttpServerExchange,isInIoThread,()Z,1,1,100.0%,"public boolean isInIoThread() {
+        return getIoThread() == Thread.currentThread();
+    }",555-557,0.61690116,0.37186074,0.37186074
+io.undertow.server.HttpServerExchange,setRelativePath,(Ljava/lang/String;)V,2,2,100.0%,"public void setRelativePath(final String relativePath) {
+        this.relativePath = relativePath;
+    }",435-437,0.6939033,0.37130612,0.37130612
+io.undertow.security.idm.DigestAlgorithm,getToken,()Ljava/lang/String;,1,1,100.0%,"public String getToken() {
+        return token;
+    }",58-60,0.5127276,0.36966944,0.36966944
+io.undertow.util.HttpString,hashCode,()I,1,1,100.0%,"@Override
+    public int hashCode() {
+        return hashCode;
+    }",257-260,0.41077518,0.3692927,0.3692927
+io.undertow.security.impl.DigestAuthorizationToken,isAllowQuoted,()Z,1,1,100.0%,"@Override
+    public boolean isAllowQuoted() {
+        return quoted;
+    }",73-76,0.4963504,0.36347184,0.36347184
+io.undertow.server.AbstractServerConnection,resetChannel,()Lio/undertow/server/AbstractServerConnection$ConduitState;,4,4,100.0%,"public ConduitState resetChannel() {
+        ConduitState ret = new ConduitState(channel.getSinkChannel().getConduit(), channel.getSourceChannel().getConduit());
+        channel.getSinkChannel().setConduit(originalSinkConduit);
+        channel.getSourceChannel().setConduit(originalSourceConduit);
+        return ret;
+    }",209-214,0.7351815,0.35054737,0.35054737
+io.undertow.util.HttpString,length,()I,1,1,100.0%,"public int length() {
+        return bytes.length;
+    }",152-154,0.5027481,0.34131908,0.34131908
+io.undertow.util.HttpString,appendTo,(Ljava/nio/ByteBuffer;)V,2,2,100.0%,"public void appendTo(ByteBuffer buffer) {
+        buffer.put(bytes);
+    }",203-205,0.64340776,0.34086433,0.34086433
+io.undertow.security.idm.DigestAlgorithm,isSession,()Z,1,1,100.0%,"public boolean isSession() {
+        return session;
+    }",66-68,0.5249799,0.33797795,0.33797795
+io.undertow.security.impl.SimpleNonceManager,createNewNonceString,()Ljava/lang/String;,1,1,100.0%,"private String createNewNonceString() {
+        return createNewNonce(null).nonce;
+    }",217-219,0.7558732,0.33202845,0.33202845
+io.undertow.security.impl.AuthenticationInfoToken,getName,()Ljava/lang/String;,1,1,100.0%,"public String getName() {
+        return name;
+    }",61-63,0.48516887,0.32944483,0.32944483
+io.undertow.security.impl.DigestWWWAuthenticateToken,getName,()Ljava/lang/String;,1,1,100.0%,"public String getName() {
+        return name;
+    }",65-67,0.48516887,0.32944483,0.32944483
+io.undertow.security.api.AuthenticationMechanism$ChallengeResult,isChallengeSent,()Z,1,1,100.0%,"public boolean isChallengeSent() {
+            return challengeSent;
+        }",145-147,0.59140646,0.32146594,0.32146594
+io.undertow.security.impl.AuthenticationInfoToken,isAllowQuoted,()Z,1,1,100.0%,"public boolean isAllowQuoted() {
+        return quoted;
+    }",65-67,0.5636337,0.3203579,0.3203579
+io.undertow.security.impl.DigestWWWAuthenticateToken,isAllowQuoted,()Z,1,1,100.0%,"public boolean isAllowQuoted() {
+        return quoted;
+    }",69-71,0.5636337,0.3203579,0.3203579
+io.undertow.security.api.AuthenticationMechanism$ChallengeResult,getDesiredResponseCode,()Ljava/lang/Integer;,1,1,100.0%,"public Integer getDesiredResponseCode() {
+            return statusCode;
+        }",133-135,0.63538694,0.31768882,0.31768882
+io.undertow.util.HeaderValues$1,hasNext,()Z,1,1,100.0%,"public boolean hasNext() {
+                return idx < size;
+            }",112-114,0.4625266,0.3102458,0.3102458
