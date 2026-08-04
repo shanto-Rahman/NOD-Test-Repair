@@ -1,10 +1,9 @@
 test_id,proj_name,sha,module,test_name,line_to_inject_delay,cot_count,time_to_run_tdrepro,failure_detected?
-11,TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,org.java_websocket.framing.CloseFrame:getPayloadData:()Ljava/nio/ByteBuffer;:307 (return super.getPayloadData();),0_1,172.00060725212097,1
-8,Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c,.,tachyon.client.TachyonFileTest.isInMemoryTest2,,50,846.842355966568,0
+#8,Alluxio/alluxio,78c063ae181279d81cbc0808a684864a8c8b311c,.,tachyon.client.TachyonFileTest.isInMemoryTest2,,50,846.842355966568,0
 11,TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,org.java_websocket.framing.CloseFrame:isValid:()V:237 (        super.isValid();),0_1,108.87583708763123,1
 14,TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario5,org.java_websocket.framing.CloseFrame:isValid:()V:237 (        super.isValid();),0_1,118.74245548248291,1
 15,TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario8,org.java_websocket.framing.CloseFrame:isValid:()V:237 (        super.isValid();),0_1,106.78340315818787,1
-16,TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue677Test.testIssue,,50,928.1413640975952,0
+#16,TooTallNate/Java-WebSocket,fa3909c391195178ccf5a92d4ac342a30ae247c8,.,org.java_websocket.issues.Issue677Test.testIssue,,50,928.1413640975952,0
 22,apache/httpcore,49247d208bde47f652812493e1d3576e136b8eb8,httpcore,org.apache.http.pool.TestConnPool.testLeaseTimeout,,50,555.6792259216309,0
 27,doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestDSLSimpleEntity.should_dsl_select_with_token_value,info.archinnov.achilles.embedded.AchillesCassandraConfig:loadConfig:()Lorg/apache/cassandra/config/Config;:138 (        return config;),0_4,688.6357264518738,1
 28,doanduyhai/Achilles,e3099bdce342910951c4862c78751fd81ed4552e,integration-test-2_1,info.archinnov.achilles.it.TestEntityWithComplexIndices.should_query_using_collection_index,info.archinnov.achilles.embedded.AchillesCassandraConfig:loadConfig:()Lorg/apache/cassandra/config/Config;:138 (        return config;),0_6,806.1556191444397,1
