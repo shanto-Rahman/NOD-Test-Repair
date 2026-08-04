@@ -6,7 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
 import sys
-from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define
+from utils import set_seed, setup_logging, seed_worker, qwen_model_define, parse_category_and_token_list, init_setup, contains_english_letter,  deep_seek_coder_model_define, llama3_8b_model_define, codegemma7b_model_define, gemma2b_model_define, gemma7b_model_define, find_class_file, log_similarity_check
 import pandas as pd
 import os
 import numpy as np
@@ -29,10 +29,22 @@ from modify_java_file import inject_sleep_before_line
 from heuristics import rank_methods_by_similarity, clustering_methods, rank_methods_by_llm_embedding_similarity
 from typing import Optional, List, Tuple  # and List, Dict, Optional, Any as needed
 import time, threading
-
+from token_processing import count_prompt_tokens
 #login(token="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")
 
 import re
+
+CURRENT_DIR = os.getcwd()
+MODEL_NAME = "gpt-5.6"
+
+def append_token_row(csv_path, slug, module, test, token_count):
+    p = Path(csv_path)
+    is_new = not p.exists()
+    with p.open("a", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if is_new:
+            w.writerow(["slug", "module", "test", "token_count"])
+        w.writerow([slug, module, test, token_count])
 
 def hf_login_once():
     if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
@@ -42,7 +54,7 @@ def hf_login_once():
     os.environ["HF_ALREADY_LOGGED_IN"] = "1"
 
 
-def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+'''def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
     inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
     tag = f"{retry_count}_{idx}_{run_id}"
     try:
@@ -72,7 +84,48 @@ def run_once(run_id, class_path_list, line_number, method_name, descriptor, code
             return True
         else:
             print("No Errors: 1 or Failures: 1")
-            return False
+            return False'''
+
+
+def run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+    inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
+
+    tag = f"{retry_count}_{idx}_{run_id}"
+    before, after = test.rsplit('.', 1)
+    test_with_hash = f"{before}#{after}"
+    try:
+        print("./run_test.sh", slug, module, test, tag, "logs-to-reproduce-failure-zero-shot-settings")
+        result_run = subprocess.run(
+            ["./run_test.sh", slug, module, test, tag, "logs-to-reproduce-failure-zero-shot-settings"],
+            check=True, text=True, capture_output=True
+        )
+        out = result_run.stdout.strip()
+        firstLine = out.splitlines()[0]  # "Failure not found." or "Failure found."
+        failed = (firstLine == "Failure found.")
+        #return failed, None, (out if failed else None)
+        return failed, CURRENT_DIR +"/logs-to-reproduce-failure-zero-shot-settings/" + test_with_hash + "-con-after-changedCode-"+tag+".txt"
+    except subprocess.CalledProcessError as e:
+        print("run_test.sh failed with exit code", e.returncode)
+        print("--- stdout ---"); print(e.stdout)
+        print("--- stderr ---"); print(e.stderr)
+
+        # Inspect produced log to decide if it was a failure
+        currentDir_when_exception_occurs = os.getcwd()
+        log_file = (currentDir_when_exception_occurs + "/logs-to-reproduc-failure-zero-shot-settingse/" +
+                    f"{test_with_hash}-con-after-changedCode-{tag}.txt")
+        print("log file name=", log_file)
+        log_text = None
+        if os.path.exists(log_file):
+            with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
+                log_text = f.read()
+        if has_errors_or_failures(log_file):
+            print("Found Errors: 1 or Failures: 1")
+            # Will check if the failure is the one that we desired
+            return True, log_file
+        else:
+            print("No Errors: 1 or Failures: 1")
+            return False, log_file
+
 
 def has_errors_or_failures(path):
     with open(path, 'r') as f:
@@ -118,7 +171,7 @@ import os
 from pathlib import Path
 
 
-def find_class_file(class_name, slug, module):
+'''def find_class_file(class_name, slug, module):
     # Convert class name to relative path
     rel_path = class_name.replace('.', '/') + '.java'
     print("class_name=", class_name)
@@ -167,7 +220,7 @@ def find_class_file(class_name, slug, module):
     if candidates:
         return [str(candidates[0])]
  
-    return []
+    return []'''
 
 #def find_class_file(class_name, slug, module):
 #    # Convert class name to relative path
@@ -200,7 +253,7 @@ def is_synchronized_signature(body):
     return False
 
 
-def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, filtered_df, retry_count = 0):
+'''def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, filtered_df, retry_count = 0):
     max_retries = 1
     tried_methods = set()
    
@@ -288,7 +341,164 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
                 print("Line did not match expected format:", line)
         retry_count += 1
         #continue
-    return "NA", str(retry_count), "Failure not found"
+    return "NA", str(retry_count), "Failure not found"'''
+
+
+def get_messages(definition, prompt):
+    messages = [
+        {"role": "system", "content": definition},
+        {"role": "user",   "content": prompt}
+    ]
+    prompt_tokens = count_prompt_tokens(messages, model=MODEL_NAME)
+    token_csv_path = str(Path("results") / "prompt_token_counts.csv")
+    append_token_row(token_csv_path, slug, module, test, prompt_tokens)
+
+    return messages, prompt_tokens
+
+def parse_gpt_response(response, messages, retry_count): 
+    if not response: 
+        return ""
+
+    response_content = response['choices'][0]['message']['content']
+
+    messages.append({"role": "assistant", "content": response_content})
+
+    if "</Output>" in response_content:
+        m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+        if m:
+            meth_code = m.group(1)
+        else:
+            meth_code = "No code found" #response_content
+    else:
+        meth_code = "</Output> not found" #response_content
+    print("**meth_code=", meth_code)
+
+
+    os.makedirs("tdrepro_gpt_responses", exist_ok=True)
+
+    file_path = f"tdrepro_gpt_responses/{test}.txt"
+    print("saving to =", file_path)
+    with open(file_path, "a") as f:
+        f.write(f"\n\n===== RETRY {retry_count} =====\n")
+        f.write(response_content)
+        f.write("\n==============================\n")
+
+    return meth_code #, messages
+
+#def gpt_output_calculate(test_code, ml_technique, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, retry_count = 0):
+def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, retry_count = 0):
+    max_retries = 5
+    #tried_methods = set()
+
+    failure_detected = -100
+    print("ranked_method_df=", ranked_method_df)
+    prompt, definition = generate_prompt(failure_log, ranked_method_df, test_code)
+    print("prompt=",prompt)
+
+    print("definition=", definition)
+    messages, prompt_tokens = get_messages(definition, prompt)
+
+    while retry_count < max_retries:
+        response = gpt_score_finder(messages)
+        meth_code = parse_gpt_response(response, messages, retry_count)
+        print("=== meth_code=", meth_code)
+        #exit()
+        # Suppose meth_code is your multiline string as shown above
+        for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
+            print("**** index=", idx, ",Processing line:", line)
+            line = line.strip()
+            if not line:
+                continue  # skip empty lines
+            m = re.match(r"^(.*?):(.*?):(.*?):(\d+)\s+\((.*)\)$", line)
+            if m:
+                class_name = m.group(1)
+                print("class_name= ", class_name)
+                method_name = m.group(2)
+                descriptor = m.group(3)
+                line_number = int(m.group(4))
+                code_line = m.group(5)
+
+                with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
+                    print("Tried lines")
+                    writer = csv.writer(f)
+                    writer.writerow([slug, module, test, class_name, line_number,code_line])
+                print("class_name=", class_name, ",slug=", slug, ",module=", module)
+
+                class_path_list = find_class_file(class_name, slug, module)
+
+                #print("**** class_path=", class_path)
+                failure_happened_and_log_matched = True
+                if class_path_list:
+                    failure_count = 0
+                    failure_detected = 0
+                    first_failed, test_run_log = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                    if not first_failed:
+                        print("First run: no failure; skipping additional runs.")
+                        print("Only 0/1 runs failed. Not considering as valid failure.")
+                    else:
+                       # First run failed → run 4 more times (total 5)
+                        failure_count = 1
+                        failure_detected = 1
+                        print("Now will do log_similarity check...")
+                        # Will check the logs 
+                        log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+                        #print("org failure_log=", failure_log)
+                        if not log_similar:
+                            print("failure log does not match.")
+                            failure_happened_and_log_matched = False
+                        else:
+                            for run_id in range(1, 5):
+                                _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                                log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+                                if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+                                    #Call the function to check the log match 
+                                    failure_count += 1
+                                else:
+                                    print("failure log does not match.")
+                                    failure_happened_and_log_matched = False
+                                    #Call to the GPT that log does not match, so find a different location
+                            if failure_count >=3:
+                                print(f"Failure found in {failure_count}/5 runs.")
+                                return line, f"{retry_count}_{idx}", "Failure reproduced.", failure_detected
+                            else:
+                                print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
+                else:
+                    print(f"[ERROR] Could not locate class source file for: {class_name}")
+            else:
+                print("Line did not match expected format:", line)
+        #tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+        messages.append({"role": "assistant", "content": meth_code})  # add this
+        feedback = (
+            f"Your previous suggestion (above) did not reproduce the original failure.\n\n"
+            f"Please suggest a new sleep injection location that has not been tried yet — "
+            f"either in a different method, or a different location within the same method — "
+            f"such that delaying execution there is likely to reproduce the original failure.\n\n"
+            f"Constraints:\n"
+            f"- Do not repeat any location you've already suggested in this conversation.\n"
+            f"- Before suggesting, reason about *why* slowing down execution at that "
+            f"specific location would plausibly cause the test to fail (e.g. a race "
+            f"condition, timing-dependent ordering, or a timeout boundary)."
+        )
+
+        #feedback = (
+        #    f"Your previous suggestion did not reproduce the original failure.\n\n"
+        #    f"Locations already tried:\n"
+        #    f"{meth_code}\n\n"
+        #    f"Please suggest a new sleep injection location that has not been tried yet — "
+        #    f"either in a different method, or a different location within the same method — "
+        #    f"such that delaying execution there is likely to reproduce the original failure.\n\n"
+        #    f"Constraints:\n"
+        #    f"- Do not repeat any previously suggested location.\n"
+        #    f"- Before suggesting, reason about *why* slowing down execution at that "
+        #    f"specific location would plausibly cause the test to fail (e.g. a race "
+        #    f"condition, timing-dependent ordering, or a timeout boundary)."
+        #)
+        print("==== Feedback=====", feedback)
+        messages.append({"role": "user", "content": feedback}) 
+        retry_count += 1
+
+    return "NA", str(retry_count), "Failure not found reproduced", failure_detected
+   
    
 import re
 
@@ -325,8 +535,8 @@ def extract_block(path, test):
     return buf
 
 
-def run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, failure_log_csv, slug, module, test, module_with_underscore_by_replace_slash):
-    device, ml_technique, dataset_category, output_layer, where_data_comes = init_setup(technique, data_name_dir)
+def run_experiment(meth_body_csv, technique, test_code_csv, failure_log_csv, slug, module, test, module_with_underscore_by_replace_slash):
+    device, ml_technique = init_setup(technique)
     
     if ml_technique == "qwen":
         print('I am qwen')
@@ -340,20 +550,6 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #else:
     #    print('model name not correct')
     #    exit()
-    execution_time = time.time()
-    print("Start time of the experiment", execution_time)
-    #no_splits = 10 # For FlakiCat=4, IDOFT=10
-    TN = FP = FN = TP = 0
-    project_group = 0
-    total_execution_time = 0
-    #no_split = 5
-    global_category_token_map = {}
-    predictions_per_project_group = {}
-    ground_truth_per_project_group = {}
-    tokens_per_project_group = {}
-    Org_test_per_project_group = {}
-    #print(len(input_data))
-
     print("test_code_csv=", test_code_csv)
     test_meth_code_df = pd.read_csv(test_code_csv) #read_data(test_code_csv)
 
@@ -361,28 +557,32 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     test_code = test_meth_code_df.iloc[0] 
     failure_log = failure_log_df.iloc[0]
     df = pd.read_csv(
-        dataset_path,
+        meth_body_csv,
             quoting=csv.QUOTE_ALL,
                 encoding='utf-8',
                     engine='python'
                     )
 
 
-    print("test_code_csv=",test_code_csv, ",dataset_path=", dataset_path) 
+    #print("test_code_csv=",test_code_csv, ",meth_body_csv=", dataset_path) 
     test_df = pd.read_csv(test_code_csv)
-    method_df = pd.read_csv(dataset_path)
+    method_df = pd.read_csv(meth_body_csv)
 
-    df_with_cluster = clustering_methods(method_df)
-    print("***************")
-    df_with_cluster.to_csv("M.csv", index=False)
+
+    code_under_test_meths = method_df['Body'].tolist()
+    lineRange = method_df['LineRange'].tolist()
+
+    #df_with_cluster = clustering_methods(method_df)
+    #print("***************")
+    #df_with_cluster.to_csv("M.csv", index=False)
     #print(df_with_cluster)
-    embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
+    #embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
     #csv_that_saved_embedding = "metadata/embedings/"+test+"_"+embed_model_name+"_embeddings.csv"
-    slug_with_underscore = slug.replace("/", "_")
-    print("slug, module, test=", slug, module_with_underscore_by_replace_slash, test)
-    test_with_hash = test.rsplit('.', 1)[0] + '#' + test.rsplit('.', 1)[1]
-    csv_that_contains_all_methods = "traces/" + slug_with_underscore + "_" + module_with_underscore_by_replace_slash + "_" + test_with_hash + "_executed_method_bodies.csv" 
-    print("csv_that_contains_all_methods=", csv_that_contains_all_methods)
+    #slug_with_underscore = slug.replace("/", "_")
+    #print("slug, module, test=", slug, module_with_underscore_by_replace_slash, test)
+    #test_with_hash = test.rsplit('.', 1)[0] + '#' + test.rsplit('.', 1)[1]
+    #csv_that_contains_all_methods = "traces/" + slug_with_underscore + "_" + module_with_underscore_by_replace_slash + "_" + test_with_hash + "_executed_method_bodies.csv" 
+    #print("csv_that_contains_all_methods=", csv_that_contains_all_methods)
     #csv_that_contains_all_methods = traces/TooTallNate_Java-WebSocket_._org.java_websocket.issues.Issue256Test#runReconnectBlockingScenario0_executed_method_bodies.csv 
     '''embedding_required_to_generate =  False
     if embedding_required_to_generate:
@@ -394,23 +594,23 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
         ranked_df = pd.read_csv(csv_that_saved_embedding)
         print(ranked_df)'''
     
-    depth_filtered_df = pd.read_csv(csv_that_contains_all_methods)
+    #depth_filtered_df = pd.read_csv(csv_that_contains_all_methods)
     #depth_filtered_df = df.head(120) # First 100 methods
     #SAMPLE_SIZE = 500
     #depth_filtered_df = df.head(500) #sample(n=SAMPLE_SIZE, random_state=42).reset_index(drop=True) #Random 100 methods
     #print("len=",len(df))
-    print(len(depth_filtered_df))
+    #print(len(depth_filtered_df))
     #exit()
 
-    with open("metadata/meta_data.csv", mode="a", newline="") as f:
+    '''with open("metadata/meta_data.csv", mode="a", newline="") as f:
         print("I AM from metadata")
         writer = csv.writer(f)
         writer.writerow([slug, module_with_underscore_by_replace_slash, test, len(depth_filtered_df)])
     code_under_test_meths = depth_filtered_df['Body'].tolist()
-    lineRange = depth_filtered_df['LineRange'].tolist()
+    lineRange = depth_filtered_df['LineRange'].tolist()'''
     
     os.makedirs("metadata/barebone", exist_ok=True)
-    depth_filtered_df.to_csv("metadata/barebone/"+test+"Depth_filtered_df.csv", index=False)
+    method_df.to_csv("metadata/barebone/"+test+"Depth_filtered_df.csv", index=False)
     print(failure_log)
     print(test_code)
 
@@ -429,13 +629,11 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
 
         del auto_model
         torch.cuda.empty_cache()
-    elif ml_technique == "deep_seek_coder":
-        #model_name, tokenizer, auto_model = deep_seek_coder_model_define()
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_deep_seek_coder(X_test, tokenizer, auto_model, batch_size, device, project_group, test_y.numpy(), ml_technique)
     elif ml_technique == "gpt":
-            line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, dataset_path,  slug, module, test, depth_filtered_df)
-            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
+            #line_to_inject_delay, cot_count, test_output = gpt_output_calculate(test_code, ml_technique, failure_log, meth_body_csv,  slug, module, test, method_df, failure_log_csv)
+
+            line_to_inject_delay, cot_count, test_failure_reproduced, failure_detected = gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, method_df, failure_log_csv)
+            #print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_output=", test_output)
     else:
         print('no model name found=',ml_technique)
         line_to_inject_delay = "Embedding-Only"
@@ -449,7 +647,7 @@ def run_experiment(dataset_path, results_file, data_name_dir, technique, test_co
     #    torch.cuda.empty_cache()
     #    exit()
 
-    return line_to_inject_delay, cot_count, test_output 
+    return line_to_inject_delay, cot_count, test_failure_reproduced, failure_detected
     #return changed_code_output_to_get_fail, java_file_path, method_name, line_range, cot_count, test_output
 
 
@@ -458,75 +656,81 @@ def initialize_environment(seed_value):
     set_seed(seed_value)  # Set the seed for reproducibility
     setup_logging()  # Setup standardized logging
 
-def save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, seconds): 
+#def save_result(test_id, slug, sha, module, test, line_to_inject_delay, cot_count, test_output, seconds, test_failure_detected): 
+def save_result(test_id, slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, seconds, test_failure_detected): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
-    file_path = "results/barebone-gpt4-result_zero_shot.csv"
+    file_path = "results/barebone-gpt5-result_zero_shot.csv"
     write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
         if write_header:
-            writer.writerow(["proj_name","sha","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count"])
+            writer.writerow(["test_id", "proj_name","sha","module","test_name","changed_code_to_get_fail", "file", "method", "line_range", "cot_count", "time_to_run_tdrepro", "failure_detected?"])
 
-        if test_output == "Failure found.":
+        if test_failure_reproduced == "Failure reproduced.":
             writer.writerow([
+                test_id,
                 slug,
                 sha,
                 module,
                 test,
                 line_to_inject_delay,  # This is the code change to inject delay
                 cot_count,
-                seconds
+                seconds,
+                test_failure_detected
             ])
         else:
             writer.writerow([
+                test_id,
                 slug,
                 sha,
                 module,
                 test,
                 "",
                 "10",
-                seconds
+                seconds,
+                test_failure_detected
             ])
 if __name__ == "__main__":
-    dataset_path = sys.argv[1] #traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_methods_with_call_labels.csv
-    results_file = sys.argv[2] #
-    data_name_dir = sys.argv[3] #traces
-    technique = sys.argv[4] 
-    test_code_csv = sys.argv[5] 
-    fail_log_csv = sys.argv[6]
-    slug = sys.argv[7] 
-    sha = sys.argv[8] 
-    module = sys.argv[9] 
+    meth_body_csv = sys.argv[1] #traces/apache_incubator-uniffle_common_org.apache.uniffle.common.rpc.GrpcServerTest\#testGrpcExecutorPool_executed_methods_with_call_labels.csv
+    #results_file = sys.argv[2] #
+    #data_name_dir = sys.argv[3] #traces
+    model_name = sys.argv[2] 
+    test_code_csv = sys.argv[3] 
+    fail_log_csv = sys.argv[4]
+    slug = sys.argv[5] 
+    sha = sys.argv[6] 
+    module = sys.argv[7] 
     module_with_underscore_by_replace_slash = module.replace('/', '_')
-    test = sys.argv[10] 
-    data_is_from_which_csv = sys.argv[11] 
+    test = sys.argv[8] 
+    test_id = sys.argv[9]
     initialize_environment(42)
-    if data_is_from_which_csv == "idoft":
-        filtered_fail_log_txt = extract_block(fail_log_csv, test)
-        base, _ = os.path.splitext(fail_log_csv)
-        fail_log_csv = f"{base}.csv"
+    #if data_is_from_which_csv == "idoft":
+    #    filtered_fail_log_txt = extract_block(fail_log_csv, test)
+    #    base, _ = os.path.splitext(fail_log_csv)
+    #    fail_log_csv = f"{base}.csv"
 
-        cleaned_fail_log = [line for line in filtered_fail_log_txt if line.strip()]
+    #    cleaned_fail_log = [line for line in filtered_fail_log_txt if line.strip()]
 
-        # 2) drop lines that are just “[INFO]” (with optional spaces)
-        info_only = re.compile(r'^\[INFO\]\s*$')
-        cleaned_fail_log = [line for line in cleaned_fail_log if not info_only.match(line)]
-        print("fail cleaned=", cleaned_fail_log)
+    #    # 2) drop lines that are just “[INFO]” (with optional spaces)
+    #    info_only = re.compile(r'^\[INFO\]\s*$')
+    #    cleaned_fail_log = [line for line in cleaned_fail_log if not info_only.match(line)]
+    #    print("fail cleaned=", cleaned_fail_log)
 
-        #big_block = "\n".join(filtered_fail_log_txt)
-        big_block_fail_log = "\n".join(cleaned_fail_log)
+    #    #big_block = "\n".join(filtered_fail_log_txt)
+    #    big_block_fail_log = "\n".join(cleaned_fail_log)
 
-        with open(fail_log_csv, "w", newline="") as fw:
-            writer = csv.writer(fw,
-                            delimiter=",",
-                            quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
-            writer.writerow(["Failure"])
-            writer.writerow([big_block_fail_log]) 
+    #    with open(fail_log_csv, "w", newline="") as fw:
+    #        writer = csv.writer(fw,
+    #                        delimiter=",",
+    #                        quoting=csv.QUOTE_MINIMAL)      # wrap everything in quotes
+    #        writer.writerow(["Failure"])
+    #        writer.writerow([big_block_fail_log]) 
 
     start_time = time.time()
     #print(type(big_block_fail_log))
-    line_to_inject_delay, cot_count, test_output = run_experiment(dataset_path, results_file, data_name_dir, technique, test_code_csv, fail_log_csv, slug, module, test, module_with_underscore_by_replace_slash)
+    line_to_inject_delay, cot_count, test_failure_reproduced, test_failure_detected  = run_experiment(meth_body_csv, model_name, test_code_csv, fail_log_csv, slug, module, test, module_with_underscore_by_replace_slash)
     end_time = time.time()
     duration_in_seconds = end_time - start_time
-    save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, duration_in_seconds)
+    #save_result(slug, sha, module, test, line_to_inject_delay, cot_count, test_output, test_failure_reproduced, duration_in_seconds, test_failure_detected)
+    save_result(test_id, slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, duration_in_seconds, test_failure_detected)
