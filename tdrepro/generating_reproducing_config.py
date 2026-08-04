@@ -32,6 +32,8 @@ from token_processing import count_prompt_tokens
 CURRENT_DIR = os.getcwd()
 #MODEL_NAME = "gpt-5.6-terra" #"gpt-4.1" #"gpt-5.5-pro" #gpt-4o
 MODEL_NAME = "gpt-5.6"
+#top_k_method = 10 #default
+top_k_method = 5 #default
 
 def hf_login_once():
     if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
@@ -970,7 +972,7 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     ranked_df["IsSynchronized"] = ranked_df["Body"].apply(is_synchronized_signature)
     ranked_df["CoverageFloat"] = ranked_df["Coverage %"].str.rstrip('%').astype(float)'''
 
-    ranked_method_df = ranked_df.head(10) #Collecting 10 methods from the top
+    ranked_method_df = ranked_df.head(top_k_method) #Collecting 10 methods from the top; 
     print(len(ranked_method_df))
     #exit()
 
@@ -1027,7 +1029,7 @@ def initialize_environment(seed_value):
 def save_result(test_id, slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, seconds, test_failure_detected): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
-    file_path = "results/tdrepro.csv"
+    file_path = "results/tdrepro_"+ str(top_k_method) + ".csv"
     write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
