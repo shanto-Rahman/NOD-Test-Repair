@@ -268,7 +268,7 @@ Carefully analyze each provided method and identify the single most likely locat
 def generate_prompt(
     failure_log_df,
     code_under_test_meths_ranked_df,
-    test_meth_code_df,
+    test_meth_code_df, top_L_location = 10 
 ): #suggested by gpt
     print("methods before trim:", len(code_under_test_meths_ranked_df))
 
@@ -303,7 +303,8 @@ def generate_prompt(
     output_format = (
         "Class:Method:Descriptor:FileLineNumber (ActualCodeLine)"
     )
-
+    #top_L_location = 10 # defacult
+    #top_L_location = 5
     definitions = f"""
 You are an expert in Java concurrency, asynchronous systems, software
 testing, and timing-dependent flaky tests.
@@ -342,7 +343,7 @@ Follow these rules exactly:
 
 5. The suggested insertion must preserve Java syntax and compilation.
 
-6. Rank exactly 10 distinct locations from most likely to least likely.
+6. Rank exactly {top_L_location} distinct locations from most likely to least likely.
 
 7. Rank locations by causal relevance to the exact observed failure,
    not merely by lexical similarity between method names and test code.

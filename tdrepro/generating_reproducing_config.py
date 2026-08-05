@@ -32,8 +32,9 @@ from token_processing import count_prompt_tokens
 CURRENT_DIR = os.getcwd()
 #MODEL_NAME = "gpt-5.6-terra" #"gpt-4.1" #"gpt-5.5-pro" #gpt-4o
 MODEL_NAME = "gpt-5.6"
-#top_k_method = 10 #default
-top_k_method = 5 #default
+top_k_method = 10 #default
+#top_k_method = 3 #default
+top_L_location = 5
 
 def hf_login_once():
     if os.environ.get("HF_ALREADY_LOGGED_IN") == "1":
@@ -520,7 +521,7 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
     #tried_methods = set()
 
     failure_detected = -100
-    prompt, definition = generate_prompt(failure_log, ranked_method_df, test_code)
+    prompt, definition = generate_prompt(failure_log, ranked_method_df, test_code, top_L_location)
     messages, prompt_tokens = get_messages(definition, prompt)
 
     while retry_count < max_retries:
@@ -1029,7 +1030,7 @@ def initialize_environment(seed_value):
 def save_result(test_id, slug, sha, module, test, line_to_inject_delay, cot_count, test_failure_reproduced, seconds, test_failure_detected): 
     #Saving result for reproducing failure
     #with open("results/gpt.csv", "a", newline="") as fw:
-    file_path = "results/tdrepro_"+ str(top_k_method) + ".csv"
+    file_path = "results/tdrepro_top_k_meth_"+ str(top_k_method) + "_top_L_"+ str(top_L_location) + ".csv"
     write_header = not os.path.exists(file_path) or os.stat(file_path).st_size == 0
     with open(file_path, "a", newline="") as fw:
         writer = csv.writer(fw)
