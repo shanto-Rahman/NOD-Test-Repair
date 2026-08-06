@@ -560,9 +560,9 @@ io/undertow/client/http/HttpResponseParser.handle(Ljava/nio/ByteBuffer;Lio/under
 org/apache/commons/logging/impl/LogFactoryImpl.isDiagnosticsEnabled()Z
 io/undertow/Undertow$Builder.addListener(ILjava/lang/String;)Lio/undertow/Undertow$Builder;
 org/apache/http/impl/AbstractHttpClientConnection.createConnectionMetrics(Lorg/apache/http/io/HttpTransportMetrics;Lorg/apache/http/io/HttpTransportMetrics;)Lorg/apache/http/impl/HttpConnectionMetricsImpl;
+io/undertow/server/AbstractServerConnection.getUndertowOptions()Lorg/xnio/OptionMap;
 org/apache/http/protocol/ImmutableHttpProcessor.process(Lorg/apache/http/HttpRequest;Lorg/apache/http/protocol/HttpContext;)V
 org/apache/http/protocol/RequestTargetHost.process(Lorg/apache/http/HttpRequest;Lorg/apache/http/protocol/HttpContext;)V
-io/undertow/server/AbstractServerConnection.getUndertowOptions()Lorg/xnio/OptionMap;
 io/undertow/client/http/HttpClientConnection.access$402(Lio/undertow/client/http/HttpClientConnection;Lio/undertow/client/http/HttpResponseBuilder;)Lio/undertow/client/http/HttpResponseBuilder;
 org/xnio/channels/EmptyStreamSourceChannel.getReadSetter()Lorg/xnio/ChannelListener$Setter;
 org/apache/http/HttpHost.getHostName()Ljava/lang/String;

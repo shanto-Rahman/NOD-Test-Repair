@@ -490,8 +490,8 @@ io/undertow/security/impl/SimpleNonceManager$Nonce.access$100(Lio/undertow/secur
 org/apache/http/impl/AbstractHttpClientConnection.createConnectionMetrics(Lorg/apache/http/io/HttpTransportMetrics;Lorg/apache/http/io/HttpTransportMetrics;)Lorg/apache/http/impl/HttpConnectionMetricsImpl;
 io/undertow/conduits/FixedLengthStreamSinkConduit.terminateWrites()V
 io/undertow/util/FlexBase64$Decoder.access$500(Ljava/lang/String;)Ljava/nio/ByteBuffer;
-org/apache/http/protocol/ImmutableHttpProcessor.process(Lorg/apache/http/HttpRequest;Lorg/apache/http/protocol/HttpContext;)V
 io/undertow/server/AbstractServerConnection.getUndertowOptions()Lorg/xnio/OptionMap;
+org/apache/http/protocol/ImmutableHttpProcessor.process(Lorg/apache/http/HttpRequest;Lorg/apache/http/protocol/HttpContext;)V
 org/apache/http/protocol/RequestTargetHost.process(Lorg/apache/http/HttpRequest;Lorg/apache/http/protocol/HttpContext;)V
 org/apache/http/HttpHost.getHostName()Ljava/lang/String;
 io/undertow/security/handlers/AuthenticationConstraintHandler.handleRequest(Lio/undertow/server/HttpServerExchange;)V

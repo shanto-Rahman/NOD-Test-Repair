@@ -434,3 +434,11 @@ slug,sha,module,test,,
 activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.jobexecutor.AsyncExecutorTest#testAsyncExecutorDisabledOnOneEngine,2095,42662
 activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.bpmn.event.timer.compatibility.BoundaryTimerEventRepeatCompatibilityTest#testRepeatWithoutEnd,2427,48453
 activiti/activiti,b11f757a,activiti-engine,org.activiti.engine.test.api.event.ActivityEventsTest#testActivityTimeOutEvent,2220,45851
+Project-Name,SHA,Module,Test-Name,Total-Executed-Meth,Total-tokens
+57,flaxsearch/luwak,c27ec08c803db6ca6be1b6e8017f45667e603161,luwak,uk.co.flax.luwak.matchers.TestPartitionMatcher#testParallelSlowLog,131,3099
+59,javadelight/delight-nashorn-sandbox,da35edc0a75424bad8cbf60959fae253202154c4,.,delight.nashornsandbox.TestGetFunction#test,69,1776
+60,kagkarlsson/db-scheduler,4a8a28e60640dcd03e8d3bf212f483d35b0b6310,.,com.github.kagkarlsson.scheduler.compatibility.HsqlCompatibilityTest#test_compatibility,107,2800
+163,davidmoten/rxjava2-extras,d0315b6ecb0d24437ec0d440b6d768e89247d56c,.,com.github.davidmoten.rx2.internal.flowable.FlowableServerSocketTest#testLoad,84,1887
+164,flaxsearch/luwak,c27ec08c803db6ca6be1b6e8017f45667e603161,luwak,uk.co.flax.luwak.matchers.TestParallelMatcher#testParallelSlowLog,133,3147
+173,undertow-io/undertow,ac7204ab8cabb197a1327e5bbdb6e0e2ed1917f1,core,io.undertow.server.handlers.proxy.LoadBalancingProxyTestCase#testLoadSharedWithServerShutdown,368,13638
+174,undertow-io/undertow,ac7204ab8cabb197a1327e5bbdb6e0e2ed1917f1,core,io.undertow.server.security.DigestAuthentication2069TestCase#testDigestSuccess,270,9474

@@ -263,12 +263,6 @@ io/undertow/util,io.undertow.util.AttachmentKey,create,(Ljava/lang/Class;)Lio/un
 io/undertow/util,io.undertow.util.SameThreadExecutor,execute,(Ljava/lang/Runnable;)V,2,2,100.0%
 io/undertow/util,io.undertow.util.SameThreadExecutor,<clinit>,()V,1,1,100.0%
 io/undertow/util,io.undertow.util.NetworkUtils,formatPossibleIpv6Address,(Ljava/lang/String;)Ljava/lang/String;,3,7,42.9%
-io/undertow/util,io.undertow.util.CopyOnWriteMap,<init>,()V,3,3,100.0%
-io/undertow/util,io.undertow.util.CopyOnWriteMap,get,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%
-io/undertow/util,io.undertow.util.CopyOnWriteMap,put,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%
-io/undertow/util,io.undertow.util.CopyOnWriteMap,keySet,()Ljava/util/Set;,1,1,100.0%
-io/undertow/util,io.undertow.util.CopyOnWriteMap,entrySet,()Ljava/util/Set;,1,1,100.0%
-io/undertow/util,io.undertow.util.CopyOnWriteMap,putInternal,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,4,4,100.0%
 io/undertow/util,io.undertow.util.HttpString,<init>,(Ljava/lang/String;)V,2,2,100.0%
 io/undertow/util,io.undertow.util.HttpString,<init>,(Ljava/lang/String;I)V,12,13,92.3%
 io/undertow/util,io.undertow.util.HttpString,<init>,([BLjava/lang/String;)V,6,6,100.0%
@@ -284,6 +278,12 @@ io/undertow/util,io.undertow.util.HttpString,bytesAreEqual,([B[B)Z,1,1,100.0%
 io/undertow/util,io.undertow.util.HttpString,toString,()Ljava/lang/String;,2,3,66.7%
 io/undertow/util,io.undertow.util.HttpString,equalToString,(Ljava/lang/String;)Z,2,7,28.6%
 io/undertow/util,io.undertow.util.HttpString,<clinit>,()V,4,6,66.7%
+io/undertow/util,io.undertow.util.CopyOnWriteMap,<init>,()V,3,3,100.0%
+io/undertow/util,io.undertow.util.CopyOnWriteMap,get,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%
+io/undertow/util,io.undertow.util.CopyOnWriteMap,put,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%
+io/undertow/util,io.undertow.util.CopyOnWriteMap,keySet,()Ljava/util/Set;,1,1,100.0%
+io/undertow/util,io.undertow.util.CopyOnWriteMap,entrySet,()Ljava/util/Set;,1,1,100.0%
+io/undertow/util,io.undertow.util.CopyOnWriteMap,putInternal,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,4,4,100.0%
 io/undertow/util,io.undertow.util.Cookies,parseRequestCookies,(ILjava/util/List;)Ljava/util/Map;,2,7,28.6%
 io/undertow/util,io.undertow.util.SimpleAttachmentKey,<init>,(Ljava/lang/Class;)V,3,3,100.0%
 io/undertow/util,io.undertow.util.SimpleAttachmentKey,cast,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%

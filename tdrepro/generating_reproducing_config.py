@@ -32,8 +32,8 @@ from token_processing import count_prompt_tokens
 CURRENT_DIR = os.getcwd()
 #MODEL_NAME = "gpt-5.6-terra" #"gpt-4.1" #"gpt-5.5-pro" #gpt-4o
 MODEL_NAME = "gpt-5.6"
+#top_k_method = 10 #default
 top_k_method = 10 #default
-#top_k_method = 3 #default
 top_L_location = 5
 
 def hf_login_once():

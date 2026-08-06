@@ -73,14 +73,14 @@ io.undertow.security.handlers.AuthenticationConstraintHandler,handleRequest,(Lio
 io.undertow.security.handlers.AuthenticationConstraintHandler,isAuthenticationRequired,(Lio/undertow/server/HttpServerExchange;)Z,1,1,100.0%,"protected boolean isAuthenticationRequired(final HttpServerExchange exchange) {
         return true;
     }",62-64
-io.undertow.security.handlers.SecurityInitialHandler,<init>,(Lio/undertow/security/api/AuthenticationMode;Lio/undertow/security/idm/IdentityManager;Lio/undertow/server/HttpHandler;)V,2,2,100.0%,"public SecurityInitialHandler(final AuthenticationMode authenticationMode, final IdentityManager identityManager,
+io.undertow.security.handlers.SecurityInitialHandler,<init>,(Lio/undertow/security/api/AuthenticationMode;Lio/undertow/security/idm/IdentityManager;Ljava/lang/String;Lio/undertow/server/HttpHandler;)V,6,6,100.0%,"public SecurityInitialHandler(final AuthenticationMode authenticationMode, final IdentityManager identityManager,
             final String programaticMechName, final HttpHandler next) {
         this.authenticationMode = authenticationMode;
         this.identityManager = identityManager;
         this.programaticMechName = programaticMechName;
         this.next = next;
     }",47-53
-io.undertow.security.handlers.SecurityInitialHandler,<init>,(Lio/undertow/security/api/AuthenticationMode;Lio/undertow/security/idm/IdentityManager;Ljava/lang/String;Lio/undertow/server/HttpHandler;)V,6,6,100.0%,"public SecurityInitialHandler(final AuthenticationMode authenticationMode, final IdentityManager identityManager,
+io.undertow.security.handlers.SecurityInitialHandler,<init>,(Lio/undertow/security/api/AuthenticationMode;Lio/undertow/security/idm/IdentityManager;Lio/undertow/server/HttpHandler;)V,2,2,100.0%,"public SecurityInitialHandler(final AuthenticationMode authenticationMode, final IdentityManager identityManager,
             final String programaticMechName, final HttpHandler next) {
         this.authenticationMode = authenticationMode;
         this.identityManager = identityManager;
@@ -1380,19 +1380,19 @@ io.undertow.security.api.AuthenticationMechanism$ChallengeResult,getDesiredRespo
 io.undertow.security.api.AuthenticationMechanism$ChallengeResult,isChallengeSent,()Z,1,1,100.0%,"public boolean isChallengeSent() {
             return challengeSent;
         }",145-147
-io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/Object;II[BII)I,45,59,76.3%,"public static ByteBuffer decode(String source) throws IOException {
+io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/String;II[BII)I,1,1,100.0%,"public static ByteBuffer decode(String source) throws IOException {
         return Decoder.decode(source);
     }",192-194
-io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/String;II[BII)I,1,1,100.0%,"public static ByteBuffer decode(String source) throws IOException {
+io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/Object;II[BII)I,45,59,76.3%,"public static ByteBuffer decode(String source) throws IOException {
         return Decoder.decode(source);
     }",192-194
 io.undertow.util.FlexBase64$Decoder,decode,(Ljava/lang/String;)Ljava/nio/ByteBuffer;,5,5,100.0%,"public static ByteBuffer decode(String source) throws IOException {
         return Decoder.decode(source);
     }",192-194
-io.undertow.util.FlexBase64$Decoder,nextByte,(IIIZ)I,10,22,45.5%,"private static int nextByte(ByteBuffer buffer, int state, int last, boolean ignoreErrors) throws IOException {
+io.undertow.util.FlexBase64$Decoder,nextByte,(Ljava/lang/Object;IIIZ)I,4,6,66.7%,"private static int nextByte(ByteBuffer buffer, int state, int last, boolean ignoreErrors) throws IOException {
             return nextByte(buffer.get() & 0xFF, state, last, ignoreErrors);
         }",834-836
-io.undertow.util.FlexBase64$Decoder,nextByte,(Ljava/lang/Object;IIIZ)I,4,6,66.7%,"private static int nextByte(ByteBuffer buffer, int state, int last, boolean ignoreErrors) throws IOException {
+io.undertow.util.FlexBase64$Decoder,nextByte,(IIIZ)I,10,22,45.5%,"private static int nextByte(ByteBuffer buffer, int state, int last, boolean ignoreErrors) throws IOException {
             return nextByte(buffer.get() & 0xFF, state, last, ignoreErrors);
         }",834-836
 io.undertow.util.AttachmentKey,<init>,()V,2,2,100.0%,"AttachmentKey() {
@@ -1412,10 +1412,10 @@ io.undertow.util.NetworkUtils,formatPossibleIpv6Address,(Ljava/lang/String;)Ljav
         }
         return ""["" + address + ""]"";
     }",8-19
-io.undertow.util.HttpString,<init>,(Ljava/lang/String;I)V,12,13,92.3%,"public HttpString(final byte[] bytes) {
+io.undertow.util.HttpString,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public HttpString(final byte[] bytes) {
         this(bytes.clone(), null);
     }",70-72
-io.undertow.util.HttpString,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public HttpString(final byte[] bytes) {
+io.undertow.util.HttpString,<init>,(Ljava/lang/String;I)V,12,13,92.3%,"public HttpString(final byte[] bytes) {
         this(bytes.clone(), null);
     }",70-72
 io.undertow.util.HttpString,length,()I,1,1,100.0%,"public int length() {
@@ -1641,10 +1641,10 @@ io.undertow.util.HeaderValues,clear,()V,2,16,12.5%,"public void clear() {
         }
         this.head = this.size = 0;
     }",59-78
-io.undertow.util.HeaderValues,iterator,(IZ)Ljava/util/ListIterator;,1,1,100.0%,"public Iterator<String> iterator() {
+io.undertow.util.HeaderValues,iterator,()Ljava/util/Iterator;,1,1,100.0%,"public Iterator<String> iterator() {
         return iterator(0, true);
     }",99-101
-io.undertow.util.HeaderValues,iterator,()Ljava/util/Iterator;,1,1,100.0%,"public Iterator<String> iterator() {
+io.undertow.util.HeaderValues,iterator,(IZ)Ljava/util/ListIterator;,1,1,100.0%,"public Iterator<String> iterator() {
         return iterator(0, true);
     }",99-101
 io.undertow.util.HeaderValues,add,(Ljava/lang/String;)Z,2,2,100.0%,"public void add(final String headerValue) {
@@ -2046,10 +2046,10 @@ io.undertow.security.impl.AuthenticationInfoToken,isAllowQuoted,()Z,1,1,100.0%,"
 io.undertow.security.impl.AuthenticationInfoToken,parseHeader,(Ljava/lang/String;)Ljava/util/Map;,1,1,100.0%,"public static Map<AuthenticationInfoToken, String> parseHeader(final String header) {
         return TOKEN_PARSER.parseHeader(header);
     }",69-71
-io.undertow.security.impl.SimpleNonceManager,<init>,(Ljava/lang/String;)V,16,16,100.0%,"public SimpleNonceManager() {
+io.undertow.security.impl.SimpleNonceManager,<init>,()V,2,2,100.0%,"public SimpleNonceManager() {
         this(DEFAULT_HASH_ALG);
     }",122-124
-io.undertow.security.impl.SimpleNonceManager,<init>,()V,2,2,100.0%,"public SimpleNonceManager() {
+io.undertow.security.impl.SimpleNonceManager,<init>,(Ljava/lang/String;)V,16,16,100.0%,"public SimpleNonceManager() {
         this(DEFAULT_HASH_ALG);
     }",122-124
 io.undertow.security.impl.SimpleNonceManager,getDigest,(Ljava/lang/String;)Ljava/security/MessageDigest;,1,3,33.3%,"private MessageDigest getDigest(final String hashAlg) {
@@ -2344,11 +2344,11 @@ io.undertow.security.impl.SecurityContextImpl,getIdentityManager,()Lio/undertow/
     public IdentityManager getIdentityManager() {
         return identityManager;
     }",198-201
-io.undertow.security.impl.SecurityContextImpl,authenticationComplete,(Lio/undertow/security/idm/Account;Ljava/lang/String;ZZ)V,5,5,100.0%,"@Override
+io.undertow.security.impl.SecurityContextImpl,authenticationComplete,(Lio/undertow/security/idm/Account;Ljava/lang/String;Z)V,2,2,100.0%,"@Override
     public void authenticationComplete(Account account, String mechanism, final boolean cachingRequired) {
         authenticationComplete(account, mechanism, false, cachingRequired);
     }",229-232
-io.undertow.security.impl.SecurityContextImpl,authenticationComplete,(Lio/undertow/security/idm/Account;Ljava/lang/String;Z)V,2,2,100.0%,"@Override
+io.undertow.security.impl.SecurityContextImpl,authenticationComplete,(Lio/undertow/security/idm/Account;Ljava/lang/String;ZZ)V,5,5,100.0%,"@Override
     public void authenticationComplete(Account account, String mechanism, final boolean cachingRequired) {
         authenticationComplete(account, mechanism, false, cachingRequired);
     }",229-232
@@ -2431,20 +2431,20 @@ io.undertow.security.impl.SecurityContextImpl$ChallengeSender,transition,()Lio/u
                 return AuthenticationState.ATTEMPTED;
             }
         }",279-308
-io.undertow.security.impl.SimpleNonceManager$Nonce,<init>,(Lio/undertow/security/impl/SimpleNonceManager;Ljava/lang/String;JILio/undertow/security/impl/SimpleNonceManager$NonceHolder;)V,6,6,100.0%,"public SimpleNonceManager() {
-        this(DEFAULT_HASH_ALG);
-    }",122-124
 io.undertow.security.impl.SimpleNonceManager$Nonce,<init>,(Lio/undertow/security/impl/SimpleNonceManager;Ljava/lang/String;JLio/undertow/security/impl/SimpleNonceManager$NonceHolder;)V,2,2,100.0%,"public SimpleNonceManager() {
         this(DEFAULT_HASH_ALG);
     }",122-124
 io.undertow.security.impl.SimpleNonceManager$Nonce,<init>,(Lio/undertow/security/impl/SimpleNonceManager;Ljava/lang/String;JI)V,2,2,100.0%,"public SimpleNonceManager() {
         this(DEFAULT_HASH_ALG);
     }",122-124
-io.undertow.security.impl.DigestAuthenticationMechanism,<init>,(Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/undertow/security/api/NonceManager;Ljava/lang/String;)V,10,17,58.8%,"public DigestAuthenticationMechanism(final List<DigestAlgorithm> supportedAlgorithms, final List<DigestQop> supportedQops,
+io.undertow.security.impl.SimpleNonceManager$Nonce,<init>,(Lio/undertow/security/impl/SimpleNonceManager;Ljava/lang/String;JILio/undertow/security/impl/SimpleNonceManager$NonceHolder;)V,6,6,100.0%,"public SimpleNonceManager() {
+        this(DEFAULT_HASH_ALG);
+    }",122-124
+io.undertow.security.impl.DigestAuthenticationMechanism,<init>,(Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/undertow/security/api/NonceManager;)V,2,2,100.0%,"public DigestAuthenticationMechanism(final List<DigestAlgorithm> supportedAlgorithms, final List<DigestQop> supportedQops,
             final String realmName, final String domain, final NonceManager nonceManager) {
         this(supportedAlgorithms, supportedQops, realmName, domain, nonceManager, DEFAULT_NAME);
     }",97-100
-io.undertow.security.impl.DigestAuthenticationMechanism,<init>,(Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/undertow/security/api/NonceManager;)V,2,2,100.0%,"public DigestAuthenticationMechanism(final List<DigestAlgorithm> supportedAlgorithms, final List<DigestQop> supportedQops,
+io.undertow.security.impl.DigestAuthenticationMechanism,<init>,(Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/undertow/security/api/NonceManager;Ljava/lang/String;)V,10,17,58.8%,"public DigestAuthenticationMechanism(final List<DigestAlgorithm> supportedAlgorithms, final List<DigestQop> supportedQops,
             final String realmName, final String domain, final NonceManager nonceManager) {
         this(supportedAlgorithms, supportedQops, realmName, domain, nonceManager, DEFAULT_NAME);
     }",97-100

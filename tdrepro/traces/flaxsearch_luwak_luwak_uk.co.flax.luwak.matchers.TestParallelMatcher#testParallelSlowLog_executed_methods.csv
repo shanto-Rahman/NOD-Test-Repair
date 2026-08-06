@@ -17,10 +17,6 @@ uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch,<init>,(Ljava/util/Collection;Lo
 uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch,getSearcher,()Lorg/apache/lucene/search/IndexSearcher;,4,4,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch,iterator,()Ljava/util/Iterator;,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch,getBatchSize,()I,1,1,100.0%
-uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,<init>,(Ljava/util/Collection;Lorg/apache/lucene/search/similarities/Similarity;)V,12,12,100.0%
-uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%
-uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,resolveDocId,(I)Ljava/lang/String;,2,2,100.0%
-uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,<clinit>,()V,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex,<init>,(Lorg/apache/lucene/index/IndexWriter;)V,9,9,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex,commit,(Ljava/util/List;)V,20,21,95.2%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex,scan,(Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,1,1,100.0%
@@ -29,6 +25,10 @@ uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex,search,(Luk/co/flax/luwak/QueryInde
 uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex,purgeCache,(Luk/co/flax/luwak/QueryIndex$CachePopulator;)V,11,11,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex,closeWhileHandlingException,()V,2,2,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex,lambda$search$0,(Lorg/apache/lucene/search/Query;Luk/co/flax/luwak/QueryTermFilter;)Lorg/apache/lucene/search/Query;,1,1,100.0%
+uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,<init>,(Ljava/util/Collection;Lorg/apache/lucene/search/similarities/Similarity;)V,12,12,100.0%
+uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%
+uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,resolveDocId,(I)Ljava/lang/String;,2,2,100.0%
+uk/co/flax/luwak,uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,<clinit>,()V,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,<init>,(Luk/co/flax/luwak/Monitor;Lorg/apache/lucene/index/LeafReader;)V,3,3,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,buildQuery,(Luk/co/flax/luwak/QueryTermFilter;)Lorg/apache/lucene/search/Query;,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,<init>,(Luk/co/flax/luwak/MonitorQueryParser;Luk/co/flax/luwak/Presearcher;Lorg/apache/lucene/index/IndexWriter;Luk/co/flax/luwak/QueryIndexConfiguration;)V,16,16,100.0%
@@ -49,13 +49,13 @@ uk/co/flax/luwak,uk.co.flax.luwak.Monitor,buildIndexableQuery,(Ljava/lang/String
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor,lambda$prepareQueryCache$2,(Ljava/util/Set;Ljava/util/Set;Ljava/util/List;Ljava/util/Map;)V,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryTermFilter,<init>,(Lorg/apache/lucene/index/IndexReader;)V,13,13,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryCacheEntry,<init>,(Lorg/apache/lucene/util/BytesRef;Lorg/apache/lucene/search/Query;Ljava/util/Map;)V,5,5,100.0%
+uk/co/flax/luwak,uk.co.flax.luwak.InputDocument$Builder,<init>,(Ljava/lang/String;)V,6,6,100.0%
+uk/co/flax/luwak,uk.co.flax.luwak.InputDocument$Builder,build,()Luk/co/flax/luwak/InputDocument;,3,3,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Matches,<init>,(Ljava/util/Map;Ljava/util/Set;Ljava/util/List;JJIILuk/co/flax/luwak/SlowLog;)V,10,10,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Matches,iterator,()Ljava/util/Iterator;,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Matches,getMatchCount,(Ljava/lang/String;)I,3,4,75.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Matches,getErrors,()Ljava/util/List;,1,1,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Matches,getSlowLog,()Luk/co/flax/luwak/SlowLog;,1,1,100.0%
-uk/co/flax/luwak,uk.co.flax.luwak.InputDocument$Builder,<init>,(Ljava/lang/String;)V,6,6,100.0%
-uk/co/flax/luwak,uk.co.flax.luwak.InputDocument$Builder,build,()Luk/co/flax/luwak/InputDocument;,3,3,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor$StandardQueryCollector,<init>,(Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%
 uk/co/flax/luwak,uk.co.flax.luwak.Monitor$StandardQueryCollector,matchQuery,(Ljava/lang/String;Luk/co/flax/luwak/QueryCacheEntry;Luk/co/flax/luwak/QueryIndex$DataValues;)V,5,8,62.5%
 uk/co/flax/luwak,uk.co.flax.luwak.QueryIndex$TermsHashBuilder,<init>,(Luk/co/flax/luwak/QueryIndex;)V,1,1,100.0%

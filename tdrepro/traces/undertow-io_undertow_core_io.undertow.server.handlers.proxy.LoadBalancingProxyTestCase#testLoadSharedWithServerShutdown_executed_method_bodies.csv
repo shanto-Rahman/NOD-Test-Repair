@@ -70,10 +70,10 @@ io.undertow.server.handlers.proxy.LoadBalancingProxyClient$StickeySessionWrapper
             }
             return factory.create();
         }",249-271
-io.undertow.server.handlers.proxy.LoadBalancingProxyClient,<init>,()V,2,2,100.0%,"public LoadBalancingProxyClient() {
+io.undertow.server.handlers.proxy.LoadBalancingProxyClient,<init>,(Lio/undertow/client/UndertowClient;)V,11,11,100.0%,"public LoadBalancingProxyClient() {
         this(UndertowClient.getInstance());
     }",66-68
-io.undertow.server.handlers.proxy.LoadBalancingProxyClient,<init>,(Lio/undertow/client/UndertowClient;)V,11,11,100.0%,"public LoadBalancingProxyClient() {
+io.undertow.server.handlers.proxy.LoadBalancingProxyClient,<init>,()V,2,2,100.0%,"public LoadBalancingProxyClient() {
         this(UndertowClient.getInstance());
     }",66-68
 io.undertow.server.handlers.proxy.LoadBalancingProxyClient,getConnectionsPerThread,()I,1,1,100.0%,"public int getConnectionsPerThread() {
@@ -1979,10 +1979,10 @@ io.undertow.client.ClientRequest,setMethod,(Lio/undertow/util/HttpString;)Lio/un
         this.method = method;
         return this;
     }",46-49
-io.undertow.client.UndertowClient,<init>,(Ljava/lang/ClassLoader;)V,10,10,100.0%,"private UndertowClient() {
+io.undertow.client.UndertowClient,<init>,()V,2,2,100.0%,"private UndertowClient() {
         this(UndertowClient.class.getClassLoader());
     }",30-32
-io.undertow.client.UndertowClient,<init>,()V,2,2,100.0%,"private UndertowClient() {
+io.undertow.client.UndertowClient,<init>,(Ljava/lang/ClassLoader;)V,10,10,100.0%,"private UndertowClient() {
         this(UndertowClient.class.getClassLoader());
     }",30-32
 io.undertow.client.UndertowClient,connect,(Lio/undertow/client/ClientCallback;Ljava/net/URI;Lorg/xnio/XnioIoThread;Lorg/xnio/Pool;Lorg/xnio/OptionMap;)V,3,3,100.0%,"public IoFuture<ClientConnection> connect(final URI uri, final XnioWorker worker, Pool<ByteBuffer> bufferPool, OptionMap options) {
@@ -3089,34 +3089,10 @@ io.undertow.util.NetworkUtils,formatPossibleIpv6Address,(Ljava/lang/String;)Ljav
         }
         return ""["" + address + ""]"";
     }",8-19
-io.undertow.util.CopyOnWriteMap,<init>,()V,3,3,100.0%,"public CopyOnWriteMap() {
-    }",23-24
-io.undertow.util.CopyOnWriteMap,get,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"@Override
-    public V get(Object key) {
-        return delegate.get(key);
-    }",94-97
-io.undertow.util.CopyOnWriteMap,put,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"@Override
-    public synchronized V put(K key, V value) {
-        return putInternal(key, value);
-    }",99-102
-io.undertow.util.CopyOnWriteMap,keySet,()Ljava/util/Set;,1,1,100.0%,"@Override
-    public Set<K> keySet() {
-        return delegate.keySet();
-    }",123-126
-io.undertow.util.CopyOnWriteMap,entrySet,()Ljava/util/Set;,1,1,100.0%,"@Override
-    public Set<Entry<K, V>> entrySet() {
-        return delegate.entrySet();
-    }",133-136
-io.undertow.util.CopyOnWriteMap,putInternal,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,4,4,100.0%,"private V putInternal(final K key, final V value) {
-        final Map<K, V> delegate = new HashMap<K, V>(this.delegate);
-        V existing = delegate.put(key, value);
-        this.delegate = delegate;
-        return existing;
-    }",139-144
-io.undertow.util.HttpString,<init>,(Ljava/lang/String;I)V,12,13,92.3%,"public HttpString(final byte[] bytes) {
+io.undertow.util.HttpString,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public HttpString(final byte[] bytes) {
         this(bytes.clone(), null);
     }",70-72
-io.undertow.util.HttpString,<init>,(Ljava/lang/String;)V,2,2,100.0%,"public HttpString(final byte[] bytes) {
+io.undertow.util.HttpString,<init>,(Ljava/lang/String;I)V,12,13,92.3%,"public HttpString(final byte[] bytes) {
         this(bytes.clone(), null);
     }",70-72
 io.undertow.util.HttpString,<init>,([BLjava/lang/String;)V,6,6,100.0%,"public HttpString(final byte[] bytes) {
@@ -3185,6 +3161,30 @@ io.undertow.util.HttpString,equalToString,(Ljava/lang/String;)Z,2,7,28.6%,"publi
         }
         return true;
     }",342-354
+io.undertow.util.CopyOnWriteMap,<init>,()V,3,3,100.0%,"public CopyOnWriteMap() {
+    }",23-24
+io.undertow.util.CopyOnWriteMap,get,(Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"@Override
+    public V get(Object key) {
+        return delegate.get(key);
+    }",94-97
+io.undertow.util.CopyOnWriteMap,put,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,1,1,100.0%,"@Override
+    public synchronized V put(K key, V value) {
+        return putInternal(key, value);
+    }",99-102
+io.undertow.util.CopyOnWriteMap,keySet,()Ljava/util/Set;,1,1,100.0%,"@Override
+    public Set<K> keySet() {
+        return delegate.keySet();
+    }",123-126
+io.undertow.util.CopyOnWriteMap,entrySet,()Ljava/util/Set;,1,1,100.0%,"@Override
+    public Set<Entry<K, V>> entrySet() {
+        return delegate.entrySet();
+    }",133-136
+io.undertow.util.CopyOnWriteMap,putInternal,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;,4,4,100.0%,"private V putInternal(final K key, final V value) {
+        final Map<K, V> delegate = new HashMap<K, V>(this.delegate);
+        V existing = delegate.put(key, value);
+        this.delegate = delegate;
+        return existing;
+    }",139-144
 io.undertow.util.Cookies,parseRequestCookies,(ILjava/util/List;)Ljava/util/Map;,2,7,28.6%,"public static Map<String, Cookie> parseRequestCookies(int maxCookies, List<String> cookies) {
 
         if (cookies == null) {
@@ -3543,7 +3543,7 @@ io.undertow.util.HeaderValues,get,(I)Ljava/lang/String;,6,9,66.7%,"public String
         final String[] a = (String[]) value;
         return a[index(idx)];
     }",416-428
-io.undertow.util.HeaderValues,addAll,(Ljava/util/Collection;)Z,1,1,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
+io.undertow.util.HeaderValues,addAll,(ILjava/util/Collection;)Z,6,6,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
         final int size = this.size;
         if (index < 0 || index > size) throw new IndexOutOfBoundsException();
         final Iterator<? extends String> iterator = c.iterator();
@@ -3551,7 +3551,7 @@ io.undertow.util.HeaderValues,addAll,(Ljava/util/Collection;)Z,1,1,100.0%,"publi
         while (iterator.hasNext()) { result |= offer(index, iterator.next()); }
         return result;
     }",488-495
-io.undertow.util.HeaderValues,addAll,(ILjava/util/Collection;)Z,6,6,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
+io.undertow.util.HeaderValues,addAll,(Ljava/util/Collection;)Z,1,1,100.0%,"public boolean addAll(int index, final Collection<? extends String> c) {
         final int size = this.size;
         if (index < 0 || index > size) throw new IndexOutOfBoundsException();
         final Iterator<? extends String> iterator = c.iterator();
@@ -3937,7 +3937,7 @@ io.undertow.conduits.ReadDataStreamSourceConduit,<init>,(Lorg/xnio/conduits/Stre
         super(next);
         this.connection = connection;
     }",24-27
-io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;Lio/undertow/server/HttpServerExchange;)V,7,9,77.8%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
+io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;)V,2,2,100.0%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
         super(next);
         this.finishListener = finishListener;
         if (contentLength < 0L) {
@@ -3948,7 +3948,7 @@ io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/S
         state = contentLength;
         this.exchange = exchange;
     }",85-95
-io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;)V,2,2,100.0%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
+io.undertow.conduits.FixedLengthStreamSourceConduit,<init>,(Lorg/xnio/conduits/StreamSourceConduit;JLio/undertow/conduits/ConduitListener;Lio/undertow/server/HttpServerExchange;)V,7,9,77.8%,"public FixedLengthStreamSourceConduit(final StreamSourceConduit next, final long contentLength, final ConduitListener<? super FixedLengthStreamSourceConduit> finishListener, final HttpServerExchange exchange) {
         super(next);
         this.finishListener = finishListener;
         if (contentLength < 0L) {
@@ -4432,53 +4432,6 @@ io.undertow.io.DefaultIoCallback,onComplete,(Lio/undertow/server/HttpServerExcha
 io.undertow.io.AsyncSenderImpl,<init>,(Lio/undertow/server/HttpServerExchange;)V,6,6,100.0%,"public AsyncSenderImpl(final HttpServerExchange exchange) {
         this.exchange = exchange;
     }",112-114
-io.undertow.io.AsyncSenderImpl,send,(Ljava/lang/String;)V,2,2,100.0%,"@Override
-    public void send(final ByteBuffer buffer, final IoCallback callback) {
-        if (callback == null) {
-            throw UndertowMessages.MESSAGES.argumentCannotBeNull(""callback"");
-        }
-        if (this.buffer != null || this.fileChannel != null) {
-            throw UndertowMessages.MESSAGES.dataAlreadyQueued();
-        }
-        StreamSinkChannel channel = this.channel;
-        if (channel == null) {
-            if (callback == IoCallback.END_EXCHANGE) {
-                if (exchange.getResponseContentLength() == -1) {
-                    exchange.setResponseContentLength(buffer.remaining());
-                }
-            }
-            this.channel = channel = exchange.getResponseChannel();
-            if (channel == null) {
-                throw UndertowMessages.MESSAGES.responseChannelAlreadyProvided();
-            }
-        }
-        this.callback = callback;
-        if (inCallback) {
-            this.buffer = new ByteBuffer[]{buffer};
-            return;
-        }
-        try {
-            do {
-                if (buffer.remaining() == 0) {
-                    callback.onComplete(exchange, this);
-                    return;
-                }
-                int res = channel.write(buffer);
-                if (res == 0) {
-                    this.buffer = new ByteBuffer[]{buffer};
-                    this.callback = callback;
-                    channel.getWriteSetter().set(writeListener);
-                    channel.resumeWrites();
-                    return;
-                }
-            } while (buffer.hasRemaining());
-            invokeOnComplete();
-
-        } catch (IOException e) {
-
-            invokeOnException(callback, e);
-        }
-    }",117-163
 io.undertow.io.AsyncSenderImpl,send,(Ljava/nio/ByteBuffer;Lio/undertow/io/IoCallback;)V,18,32,56.2%,"@Override
     public void send(final ByteBuffer buffer, final IoCallback callback) {
         if (callback == null) {
@@ -4527,6 +4480,53 @@ io.undertow.io.AsyncSenderImpl,send,(Ljava/nio/ByteBuffer;Lio/undertow/io/IoCall
         }
     }",117-163
 io.undertow.io.AsyncSenderImpl,send,(Ljava/lang/String;Lio/undertow/io/IoCallback;)V,2,2,100.0%,"@Override
+    public void send(final ByteBuffer buffer, final IoCallback callback) {
+        if (callback == null) {
+            throw UndertowMessages.MESSAGES.argumentCannotBeNull(""callback"");
+        }
+        if (this.buffer != null || this.fileChannel != null) {
+            throw UndertowMessages.MESSAGES.dataAlreadyQueued();
+        }
+        StreamSinkChannel channel = this.channel;
+        if (channel == null) {
+            if (callback == IoCallback.END_EXCHANGE) {
+                if (exchange.getResponseContentLength() == -1) {
+                    exchange.setResponseContentLength(buffer.remaining());
+                }
+            }
+            this.channel = channel = exchange.getResponseChannel();
+            if (channel == null) {
+                throw UndertowMessages.MESSAGES.responseChannelAlreadyProvided();
+            }
+        }
+        this.callback = callback;
+        if (inCallback) {
+            this.buffer = new ByteBuffer[]{buffer};
+            return;
+        }
+        try {
+            do {
+                if (buffer.remaining() == 0) {
+                    callback.onComplete(exchange, this);
+                    return;
+                }
+                int res = channel.write(buffer);
+                if (res == 0) {
+                    this.buffer = new ByteBuffer[]{buffer};
+                    this.callback = callback;
+                    channel.getWriteSetter().set(writeListener);
+                    channel.resumeWrites();
+                    return;
+                }
+            } while (buffer.hasRemaining());
+            invokeOnComplete();
+
+        } catch (IOException e) {
+
+            invokeOnException(callback, e);
+        }
+    }",117-163
+io.undertow.io.AsyncSenderImpl,send,(Ljava/lang/String;)V,2,2,100.0%,"@Override
     public void send(final ByteBuffer buffer, final IoCallback callback) {
         if (callback == null) {
             throw UndertowMessages.MESSAGES.argumentCannotBeNull(""callback"");

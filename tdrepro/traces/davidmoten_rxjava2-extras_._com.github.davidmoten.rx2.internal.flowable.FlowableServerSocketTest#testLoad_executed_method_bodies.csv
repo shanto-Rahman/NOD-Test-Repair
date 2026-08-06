@@ -255,10 +255,10 @@ com.github.davidmoten.rx2.Bytes,from,(Ljava/io/InputStream;I)Lio/reactivex/Flowa
             }
         });
     }",42-57
-com.github.davidmoten.rx2.Bytes,collect,()Lio/reactivex/functions/Function;,1,1,100.0%,"public static Single<byte[]> collect(Flowable<byte[]> source) {
+com.github.davidmoten.rx2.Bytes,collect,(Lio/reactivex/Flowable;)Lio/reactivex/Single;,1,1,100.0%,"public static Single<byte[]> collect(Flowable<byte[]> source) {
         return source.collect(BosCreatorHolder.INSTANCE, BosCollectorHolder.INSTANCE).map(BosToArrayHolder.INSTANCE);
     }",139-141
-com.github.davidmoten.rx2.Bytes,collect,(Lio/reactivex/Flowable;)Lio/reactivex/Single;,1,1,100.0%,"public static Single<byte[]> collect(Flowable<byte[]> source) {
+com.github.davidmoten.rx2.Bytes,collect,()Lio/reactivex/functions/Function;,1,1,100.0%,"public static Single<byte[]> collect(Flowable<byte[]> source) {
         return source.collect(BosCreatorHolder.INSTANCE, BosCollectorHolder.INSTANCE).map(BosToArrayHolder.INSTANCE);
     }",139-141
 com.github.davidmoten.rx2.Actions,doNothing,()Lio/reactivex/functions/Action;,1,1,100.0%,"public static Action doNothing() {

@@ -93,12 +93,6 @@ uk.co.flax.luwak.DocumentBatch,iterator,()Ljava/util/Iterator;,1,1,100.0%,"@Over
 uk.co.flax.luwak.DocumentBatch,getBatchSize,()I,1,1,100.0%,"public int getBatchSize() {
         return documents.size();
     }",173-175
-uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,<init>,(Ljava/util/Collection;Lorg/apache/lucene/search/similarities/Similarity;)V,12,12,100.0%,"protected DocumentBatch(Collection<InputDocument> documents, Similarity similarity) {
-        this.similarity = similarity;
-        this.documents.addAll(documents);
-    }",136-139
-uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%,public abstract LeafReader getIndexReader() throws IOException;,145-145
-uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,resolveDocId,(I)Ljava/lang/String;,2,2,100.0%,public abstract String resolveDocId(int docId);,152-152
 uk.co.flax.luwak.QueryIndex,<init>,(Lorg/apache/lucene/index/IndexWriter;)V,9,9,100.0%,"QueryIndex(IndexWriter indexWriter) throws IOException {
         this.writer = indexWriter;
         this.manager = new SearcherManager(writer, true, true, new TermsHashBuilder());
@@ -132,11 +126,11 @@ uk.co.flax.luwak.QueryIndex,commit,(Ljava/util/List;)V,20,21,95.2%,"void commit(
 uk.co.flax.luwak.QueryIndex,scan,(Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,1,1,100.0%,"long scan(QueryCollector matcher) throws IOException {
         return search(new MatchAllDocsQuery(), matcher);
     }",86-88
-uk.co.flax.luwak.QueryIndex,search,(Luk/co/flax/luwak/QueryIndex$QueryBuilder;Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,13,13,100.0%,"long search(final Query query, QueryCollector matcher) throws IOException {
+uk.co.flax.luwak.QueryIndex,search,(Lorg/apache/lucene/search/Query;Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,2,2,100.0%,"long search(final Query query, QueryCollector matcher) throws IOException {
         QueryBuilder builder = termFilter -> query;
         return search(builder, matcher);
     }",90-93
-uk.co.flax.luwak.QueryIndex,search,(Lorg/apache/lucene/search/Query;Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,2,2,100.0%,"long search(final Query query, QueryCollector matcher) throws IOException {
+uk.co.flax.luwak.QueryIndex,search,(Luk/co/flax/luwak/QueryIndex$QueryBuilder;Luk/co/flax/luwak/QueryIndex$QueryCollector;)J,13,13,100.0%,"long search(final Query query, QueryCollector matcher) throws IOException {
         QueryBuilder builder = termFilter -> query;
         return search(builder, matcher);
     }",90-93
@@ -184,6 +178,12 @@ uk.co.flax.luwak.QueryIndex,purgeCache,(Luk/co/flax/luwak/QueryIndex$CachePopula
 uk.co.flax.luwak.QueryIndex,closeWhileHandlingException,()V,2,2,100.0%,"void closeWhileHandlingException() throws IOException {
         IOUtils.closeWhileHandlingException(manager, writer, writer.getDirectory());
     }",181-183
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,<init>,(Ljava/util/Collection;Lorg/apache/lucene/search/similarities/Similarity;)V,12,12,100.0%,"protected DocumentBatch(Collection<InputDocument> documents, Similarity similarity) {
+        this.similarity = similarity;
+        this.documents.addAll(documents);
+    }",136-139
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,getIndexReader,()Lorg/apache/lucene/index/LeafReader;,1,1,100.0%,public abstract LeafReader getIndexReader() throws IOException;,145-145
+uk.co.flax.luwak.DocumentBatch$SingletonDocumentBatch,resolveDocId,(I)Ljava/lang/String;,2,2,100.0%,public abstract String resolveDocId(int docId);,152-152
 uk.co.flax.luwak.Monitor$PresearcherQueryBuilder,<init>,(Luk/co/flax/luwak/Monitor;Lorg/apache/lucene/index/LeafReader;)V,3,3,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
                    IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
 
@@ -414,13 +414,13 @@ uk.co.flax.luwak.Monitor,decomposeQuery,(Luk/co/flax/luwak/MonitorQuery;)Ljava/l
 
         return cacheEntries;
     }",366-382
-uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
+uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/DocumentBatch;Luk/co/flax/luwak/MatcherFactory;)Luk/co/flax/luwak/Matches;,4,4,100.0%,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
         CandidateMatcher<T> matcher = factory.createMatcher(docs);
         matcher.setSlowLogLimit(slowLogLimit);
         match(matcher);
         return matcher.getMatches();
     }",445-450
-uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/DocumentBatch;Luk/co/flax/luwak/MatcherFactory;)Luk/co/flax/luwak/Matches;,4,4,100.0%,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
+uk.co.flax.luwak.Monitor,match,(Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%,"public <T extends QueryMatch> Matches<T> match(DocumentBatch docs, MatcherFactory<T> factory) throws IOException {
         CandidateMatcher<T> matcher = factory.createMatcher(docs);
         matcher.setSlowLogLimit(slowLogLimit);
         match(matcher);
@@ -457,6 +457,16 @@ uk.co.flax.luwak.QueryCacheEntry,<init>,(Lorg/apache/lucene/util/BytesRef;Lorg/a
         this.matchQuery = matchQuery;
         this.metadata = metadata;
     }",37-41
+uk.co.flax.luwak.InputDocument$Builder,<init>,(Ljava/lang/String;)V,6,6,100.0%,"protected InputDocument(String id, Document luceneDocument, PerFieldAnalyzerWrapper analyzers) {
+        this.id = id;
+        this.luceneDocument = luceneDocument;
+        this.analyzers = analyzers;
+    }",62-66
+uk.co.flax.luwak.InputDocument$Builder,build,()Luk/co/flax/luwak/InputDocument;,3,3,100.0%,"public InputDocument build() {
+            doc.add(new StringField(ID_FIELD, id, Field.Store.YES));
+            PerFieldAnalyzerWrapper analyzerWrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer, analyzers);
+            return new InputDocument(id, doc, analyzerWrapper);
+        }",166-170
 uk.co.flax.luwak.Matches,<init>,(Ljava/util/Map;Ljava/util/Set;Ljava/util/List;JJIILuk/co/flax/luwak/SlowLog;)V,10,10,100.0%,"Matches(Map<String, DocumentMatches<T>> matches, Set<String> presearcherHits, List<MatchError> errors,
                    long queryBuildTime, long searchTime, int queriesRun, int batchSize, SlowLog slowlog) {
         this.matches = Collections.unmodifiableMap(matches);
@@ -484,16 +494,6 @@ uk.co.flax.luwak.Matches,getErrors,()Ljava/util/List;,1,1,100.0%,"public List<Ma
 uk.co.flax.luwak.Matches,getSlowLog,()Luk/co/flax/luwak/SlowLog;,1,1,100.0%,"public SlowLog getSlowLog() {
         return slowlog;
     }",144-146
-uk.co.flax.luwak.InputDocument$Builder,<init>,(Ljava/lang/String;)V,6,6,100.0%,"protected InputDocument(String id, Document luceneDocument, PerFieldAnalyzerWrapper analyzers) {
-        this.id = id;
-        this.luceneDocument = luceneDocument;
-        this.analyzers = analyzers;
-    }",62-66
-uk.co.flax.luwak.InputDocument$Builder,build,()Luk/co/flax/luwak/InputDocument;,3,3,100.0%,"public InputDocument build() {
-            doc.add(new StringField(ID_FIELD, id, Field.Store.YES));
-            PerFieldAnalyzerWrapper analyzerWrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer, analyzers);
-            return new InputDocument(id, doc, analyzerWrapper);
-        }",166-170
 uk.co.flax.luwak.Monitor$StandardQueryCollector,<init>,(Luk/co/flax/luwak/CandidateMatcher;)V,4,4,100.0%,"public Monitor(MonitorQueryParser queryParser, Presearcher presearcher,
                    IndexWriter indexWriter, QueryIndexConfiguration configuration) throws IOException {
 
