@@ -14,7 +14,7 @@ uk.co.flax.luwak.matchers.CollectingMatcher$MatchCollector$MatchLeafCollector,se
             public void setScorer(Scorer scorer) throws IOException {
                 MatchCollector.this.scorer = scorer;
             }",95-98,0.66171324,0.4930072,0.4930072
-uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,3,4,75.0%,"public void addQuery(String query, long time) {
+uk.co.flax.luwak.SlowLog,addQuery,(Ljava/lang/String;J)V,4,4,100.0%,"public void addQuery(String query, long time) {
         if (time < limit)
             return;
         slowQueries.add(new Entry(query, time));

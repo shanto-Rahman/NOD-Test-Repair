@@ -471,11 +471,11 @@ com.github.kagkarlsson.scheduler.JdbcTaskRepository$ExecutionResultSetMapper,map
 			this.delegate.map(resultSet);
 			return this.executions;
 		}",322-326,0.5924207,0.37382722,0.37382722
-com.github.kagkarlsson.scheduler.JdbcTaskRepository,getDue,(Ljava/time/Instant;)Ljava/util/List;,1,1,100.0%,"@Override
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getDue,(Ljava/time/Instant;I)Ljava/util/List;,1,1,100.0%,"@Override
 	public List<Execution> getDue(Instant now) {
 		return getDue(now, MAX_RESULTS);
 	}",101-104,0.6372062,0.36621106,0.36621106
-com.github.kagkarlsson.scheduler.JdbcTaskRepository,getDue,(Ljava/time/Instant;I)Ljava/util/List;,1,1,100.0%,"@Override
+com.github.kagkarlsson.scheduler.JdbcTaskRepository,getDue,(Ljava/time/Instant;)Ljava/util/List;,1,1,100.0%,"@Override
 	public List<Execution> getDue(Instant now) {
 		return getDue(now, MAX_RESULTS);
 	}",101-104,0.6372062,0.36621106,0.36621106
