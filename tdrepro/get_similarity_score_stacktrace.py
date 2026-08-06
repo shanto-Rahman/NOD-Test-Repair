@@ -90,7 +90,8 @@ def sanitize_stacktrace(failure_stacktrace_isolated):
     if not isinstance(failure_stacktrace_isolated, str):
         failure_stacktrace_isolated = '\n'.join(failure_stacktrace_isolated)
     s = failure_stacktrace_isolated
-    
+    #s = re.sub(r'\^\[\[[0-9;]*[A-Za-z]', '', s) 
+    s = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', s)
     # maven scaffolding: log-level tags, banner rules and the build verdict
     s = re.sub(r'\[(?:INFO|ERROR|WARNING|DEBUG|FATAL|TRACE)\]|-{3,}|\bBUILD (?:FAILURE|SUCCESS)\b', ' ', s)
 

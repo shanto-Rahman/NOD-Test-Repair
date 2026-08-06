@@ -1,14 +1,10 @@
 slug,module,test,method_id,line_number,actual_line,log_file,class_name,method_name,total_time_seconds,iteration_count,failure_detected
 TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,0,47,"		if( !isFin() ) {
 ",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario2-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,77.96,1,1
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario2,0,47,"		if( !isFin() ) {
-",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario2-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.81,1,1
 TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario5,0,47,"		if( !isFin() ) {
 ",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario5-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.43,1,1
 TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario8,0,47,"		if( !isFin() ) {
 ",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.88,1,1
-TooTallNate/Java-WebSocket,.,org.java_websocket.issues.Issue580Test.runNoCloseBlockingTestScenario8,0,47,"		if( !isFin() ) {
-",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario8-con-after-changedCode-1_0_4.txt,org.java_websocket.framing.ControlFrame,isValid,76.75,1,1
 flaxsearch/luwak,luwak,uk.co.flax.luwak.matchers.TestPartitionMatcher.testParallelSlowLog,0,155,"            if (matchHolder != null)
 ",/home/sr53282/All/f-test-repair/NOD-Test-Repair/tdrepro/logs-to-reproduce-sequential-delay-injection/uk.co.flax.luwak.matchers.TestPartitionMatcher#testParallelSlowLog-con-after-changedCode-1_3_4.txt,uk.co.flax.luwak.CandidateMatcher,getMatches,669.84,4,1
 qos-ch/logback,logback-classic,ch.qos.logback.classic.net.SMTPAppender_GreenTest#testCustomBufferSize,no_test_failure,NA,NA,NA,NA,NA,22592.62,515,0
