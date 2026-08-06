@@ -46,7 +46,8 @@ while read line
         #python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gemini" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list} ${id} #> ${id}_log.txt
         echo "I am here"
-        #python3 barebone_llm.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
+        
+        #python3 barebone_llm_zero_shot.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         #exit
 
     done < $1
