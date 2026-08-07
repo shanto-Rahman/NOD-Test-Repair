@@ -16,6 +16,9 @@ COLOR_BASELINE = "#eda100"  # gold, marks the k=10,l=10 chosen point
 df = pd.read_csv("master.csv", skiprows=1, header=0)
 df = df[df["#ID"].notna()]  # drop blank/summary rows
 
+# if TDRepro was not run, do not consider the result. Which means remove the rows where column "Reproduced: TDRepro" is not either "0" or "1", remove it.
+df = df[df["Reproduced: TDRepro"].isin(["0", "1"])]
+
 
 def rate(col):
     return pd.to_numeric(df[col], errors="coerce").mean()
