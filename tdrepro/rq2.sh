@@ -31,7 +31,7 @@ then
 fi
 
 
-echo "id,Project-Name,SHA,Module,Test-Name,Failure-Found,Time" > "$outputDir/RQ2-Result.csv"
+echo "id,Project-Name,SHA,Module,Test-Name,Failure-Found,Time" >> "$outputDir/RQ2-Result.csv"
 
 while IFS= read -r line
     do
