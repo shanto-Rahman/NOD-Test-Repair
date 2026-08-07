@@ -460,7 +460,12 @@ def rank_methods_by_llm_embedding_similarity(test_df, method_df, fail_log_df, ll
             device = model.get_input_embeddings().weight.device
             print("Model device map:", model.hf_device_map)
             print("Input device:", device)
-
+        
+        else:
+            # GPT-2, CodeBERT, CodeT5, etc.
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model = model.to(device)
+        
         #device = torch.device("cuda")
         ##device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         #model = model.to(device)

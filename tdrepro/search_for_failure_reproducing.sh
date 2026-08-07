@@ -6,6 +6,10 @@ if [[ $1 == "" ]]; then
     exit
 fi
 
+currentDir=$(pwd)
+#$2="GPT-2"
+echo "id,slug,sha,module_org,testName,$2" >> "$currentDir/results/Embedding_generation_time.csv"
+
 while read line
     do
         if [[ ${line} =~ ^\# ]]; then
@@ -42,12 +46,17 @@ while read line
         echo "new csv = $fail_log_csv_name"
 
         echo "python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list}"
+        start=$(date +%s.%N)
         #python3 generating_reproducing_script.py traces/${filename}_executed_method_bodies.csv "embeddingOnly" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         #python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gemini" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
         python3 generating_reproducing_config.py traces/${filename}_executed_method_bodies.csv "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot ${library_meth_list} ${proj_meth_list} ${id} #> ${id}_log.txt
+        end=$(date +%s.%N)
+
+        embedding_generation_time=$(echo "scale=2; ${end} - ${start}" | bc)
+        echo "${id},${slug},${sha},${module_org},${testName},${embedding_generation_time}" >> "$currentDir/results/Embedding_generation_time.csv"
+
         echo "I am here"
-        
+
         #python3 barebone_llm_zero_shot.py traces/${filename}_executed_method_bodies.csv "tmp" "traces" "gpt" traces/${filename}_test_code.csv "$fail_log_csv_name" ${slug_org} $sha ${module_org} $testName_with_dot $2
-        #exit
 
     done < $1
