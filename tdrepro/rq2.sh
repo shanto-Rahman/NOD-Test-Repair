@@ -52,14 +52,14 @@ while IFS= read -r line
         echo "No solutions found before"
         continue
     fi
-    class_name=$(echo $file_meth_line_to_inject_delay | cut -d':' -f1 | cut -d'$' -f1 | rev | cut -d'.' -f1 | rev)
+    class_name=$(echo $file_meth_line_to_inject_delay | cut -d':' -f1 | cut -d'$' -f1 | cut -d'"' -f2) # Will full qualified name | rev | cut -d'.' -f1 | rev)
     method_name=$(echo $file_meth_line_to_inject_delay | cut -d':' -f2)
     method_descriptor=$(echo $file_meth_line_to_inject_delay | cut -d':' -f3)
     line_number=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f1)
     echo "$file_meth_line_to_inject_delay"
     code_line=$(echo $file_meth_line_to_inject_delay | cut -d':' -f4 | cut -d' ' -f2- | sed 's/^(//; s/)$//')
 
-    echo "$class_name"
+    echo "*********** ${class_name}"
     echo "$method_name"
     echo "$method_descriptor"
     echo "line_number=$line_number"
