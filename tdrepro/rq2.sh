@@ -31,7 +31,7 @@ then
 fi
 
 
-echo "Project-Name,SHA,Module,Test-Name,Failure-Found,Time" > "$outputDir/Re-run-Baseline-Result.csv"
+echo "id,Project-Name,SHA,Module,Test-Name,Failure-Found,Time" > "$outputDir/RQ2-Result.csv"
 
 while IFS= read -r line
     do
@@ -83,7 +83,7 @@ while IFS= read -r line
     subProj=$(echo "$slug" | cut -d/ -f 2)
     
     JMVNOPTIONS=""
-    echo -n "${slug},${sha},${module},${testName}," >> "$outputDir/RQ2-Result.csv"
+    echo -n "${id},${slug},${sha},${module},${testName}," >> "$outputDir/RQ2-Result.csv"
      
     cd $currentDir
     python3 run_injection.py "$class_name" "$line_number" "$method_name" "$method_descriptor" "$code_line" "$slug" "$module"
@@ -133,6 +133,5 @@ while IFS= read -r line
     take=$(echo $take | awk '{printf("%.2f\n", $1) }')
     echo ",$take" >> "$outputDir/RQ2-Result.csv"
     git checkout -- '**/*.java'
-    exit
     #git stash
 done < $1
