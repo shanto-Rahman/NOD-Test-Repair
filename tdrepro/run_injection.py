@@ -1,6 +1,6 @@
 import sys
 from modify_java_file import inject_sleep_before_line  # assuming injector.py is in the same directory
-from generating_reproducing_script import find_class_file
+from utils import find_class_file
 from pathlib import Path
 
 def prepare_candidates(class_path, class_name):
@@ -34,6 +34,6 @@ slug = sys.argv[6]
 module = sys.argv[7]
 
 # Assume find_class_file returns a directory or a list of files
-class_path_dir = find_class_file(class_name, slug, module)
-candidates = prepare_candidates(class_path_dir, class_name)
-inject_sleep_before_line(candidates, line_number, method_name, descriptor, code_line)
+class_path_list = find_class_file(class_name, slug, module)
+#candidates = prepare_candidates(class_path_dir, class_name)
+inject_sleep_before_line(class_path_list, line_number, method_name, descriptor, code_line)
