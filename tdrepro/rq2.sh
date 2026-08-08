@@ -94,7 +94,7 @@ while IFS= read -r line
     #python3 find_failure_message_and_save.py "RQ2" "$slug" "$sha" "$module" "$testName_with_hash" "$log_search_csv" "$module_with_dot" "$proj_name_only"
     ##id_arg, slug, sha, module_org, testName= ID  fa3909c391195178ccf5a92d4ac342a30ae247c8 . org.java_websocket.issues.Issue580Test#runNoCloseBlockingTestScenario0
 
-    if [[ $module_org == "." ]]; then
+    if [[ $module == "." ]]; then
         fail_log_csv_name="$currentDir/logs/${id}_${proj_name_only}_${testName_with_hash}_stacktrace.csv"
     else
         fail_log_csv_name="$currentDir/logs/${id}_${module_with_dot}_${testName_with_hash}_stacktrace.csv"
