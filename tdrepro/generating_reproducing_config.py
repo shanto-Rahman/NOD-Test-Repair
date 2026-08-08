@@ -260,6 +260,74 @@ def gpt_score_finder(
 
 
 
+def open_source_llm_score_finder(
+    messages,
+    model_name,
+    tokenizer,
+    model,
+    max_retries=5,
+    initial_wait=2,
+    sleep_on_success=5,
+):
+    retry_count = 0
+    print("****message=", messages)
+
+    while retry_count < max_retries:
+        try:
+            # Convert messages (list of dicts) into a single prompt string
+            if isinstance(messages, list) and isinstance(messages[0], dict):
+                # use the tokenizer's built-in chat template
+                text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            elif isinstance(messages, str):
+                text = messages
+            else:
+                raise ValueError(f"Unsupported messages format: {type(messages)}")
+
+            # Tokenize
+            inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+            # Generate response
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=500,
+                do_sample=True,
+                temperature=0.2,
+                pad_token_id=tokenizer.eos_token_id
+            )
+            
+            prompt_len = inputs["input_ids"].shape[1]
+            # Slicing outputs[:, prompt_len:] ensures you only decode the newly generated tokens.
+            predictions = tokenizer.batch_decode(
+                outputs[:, prompt_len:],
+                skip_special_tokens=True
+            )
+            response_text = predictions[0].strip()
+
+            time.sleep(sleep_on_success)
+            print("LLM RESPONSE =============================")
+            print(response_text)
+            print("============================================")
+            # flush stdout to ensure timely logging
+            sys.stdout.flush()
+            return response_text
+
+        except RuntimeError as e:
+            if "CUDA" in str(e):
+                torch.cuda.empty_cache()
+                wait_time = initial_wait * (2 ** retry_count)
+                print(f"CUDA OOM. Retrying in {wait_time}s…")
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                raise
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            raise
+
+    return None
+
+
+
 import os
 from pathlib import Path
 
@@ -485,6 +553,18 @@ def get_messages(definition, prompt):
     append_token_row(token_csv_path, slug, module, test, prompt_tokens)
     return messages, prompt_tokens
 
+
+def get_messages_open_source_llms(definition, prompt, model_name):
+    messages = [
+        {"role": "system", "content": definition},
+        {"role": "user",   "content": prompt}
+    ]
+    prompt_tokens = count_prompt_tokens(messages, model=model_name)
+    token_csv_path = str(Path("results") / "prompt_token_counts.csv")
+    append_token_row(token_csv_path, slug, module, test, prompt_tokens)
+    return messages, prompt_tokens
+
+
 def parse_gpt_response(response, messages, retry_count): 
     if not response: 
         return ""
@@ -514,6 +594,51 @@ def parse_gpt_response(response, messages, retry_count):
         f.write("\n==============================\n")
 
     return meth_code #, messages
+
+
+def parse_open_source_llm_response(response, messages, retry_count): 
+    current_model = "llama"
+    if not response: 
+        return ""
+
+    print("****response=", response)
+    # save response to a file named response_{retry_count}.txt
+    with open(f"tdrepro_gpt_responses_{current_model}/response_{retry_count}.txt", "w") as f:
+        f.write(str(response))
+
+    # response_content = response['choices'][0]['message']['content']
+    response_content = response
+
+    messages.append({"role": "assistant", "content": response_content})
+
+    if "</Output>" in response_content:
+        # m = re.search(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+        matches = re.findall(r"<Output>\s*(.*?)\s*</Output>", response_content, re.DOTALL)
+        m= matches[-1] if matches else None  # Get the last match if multiples found
+        if m:
+            meth_code = m
+            print("m=", m)
+        else:
+            meth_code = re.sub(r"<\/?Output>", "", response_content).strip()
+    else:
+        meth_code = re.sub(r"<\/?Output>", "", response_content).strip()
+        # meth_code = "</Output> not found" #response_content
+        print("</Output> not found in the response. Using entire response as meth_code.")
+
+
+
+
+    os.makedirs(f"tdrepro_gpt_responses_{current_model}", exist_ok=True)
+
+    file_path = f"tdrepro_gpt_responses_{current_model}/{test}.txt"
+    print("saving to =", file_path)
+    with open(file_path, "a") as f:
+        f.write(f"\n\n===== RETRY {retry_count} =====\n")
+        f.write(response_content)
+        f.write("\n==============================\n")
+
+    return meth_code #, messages
+
 
 def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df, retry_count = 0):
 
@@ -624,6 +749,160 @@ def gpt_output_calculate(test_code, ml_technique, code_under_test_meths, lineRan
         retry_count += 1
 
     return "NA", str(retry_count), "Failure not found reproduced", failure_detected
+
+
+def open_source_llm_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv,  slug, module, test, ranked_method_df, failure_log_csv, libraries_df, model_name, tokenizer, auto_model, retry_count = 0):
+    max_retries = 5
+    tried_methods = set()
+
+    failure_detected = -100
+
+    # Open source LLMs echo the prompt template's field labels as literal text
+    # ("Class:org.foo.Bar:run:Descriptor:()V:FileLineNumber:388:...") and separate
+    # the code snippet with ':' instead of ' (...)'. Both break the strict
+    # GPT-style regex, so strip the labels and match with tolerant patterns.
+    # Scoped to this function on purpose - gpt_output_calculate keeps its own parsing.
+    label_re = re.compile(
+        r"(?:^|(?<=:))\s*(?:Class|Method|Descriptor|FileLineNumber|LineNumber)\s*:\s*",
+        re.IGNORECASE,
+    )
+    # <class>:<method>:<descriptor>:<line>[rest] - descriptor must not be all digits,
+    # otherwise a code line starting with a number gets read as the line number.
+    with_descriptor_re = re.compile(
+        r"^(?P<cls>[\w.$]+):(?P<meth>[\w$<>.]+):(?P<desc>(?!\d+(?::|$))[^:]+):(?P<line>\d+)(?P<rest>.*)$"
+    )
+    # <class>:<method>:<line>[rest] - descriptor omitted
+    no_descriptor_re = re.compile(
+        r"^(?P<cls>[\w.$]+):(?P<meth>[\w$<>.]+):(?P<line>\d+)(?P<rest>.*)$"
+    )
+
+    prompt, definition = generate_prompt(failure_log, ranked_method_df, test_code)
+    messages, prompt_tokens = get_messages_open_source_llms(definition, prompt, model_name)
+
+    while retry_count < max_retries:
+        response = open_source_llm_score_finder(messages, model_name, tokenizer, auto_model)
+        meth_code = parse_open_source_llm_response(response, messages, retry_count)
+        print("=== meth_code=", meth_code)
+        #exit()
+        # Suppose meth_code is your multiline string as shown above
+        for idx, line in enumerate(meth_code.strip().splitlines(), start=1):
+            print("**** index=", idx, ",Processing line:", line)
+            line = line.strip()
+            if not line:
+                continue  # skip empty lines
+
+            # Strip the echoed field labels first - otherwise a leading "Class:"
+            # shifts every capture group by one and class_name becomes the
+            # literal string "Class", which no find_class_file lookup can resolve.
+            line = label_re.sub("", line).strip()
+            if not line:
+                continue
+
+            m = with_descriptor_re.match(line)
+            if m:
+                descriptor = m.group("desc").strip()
+            else:
+                m = no_descriptor_re.match(line)
+                descriptor = ""
+
+            if m:
+                class_name = m.group("cls")
+                method_name = m.group("meth")
+                line_number = int(m.group("line"))
+
+                # The code snippet arrives either as ":<code>" or as " (<code>)".
+                rest = m.group("rest").strip()
+                if rest.startswith(":"):
+                    code_line = rest[1:].strip()
+                elif rest.startswith("(") and rest.endswith(")"):
+                    code_line = rest[1:-1].strip()
+                else:
+                    code_line = rest
+
+                # this part is same as that of gpt. But we make it more error tolerant.
+                with open("metadata/Suggested_Delay_Injected_lines.csv", mode="a", newline="") as f:
+                    print("Tried lines")
+                    writer = csv.writer(f)
+                    writer.writerow([slug, module, test, class_name, line_number,code_line])
+
+                print("class_name=", class_name, ",slug=", slug, ",module=", module)
+
+                class_path_list = find_class_file(class_name, slug, module)
+
+                #print("**** class_path=", class_path)
+                failure_happened_and_log_matched = True
+                if class_path_list:
+                    failure_count = 0
+                    failure_detected = 0
+                    first_failed, test_run_log = run_once(0, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                    if not first_failed:
+                        print("First run: no failure; skipping additional runs.")
+                        print("Only 0/1 runs failed. Not considering as valid failure.")
+                    else:
+                       # First run failed → run 4 more times (total 5)
+                        failure_count = 1
+                        failure_detected = 1
+                        print("Now will do log_similarity check...")
+                        # Will check the logs 
+                        log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+                        #print("org failure_log=", failure_log)
+                        if not log_similar:
+                            print("failure log does not match.")
+                            failure_happened_and_log_matched = False
+                        else:
+                            for run_id in range(1, 5):
+                                _failed, test_run_log = run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx)
+                                log_similar = log_similarity_check(failure_log_csv, test_run_log, test)
+                                if log_similar and _failed: #run_once(run_id, class_path_list, line_number, method_name, descriptor, code_line, slug, module, test, retry_count, idx):
+                                    #Call the function to check the log match 
+                                    failure_count += 1
+                                else:
+                                    print("failure log does not match.")
+                                    failure_happened_and_log_matched = False
+                                    #Call to the GPT that log does not match, so find a different location
+                            if failure_count >=3:
+                                print(f"Failure found in {failure_count}/5 runs.")
+                                return line, f"{retry_count}_{idx}", "Failure reproduced.", failure_detected
+                            else:
+                                print("Only {failure_count}/5 runs failed. Not considering as valid failure.") 
+                else:
+                    print(f"[ERROR] Could not locate class source file for: {class_name}")
+            else:
+                print("Line did not match expected format:", line)
+        #tried_method_list = "\n".join(f"{i+1}. {m[0]}" for i, m in enumerate(tried_methods))
+        messages.append({"role": "assistant", "content": meth_code})  # add this
+        feedback = (
+            f"Your previous suggestion (above) did not reproduce the original failure.\n\n"
+            f"Please suggest a new sleep injection location that has not been tried yet — "
+            f"either in a different method, or a different location within the same method — "
+            f"such that delaying execution there is likely to reproduce the original failure.\n\n"
+            f"Constraints:\n"
+            f"- Do not repeat any location you've already suggested in this conversation.\n"
+            f"- Before suggesting, reason about *why* slowing down execution at that "
+            f"specific location would plausibly cause the test to fail (e.g. a race "
+            f"condition, timing-dependent ordering, or a timeout boundary)."
+        )
+
+        #feedback = (
+        #    f"Your previous suggestion did not reproduce the original failure.\n\n"
+        #    f"Locations already tried:\n"
+        #    f"{meth_code}\n\n"
+        #    f"Please suggest a new sleep injection location that has not been tried yet — "
+        #    f"either in a different method, or a different location within the same method — "
+        #    f"such that delaying execution there is likely to reproduce the original failure.\n\n"
+        #    f"Constraints:\n"
+        #    f"- Do not repeat any previously suggested location.\n"
+        #    f"- Before suggesting, reason about *why* slowing down execution at that "
+        #    f"specific location would plausibly cause the test to fail (e.g. a race "
+        #    f"condition, timing-dependent ordering, or a timeout boundary)."
+        #)
+        print("==== Feedback=====", feedback)
+        messages.append({"role": "user", "content": feedback}) 
+        retry_count += 1
+
+    return "NA", str(retry_count), "Failure not found reproduced", failure_detected    
+
+
    
 def give_test_data_in_chunks_qwen(test_meth_code_df, tokenizer, model, device, ml_technique, code_under_test_meths, line_ranges, failure_log_df):
     max_length = 1024
@@ -988,16 +1267,17 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     ranked_method_df.to_csv("metadata/ranked_method_df.csv", index=False)
     print(failure_log)
     print(test_code)
-
-    if ml_technique == "qwen":
-        with torch.no_grad():
-            preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_qwen(test_code, tokenizer, auto_model, device, ml_technique, code_under_test_meths, lineRange, failure_log)
-            print('***************** All preds=')
-            print(preds)
     
-    elif ml_technique == "llama3_8b":
+    if ml_technique == "llama3_8b":
         with torch.no_grad():
             preds, category_token_map, top_tokens_per_test = give_test_data_in_chunks_llama3_8b(X_test, tokenizer, auto_model, batch_size, device, 0, test_y.numpy(), ml_technique)
+        del auto_model
+        torch.cuda.empty_cache()
+
+    elif ml_technique == "llama" or ml_technique == "qwen":
+        with torch.no_grad():
+            line_to_inject_delay, cot_count, test_failure_reproduced, failure_detected = open_source_llm_output_calculate(test_code, ml_technique, code_under_test_meths, lineRange, failure_log, meth_body_csv, slug, module, test, ranked_method_df, failure_log_csv, libraries_df, model_name, tokenizer, auto_model)
+            print("line_to_inject_delay=", line_to_inject_delay, ", cot_count=", cot_count, ", test_failure_reproduced=", test_failure_reproduced)
         del auto_model
         torch.cuda.empty_cache()
 
