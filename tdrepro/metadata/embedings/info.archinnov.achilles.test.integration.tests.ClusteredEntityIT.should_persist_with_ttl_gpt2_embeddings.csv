@@ -1,16 +1,4 @@
 Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
-info.archinnov.achilles.embedded.AchillesInitializer,initializeFromParameters,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,9,9,100.0%,"void initializeFromParameters(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
-
-        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME);
-        synchronized (REPOSITORY) {
-            if (!REPOSITORY.keyspaceAlreadyBootstrapped(keyspaceName)) {
-                LOGGER.trace(""Bootstrapping Achilles for keyspace {}"", keyspaceName);
-                initialize(cassandraHost, parameters, achillesParameters);
-                REPOSITORY.markKeyspaceAsBootstrapped(keyspaceName);
-            }
-            LOGGER.trace(""Do not bootstrap Achilles for keyspace {} because it was already created"", keyspaceName);
-        }
-    }",55-66,0.96164197,0.9972651,0.9972651
 info.archinnov.achilles.embedded.AchillesInitializer,createCluster,(Ljava/lang/String;ILinfo/archinnov/achilles/type/TypedMap;)Lcom/datastax/driver/core/Cluster;,9,9,100.0%,"private Cluster createCluster(String host, int cqlPort, TypedMap parameters) {
         LOGGER.debug(""Creating Cluster object with host/port {}/{} and parameters {}"", host, cqlPort, parameters);
         String clusterName = parameters.getTyped(CLUSTER_NAME);
@@ -22,7 +10,7 @@ info.archinnov.achilles.embedded.AchillesInitializer,createCluster,(Ljava/lang/S
         return Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
                 .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
                 .withReconnectionPolicy(reconnectionPolicy).build();
-    }",119-130,0.96831816,0.9969308,0.9969308
+    }",119-130,0.96831816,0.9963916,0.9963916
 info.archinnov.achilles.embedded.AchillesInitializer,extractAndValidateKeyspaceName,(Linfo/archinnov/achilles/internal/utils/ConfigMap;)Ljava/lang/String;,5,5,100.0%,"private String extractAndValidateKeyspaceName(ConfigMap parameters) {
         String keyspaceName = parameters.getTyped(KEYSPACE_NAME);
         Validator.validateNotBlank(keyspaceName, ""The provided keyspace name should not be blank"");
@@ -31,7 +19,28 @@ info.archinnov.achilles.embedded.AchillesInitializer,extractAndValidateKeyspaceN
                 KEYSPACE_NAME_PATTERN.pattern());
 
         return keyspaceName;
-    }",109-117,0.9721677,0.99516827,0.99516827
+    }",109-117,0.9721677,0.99635154,0.99635154
+info.archinnov.achilles.embedded.AchillesInitializer,initializeFromParameters,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,9,9,100.0%,"void initializeFromParameters(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
+
+        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME);
+        synchronized (REPOSITORY) {
+            if (!REPOSITORY.keyspaceAlreadyBootstrapped(keyspaceName)) {
+                LOGGER.trace(""Bootstrapping Achilles for keyspace {}"", keyspaceName);
+                initialize(cassandraHost, parameters, achillesParameters);
+                REPOSITORY.markKeyspaceAsBootstrapped(keyspaceName);
+            }
+            LOGGER.trace(""Do not bootstrap Achilles for keyspace {} because it was already created"", keyspaceName);
+        }
+    }",55-66,0.96164197,0.9958232,0.9958232
+info.archinnov.achilles.internal.utils.ConfigMap,getTyped,(Linfo/archinnov/achilles/configuration/ConfigurationParameters;)Ljava/lang/Object;,5,5,100.0%,"@SuppressWarnings(""unchecked"")
+    public <T> T getTyped(ConfigurationParameters key) {
+        T value = null;
+        if (super.containsKey(key) && super.get(key) != null) {
+            value = (T) super.get(key);
+            return value;
+        }
+        return value;
+    }",33-41,0.9853934,0.992556,0.992556
 info.archinnov.achilles.embedded.AchillesInitializer,createKeyspaceIfNeeded,(Lcom/datastax/driver/core/Cluster;Ljava/lang/String;Ljava/lang/Boolean;)V,13,13,100.0%,"private void createKeyspaceIfNeeded(Cluster cluster, String keyspaceName, Boolean keyspaceDurableWrite) {
         LOGGER.debug(""Creating keyspace {} if neeeded"", keyspaceName);
 
@@ -48,16 +57,7 @@ info.archinnov.achilles.embedded.AchillesInitializer,createKeyspaceIfNeeded,(Lco
             session.execute(createKeyspaceStatement.toString());
         }
         session.close();
-    }",132-148,0.9512073,0.9945725,0.9945725
-info.archinnov.achilles.internal.utils.ConfigMap,getTyped,(Linfo/archinnov/achilles/configuration/ConfigurationParameters;)Ljava/lang/Object;,5,5,100.0%,"@SuppressWarnings(""unchecked"")
-    public <T> T getTyped(ConfigurationParameters key) {
-        T value = null;
-        if (super.containsKey(key) && super.get(key) != null) {
-            value = (T) super.get(key);
-            return value;
-        }
-        return value;
-    }",33-41,0.9853934,0.98607874,0.98607874
+    }",132-148,0.9512073,0.991047,0.991047
 info.archinnov.achilles.embedded.AchillesInitializer,initialize,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,19,25,76.0%,"private void initialize(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
 
         String keyspaceName = extractAndValidateKeyspaceName(achillesParameters);
@@ -97,21 +97,21 @@ info.archinnov.achilles.embedded.AchillesInitializer,initialize,(Ljava/lang/Stri
             REPOSITORY.addNewManagerToKeyspace(keyspaceName, manager);
             REPOSITORY.addNewSessionToKeyspace(keyspaceName, manager.getNativeSession());
         }
-    }",68-107,0.91548,0.98587304,0.98587304
+    }",68-107,0.91548,0.9757896,0.9757896
 info.archinnov.achilles.embedded.ServerStarter$1,run,()V,4,4,100.0%,"@Override
             public void run() {
                 CassandraDaemon cassandraDaemon = new CassandraDaemon();
                 cassandraDaemon.activate();
                 startupLatch.countDown();
-            }",146-151,0.88192874,0.972099,0.972099
+            }",146-151,0.88192874,0.95751566,0.95751566
 info.archinnov.achilles.embedded.StateRepository,keyspaceAlreadyBootstrapped,(Ljava/lang/String;)Z,1,1,100.0%,"public boolean keyspaceAlreadyBootstrapped(String keyspaceName) {
 		return KEYSPACE_BOOTSTRAP_MAP.containsKey(keyspaceName);
-	}",38-40,0.9935137,0.931964,0.931964
+	}",38-40,0.9935137,0.9514585,0.9514585
 info.archinnov.achilles.internal.validation.Validator,validateNotBlank,(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateNotBlank(String arg, String message, Object... args) {
 		if (StringUtils.isBlank(arg)) {
 			throw new AchillesException(format(message, args));
 		}
-	}",33-37,0.9862639,0.9086632,0.9086632
+	}",33-37,0.9862639,0.9318315,0.9318315
 info.archinnov.achilles.type.TypedMap,getTyped,(Ljava/lang/String;)Ljava/lang/Object;,4,5,80.0%,"@SuppressWarnings(""unchecked"")
 	public <T> T getTyped(String key) {
 		T value = null;
@@ -120,9 +120,9 @@ info.archinnov.achilles.type.TypedMap,getTyped,(Ljava/lang/String;)Ljava/lang/Ob
 			return value;
 		}
 		return value;
-	}",32-40,0.98350465,0.9010529,0.9010529
+	}",32-40,0.98350465,0.92522365,0.92522365
 info.archinnov.achilles.internal.validation.Validator,validateTrue,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateTrue(boolean condition, String message, Object... args) {
 		if (!condition) {
 			throw new AchillesException(format(message, args));
 		}
-	}",97-101,0.98156035,0.89934325,0.89934325
+	}",97-101,0.98156035,0.92392045,0.92392045
