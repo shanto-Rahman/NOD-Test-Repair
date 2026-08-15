@@ -1,0 +1,128 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange,sim_to_test,sim_to_log,combined_sim
+info.archinnov.achilles.embedded.AchillesInitializer,initializeFromParameters,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,9,9,100.0%,"void initializeFromParameters(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
+
+        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME);
+        synchronized (REPOSITORY) {
+            if (!REPOSITORY.keyspaceAlreadyBootstrapped(keyspaceName)) {
+                LOGGER.trace(""Bootstrapping Achilles for keyspace {}"", keyspaceName);
+                initialize(cassandraHost, parameters, achillesParameters);
+                REPOSITORY.markKeyspaceAsBootstrapped(keyspaceName);
+            }
+            LOGGER.trace(""Do not bootstrap Achilles for keyspace {} because it was already created"", keyspaceName);
+        }
+    }",55-66,0.83382237,0.6954359,0.6954359
+info.archinnov.achilles.embedded.AchillesInitializer,extractAndValidateKeyspaceName,(Linfo/archinnov/achilles/internal/utils/ConfigMap;)Ljava/lang/String;,5,5,100.0%,"private String extractAndValidateKeyspaceName(ConfigMap parameters) {
+        String keyspaceName = parameters.getTyped(KEYSPACE_NAME);
+        Validator.validateNotBlank(keyspaceName, ""The provided keyspace name should not be blank"");
+        Validator.validateTrue(KEYSPACE_NAME_PATTERN.matcher(keyspaceName).matches(),
+                ""The provided keyspace name '%s' should match the "" + ""following pattern : '%s'"", keyspaceName,
+                KEYSPACE_NAME_PATTERN.pattern());
+
+        return keyspaceName;
+    }",109-117,0.7655574,0.65409017,0.65409017
+info.archinnov.achilles.embedded.AchillesInitializer,initialize,(Ljava/lang/String;Linfo/archinnov/achilles/type/TypedMap;Linfo/archinnov/achilles/internal/utils/ConfigMap;)V,19,25,76.0%,"private void initialize(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
+
+        String keyspaceName = extractAndValidateKeyspaceName(achillesParameters);
+        Boolean keyspaceDurableWrite = parameters.getTyped(KEYSPACE_DURABLE_WRITE);
+        Boolean nativeSessionOnly = parameters.getTyped(BUILD_NATIVE_SESSION_ONLY);
+
+        String hostname;
+        int cqlPort;
+
+        if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains("":"")) {
+            String[] split = cassandraHost.split("":"");
+            hostname = split[0];
+            cqlPort = Integer.parseInt(split[1]);
+        } else {
+            hostname = DEFAULT_CASSANDRA_HOST;
+            cqlPort = parameters.getTyped(CASSANDRA_CQL_PORT);
+        }
+
+        Cluster cluster = createCluster(hostname, cqlPort, parameters);
+        createKeyspaceIfNeeded(cluster, keyspaceName, keyspaceDurableWrite);
+
+        if (nativeSessionOnly) {
+            REPOSITORY.addNewSessionToKeyspace(keyspaceName, cluster.connect(keyspaceName));
+        } else {
+            Session nativeSession = cluster.connect(keyspaceName);
+            achillesParameters.put(ConfigurationParameters.NATIVE_SESSION, nativeSession);
+            achillesParameters.put(ConfigurationParameters.KEYSPACE_NAME, keyspaceName);
+            if (!achillesParameters.containsKey(ConfigurationParameters.FORCE_TABLE_CREATION)) {
+                achillesParameters.put(ConfigurationParameters.FORCE_TABLE_CREATION, true);
+            }
+
+            PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(cluster, achillesParameters);
+
+            PersistenceManager manager = factory.createPersistenceManager();
+
+            REPOSITORY.addNewManagerFactoryToKeyspace(keyspaceName, factory);
+            REPOSITORY.addNewManagerToKeyspace(keyspaceName, manager);
+            REPOSITORY.addNewSessionToKeyspace(keyspaceName, manager.getNativeSession());
+        }
+    }",68-107,0.8628741,0.651893,0.651893
+info.archinnov.achilles.embedded.AchillesInitializer,createKeyspaceIfNeeded,(Lcom/datastax/driver/core/Cluster;Ljava/lang/String;Ljava/lang/Boolean;)V,13,13,100.0%,"private void createKeyspaceIfNeeded(Cluster cluster, String keyspaceName, Boolean keyspaceDurableWrite) {
+        LOGGER.debug(""Creating keyspace {} if neeeded"", keyspaceName);
+
+        final Session session = cluster.connect(""system"");
+        final Row row = session.execute(
+                ""SELECT count(1) FROM schema_keyspaces WHERE keyspace_name='"" + keyspaceName + ""'"").one();
+        if (row.getLong(0) != 1) {
+            StringBuilder createKeyspaceStatement = new StringBuilder(""CREATE keyspace "");
+            createKeyspaceStatement.append(keyspaceName);
+            createKeyspaceStatement.append("" WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}"");
+            if (!keyspaceDurableWrite) {
+                createKeyspaceStatement.append("" AND DURABLE_WRITES=false"");
+            }
+            session.execute(createKeyspaceStatement.toString());
+        }
+        session.close();
+    }",132-148,0.77504194,0.63347924,0.63347924
+info.archinnov.achilles.embedded.AchillesInitializer,createCluster,(Ljava/lang/String;ILinfo/archinnov/achilles/type/TypedMap;)Lcom/datastax/driver/core/Cluster;,9,9,100.0%,"private Cluster createCluster(String host, int cqlPort, TypedMap parameters) {
+        LOGGER.debug(""Creating Cluster object with host/port {}/{} and parameters {}"", host, cqlPort, parameters);
+        String clusterName = parameters.getTyped(CLUSTER_NAME);
+        Compression compression = parameters.getTyped(COMPRESSION_TYPE);
+        LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);
+        RetryPolicy retryPolicy = parameters.getTyped(RETRY_POLICY);
+        ReconnectionPolicy reconnectionPolicy = parameters.getTyped(RECONNECTION_POLICY);
+
+        return Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
+                .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
+                .withReconnectionPolicy(reconnectionPolicy).build();
+    }",119-130,0.858113,0.6293826,0.6293826
+info.archinnov.achilles.embedded.ServerStarter$1,run,()V,4,4,100.0%,"@Override
+            public void run() {
+                CassandraDaemon cassandraDaemon = new CassandraDaemon();
+                cassandraDaemon.activate();
+                startupLatch.countDown();
+            }",146-151,0.7875217,0.62501854,0.62501854
+info.archinnov.achilles.embedded.StateRepository,keyspaceAlreadyBootstrapped,(Ljava/lang/String;)Z,1,1,100.0%,"public boolean keyspaceAlreadyBootstrapped(String keyspaceName) {
+		return KEYSPACE_BOOTSTRAP_MAP.containsKey(keyspaceName);
+	}",38-40,0.8323174,0.54701555,0.54701555
+info.archinnov.achilles.internal.utils.ConfigMap,getTyped,(Linfo/archinnov/achilles/configuration/ConfigurationParameters;)Ljava/lang/Object;,5,5,100.0%,"@SuppressWarnings(""unchecked"")
+    public <T> T getTyped(ConfigurationParameters key) {
+        T value = null;
+        if (super.containsKey(key) && super.get(key) != null) {
+            value = (T) super.get(key);
+            return value;
+        }
+        return value;
+    }",33-41,0.74673986,0.541623,0.541623
+info.archinnov.achilles.type.TypedMap,getTyped,(Ljava/lang/String;)Ljava/lang/Object;,4,5,80.0%,"@SuppressWarnings(""unchecked"")
+	public <T> T getTyped(String key) {
+		T value = null;
+		if (super.containsKey(key) && super.get(key) != null) {
+			value = (T) super.get(key);
+			return value;
+		}
+		return value;
+	}",32-40,0.7535641,0.4787708,0.4787708
+info.archinnov.achilles.internal.validation.Validator,validateNotBlank,(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateNotBlank(String arg, String message, Object... args) {
+		if (StringUtils.isBlank(arg)) {
+			throw new AchillesException(format(message, args));
+		}
+	}",33-37,0.69005644,0.442787,0.442787
+info.archinnov.achilles.internal.validation.Validator,validateTrue,(ZLjava/lang/String;[Ljava/lang/Object;)V,2,3,66.7%,"public static void validateTrue(boolean condition, String message, Object... args) {
+		if (!condition) {
+			throw new AchillesException(format(message, args));
+		}
+	}",97-101,0.6395062,0.4419204,0.4419204
