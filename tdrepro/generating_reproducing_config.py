@@ -1226,7 +1226,7 @@ def run_experiment(meth_body_csv, model_name, test_code_csv, failure_log_csv, sl
     #print("***************")
     #df_with_cluster.to_csv("M.csv", index=False)
     #print(df_with_cluster)
-    embed_model_name = "qwen" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
+    embed_model_name = "gpt2" #"codebert" #"llama" #"tf-idf" #"gpt2" #"llama" #"qwen" #"codebert" #"qwen"  #"llama" #"qwen"
 
     os.makedirs("metadata/embedings", exist_ok=True)
     csv_that_saved_embedding = "metadata/embedings/"+test+"_"+embed_model_name+"_embeddings.csv"
