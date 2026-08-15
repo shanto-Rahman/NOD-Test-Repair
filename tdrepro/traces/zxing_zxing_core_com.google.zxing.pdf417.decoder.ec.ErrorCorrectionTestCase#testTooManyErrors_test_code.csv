@@ -1,0 +1,13 @@
+test_code
+"@Test
+  public void testTooManyErrors() {
+    int[] received = PDF417_TEST_WITH_EC.clone();
+    Random random = getRandom();
+    corrupt(received, MAX_ERRORS + 3, random); // +3 since the algo can actually correct 2 more than it should here
+    try {
+      checkDecode(received);
+      fail(""Should not have decoded"");
+    } catch (ChecksumException ce) {
+      // good
+    }
+  }"

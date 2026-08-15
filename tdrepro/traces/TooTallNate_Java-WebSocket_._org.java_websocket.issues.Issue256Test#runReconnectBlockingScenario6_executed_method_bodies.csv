@@ -1,0 +1,647 @@
+Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %,Body,LineRange
+org.java_websocket.WebSocketImpl,<init>,(Lorg/java_websocket/WebSocketListener;Lorg/java_websocket/drafts/Draft;)V,20,21,95.2%,"public WebSocketImpl( WebSocketListener listener, List<Draft> drafts ) {
+		this( listener, ( Draft ) null );
+		this.role = Role.SERVER;
+		// draft.copyInstance will be called when the draft is first needed
+		if( drafts == null || drafts.isEmpty() ) {
+			knownDrafts = new ArrayList<Draft>();
+			knownDrafts.add( new Draft_6455() );
+		} else {
+			knownDrafts = drafts;
+		}
+	}",166-176
+org.java_websocket.AbstractWebSocket,setConnectionLostTimeout,(I)V,5,18,27.8%,"public void setConnectionLostTimeout( int connectionLostTimeout ) {
+        this.connectionLostTimeout = connectionLostTimeout;
+        if (this.connectionLostTimeout <= 0) {
+			log.trace( ""Connection lost timer stopped"" );
+			cancelConnectionLostTimer();
+            return;
+        }
+        if (this.websocketRunning) {
+        	log.trace( ""Connection lost timer restarted"" );
+			//Reset all the pings
+			try {
+				ArrayList<WebSocket> connections = new ArrayList<WebSocket>( getConnections() );
+				WebSocketImpl webSocketImpl;
+				for( WebSocket conn : connections ) {
+					if( conn instanceof WebSocketImpl ) {
+						webSocketImpl = ( WebSocketImpl ) conn;
+						webSocketImpl.updateLastPong();
+					}
+				}
+			} catch (Exception e) {
+				log.error(""Exception during connection lost restart"", e);
+			}
+			restartConnectionLostTimer();
+		}
+    }",102-126
+org.java_websocket.AbstractWebSocket,stopConnectionLostTimer,()V,2,5,40.0%,"protected void stopConnectionLostTimer() {
+        if (connectionLostTimer != null ||connectionLostTimerTask != null) {
+			this.websocketRunning = false;
+			log.trace( ""Connection lost timer stopped"" );
+            cancelConnectionLostTimer();
+        }
+    }",132-138
+org.java_websocket.AbstractWebSocket,startConnectionLostTimer,()V,3,7,42.9%,"protected void startConnectionLostTimer() {
+        if (this.connectionLostTimeout <= 0) {
+          	log.trace(""Connection lost timer deactivated"");
+            return;
+        }
+		log.trace(""Connection lost timer started"");
+        this.websocketRunning = true;
+       	restartConnectionLostTimer();
+    }",143-151
+org.java_websocket.AbstractWebSocket,cancelConnectionLostTimer,()V,3,7,42.9%,"private void cancelConnectionLostTimer() {
+        if( connectionLostTimer != null ) {
+            connectionLostTimer.cancel();
+            connectionLostTimer = null;
+        }
+        if( connectionLostTimerTask != null ) {
+            connectionLostTimerTask.cancel();
+            connectionLostTimerTask = null;
+        }
+    }",209-218
+org.java_websocket.AbstractWebSocket,isTcpNoDelay,()Z,1,1,100.0%,"public boolean isTcpNoDelay() {
+        return tcpNoDelay;
+    }",226-228
+org.java_websocket.AbstractWebSocket,setTcpNoDelay,(Z)V,2,2,100.0%,"public void setTcpNoDelay( boolean tcpNoDelay ) {
+        this.tcpNoDelay = tcpNoDelay;
+    }",238-240
+org.java_websocket.AbstractWebSocket,isReuseAddr,()Z,1,1,100.0%,"public boolean isReuseAddr() {
+		return reuseAddr;
+	}",248-250
+org.java_websocket.AbstractWebSocket,setReuseAddr,(Z)V,2,2,100.0%,"public void setReuseAddr( boolean reuseAddr ) {
+		this.reuseAddr = reuseAddr;
+	}",260-262
+org.java_websocket.extensions.DefaultExtension,copyInstance,()Lorg/java_websocket/extensions/IExtension;,1,1,100.0%,"@Override
+	public IExtension copyInstance() {
+		return new DefaultExtension();
+	}",78-81
+org.java_websocket.protocols.Protocol,<init>,(Ljava/lang/String;)V,4,5,80.0%,"public Protocol( String providedProtocol ) {
+		if( providedProtocol == null ) {
+			throw new IllegalArgumentException();
+		}
+		this.providedProtocol = providedProtocol;
+	}",50-55
+org.java_websocket.protocols.Protocol,getProvidedProtocol,()Ljava/lang/String;,1,1,100.0%,"@Override
+	public String getProvidedProtocol() {
+		return this.providedProtocol;
+	}",69-72
+org.java_websocket.protocols.Protocol,copyInstance,()Lorg/java_websocket/protocols/IProtocol;,1,1,100.0%,"@Override
+	public IProtocol copyInstance() {
+		return new Protocol( getProvidedProtocol() );
+	}",74-77
+org.java_websocket.client.WebSocketClient,<init>,(Ljava/net/URI;Lorg/java_websocket/drafts/Draft;Ljava/util/Map;I)V,18,20,90.0%,"public WebSocketClient( URI serverUri ) {
+		this( serverUri, new Draft_6455());
+	}",134-136
+org.java_websocket.client.WebSocketClient,<init>,(Ljava/net/URI;Lorg/java_websocket/drafts/Draft;)V,2,2,100.0%,"public WebSocketClient( URI serverUri ) {
+		this( serverUri, new Draft_6455());
+	}",134-136
+org.java_websocket.client.WebSocketClient,<init>,(Ljava/net/URI;)V,2,2,100.0%,"public WebSocketClient( URI serverUri ) {
+		this( serverUri, new Draft_6455());
+	}",134-136
+org.java_websocket.client.WebSocketClient,connect,()V,5,6,83.3%,"public void connect() {
+		if( connectReadThread != null )
+			throw new IllegalStateException( ""WebSocketClient objects are not reuseable"" );
+		connectReadThread = new Thread( this );
+		connectReadThread.setName( ""WebSocketConnectReadThread-"" + connectReadThread.getId() );
+		connectReadThread.start();
+	}",280-286
+org.java_websocket.client.WebSocketClient,connectBlocking,()Z,1,3,33.3%,"public boolean connectBlocking() throws InterruptedException {
+		connect();
+		connectLatch.await();
+		return engine.isOpen();
+	}",293-297
+org.java_websocket.client.WebSocketClient,run,()V,8,37,21.6%,"public void run() {
+		InputStream istream;
+		try {
+			boolean isNewSocket = false;
+
+			if( socket == null ) {
+				socket = new Socket( proxy );
+				isNewSocket = true;
+
+			} else if( socket.isClosed() ) {
+				throw new IOException();
+			}
+
+			socket.setTcpNoDelay( isTcpNoDelay() );
+			socket.setReuseAddress( isReuseAddr() );
+
+			if( !socket.isBound() ) {
+				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			}
+
+			// if the socket is set by others we don't apply any TLS wrapper
+			if (isNewSocket && ""wss"".equals( uri.getScheme())) {
+
+				SSLContext sslContext = SSLContext.getInstance(""TLS"");
+				sslContext.init(null, null, null);
+				SSLSocketFactory factory = sslContext.getSocketFactory();
+				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+			}
+
+			istream = socket.getInputStream();
+			ostream = socket.getOutputStream();
+
+			sendHandshake();
+		} catch ( /*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e ) {
+			onWebsocketError( engine, e );
+			engine.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			return;
+		}
+
+		writeThread = new Thread( new WebsocketWriteThread() );
+		writeThread.start();
+
+		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
+		int readBytes;
+
+		try {
+			while ( !isClosing() && !isClosed() && ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
+				engine.decode( ByteBuffer.wrap( rawbuffer, 0, readBytes ) );
+			}
+			engine.eot();
+		} catch ( IOException e ) {
+			handleIOException(e);
+		} catch ( RuntimeException e ) {
+			// this catch case covers internal errors only and indicates a bug in this websocket implementation
+			onError( e );
+			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
+		}
+		connectReadThread = null;
+	}",371-429
+org.java_websocket.client.WebSocketClient,getPort,()I,3,9,33.3%,"private int getPort() {
+		int port = uri.getPort();
+		if( port == -1 ) {
+			String scheme = uri.getScheme();
+			if( ""wss"".equals( scheme ) ) {
+				return WebSocket.DEFAULT_WSS_PORT;
+			} else if(  ""ws"".equals( scheme ) ) {
+				return WebSocket.DEFAULT_PORT;
+			} else {
+				throw new IllegalArgumentException( ""unknown scheme: "" + scheme );
+			}
+		}
+		return port;
+	}",435-448
+org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;)V,2,2,100.0%,"public Draft_6455() {
+		this( Collections.<IExtension>emptyList() );
+	}",105-107
+org.java_websocket.drafts.Draft_6455,<init>,(Ljava/util/List;Ljava/util/List;)V,17,18,94.4%,"public Draft_6455() {
+		this( Collections.<IExtension>emptyList() );
+	}",105-107
+org.java_websocket.drafts.Draft_6455,<init>,()V,2,2,100.0%,"public Draft_6455() {
+		this( Collections.<IExtension>emptyList() );
+	}",105-107
+org.java_websocket.drafts.Draft_6455,getKnownExtensions,()Ljava/util/List;,1,1,100.0%,"public List<IExtension> getKnownExtensions() {
+		return knownExtensions;
+	}",252-254
+org.java_websocket.drafts.Draft_6455,getKnownProtocols,()Ljava/util/List;,1,1,100.0%,"public List<IProtocol> getKnownProtocols() {
+		return knownProtocols;
+	}",271-273
+org.java_websocket.drafts.Draft_6455,copyInstance,()Lorg/java_websocket/drafts/Draft;,9,9,100.0%,"@Override
+	public Draft copyInstance() {
+		ArrayList<IExtension> newExtensions = new ArrayList<IExtension>();
+		for( IExtension extension : getKnownExtensions() ) {
+			newExtensions.add( extension.copyInstance() );
+		}
+		ArrayList<IProtocol> newProtocols = new ArrayList<IProtocol>();
+		for( IProtocol protocol : getKnownProtocols() ) {
+			newProtocols.add( protocol.copyInstance() );
+		}
+		return new Draft_6455( newExtensions, newProtocols );
+	}",330-341
+org.java_websocket.server.WebSocketServer$WebSocketWorker,<init>,(Lorg/java_websocket/server/WebSocketServer;)V,5,5,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer$WebSocketWorker,run,()V,5,15,33.3%,"public void run() {
+		synchronized ( this ) {
+			if( selectorthread != null )
+				throw new IllegalStateException( getClass().getName() + "" can only be started once."" );
+			selectorthread = Thread.currentThread();
+			if( isclosed.get() ) {
+				return;
+			}
+		}
+		selectorthread.setName( ""WebSocketSelector-"" + selectorthread.getId() );
+		try {
+			server = ServerSocketChannel.open();
+			server.configureBlocking( false );
+			ServerSocket socket = server.socket();
+			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
+			socket.setReuseAddress( isReuseAddr() );
+			socket.bind( address );
+			selector = Selector.open();
+			server.register( selector, server.validOps() );
+			startConnectionLostTimer();
+			onStart();
+		} catch ( IOException ex ) {
+			handleFatal( null, ex );
+			return;
+		}
+		try {
+			int iShutdownCount = 5;
+			int selectTimeout = 0;
+			while ( !selectorthread.isInterrupted() && iShutdownCount != 0) {
+				SelectionKey key = null;
+				WebSocketImpl conn = null;
+				try {
+					if (isclosed.get()) {
+						selectTimeout = 5;
+					}
+					int keyCount = selector.select( selectTimeout );
+					if (keyCount == 0 && isclosed.get()) {
+						iShutdownCount--;
+					}
+					Set<SelectionKey> keys = selector.selectedKeys();
+					Iterator<SelectionKey> i = keys.iterator();
+
+					while ( i.hasNext() ) {
+						key = i.next();
+						conn = null;
+						
+						if( !key.isValid() ) {
+							// Object o = key.attachment();
+							continue;
+						}
+
+						if( key.isAcceptable() ) {
+							if( !onConnect( key ) ) {
+								key.cancel();
+								continue;
+							}
+
+							SocketChannel channel = server.accept();
+							if(channel==null){
+								continue;
+							}
+							channel.configureBlocking( false );
+							Socket socket = channel.socket();
+							socket.setTcpNoDelay( isTcpNoDelay() );
+							socket.setKeepAlive( true );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts );
+							w.key = channel.register( selector, SelectionKey.OP_READ, w );
+							try {
+								w.channel = wsf.wrapChannel( channel, w.key );
+								i.remove();
+								allocateBuffers( w );
+								continue;
+							} catch (IOException ex) {
+								if( w.key != null )
+									w.key.cancel();
+
+								handleIOException( w.key, null, ex );
+							}
+							continue;
+						}
+
+						if( key.isReadable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							ByteBuffer buf = takeBuffer();
+							if(conn.channel == null){
+								if( key != null )
+									key.cancel();
+								
+								handleIOException( key, conn, new IOException() );
+								continue;
+							}
+							try {
+								if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
+									if( buf.hasRemaining() ) {
+										conn.inQueue.put( buf );
+										queue( conn );
+										i.remove();
+										if( conn.channel instanceof WrappedByteChannel ) {
+											if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+												iqueue.add( conn );
+											}
+										}
+									} else
+										pushBuffer( buf );
+								} else {
+									pushBuffer( buf );
+								}
+							} catch ( IOException e ) {
+								pushBuffer( buf );
+								throw e;
+							}
+						}
+						if( key.isWritable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							if( SocketChannelIOHelper.batch( conn, conn.channel ) ) {
+								if( key.isValid() )
+									key.interestOps( SelectionKey.OP_READ );
+							}
+						}
+					}
+					while ( !iqueue.isEmpty() ) {
+						conn = iqueue.remove( 0 );
+						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
+						ByteBuffer buf = takeBuffer();
+						try {
+							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
+								iqueue.add( conn );
+							if( buf.hasRemaining() ) {
+								conn.inQueue.put( buf );
+								queue( conn );
+							} else {
+								pushBuffer( buf );
+							}
+						} catch ( IOException e ) {
+							pushBuffer( buf );
+							throw e;
+						}
+
+					}
+				} catch ( CancelledKeyException e ) {
+					// an other thread may cancel the key
+				} catch ( ClosedByInterruptException e ) {
+					return; // do the same stuff as when InterruptedException is thrown
+				} catch ( IOException ex ) {
+					if( key != null )
+						key.cancel();
+					handleIOException( key, conn, ex );
+				} catch ( InterruptedException e ) {
+					return;// FIXME controlled shutdown (e.g. take care of buffermanagement)
+				}
+			}
+
+		} catch ( RuntimeException e ) {
+			// should hopefully never occur
+			handleFatal( null, e );
+		} finally {
+			stopConnectionLostTimer();
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
+			if( selector != null ) {
+				try {
+					selector.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during selector.close"", e );
+					onError( null, e );
+				}
+			}
+			if( server != null ) {
+				try {
+					server.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during server.close"", e );
+					onError( null, e );
+				}
+			}
+		}
+	}",308-487
+org.java_websocket.server.WebSocketServer$WebSocketWorker$1,<init>,(Lorg/java_websocket/server/WebSocketServer$WebSocketWorker;Lorg/java_websocket/server/WebSocketServer;)V,1,1,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.DefaultWebSocketServerFactory,close,()V,1,1,100.0%,"@Override
+	public void close() {
+	}",50-52
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;I)V,2,2,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;)V,2,2,100.0%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer,<init>,(Ljava/net/InetSocketAddress;ILjava/util/List;Ljava/util/Collection;)V,20,22,90.9%,"public WebSocketServer()  {
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+	}",118-120
+org.java_websocket.server.WebSocketServer,start,()V,3,4,75.0%,"public void start() {
+		if( selectorthread != null )
+			throw new IllegalStateException( getClass().getName() + "" can only be started once."" );
+		new Thread( this ).start();
+	}",228-232
+org.java_websocket.server.WebSocketServer,stop,()V,2,2,100.0%,"public void stop( int timeout ) throws InterruptedException {
+		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
+			return;
+		}
+
+		List<WebSocket> socketsToClose;
+
+		// copy the connections in a list (prevent callback deadlocks)
+		synchronized ( connections ) {
+			socketsToClose = new ArrayList<WebSocket>( connections );
+		}
+
+		for( WebSocket ws : socketsToClose ) {
+			ws.close( CloseFrame.GOING_AWAY );
+		}
+
+		wsf.close();
+
+		synchronized ( this ) {
+			if( selectorthread != null  && selector != null) {
+				selector.wakeup();
+				selectorthread.join( timeout );
+			}
+		}
+	}",246-270
+org.java_websocket.server.WebSocketServer,stop,(I)V,12,15,80.0%,"public void stop( int timeout ) throws InterruptedException {
+		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
+			return;
+		}
+
+		List<WebSocket> socketsToClose;
+
+		// copy the connections in a list (prevent callback deadlocks)
+		synchronized ( connections ) {
+			socketsToClose = new ArrayList<WebSocket>( connections );
+		}
+
+		for( WebSocket ws : socketsToClose ) {
+			ws.close( CloseFrame.GOING_AWAY );
+		}
+
+		wsf.close();
+
+		synchronized ( this ) {
+			if( selectorthread != null  && selector != null) {
+				selector.wakeup();
+				selectorthread.join( timeout );
+			}
+		}
+	}",246-270
+org.java_websocket.server.WebSocketServer,run,()V,45,134,33.6%,"public void run() {
+		synchronized ( this ) {
+			if( selectorthread != null )
+				throw new IllegalStateException( getClass().getName() + "" can only be started once."" );
+			selectorthread = Thread.currentThread();
+			if( isclosed.get() ) {
+				return;
+			}
+		}
+		selectorthread.setName( ""WebSocketSelector-"" + selectorthread.getId() );
+		try {
+			server = ServerSocketChannel.open();
+			server.configureBlocking( false );
+			ServerSocket socket = server.socket();
+			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
+			socket.setReuseAddress( isReuseAddr() );
+			socket.bind( address );
+			selector = Selector.open();
+			server.register( selector, server.validOps() );
+			startConnectionLostTimer();
+			onStart();
+		} catch ( IOException ex ) {
+			handleFatal( null, ex );
+			return;
+		}
+		try {
+			int iShutdownCount = 5;
+			int selectTimeout = 0;
+			while ( !selectorthread.isInterrupted() && iShutdownCount != 0) {
+				SelectionKey key = null;
+				WebSocketImpl conn = null;
+				try {
+					if (isclosed.get()) {
+						selectTimeout = 5;
+					}
+					int keyCount = selector.select( selectTimeout );
+					if (keyCount == 0 && isclosed.get()) {
+						iShutdownCount--;
+					}
+					Set<SelectionKey> keys = selector.selectedKeys();
+					Iterator<SelectionKey> i = keys.iterator();
+
+					while ( i.hasNext() ) {
+						key = i.next();
+						conn = null;
+						
+						if( !key.isValid() ) {
+							// Object o = key.attachment();
+							continue;
+						}
+
+						if( key.isAcceptable() ) {
+							if( !onConnect( key ) ) {
+								key.cancel();
+								continue;
+							}
+
+							SocketChannel channel = server.accept();
+							if(channel==null){
+								continue;
+							}
+							channel.configureBlocking( false );
+							Socket socket = channel.socket();
+							socket.setTcpNoDelay( isTcpNoDelay() );
+							socket.setKeepAlive( true );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts );
+							w.key = channel.register( selector, SelectionKey.OP_READ, w );
+							try {
+								w.channel = wsf.wrapChannel( channel, w.key );
+								i.remove();
+								allocateBuffers( w );
+								continue;
+							} catch (IOException ex) {
+								if( w.key != null )
+									w.key.cancel();
+
+								handleIOException( w.key, null, ex );
+							}
+							continue;
+						}
+
+						if( key.isReadable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							ByteBuffer buf = takeBuffer();
+							if(conn.channel == null){
+								if( key != null )
+									key.cancel();
+								
+								handleIOException( key, conn, new IOException() );
+								continue;
+							}
+							try {
+								if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
+									if( buf.hasRemaining() ) {
+										conn.inQueue.put( buf );
+										queue( conn );
+										i.remove();
+										if( conn.channel instanceof WrappedByteChannel ) {
+											if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+												iqueue.add( conn );
+											}
+										}
+									} else
+										pushBuffer( buf );
+								} else {
+									pushBuffer( buf );
+								}
+							} catch ( IOException e ) {
+								pushBuffer( buf );
+								throw e;
+							}
+						}
+						if( key.isWritable() ) {
+							conn = (WebSocketImpl) key.attachment();
+							if( SocketChannelIOHelper.batch( conn, conn.channel ) ) {
+								if( key.isValid() )
+									key.interestOps( SelectionKey.OP_READ );
+							}
+						}
+					}
+					while ( !iqueue.isEmpty() ) {
+						conn = iqueue.remove( 0 );
+						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
+						ByteBuffer buf = takeBuffer();
+						try {
+							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
+								iqueue.add( conn );
+							if( buf.hasRemaining() ) {
+								conn.inQueue.put( buf );
+								queue( conn );
+							} else {
+								pushBuffer( buf );
+							}
+						} catch ( IOException e ) {
+							pushBuffer( buf );
+							throw e;
+						}
+
+					}
+				} catch ( CancelledKeyException e ) {
+					// an other thread may cancel the key
+				} catch ( ClosedByInterruptException e ) {
+					return; // do the same stuff as when InterruptedException is thrown
+				} catch ( IOException ex ) {
+					if( key != null )
+						key.cancel();
+					handleIOException( key, conn, ex );
+				} catch ( InterruptedException e ) {
+					return;// FIXME controlled shutdown (e.g. take care of buffermanagement)
+				}
+			}
+
+		} catch ( RuntimeException e ) {
+			// should hopefully never occur
+			handleFatal( null, e );
+		} finally {
+			stopConnectionLostTimer();
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
+			if( selector != null ) {
+				try {
+					selector.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during selector.close"", e );
+					onError( null, e );
+				}
+			}
+			if( server != null ) {
+				try {
+					server.close();
+				} catch ( IOException e ) {
+					log.error( ""IOException during server.close"", e );
+					onError( null, e );
+				}
+			}
+		}
+	}",308-487

@@ -90,3 +90,8 @@ id,slug,sha,module,test,,,,
 125,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest.readSendsWindowUpdate,okio.Okio$2:read:(Lokio/OkBuffer;J)J:117 (        return bytesRead;),1_4,3938.6459040641785,1
 126,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.spdy.SpdyConnectionTest.pushPromiseStream,com.squareup.okhttp.internal.spdy.HpackDraft05$Reader:readByteString:(Z)Lokio/ByteString;:372 (        byteString = huffmanCodec.decode(byteString); // TODO: streaming Huffman!),3_4,3585.064741373062,1
 132,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest.postFailsWithFixedLengthRequestForLargeRequest,,50,1819.6172285079956,0
+
+133,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest.postFailsWithChunkedRequestForSmallRequest,,50,1760.4642310142517,1
+134,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest.serverShutdownOutput,,50,1805.9979877471924,0
+135,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest.postFailsWithFixedLengthRequestForSmallRequest,com.squareup.okhttp.internal.http.HttpURLConnectionImpl:processResponseHeaders:()Lcom/squareup/okhttp/internal/http/HttpURLConnectionImpl$Retry;:463 (        return Retry.NONE;),4_1,1590.6935212612152,1
+136,square/okhttp,129c937fb33328e1f4ee8815a94e89676f242c2c,okhttp-tests,com.squareup.okhttp.internal.http.URLConnectionTest.postFailsWithChunkedRequestForLargeRequest,,50,1737.2276856899261,0

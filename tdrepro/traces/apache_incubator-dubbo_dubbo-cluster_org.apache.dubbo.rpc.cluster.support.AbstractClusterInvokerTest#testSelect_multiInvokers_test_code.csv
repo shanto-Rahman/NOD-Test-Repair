@@ -1,0 +1,7 @@
+test_code
+"@Test
+    public void testSelect_multiInvokers() throws Exception {
+        testSelect_multiInvokers(RoundRobinLoadBalance.NAME);
+        testSelect_multiInvokers(LeastActiveLoadBalance.NAME);
+        testSelect_multiInvokers(RandomLoadBalance.NAME);
+    }"

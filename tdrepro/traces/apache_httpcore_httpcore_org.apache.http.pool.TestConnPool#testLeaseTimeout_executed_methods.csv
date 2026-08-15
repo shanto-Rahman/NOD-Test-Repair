@@ -1,0 +1,24 @@
+Package,Class,Method,Descriptor,Lines Covered,Total Lines,Coverage %
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool,<init>,(II)V,12,14,85.7%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool,getPool,(Ljava/lang/Object;)Lorg/apache/http/pool/RouteSpecificPool;,5,5,100.0%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool,lease,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/concurrent/Future;,3,5,60.0%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool,getPoolEntryBlocking,(Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;Lorg/apache/http/pool/PoolEntryFuture;)Lorg/apache/http/pool/PoolEntry;,41,58,70.7%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool,getMaxPerRoute,(Ljava/lang/Object;)I,3,4,75.0%
+org/apache/http/pool,org.apache.http.pool.PoolEntryFuture,<init>,(Ljava/util/concurrent/locks/Lock;)V,4,4,100.0%
+org/apache/http/pool,org.apache.http.pool.PoolEntryFuture,isCancelled,()Z,1,1,100.0%
+org/apache/http/pool,org.apache.http.pool.PoolEntryFuture,isDone,()Z,1,1,100.0%
+org/apache/http/pool,org.apache.http.pool.PoolEntryFuture,get,(JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;,6,11,54.5%
+org/apache/http/pool,org.apache.http.pool.PoolEntryFuture,await,(Ljava/util/Date;)Z,8,12,66.7%
+org/apache/http/pool,org.apache.http.pool.RouteSpecificPool,<init>,(Ljava/lang/Object;)V,6,6,100.0%
+org/apache/http/pool,org.apache.http.pool.RouteSpecificPool,getAllocatedCount,()I,1,1,100.0%
+org/apache/http/pool,org.apache.http.pool.RouteSpecificPool,getFree,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,2,19,10.5%
+org/apache/http/pool,org.apache.http.pool.RouteSpecificPool,getLastUsed,()Lorg/apache/http/pool/PoolEntry;,2,3,66.7%
+org/apache/http/pool,org.apache.http.pool.RouteSpecificPool,add,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,3,3,100.0%
+org/apache/http/pool,org.apache.http.pool.RouteSpecificPool,queue,(Lorg/apache/http/pool/PoolEntryFuture;)V,3,4,75.0%
+org/apache/http/pool,org.apache.http.pool.RouteSpecificPool,unqueue,(Lorg/apache/http/pool/PoolEntryFuture;)V,3,4,75.0%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool$2,<init>,(Lorg/apache/http/pool/AbstractConnPool;Ljava/util/concurrent/locks/Lock;Ljava/lang/Object;Ljava/lang/Object;)V,1,1,100.0%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool$2,getPoolEntry,(JLjava/util/concurrent/TimeUnit;)Lorg/apache/http/pool/PoolEntry;,1,1,100.0%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool$1,<init>,(Lorg/apache/http/pool/AbstractConnPool;Ljava/lang/Object;Ljava/lang/Object;)V,1,1,100.0%
+org/apache/http/pool,org.apache.http.pool.AbstractConnPool$1,createEntry,(Ljava/lang/Object;)Lorg/apache/http/pool/PoolEntry;,1,1,100.0%
+org/apache/http/pool,org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;JLjava/util/concurrent/TimeUnit;)V,12,16,75.0%
+org/apache/http/pool,org.apache.http.pool.PoolEntry,<init>,(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V,2,2,100.0%
